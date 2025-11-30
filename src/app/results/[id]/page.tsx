@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle, AlertTriangle, XCircle, ArrowLeft, Building } from 'lucide-react'
 import { STATUTORY_HEALTH_QUESTIONS, CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeActionItems, getComplianceStatus } from '@/lib/assessments/labour-code-questions'
-import { DownloadButtons } from '@/components/results/download-buttons'
+import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
 
 // Type definitions
@@ -223,7 +223,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
         {/* Download & Share */}
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadButtons />
+            <DownloadWithFeedback assessmentType="labour_code" />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 
@@ -440,7 +440,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadButtons />
+            <DownloadWithFeedback assessmentType="statutory_health" />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 
@@ -514,7 +514,7 @@ function TempResultsPage({ assessmentType }: { assessmentType: string }) {
 
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadButtons />
+            <DownloadWithFeedback assessmentType={isLabourCode ? "labour_code" : "statutory_health"} />
           </CardContent>
         </Card>
 

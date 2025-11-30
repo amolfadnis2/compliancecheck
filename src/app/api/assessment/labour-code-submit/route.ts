@@ -11,6 +11,9 @@ import {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+// Anonymous user UUID for free assessments
+const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -37,6 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Prepare assessment data
     const assessmentData = {
+      user_id: ANONYMOUS_USER_ID, // Required for FK constraint
       assessment_type: assessmentType || 'labour_code',
       status: 'completed',
       responses: {
