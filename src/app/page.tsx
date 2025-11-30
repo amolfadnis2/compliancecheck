@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, ClipboardCheck, Shield, FileText } from 'lucide-react'
+import { RUPEE } from '@/lib/constants'
 
 export default function HomePage() {
   return (
@@ -78,7 +79,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Statutory Health Check */}
-            <Card className="border-2 border-green-600 hover:shadow-lg transition-all">
+            <Card className="border-2 border-green-600 hover:shadow-lg transition-all relative">
               <div className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 FREE
               </div>
@@ -89,7 +90,7 @@ export default function HomePage() {
                 <CardTitle>Statutory Health Check</CardTitle>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-bold text-green-600">FREE</span>
-                  <span className="text-lg text-gray-400 line-through">₹999</span>
+                  <span className="text-lg text-gray-400 line-through">{RUPEE}999</span>
                 </div>
                 <CardDescription>
                   Quick 10-minute check for PF, ESI, PT, Gratuity & Bonus compliance.
@@ -120,7 +121,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            {/* Labour Code Readiness - NOW LIVE */}
+            {/* Labour Code Readiness */}
             <Card className="border-2 border-blue-600 hover:shadow-lg transition-all relative">
               <div className="absolute -top-3 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 MOST POPULAR
@@ -135,7 +136,7 @@ export default function HomePage() {
                 <CardTitle>Labour Code Readiness</CardTitle>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-bold text-blue-600">FREE</span>
-                  <span className="text-lg text-gray-400 line-through">₹1,999</span>
+                  <span className="text-lg text-gray-400 line-through">{RUPEE}1,999</span>
                 </div>
                 <CardDescription>
                   Comprehensive assessment for all 4 new Labour Codes (effective Nov 2025).
@@ -166,6 +167,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
+
             {/* DPDP - Coming Soon */}
             <Card className="border-2 border-dashed border-gray-300 opacity-75">
               <CardHeader>
@@ -176,7 +178,7 @@ export default function HomePage() {
                   <CardTitle>DPDP Gap Assessment</CardTitle>
                   <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">Coming Soon</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-400">₹2,499 <span className="text-base font-normal">one-time</span></div>
+                <div className="text-3xl font-bold text-gray-400">{RUPEE}2,499 <span className="text-base font-normal">one-time</span></div>
                 <CardDescription>
                   Data protection compliance for DPDP Act 2023.
                 </CardDescription>
@@ -206,7 +208,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
 
       {/* How It Works */}
       <section className="py-20 px-4 bg-white">

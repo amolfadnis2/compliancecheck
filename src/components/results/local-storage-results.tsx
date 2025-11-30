@@ -1,0 +1,505 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { 
+  CheckCircle, AlertTriangle, XCircle, ArrowLeft, Building, Loader2,
+  FileText, Shield, AlertCircle
+} from 'lucide-react'
+import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
+import { DownloadButtons } from '@/components/results/download-buttons'
+
+// ============================================================================
+// COMPLIANCE SUMMARY DATA
+// ============================================================================
+
+// Types moved inline where needed
+
+const QUESTION_SUMMARIES: Record<string, { compliant: string; nonCompliant: string; priority: 'high' | 'medium' | 'low' }> = {
+  pf_1: { 
+    compliant: 'EPFO Registration is active',
+    nonCompliant: 'EPFO Registration missing - mandatory for 20+ employees',
+    priority: 'high'
+  },
+  pf_2: {
+    compliant: 'PF contributions deposited on time',
+    nonCompliant: 'PF contributions delayed - 12% interest + damages apply',
+    priority: 'high'
+  },
+  esi_1: {
+    compliant: 'ESIC Registration is active',
+    nonCompliant: 'ESIC Registration missing - mandatory for 10+ employees',
+    priority: 'high'
+  },
+  esi_2: {
+    compliant: 'ESI contributions deposited on time',
+    nonCompliant: 'ESI contributions delayed - penalty of 2x amount applies',
+    priority: 'high'
+  },
+  esi_3: {
+    compliant: 'ESI wage ceiling monitored correctly',
+    nonCompliant: 'ESI wage ceiling not being tracked',
+    priority: 'medium'
+  },
+  pt_1: {
+    compliant: 'Professional Tax applicability verified',
+    nonCompliant: 'Professional Tax applicability not confirmed',
+    priority: 'medium'
+  },
+  pt_2: {
+    compliant: 'PTRC Registration in place',
+    nonCompliant: 'PTRC Registration missing - required in applicable states',
+    priority: 'medium'
+  },
+  pt_3: {
+    compliant: 'PT deductions and deposits regular',
+    nonCompliant: 'PT deductions/deposits not regular',
+    priority: 'medium'
+  },
+  gratuity_1: {
+    compliant: 'Gratuity liability being tracked',
+    nonCompliant: 'Gratuity liability not tracked - legal requirement for 10+ employees',
+    priority: 'medium'
+  },
+  gratuity_2: {
+    compliant: 'Gratuity funding/insurance in place',
+    nonCompliant: 'Gratuity not funded - consider LIC Group Gratuity',
+    priority: 'low'
+  },
+  bonus_1: {
+    compliant: 'Statutory bonus paid correctly',
+    nonCompliant: 'Statutory bonus compliance gap - 8.33% minimum required',
+    priority: 'high'
+  },
+  bonus_2: {
+    compliant: 'Bonus registers maintained properly',
+    nonCompliant: 'Bonus registers not maintained - Form A, B, C, D required',
+    priority: 'medium'
+  }
+}
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface LocalAssessmentData {
+  id: string
+  assessment_type: string
+  status: string
+  responses: {
+    userDetails?: Record<string, string>
+    answers?: Record<string, string>
+  }
+  overall_score?: number
+  category_scores?: Record<string, { score: number; max: number; percentage: number }>
+  userDetails?: Record<string, string>
+  created_at: string
+}
+
+interface LocalStorageResultsPageProps {
+  id: string
+  assessmentType: string
+}
+
+// ============================================================================
+// HELPER FUNCTIONS  
+// ============================================================================
+
+function getStatusFromScore(score: number) {
+  if (score >= 80) {
+    return { status: 'Compliant', color: 'green', description: 'Your organisation meets key compliance requirements.' }
+  } else if (score >= 50) {
+    return { status: 'Needs Attention', color: 'amber', description: 'Several areas require immediate attention to avoid penalties.' }
+  } else {
+    return { status: 'Non-Compliant', color: 'red', description: 'Significant compliance gaps identified. Urgent action required.' }
+  }
+}
+
+function analyseResponses(answers: Record<string, string>): {
+  compliantItems: { id: string; text: string }[]
+  nonCompliantItems: { id: string; text: string; priority: 'high' | 'medium' | 'low' }[]
+} {
+  const compliantItems: { id: string; text: string }[] = []
+  const nonCompliantItems: { id: string; text: string; priority: 'high' | 'medium' | 'low' }[] = []
+
+  Object.entries(answers).forEach(([questionId, answer]) => {
+    const summary = QUESTION_SUMMARIES[questionId]
+    if (!summary) return
+
+    if (answer === 'yes') {
+      compliantItems.push({ id: questionId, text: summary.compliant })
+    } else if (answer === 'no') {
+      nonCompliantItems.push({ id: questionId, text: summary.nonCompliant, priority: summary.priority })
+    }
+  })
+
+  // Sort non-compliant by priority
+  const priorityOrder = { high: 0, medium: 1, low: 2 }
+  nonCompliantItems.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+
+  return { compliantItems, nonCompliantItems }
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
+export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResultsPageProps) {
+  const [loading, setLoading] = useState(true)
+  const [assessment, setAssessment] = useState<LocalAssessmentData | null>(null)
+  const isLabourCode = assessmentType === 'labour_code'
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`assessment_${id}`)
+      if (stored) {
+        const data = JSON.parse(stored)
+        setAssessment(data)
+      }
+    } catch (e) {
+      console.error('Error loading from localStorage:', e)
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading your results...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!assessment) {
+    return <DemoResultsView assessmentType={assessmentType} />
+  }
+
+  const userDetails = assessment.userDetails || assessment.responses?.userDetails || {}
+  const answers = assessment.responses?.answers || {}
+  const overallScore = assessment.overall_score || 50
+  const categoryScores = assessment.category_scores || {}
+  const status = getStatusFromScore(overallScore)
+  const { compliantItems, nonCompliantItems } = analyseResponses(answers)
+
+  // Count by category
+  const categoryStats = Object.entries(categoryScores).map(([cat, data]) => {
+    const percentage = typeof data === 'number' ? data : data.percentage || 0
+    return {
+      category: cat,
+      name: CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO]?.name || cat,
+      percentage,
+      status: percentage >= 80 ? 'compliant' : percentage >= 50 ? 'needs-attention' : 'non-compliant'
+    }
+  })
+
+  const compliantCategories = categoryStats.filter(c => c.status === 'compliant').length
+  const totalCategories = categoryStats.length
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge className={isLabourCode ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}>
+              {isLabourCode ? 'Labour Code Readiness' : 'Statutory Health Check'}
+            </Badge>
+            <Badge variant="outline" className="text-gray-500">
+              {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </Badge>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Compliance Assessment Report</h1>
+          {userDetails.companyName && (
+            <div className="flex items-center gap-2 text-gray-600 mt-1">
+              <Building className="w-4 h-4" />
+              <span className="font-medium">{userDetails.companyName}</span>
+              {userDetails.employeeCount && <span className="text-gray-400">|</span>}
+              {userDetails.employeeCount && <span>{userDetails.employeeCount} employees</span>}
+              {userDetails.state && <span className="text-gray-400">|</span>}
+              {userDetails.state && <span>{userDetails.state}</span>}
+            </div>
+          )}
+        </div>
+
+        {/* Overall Score Card - Prominent */}
+        <Card className={`mb-6 border-2 ${
+          status.color === 'green' ? 'border-green-200 bg-green-50' :
+          status.color === 'amber' ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50'
+        }`}>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="text-center md:text-left flex-1">
+                <div className="flex items-center gap-3 justify-center md:justify-start mb-3">
+                  {status.color === 'green' && <CheckCircle className="w-10 h-10 text-green-600" />}
+                  {status.color === 'amber' && <AlertTriangle className="w-10 h-10 text-amber-600" />}
+                  {status.color === 'red' && <XCircle className="w-10 h-10 text-red-600" />}
+                  <div>
+                    <h2 className={`text-2xl font-bold ${
+                      status.color === 'green' ? 'text-green-700' :
+                      status.color === 'amber' ? 'text-amber-700' : 'text-red-700'
+                    }`}>{status.status}</h2>
+                    <p className="text-gray-600 text-sm">{status.description}</p>
+                  </div>
+                </div>
+                <div className="flex gap-4 justify-center md:justify-start text-sm">
+                  <div className="flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>{compliantItems.length} compliant</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <XCircle className="w-4 h-4 text-red-600" />
+                    <span>{nonCompliantItems.length} gaps found</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Shield className="w-4 h-4 text-blue-600" />
+                    <span>{compliantCategories}/{totalCategories} categories OK</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className={`text-7xl font-bold ${
+                  status.color === 'green' ? 'text-green-600' :
+                  status.color === 'amber' ? 'text-amber-600' : 'text-red-600'
+                }`}>{overallScore}%</div>
+                <div className="text-gray-500 text-sm font-medium">Compliance Score</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Two Column Layout: What's Working / What Needs Attention */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* What's Working */}
+          <Card className="border-green-200">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <CardTitle className="text-lg text-green-700">What You&apos;re Doing Right</CardTitle>
+              </div>
+              <CardDescription>{compliantItems.length} areas compliant</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {compliantItems.length === 0 ? (
+                <p className="text-gray-500 text-sm italic">No compliant items found. Review all areas below.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {compliantItems.slice(0, 5).map((item) => (
+                    <li key={item.id} className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">{item.text}</span>
+                    </li>
+                  ))}
+                  {compliantItems.length > 5 && (
+                    <li className="text-sm text-gray-500 italic pl-6">
+                      + {compliantItems.length - 5} more in detailed report
+                    </li>
+                  )}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* What Needs Attention */}
+          <Card className="border-red-200">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+                <CardTitle className="text-lg text-red-700">Action Required</CardTitle>
+              </div>
+              <CardDescription>{nonCompliantItems.length} areas need attention</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {nonCompliantItems.length === 0 ? (
+                <div className="text-center py-4">
+                  <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-green-700 font-medium">All areas compliant!</p>
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  {nonCompliantItems.slice(0, 5).map((item) => (
+                    <li key={item.id} className="flex items-start gap-2 text-sm">
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium flex-shrink-0 ${
+                        item.priority === 'high' ? 'bg-red-100 text-red-700' :
+                        item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {item.priority === 'high' ? 'HIGH' : item.priority === 'medium' ? 'MED' : 'LOW'}
+                      </span>
+                      <span className="text-gray-700">{item.text}</span>
+                    </li>
+                  ))}
+                  {nonCompliantItems.length > 5 && (
+                    <li className="text-sm text-gray-500 italic pl-12">
+                      + {nonCompliantItems.length - 5} more in detailed report
+                    </li>
+                  )}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Category Breakdown */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-600" />
+              Category-wise Compliance Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {categoryStats.map((cat) => (
+                <div 
+                  key={cat.category} 
+                  className={`p-4 rounded-lg text-center border-2 ${
+                    cat.status === 'compliant' ? 'bg-green-50 border-green-200' :
+                    cat.status === 'needs-attention' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'
+                  }`}
+                >
+                  <div className="mb-2">
+                    {cat.status === 'compliant' && <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />}
+                    {cat.status === 'needs-attention' && <AlertTriangle className="w-6 h-6 text-amber-600 mx-auto" />}
+                    {cat.status === 'non-compliant' && <XCircle className="w-6 h-6 text-red-600 mx-auto" />}
+                  </div>
+                  <div className={`text-2xl font-bold ${
+                    cat.status === 'compliant' ? 'text-green-600' :
+                    cat.status === 'needs-attention' ? 'text-amber-600' : 'text-red-600'
+                  }`}>{cat.percentage}%</div>
+                  <div className="text-xs text-gray-600 font-medium mt-1">{cat.name}</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Download CTA - Prominent */}
+        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 print:hidden">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                  <h3 className="text-lg font-bold text-gray-900">Download Detailed Report</h3>
+                </div>
+                <p className="text-gray-600 text-sm mb-2">
+                  Get the complete PDF report with:
+                </p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Step-by-step remediation actions
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Legal references &amp; government portal links
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Deadlines &amp; penalty information
+                  </li>
+                </ul>
+              </div>
+              <div className="w-full md:w-auto">
+                <DownloadButtons assessmentId={id} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Disclaimer */}
+        <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong>Important:</strong> This assessment is based on your self-reported responses and is for 
+              informational purposes only. It does not constitute legal, tax, or professional advice. 
+              Compliance requirements vary based on specific circumstances and state rules. 
+              Consult a qualified Company Secretary or Labour Law Consultant for specific advice.
+            </div>
+          </div>
+        </div>
+
+        {/* Upsell */}
+        <Card className="mt-6 border-gray-200 print:hidden">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  {isLabourCode ? 'Also Check: Statutory Compliance Health' : 'Next Step: Labour Code Readiness'}
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  {isLabourCode 
+                    ? 'Verify your PF, ESI, Professional Tax, Gratuity and Bonus compliance.'
+                    : 'Prepare for the new Labour Codes with our comprehensive readiness assessment.'
+                  }
+                </p>
+              </div>
+              <Link href={isLabourCode ? '/assessment/statutory-health' : '/assessment/labour-code'}>
+                <Button variant="outline">
+                  Start {isLabourCode ? 'Statutory Check' : 'Labour Code Assessment'} - FREE
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-sm text-gray-500">
+          <p>Report ID: {id}</p>
+          <p className="mt-1">Generated by ComplianceCheck | compliancecheck.in</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// DEMO FALLBACK
+// ============================================================================
+
+function DemoResultsView({ assessmentType }: { assessmentType: string }) {
+  const isLabourCode = assessmentType === 'labour_code'
+  
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-8">
+          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          <Badge className={isLabourCode ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}>
+            {isLabourCode ? 'Labour Code Readiness' : 'Statutory Health Check'}
+          </Badge>
+          <h1 className="text-2xl font-bold text-gray-900 mt-2">Assessment Results</h1>
+          <p className="text-amber-600 text-sm mt-1">Note: Could not load saved results.</p>
+        </div>
+
+        <Card className="mb-6">
+          <CardContent className="pt-6 text-center">
+            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Results Not Found</h2>
+            <p className="text-gray-600 mb-4">
+              We couldn&apos;t find your assessment results. This may happen if your browser 
+              cleared storage or if you&apos;re on a different device.
+            </p>
+            <Link href={isLabourCode ? '/assessment/labour-code' : '/assessment/statutory-health'}>
+              <Button>Take the Assessment Again</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

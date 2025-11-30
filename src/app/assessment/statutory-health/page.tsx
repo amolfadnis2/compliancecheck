@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2 } from 'lucide-react'
 import { 
   STATUTORY_HEALTH_QUESTIONS, 
   INDIAN_STATES, 
@@ -32,23 +32,93 @@ const userDetailsSchema = z.object({
 })
 
 type UserDetails = z.infer<typeof userDetailsSchema>
-
 type AssessmentResponse = Record<string, string>
+
+// Local storage keys
+const STORAGE_KEY = 'statutory_health_progress'
+
+interface SavedProgress {
+  step: number
+  currentQuestionIndex: number
+  responses: AssessmentResponse
+  userDetails: UserDetails | null
+  savedAt: string
+}
 
 export default function StatutoryHealthAssessmentPage() {
   const router = useRouter()
-  const [step, setStep] = useState(1) // 1: User Details, 2: Questions, 3: Summary
+  const [step, setStep] = useState(1)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [responses, setResponses] = useState<AssessmentResponse>({})
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [hasRestoredProgress, setHasRestoredProgress] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<UserDetails>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<UserDetails>({
     resolver: zodResolver(userDetailsSchema),
   })
 
   const totalQuestions = STATUTORY_HEALTH_QUESTIONS.length
   const currentQuestion = STATUTORY_HEALTH_QUESTIONS[currentQuestionIndex]
+
+  // Load saved progress on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const progress: SavedProgress = JSON.parse(saved)
+        // Only restore if saved within last 24 hours
+        const savedTime = new Date(progress.savedAt).getTime()
+        const now = Date.now()
+        if (now - savedTime < 24 * 60 * 60 * 1000) {
+          setStep(progress.step)
+          setCurrentQuestionIndex(progress.currentQuestionIndex)
+          setResponses(progress.responses)
+          if (progress.userDetails) {
+            setUserDetails(progress.userDetails)
+            reset(progress.userDetails)
+          }
+          setHasRestoredProgress(true)
+        }
+      }
+    } catch (e) {
+      console.error('Error loading saved progress:', e)
+    }
+  }, [reset])
+
+  // Auto-save progress
+  const saveProgress = useCallback(() => {
+    setSaveStatus('saving')
+    try {
+      const progress: SavedProgress = {
+        step,
+        currentQuestionIndex,
+        responses,
+        userDetails,
+        savedAt: new Date().toISOString(),
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    } catch (e) {
+      console.error('Error saving progress:', e)
+      setSaveStatus('idle')
+    }
+  }, [step, currentQuestionIndex, responses, userDetails])
+
+  // Auto-save when responses change
+  useEffect(() => {
+    if (Object.keys(responses).length > 0) {
+      const timer = setTimeout(saveProgress, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [responses, saveProgress])
+
+  // Clear saved progress
+  const clearProgress = () => {
+    localStorage.removeItem(STORAGE_KEY)
+  }
 
   // Calculate progress
   const getProgress = () => {
@@ -61,6 +131,7 @@ export default function StatutoryHealthAssessmentPage() {
   const onUserDetailsSubmit = (data: UserDetails) => {
     setUserDetails(data)
     setStep(2)
+    saveProgress()
   }
 
   // Handle question answer
@@ -73,7 +144,7 @@ export default function StatutoryHealthAssessmentPage() {
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
     } else {
-      setStep(3) // Go to summary
+      setStep(3)
     }
   }
 
@@ -86,7 +157,7 @@ export default function StatutoryHealthAssessmentPage() {
     }
   }
 
-  // Calculate preliminary score (shown in summary)
+  // Calculate preliminary score
   const calculateScore = () => {
     let totalScore = 0
     let maxScore = 0
@@ -96,20 +167,18 @@ export default function StatutoryHealthAssessmentPage() {
       const answer = responses[q.id]
       
       if (q.complianceAnswer) {
-        // Question has a "correct" compliance answer
         if (answer === q.complianceAnswer) {
           totalScore += q.weight
         }
       } else {
-        // Applicability question - no right/wrong, just info
-        totalScore += q.weight * 0.5 // Neutral score
+        totalScore += q.weight * 0.5
       }
     })
 
     return Math.round((totalScore / maxScore) * 100)
   }
 
-  // Handle free submission (no payment required for now)
+  // Handle free submission
   const handleFreeSubmit = async () => {
     setIsSubmitting(true)
     
@@ -129,6 +198,20 @@ export default function StatutoryHealthAssessmentPage() {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to save assessment')
       }
+
+      // If using local storage (database not available), save the assessment data locally
+      if (data.storageType === 'local' && data.assessmentData) {
+        // Store assessment data in localStorage for results page to read
+        localStorage.setItem(`assessment_${data.assessmentId}`, JSON.stringify({
+          ...data.assessmentData,
+          overall_score: calculateScore(),
+          category_scores: getCategoryScores(),
+          userDetails,
+        }))
+      }
+
+      // Clear saved progress on successful submission
+      clearProgress()
 
       // Redirect to results page
       router.push(`/results/${data.assessmentId}`)
@@ -170,6 +253,7 @@ export default function StatutoryHealthAssessmentPage() {
     return scores
   }
 
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
@@ -188,14 +272,48 @@ export default function StatutoryHealthAssessmentPage() {
           </p>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar with Save Status */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-600 mb-2">
             <span>Progress</span>
-            <span>{Math.round(getProgress())}%</span>
+            <div className="flex items-center gap-2">
+              {saveStatus === 'saving' && (
+                <span className="flex items-center text-blue-600">
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Saving...
+                </span>
+              )}
+              {saveStatus === 'saved' && (
+                <span className="flex items-center text-green-600">
+                  <Save className="w-3 h-3 mr-1" />
+                  Saved
+                </span>
+              )}
+              <span>{Math.round(getProgress())}%</span>
+            </div>
           </div>
           <Progress value={getProgress()} className="h-2" />
         </div>
+
+        {/* Restored Progress Notice */}
+        {hasRestoredProgress && step === 1 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center justify-between">
+            <span>📝 Your previous progress has been restored.</span>
+            <button 
+              onClick={() => {
+                clearProgress()
+                setHasRestoredProgress(false)
+                setStep(1)
+                setCurrentQuestionIndex(0)
+                setResponses({})
+                setUserDetails(null)
+              }}
+              className="text-blue-600 hover:underline"
+            >
+              Start Fresh
+            </button>
+          </div>
+        )}
 
         {/* Step 1: User Details */}
         {step === 1 && (
@@ -331,13 +449,14 @@ export default function StatutoryHealthAssessmentPage() {
           </Card>
         )}
 
+
         {/* Step 3: Summary & Payment */}
         {step === 3 && (
           <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Assessment Complete!</CardTitle>
-                <CardDescription>Review your preliminary results and proceed to payment</CardDescription>
+                <CardDescription>Review your preliminary results and get your free report</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Overall Score Preview */}
@@ -345,7 +464,7 @@ export default function StatutoryHealthAssessmentPage() {
                   <div className="text-5xl font-bold text-blue-600 mb-2">{calculateScore()}%</div>
                   <div className="text-gray-600">Preliminary Compliance Score</div>
                   <p className="text-sm text-gray-500 mt-2">
-                    Complete payment to unlock detailed report with action items
+                    Get your detailed report with action items
                   </p>
                 </div>
 
@@ -409,7 +528,14 @@ export default function StatutoryHealthAssessmentPage() {
                   onClick={handleFreeSubmit}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Processing...' : 'Get Free Report'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Get Free Report'
+                  )}
                 </Button>
 
                 <p className="text-center text-xs text-gray-500 mt-4">

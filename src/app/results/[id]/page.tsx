@@ -7,6 +7,7 @@ import { CheckCircle, AlertTriangle, XCircle, ArrowLeft, Building } from 'lucide
 import { STATUTORY_HEALTH_QUESTIONS, CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeActionItems, getComplianceStatus } from '@/lib/assessments/labour-code-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
+import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
 
 // Type definitions
 interface ActionItem {
@@ -56,9 +57,9 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   const assessmentType = type || 'statutory_health'
   const isLabourCode = assessmentType === 'labour_code'
 
-  // Handle temporary IDs (when DB not configured)
-  if (id.startsWith('temp_')) {
-    return <TempResultsPage assessmentType={assessmentType} />
+  // Handle temporary/local IDs (when DB not configured or fallback)
+  if (id.startsWith('temp_') || id.startsWith('local_')) {
+    return <LocalStorageResultsPage id={id} assessmentType={assessmentType} />
   }
 
   // Try to fetch from Supabase
