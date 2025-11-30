@@ -7,8 +7,15 @@ import { RUPEE } from '@/lib/constants'
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
+      {/* Beta Banner */}
+      <div className="bg-amber-500 text-white text-center py-2 px-4 text-sm font-medium fixed top-0 left-0 right-0 z-[60]">
+        🚧 This site is under development. All assessments are <strong>FREE</strong> for a limited time. 
+        We&apos;d love your feedback at{' '}
+        <a href="mailto:compliancecheck@zohomail.in" className="underline font-bold">compliancecheck@zohomail.in</a>
+      </div>
+
       {/* Navigation */}
-      <nav className="border-b bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50">
+      <nav className="border-b bg-white/90 backdrop-blur-md fixed top-10 left-0 right-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -23,10 +30,10 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="pt-40 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            🎉 Both Assessments Now FREE
+            🎉 FREE During Beta - Limited Time Only
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
             Instant Compliance Reports
@@ -62,7 +69,7 @@ export default function HomePage() {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">FREE</div>
-              <div className="text-gray-600 text-sm">Limited Time</div>
+              <div className="text-gray-600 text-sm">During Beta</div>
             </div>
           </div>
         </div>
@@ -74,14 +81,14 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Assessment</h2>
-            <p className="text-gray-600">Get your compliance report instantly. No payment required.</p>
+            <p className="text-gray-600">Get your compliance report instantly. Free during beta testing.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Statutory Health Check */}
             <Card className="border-2 border-green-600 hover:shadow-lg transition-all relative">
               <div className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                FREE
+                FREE BETA
               </div>
               <CardHeader>
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
@@ -127,7 +134,7 @@ export default function HomePage() {
                 MOST POPULAR
               </div>
               <div className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                FREE
+                FREE BETA
               </div>
               <CardHeader>
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
@@ -245,7 +252,7 @@ export default function HomePage() {
           <div className="flex gap-6 text-sm text-gray-600">
             <Link href="/privacy" className="hover:text-gray-900">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-gray-900">Terms of Service</Link>
-            <a href="mailto:hello@compliancecheck.in" className="hover:text-gray-900">Contact</a>
+            <a href="mailto:compliancecheck@zohomail.in" className="hover:text-gray-900">Contact</a>
           </div>
           <div className="text-sm text-gray-500">
             © 2025 ComplianceCheck. Made in India 🇮🇳

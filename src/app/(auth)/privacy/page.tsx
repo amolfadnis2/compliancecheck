@@ -148,7 +148,7 @@ export default function PrivacyPolicyPage() {
               </div>
             </div>
             <p className="text-gray-600 mt-3">
-              To exercise these rights, visit your Account Settings or contact us at privacy@compliancecheck.in
+              To exercise these rights, visit your Account Settings or contact us at compliancecheck@zohomail.in
             </p>
           </section>
 
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
             <div className="mt-3 bg-blue-50 p-4 rounded">
               <p className="font-medium text-gray-800">Grievance Officer</p>
               <p className="text-gray-600">ComplianceCheck India</p>
-              <p className="text-gray-600">Email: grievance@compliancecheck.in</p>
+              <p className="text-gray-600">Email: compliancecheck@zohomail.in</p>
               <p className="text-gray-600">Address: Pune, Maharashtra, India</p>
               <p className="text-gray-500 text-sm mt-2">
                 Response within 48 hours. Resolution within 30 days.
@@ -210,7 +210,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <p className="text-gray-600 mt-2">
               <strong>ComplianceCheck India</strong><br />
-              Email: privacy@compliancecheck.in<br />
+              Email: compliancecheck@zohomail.in<br />
               Address: Pune, Maharashtra, India
             </p>
           </section>

@@ -119,7 +119,7 @@ export default function TermsOfServicePage() {
             </p>
             <p className="text-gray-600 mt-2">
               <strong>ComplianceCheck India</strong><br />
-              Email: legal@compliancecheck.in<br />
+              Email: compliancecheck@zohomail.in<br />
               Address: Pune, Maharashtra, India
             </p>
           </section>
