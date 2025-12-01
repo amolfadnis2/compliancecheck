@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { randomUUID } from 'crypto'
 
 // Server-side validation schema
 const userDetailsSchema = z.object({
@@ -53,8 +54,7 @@ function sanitizeObject(obj: Record<string, unknown>): Record<string, unknown> {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Anonymous user UUID for free assessments (consistent across all free submissions)
-// This is a fixed UUID that represents "anonymous/free" users
+// Fallback anonymous user UUID (only used if user creation fails)
 const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000'
 
 export async function POST(request: NextRequest) {
@@ -78,19 +78,25 @@ export async function POST(request: NextRequest) {
     const { userDetails, responses, assessmentType } = validationResult.data
 
     // Sanitize all string inputs
-    const sanitizedUserDetails = sanitizeObject(userDetails as Record<string, unknown>)
+    const sanitizedUserDetails = sanitizeObject(userDetails as Record<string, unknown>) as {
+      fullName: string
+      email: string
+      phone: string
+      companyName: string
+      state: string
+      employeeCount: string
+      industry: string
+    }
     const sanitizedResponses = sanitizeObject(responses as Record<string, unknown>)
 
     // If Supabase is not configured, return a local storage ID
     if (!supabaseUrl || !supabaseKey) {
-      // Generate a unique ID for local storage
       const localId = `local_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
       console.log('Supabase not configured, using local ID:', localId)
       
       return NextResponse.json({
         success: true,
         assessmentId: localId,
-        // Return the data so frontend can store it locally
         assessmentData: {
           id: localId,
           assessment_type: assessmentType,
@@ -101,53 +107,95 @@ export async function POST(request: NextRequest) {
           },
           created_at: new Date().toISOString(),
         },
-        storageType: 'local', // Tell frontend to use localStorage
+        storageType: 'local',
       })
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // First, ensure the anonymous user exists in the users table
-    // This is needed because assessments.user_id has a foreign key constraint
-    const { data: existingUser } = await supabase
+    // Generate a new UUID for this user
+    const newUserId = randomUUID()
+    let finalUserId = newUserId
+
+    // Step 1: Create a new user record for this submission
+    const { data: newUser, error: userError } = await supabase
       .from('users')
-      .select('id')
-      .eq('id', ANONYMOUS_USER_ID)
+      .insert({
+        id: newUserId,
+        email: sanitizedUserDetails.email,
+        full_name: sanitizedUserDetails.fullName,
+        phone: sanitizedUserDetails.phone,
+        is_deleted: false,
+        marketing_consent: false,
+      })
+      .select()
       .single()
 
-    if (!existingUser) {
-      // Create the anonymous user if it doesn't exist
-      const { error: userError } = await supabase
-        .from('users')
-        .insert({
-          id: ANONYMOUS_USER_ID,
-          email: 'anonymous@compliancecheck.local',
-          full_name: 'Anonymous User',
-          is_deleted: false,
-        })
-        .select()
-        .single()
-
-      if (userError && userError.code !== '23505') { // 23505 = unique violation (already exists)
-        console.error('Failed to create anonymous user:', userError)
-        // Continue anyway - try to create assessment
+    if (userError) {
+      console.error('User creation error:', userError)
+      
+      // If email already exists, try to find the existing user
+      if (userError.code === '23505') { // Unique violation
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', sanitizedUserDetails.email)
+          .single()
+        
+        if (existingUser) {
+          finalUserId = existingUser.id
+          console.log('Using existing user:', finalUserId)
+        } else {
+          // Fall back to anonymous user
+          finalUserId = ANONYMOUS_USER_ID
+          console.log('Falling back to anonymous user')
+        }
+      } else {
+        // For other errors, fall back to anonymous user
+        finalUserId = ANONYMOUS_USER_ID
+        console.log('User creation failed, falling back to anonymous user:', userError.message)
       }
+    } else {
+      console.log('Created new user:', newUser.id)
     }
 
-    // Create assessment record with user_id
+    // Step 2: Create a company record for this user
+    let companyId: string | null = null
+    
+    const { data: newCompany, error: companyError } = await supabase
+      .from('companies')
+      .insert({
+        user_id: finalUserId,
+        company_name: sanitizedUserDetails.companyName,
+        industry_type: sanitizedUserDetails.industry,
+        employee_count: sanitizedUserDetails.employeeCount,
+        registered_state: sanitizedUserDetails.state,
+      })
+      .select()
+      .single()
+
+    if (companyError) {
+      console.error('Company creation error:', companyError)
+      // Continue without company - it's optional
+    } else {
+      companyId = newCompany.id
+      console.log('Created company:', companyId)
+    }
+
+    // Step 3: Create the assessment record linked to the user
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')
       .insert({
-        user_id: ANONYMOUS_USER_ID, // Required field - use anonymous user
-        company_id: null, // Optional - no company for free users
-        payment_id: null, // Optional - free assessment
+        user_id: finalUserId,
+        company_id: companyId,
+        payment_id: null, // Free assessment
         assessment_type: assessmentType,
         status: 'completed',
         responses: {
           userDetails: sanitizedUserDetails,
           answers: sanitizedResponses,
         },
-        overall_score: null, // Will be calculated on results page
+        overall_score: null,
         category_scores: null,
         action_items: null,
         started_at: new Date().toISOString(),
@@ -159,37 +207,32 @@ export async function POST(request: NextRequest) {
     if (assessmentError) {
       console.error('Assessment creation error:', assessmentError)
       
-      // If still failing due to user_id constraint, fall back to local storage
-      if (assessmentError.code === '23502' || assessmentError.code === '23503') {
-        const localId = `local_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-        console.log('Database constraint error, falling back to local storage:', localId)
-        
-        return NextResponse.json({
-          success: true,
-          assessmentId: localId,
-          assessmentData: {
-            id: localId,
-            assessment_type: assessmentType,
-            status: 'completed',
-            responses: {
-              userDetails: sanitizedUserDetails,
-              answers: sanitizedResponses,
-            },
-            created_at: new Date().toISOString(),
-          },
-          storageType: 'local',
-        })
-      }
+      // Fall back to local storage
+      const localId = `local_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+      console.log('Database error, falling back to local storage:', localId)
       
-      return NextResponse.json(
-        { error: 'Failed to create assessment', details: assessmentError.message },
-        { status: 500 }
-      )
+      return NextResponse.json({
+        success: true,
+        assessmentId: localId,
+        assessmentData: {
+          id: localId,
+          assessment_type: assessmentType,
+          status: 'completed',
+          responses: {
+            userDetails: sanitizedUserDetails,
+            answers: sanitizedResponses,
+          },
+          created_at: new Date().toISOString(),
+        },
+        storageType: 'local',
+      })
     }
 
     return NextResponse.json({
       success: true,
       assessmentId: assessment.id,
+      userId: finalUserId,
+      companyId: companyId,
       storageType: 'database',
     })
 
