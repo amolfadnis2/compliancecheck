@@ -691,10 +691,34 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
 
     try {
       const id = assessmentId || window.location.pathname.split('/').pop() || 'demo'
+      let data: AssessmentData | null = null
       
-      // For local/temp IDs, generate PDF client-side
+      // For local/temp IDs, use localStorage
       if (id.startsWith('local_') || id.startsWith('temp_')) {
-        const data = assessmentData || {
+        data = assessmentData || null
+      } else {
+        // For database IDs, fetch assessment data from API
+        try {
+          const response = await fetch('/api/assessment/' + id)
+          if (response.ok) {
+            const apiData = await response.json()
+            data = {
+              id: apiData.id,
+              assessment_type: apiData.assessment_type,
+              overall_score: apiData.overall_score,
+              category_scores: apiData.category_scores,
+              responses: apiData.responses,
+              userDetails: apiData.userDetails,
+            }
+          }
+        } catch (fetchError) {
+          console.error('Error fetching assessment:', fetchError)
+        }
+      }
+
+      // Use fallback demo data if nothing found
+      if (!data) {
+        data = {
           id,
           assessment_type: 'statutory_health',
           overall_score: 65,
@@ -707,32 +731,15 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
           },
           userDetails: { companyName: 'Demo Company' },
         }
-
-        const blob = generatePDF(data)
-        
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = 'ComplianceCheck-Report-' + new Date().toISOString().split('T')[0] + '.pdf'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-
-        setDownloadSuccess(true)
-        setTimeout(() => setDownloadSuccess(false), 3000)
-        return
       }
 
-      // For database IDs, try the API first
-      const response = await fetch('/api/assessment/' + id + '/pdf')
-      if (!response.ok) throw new Error('API not available')
-
-      const blob = await response.blob()
+      // Generate PDF client-side
+      const blob = generatePDF(data)
+      
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = 'ComplianceCheck-Report-' + id + '.pdf'
+      link.download = 'ComplianceCheck-Report-' + new Date().toISOString().split('T')[0] + '.pdf'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -742,11 +749,7 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
       setTimeout(() => setDownloadSuccess(false), 3000)
     } catch (err) {
       console.error('Download error:', err)
-      setError('Opening print dialog...')
-      setTimeout(() => {
-        window.print()
-        setError(null)
-      }, 500)
+      setError('Download failed. Please try again.')
     } finally {
       setIsDownloading(false)
     }

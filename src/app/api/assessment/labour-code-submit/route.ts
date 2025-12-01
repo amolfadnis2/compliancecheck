@@ -55,6 +55,10 @@ export async function POST(request: NextRequest) {
           email: userDetails.contactEmail,
           full_name: userDetails.contactName,
           phone: userDetails.phone || null,
+          company_name: userDetails.companyName,
+          industry_type: userDetails.industry,
+          employee_count: userDetails.employeeCount,
+          registered_state: userDetails.state,
           is_deleted: false,
           marketing_consent: false,
         })

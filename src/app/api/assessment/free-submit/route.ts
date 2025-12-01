@@ -125,6 +125,10 @@ export async function POST(request: NextRequest) {
         email: sanitizedUserDetails.email,
         full_name: sanitizedUserDetails.fullName,
         phone: sanitizedUserDetails.phone,
+        company_name: sanitizedUserDetails.companyName,
+        industry_type: sanitizedUserDetails.industry,
+        employee_count: sanitizedUserDetails.employeeCount,
+        registered_state: sanitizedUserDetails.state,
         is_deleted: false,
         marketing_consent: false,
       })

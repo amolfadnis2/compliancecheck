@@ -167,11 +167,15 @@ export default function StatutoryHealthAssessmentPage() {
       const answer = responses[q.id]
       
       if (q.complianceAnswer) {
+        // Question has a defined compliance answer - check if user answered correctly
         if (answer === q.complianceAnswer) {
           totalScore += q.weight
         }
       } else {
-        totalScore += q.weight * 0.5
+        // Informational question (no compliance answer defined)
+        // These are applicability questions - answering "yes" means you have the requirement
+        // Give full score since there's no "wrong" answer for these
+        totalScore += q.weight
       }
     })
 
@@ -237,10 +241,13 @@ export default function StatutoryHealthAssessmentPage() {
         max += q.weight
         const answer = responses[q.id]
         if (q.complianceAnswer && answer === q.complianceAnswer) {
+          // Compliance question answered correctly
           score += q.weight
         } else if (!q.complianceAnswer) {
-          score += q.weight * 0.5
+          // Informational question - no wrong answer, give full points
+          score += q.weight
         }
+        // If compliance question answered wrong, score stays 0 for this question
       })
 
       scores[cat] = {

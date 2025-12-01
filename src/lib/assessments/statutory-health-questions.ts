@@ -61,6 +61,7 @@ export const STATUTORY_HEALTH_QUESTIONS: Question[] = [
     category: 'esi',
     categoryLabel: 'Employee State Insurance (ESI)',
     weight: 6,
+    complianceAnswer: 'yes',
     helpText: 'ESI applies only to employees with monthly wages up to ₹21,000.',
   },
 
@@ -72,6 +73,7 @@ export const STATUTORY_HEALTH_QUESTIONS: Question[] = [
     category: 'pt',
     categoryLabel: 'Professional Tax (PT)',
     weight: 8,
+    complianceAnswer: 'yes',
     helpText: 'PT is a state-level tax. Not all states levy PT (e.g., Delhi, UP, Haryana do not).',
   },
   {

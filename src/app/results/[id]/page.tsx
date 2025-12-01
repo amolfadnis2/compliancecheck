@@ -278,14 +278,21 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
       categoryQuestions.forEach(q => {
         max += q.weight
         const answer = responses.answers[q.id]
-        if (q.complianceAnswer && answer === q.complianceAnswer) {
+        
+        if (q.complianceAnswer) {
+          // Compliance question: check if answer matches required answer
+          if (answer === q.complianceAnswer) {
+            score += q.weight
+          }
+          // Non-compliant answer gets 0 points
+        } else {
+          // Informational question (no complianceAnswer): pt_1, esi_3
+          // These gather info, not test compliance - give full points
           score += q.weight
-        } else if (!q.complianceAnswer) {
-          score += q.weight * 0.5
         }
       })
 
-      const percentage = Math.round((score / max) * 100)
+      const percentage = max > 0 ? Math.round((score / max) * 100) : 0
       let status = 'non-compliant'
       if (percentage >= 70) status = 'compliant'
       else if (percentage >= 40) status = 'needs-attention'
