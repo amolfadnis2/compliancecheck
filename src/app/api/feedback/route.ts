@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     const {
       assessmentType,
       assessmentId,
+      userId, // Can be passed directly
       npsScore,
       valueProvided,
       wouldRecommend,
@@ -47,14 +48,30 @@ export async function POST(request: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Only include assessment_id if it's a valid UUID
-    // Local/temp IDs (local_xxx, temp_xxx) are not valid FKs
+    // Validate assessment_id - only use if valid UUID
     const validAssessmentId = assessmentId && isValidUUID(assessmentId) ? assessmentId : null
+
+    // Get user_id from assessment if not provided directly
+    let finalUserId: string | null = userId && isValidUUID(userId) ? userId : null
+
+    if (!finalUserId && validAssessmentId) {
+      // Look up user_id from the assessment
+      const { data: assessment } = await supabase
+        .from('assessments')
+        .select('user_id')
+        .eq('id', validAssessmentId)
+        .single()
+
+      if (assessment?.user_id) {
+        finalUserId = assessment.user_id
+      }
+    }
 
     // Insert feedback into database
     const { data, error } = await supabase
       .from('feedback')
       .insert({
+        user_id: finalUserId,
         assessment_id: validAssessmentId,
         assessment_type: assessmentType,
         nps_score: npsScore,
@@ -73,12 +90,16 @@ export async function POST(request: Request) {
     if (error) {
       console.error('Error saving feedback:', error)
       return NextResponse.json(
-        { success: true, warning: 'Saved to analytics only' },
+        { success: true, warning: 'Saved to analytics only', error: error.message },
         { status: 200 }
       )
     }
 
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({ 
+      success: true, 
+      data,
+      message: 'Feedback saved successfully'
+    })
 
   } catch (error) {
     console.error('Feedback API error:', error)
