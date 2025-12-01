@@ -4,6 +4,13 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { jsPDF } from 'jspdf'
+import { createBrowserClient } from '@supabase/ssr'
+
+// Helper to detect UUID format
+function isValidUUID(id: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return uuidRegex.test(id)
+}
 
 // ============================================================================
 // COMPLIANCE KNOWLEDGE BASE - Government References & Action Items
@@ -304,7 +311,57 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
   useEffect(() => {
     const id = assessmentId || window.location.pathname.split('/').pop() || ''
     
-    if (id.startsWith('local_') || id.startsWith('temp_')) {
+    // For real UUIDs, fetch from Supabase
+    if (isValidUUID(id)) {
+      const fetchFromDB = async () => {
+        try {
+          const supabase = createBrowserClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          )
+          
+          const { data, error } = await supabase
+            .from('assessments')
+            .select('*')
+            .eq('id', id)
+            .single()
+          
+          if (error) {
+            console.error('Error fetching assessment from DB:', error)
+            // Try localStorage as fallback
+            const stored = localStorage.getItem(`assessment_${id}`)
+            if (stored) {
+              setAssessmentData(JSON.parse(stored))
+            }
+            return
+          }
+          
+          if (data) {
+            // Transform DB data to match AssessmentData interface
+            setAssessmentData({
+              id: data.id,
+              assessment_type: data.assessment_type,
+              overall_score: data.overall_score,
+              category_scores: data.category_scores,
+              userDetails: {
+                companyName: data.company_name,
+                fullName: data.full_name,
+                email: data.email,
+                industry: data.industry,
+                employeeCount: data.employee_count,
+                state: data.state,
+              },
+              responses: data.responses,
+              created_at: data.created_at,
+            })
+          }
+        } catch (e) {
+          console.error('Error fetching assessment:', e)
+        }
+      }
+      fetchFromDB()
+    } else if (id.startsWith('local_') || id.startsWith('temp_')) {
+      // For local/temp IDs, use localStorage
       try {
         const stored = localStorage.getItem(`assessment_${id}`)
         if (stored) {
