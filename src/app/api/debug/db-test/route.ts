@@ -5,7 +5,8 @@ import { NextRequest, NextResponse } from 'next/server'
  * Debug endpoint to test Supabase connectivity and table structure
  * GET /api/debug/db-test
  */
-export async function GET(request: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function GET(_request: NextRequest) {
   const results: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     environment: {},
