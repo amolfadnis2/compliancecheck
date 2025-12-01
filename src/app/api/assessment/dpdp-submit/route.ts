@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       let finalUserId = newUserId
 
       // Step 1: Create a new user record
-      const { data: newUser, error: userError } = await supabase
+      const { error: userError } = await supabase
         .from('users')
         .insert({
           id: newUserId,

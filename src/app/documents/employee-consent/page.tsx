@@ -64,7 +64,7 @@ export default function EmployeeConsentFormGenerator() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 

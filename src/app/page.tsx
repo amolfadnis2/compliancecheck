@@ -175,41 +175,49 @@ export default function HomePage() {
             </Card>
 
 
-            {/* DPDP - Coming Soon */}
-            <Card className="border-2 border-dashed border-gray-300 opacity-75">
+            {/* DPDP Gap Assessment - NEW */}
+            <Card className="border-2 border-purple-600 hover:shadow-lg transition-all relative">
+              <div className="absolute -top-3 left-4 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                NEW
+              </div>
+              <div className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                FREE BETA
+              </div>
               <CardHeader>
                 <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
                   <FileText className="w-6 h-6 text-purple-600" />
                 </div>
+                <CardTitle>DPDP Gap Assessment</CardTitle>
                 <div className="flex items-center gap-2">
-                  <CardTitle>DPDP Gap Assessment</CardTitle>
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">Coming Soon</span>
+                  <span className="text-3xl font-bold text-purple-600">FREE</span>
+                  <span className="text-lg text-gray-400 line-through">{RUPEE}2,499</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-400">{RUPEE}2,499 <span className="text-base font-normal">one-time</span></div>
                 <CardDescription>
-                  Data protection compliance for DPDP Act 2023.
+                  Data protection compliance for DPDP Act 2023. Deadline: May 2027.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 mb-6">
-                  <li className="flex items-center gap-2 text-sm text-gray-500">
-                    <CheckCircle className="w-4 h-4 text-gray-400" />
-                    Data practice questionnaire
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-purple-600" />
+                    25+ guided questions
                   </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-500">
-                    <CheckCircle className="w-4 h-4 text-gray-400" />
-                    Compliance maturity score
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-purple-600" />
+                    Risk level assessment
                   </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-500">
-                    <CheckCircle className="w-4 h-4 text-gray-400" />
-                    Privacy notice template
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-purple-600" />
+                    Penalty exposure analysis
                   </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-500">
-                    <CheckCircle className="w-4 h-4 text-gray-400" />
-                    Risk heat map
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-purple-600" />
+                    Remediation roadmap
                   </li>
                 </ul>
-                <Button className="w-full" variant="outline" disabled>Coming Soon</Button>
+                <Link href="/assessment/dpdp">
+                  <Button className="w-full bg-purple-600 hover:bg-purple-700">Start Free Assessment</Button>
+                </Link>
               </CardContent>
             </Card>
 

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import { createBrowserClient } from '@supabase/ssr'
+import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from '@/lib/pdf/dpdp-compliance-rules'
 
 // Helper to detect UUID format
 function isValidUUID(id: string): boolean {
@@ -738,6 +739,296 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
   }
 
   // ==========================================================================
+  // DPDP PDF GENERATION
+  // ==========================================================================
+
+  const generateDPDPPDF = (data: AssessmentData): Blob => {
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const margin = 15
+    const contentWidth = pageWidth - (margin * 2)
+    let yPos = margin
+
+    const userDetails = data.userDetails || data.responses?.userDetails || {}
+    const answers = data.responses?.answers || {}
+    const overallScore = data.overall_score || 50
+    const categoryScores = data.category_scores || {}
+
+    const addText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5): number => {
+      const lines = doc.splitTextToSize(text, maxWidth)
+      doc.text(lines, x, y)
+      return y + (lines.length * lineHeight)
+    }
+
+    const checkPageBreak = (requiredSpace: number): void => {
+      if (yPos + requiredSpace > pageHeight - 25) {
+        doc.setFontSize(8)
+        doc.setTextColor(150)
+        doc.text('Page ' + doc.getNumberOfPages(), pageWidth / 2, pageHeight - 10, { align: 'center' })
+        doc.addPage()
+        yPos = margin
+      }
+    }
+
+    const drawSectionHeader = (title: string, bgColor: [number, number, number] = [147, 51, 234]): void => {
+      checkPageBreak(20)
+      doc.setFillColor(bgColor[0], bgColor[1], bgColor[2])
+      doc.rect(margin, yPos, contentWidth, 10, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.text(title, margin + 5, yPos + 7)
+      yPos += 15
+    }
+
+    // ========== COVER PAGE ==========
+    doc.setFillColor(147, 51, 234) // Purple
+    doc.rect(0, 0, pageWidth, 45, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ComplianceCheck', margin, 25)
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text('DPDP Act 2023 Gap Assessment Report', margin, 36)
+    doc.setFontSize(10)
+    doc.text(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }), pageWidth - margin, 36, { align: 'right' })
+    yPos = 55
+
+    // Company Info
+    doc.setFillColor(249, 250, 251)
+    doc.roundedRect(margin, yPos, contentWidth, 40, 3, 3, 'F')
+    doc.setDrawColor(229, 231, 235)
+    doc.roundedRect(margin, yPos, contentWidth, 40, 3, 3, 'S')
+    doc.setTextColor(31, 41, 55)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Organisation Details', margin + 5, yPos + 10)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text('Company: ' + (userDetails.companyName || 'Not specified'), margin + 5, yPos + 20)
+    doc.text('Industry: ' + (userDetails.industry || 'Not specified'), margin + 5, yPos + 28)
+    doc.text('State: ' + (userDetails.state || 'Not specified'), margin + 5, yPos + 36)
+    doc.text('Report ID: ' + data.id.substring(0, 20) + '...', pageWidth / 2, yPos + 20)
+    yPos += 50
+
+    // Deadline Warning
+    doc.setFillColor(254, 243, 199)
+    doc.roundedRect(margin, yPos, contentWidth, 15, 3, 3, 'F')
+    doc.setTextColor(146, 64, 14)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('COMPLIANCE DEADLINE: 13 May 2027', margin + 5, yPos + 10)
+    yPos += 20
+
+    // Overall Score
+    const statusColour: [number, number, number] = overallScore >= 80 ? [5, 150, 105] : overallScore >= 60 ? [217, 119, 6] : overallScore >= 40 ? [234, 88, 12] : [220, 38, 38]
+    const statusText = overallScore >= 80 ? 'Ready' : overallScore >= 60 ? 'Needs Attention' : overallScore >= 40 ? 'At Risk' : 'Critical'
+    doc.setFillColor(statusColour[0], statusColour[1], statusColour[2])
+    doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Overall DPDP Readiness Score', margin + 10, yPos + 15)
+    doc.setFontSize(32)
+    doc.text(overallScore + '%', pageWidth - margin - 10, yPos + 25, { align: 'right' })
+    doc.setFontSize(11)
+    doc.text(statusText, margin + 10, yPos + 28)
+    yPos += 45
+
+    // Category Summary Table
+    doc.setTextColor(31, 41, 55)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Compliance by Category', margin, yPos)
+    yPos += 8
+    doc.setFillColor(243, 244, 246)
+    doc.rect(margin, yPos, contentWidth, 8, 'F')
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Category', margin + 3, yPos + 5.5)
+    doc.text('Score', margin + 100, yPos + 5.5)
+    doc.text('Penalty', margin + 125, yPos + 5.5)
+    yPos += 8
+
+    const penaltyMap: Record<string, string> = {
+      inventory: 'Rs.50Cr', consent: 'Rs.50Cr', notices: 'Rs.50Cr', rights: 'Rs.200Cr',
+      security: 'Rs.250Cr', breach: 'Rs.200Cr', children: 'Rs.200Cr', thirdparty: 'Rs.250Cr'
+    }
+
+    doc.setFont('helvetica', 'normal')
+    Object.entries(categoryScores).forEach(([cat, scoreData]) => {
+      const percentage = typeof scoreData === 'number' ? scoreData : (scoreData as { percentage?: number })?.percentage || 0
+      const catColour: [number, number, number] = percentage >= 80 ? [5, 150, 105] : percentage >= 60 ? [217, 119, 6] : [220, 38, 38]
+      doc.setDrawColor(229, 231, 235)
+      doc.line(margin, yPos, margin + contentWidth, yPos)
+      doc.setTextColor(55, 65, 81)
+      doc.text(DPDP_CATEGORY_LABELS[cat] || cat, margin + 3, yPos + 5)
+      doc.setTextColor(catColour[0], catColour[1], catColour[2])
+      doc.text(percentage + '%', margin + 100, yPos + 5)
+      doc.setTextColor(220, 38, 38)
+      doc.text(penaltyMap[cat] || '-', margin + 125, yPos + 5)
+      yPos += 8
+    })
+    yPos += 10
+
+    // ========== PAGE 2+: DETAILED FINDINGS ==========
+    doc.addPage()
+    yPos = margin
+
+    const compliantItems: string[] = []
+    const nonCompliantItems: { questionId: string; rule: typeof DPDP_COMPLIANCE_RULES[string] }[] = []
+
+    Object.entries(answers).forEach(([questionId, answer]) => {
+      const rule = DPDP_COMPLIANCE_RULES[questionId]
+      if (!rule) return
+      if (answer === 'yes') compliantItems.push(questionId)
+      else if (answer === 'no') nonCompliantItems.push({ questionId, rule })
+    })
+
+    // Compliant Items
+    if (compliantItems.length > 0) {
+      drawSectionHeader('[COMPLIANT] Areas Meeting Requirements', [5, 150, 105])
+      compliantItems.forEach((questionId) => {
+        const rule = DPDP_COMPLIANCE_RULES[questionId]
+        if (!rule) return
+        checkPageBreak(25)
+        doc.setFillColor(236, 253, 245)
+        doc.roundedRect(margin, yPos, contentWidth, 18, 2, 2, 'F')
+        doc.setTextColor(5, 150, 105)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text('[PASS] ' + rule.requirement, margin + 3, yPos + 6)
+        doc.setTextColor(55, 65, 81)
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        yPos = addText(rule.actionIfCompliant, margin + 3, yPos + 12, contentWidth - 6, 4)
+        yPos += 5
+      })
+    }
+
+    // Non-Compliant Items
+    if (nonCompliantItems.length > 0) {
+      yPos += 5
+      drawSectionHeader('[ACTION REQUIRED] Gaps Requiring Remediation', [220, 38, 38])
+      nonCompliantItems.forEach(({ rule }) => {
+        checkPageBreak(70)
+        doc.setFillColor(254, 242, 242)
+        doc.setDrawColor(252, 165, 165)
+        doc.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'FD')
+        doc.setTextColor(185, 28, 28)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text('[GAP] ' + rule.requirement, margin + 3, yPos + 5.5)
+        yPos += 12
+        doc.setTextColor(75, 85, 99)
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
+        doc.setFont('helvetica', 'bold')
+        doc.text('Legal Reference:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        yPos = addText(rule.governmentRef, margin + 28, yPos, contentWidth - 28, 4)
+        yPos += 2
+        doc.setFont('helvetica', 'bold')
+        doc.text('Deadline:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.text(rule.deadline, margin + 20, yPos)
+        yPos += 5
+        doc.setTextColor(185, 28, 28)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Penalty:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        yPos = addText(rule.penalty, margin + 18, yPos, contentWidth - 18, 4)
+        yPos += 3
+        doc.setTextColor(31, 41, 55)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Remediation Steps:', margin, yPos)
+        yPos += 5
+        doc.setFont('helvetica', 'normal')
+        rule.actionIfNonCompliant.forEach((action, idx) => {
+          checkPageBreak(8)
+          yPos = addText((idx + 1) + '. ' + action, margin + 3, yPos, contentWidth - 6, 4)
+          yPos += 2
+        })
+        doc.setTextColor(147, 51, 234)
+        doc.setFont('helvetica', 'italic')
+        doc.text('Official Portal: ' + rule.officialLink, margin, yPos)
+        yPos += 10
+        doc.setDrawColor(229, 231, 235)
+        doc.line(margin, yPos, margin + contentWidth, yPos)
+        yPos += 8
+      })
+    }
+
+    // ========== REFERENCES PAGE ==========
+    doc.addPage()
+    yPos = margin
+    drawSectionHeader('Government References and Official Portals', [147, 51, 234])
+    const dpdpRefs = [
+      { name: 'MeitY Data Protection', url: 'https://www.meity.gov.in/data-protection-framework', desc: 'Official DPDP documentation' },
+      { name: 'Data Protection Board', url: 'https://dpb.gov.in', desc: 'Complaints and enforcement' },
+      { name: 'DigiLocker', url: 'https://digilocker.gov.in', desc: 'Verifiable credentials for consent' },
+      { name: 'CERT-In', url: 'https://www.cert-in.org.in', desc: 'Cyber incident reporting' },
+    ]
+    doc.setFontSize(8)
+    dpdpRefs.forEach((ref) => {
+      checkPageBreak(12)
+      doc.setTextColor(147, 51, 234)
+      doc.setFont('helvetica', 'bold')
+      doc.text(ref.name, margin, yPos)
+      doc.setTextColor(75, 85, 99)
+      doc.setFont('helvetica', 'normal')
+      doc.text(' - ' + ref.desc, margin + 45, yPos)
+      doc.setTextColor(100, 116, 139)
+      doc.text(ref.url, margin, yPos + 4)
+      yPos += 10
+    })
+    yPos += 10
+
+    drawSectionHeader('Applicable Legislation', [75, 85, 99])
+    const dpdpLaws = [
+      'Digital Personal Data Protection Act, 2023',
+      'Digital Personal Data Protection Rules, 2025',
+      'Information Technology Act, 2000 (as amended)',
+      'IT (Reasonable Security Practices) Rules, 2011',
+    ]
+    doc.setFontSize(8)
+    doc.setTextColor(55, 65, 81)
+    dpdpLaws.forEach((law) => {
+      checkPageBreak(6)
+      doc.text('* ' + law, margin + 3, yPos)
+      yPos += 5
+    })
+    yPos += 10
+
+    // Disclaimer
+    checkPageBreak(35)
+    doc.setFillColor(254, 243, 199)
+    doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F')
+    doc.setTextColor(146, 64, 14)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Important Disclaimer', margin + 5, yPos + 8)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    const disclaimer = 'This report is generated based on your self-assessment responses and is intended for informational purposes only. It does not constitute legal advice. The DPDP Act 2023 and its Rules are subject to amendment. Compliance requirements may vary based on specific circumstances. Penalties up to Rs.250 Crore apply for non-compliance. We strongly recommend consulting with a qualified Data Protection professional for specific guidance. ComplianceCheck assumes no liability for actions taken based on this report.'
+    addText(disclaimer, margin + 5, yPos + 14, contentWidth - 10, 3.5)
+
+    // Footer
+    const totalPages = doc.getNumberOfPages()
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i)
+      doc.setFontSize(7)
+      doc.setTextColor(156, 163, 175)
+      doc.text('ComplianceCheck | compliancecheck.in | DPDP Gap Assessment', margin, pageHeight - 8)
+      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 8, { align: 'right' })
+    }
+
+    return doc.output('blob')
+  }
+
+  // ==========================================================================
   // DOWNLOAD HANDLER
   // ==========================================================================
 
@@ -790,13 +1081,15 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
         }
       }
 
-      // Generate PDF client-side
-      const blob = generatePDF(data)
+      // Generate PDF client-side based on assessment type
+      const assessmentType = data.assessment_type || 'statutory_health'
+      const blob = assessmentType === 'dpdp' ? generateDPDPPDF(data) : generatePDF(data)
       
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = 'ComplianceCheck-Report-' + new Date().toISOString().split('T')[0] + '.pdf'
+      const reportPrefix = assessmentType === 'dpdp' ? 'DPDP-Gap-Assessment' : 'ComplianceCheck-Report'
+      link.download = reportPrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)

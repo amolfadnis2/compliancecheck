@@ -415,9 +415,8 @@ export function isSignificantDataFiduciary(profile: DPDPProfile): boolean {
   // - Operating specific platform types
   if (profile.dataPrincipalCount === '>1Cr') return true;
   if (profile.dataPrincipalCount === '10L-1Cr' && profile.isDigitalPlatform) return true;
-  // Platforms handling children's data at scale
-  if (profile.processesChildrenData && 
-      (profile.dataPrincipalCount === '10L-1Cr' || profile.dataPrincipalCount === '>1Cr')) {
+  // Platforms handling children's data at scale (10L-1Cr without digital platform flag)
+  if (profile.processesChildrenData && profile.dataPrincipalCount === '10L-1Cr') {
     return true;
   }
   return false;

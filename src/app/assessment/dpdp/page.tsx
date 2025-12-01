@@ -13,7 +13,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { 
   DPDP_CATEGORIES,
-  DPDP_QUESTIONS,
   getFilteredDPDPQuestions,
   getDPDPQuestionsByCategory,
   getDPDPQuestionSummary,

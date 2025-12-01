@@ -483,6 +483,227 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
   )
 }
 
+// DPDP Results Component
+function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
+  const responses = assessment.responses?.answers || {}
+  const companyDetails = assessment.company_details || assessment.responses?.userDetails || {}
+  const profile: DPDPProfile | undefined = (assessment.responses as { profile?: DPDPProfile })?.profile
+
+  // Use stored scores or calculate fresh
+  const scoreResult = calculateDPDPScore(responses, profile)
+  const overallScore = assessment.overall_score || scoreResult.overallScore
+  const categoryScores = assessment.category_scores || scoreResult.categoryScores
+  const actionItems = assessment.action_items || generateDPDPActionItems(responses, profile)
+  const status = getDPDPComplianceStatus(overallScore)
+  const daysUntilDeadline = getDaysUntilDeadline()
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <Badge className="bg-purple-100 text-purple-700">DPDP Gap Assessment</Badge>
+            <Badge className="bg-amber-100 text-amber-700">
+              {daysUntilDeadline} days to deadline
+            </Badge>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Your DPDP Compliance Report</h1>
+          {companyDetails.company_name && (
+            <div className="flex items-center gap-2 text-gray-600 mt-1">
+              <Building className="w-4 h-4" />
+              <span>{companyDetails.company_name}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Overall Score Card */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="text-center md:text-left">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Overall Readiness Score</h2>
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+                  status.color === 'green' ? 'bg-green-100' :
+                  status.color === 'amber' ? 'bg-amber-100' :
+                  status.color === 'orange' ? 'bg-orange-100' : 'bg-red-100'
+                }`}>
+                  {status.color === 'green' && <CheckCircle className="w-5 h-5 text-green-600" />}
+                  {status.color === 'amber' && <AlertTriangle className="w-5 h-5 text-amber-600" />}
+                  {status.color === 'orange' && <AlertTriangle className="w-5 h-5 text-orange-600" />}
+                  {status.color === 'red' && <XCircle className="w-5 h-5 text-red-600" />}
+                  <span className={`font-semibold ${
+                    status.color === 'green' ? 'text-green-600' :
+                    status.color === 'amber' ? 'text-amber-600' :
+                    status.color === 'orange' ? 'text-orange-600' : 'text-red-600'
+                  }`}>{status.status}</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">{status.description}</p>
+              </div>
+              <div className="text-center">
+                <div className={`text-6xl font-bold ${
+                  status.color === 'green' ? 'text-green-600' :
+                  status.color === 'amber' ? 'text-amber-600' :
+                  status.color === 'orange' ? 'text-orange-600' : 'text-red-600'
+                }`}>{overallScore}%</div>
+                <div className="text-gray-500 text-sm">Readiness Score</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Risk & Penalty Card */}
+        <Card className="mb-6 border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-red-900 mb-1">Penalty Exposure</h3>
+                <p className="text-sm text-red-700 mb-2">{scoreResult.estimatedPenaltyExposure}</p>
+                <p className="text-xs text-red-600">
+                  Compliance deadline: 13 May 2027 ({daysUntilDeadline} days remaining)
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Category Breakdown */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Compliance Breakdown by Category</CardTitle>
+            <CardDescription>Readiness status for each DPDP requirement area</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {DPDP_CATEGORIES.map((cat) => {
+              const score = typeof categoryScores[cat.id] === 'number' 
+                ? categoryScores[cat.id] 
+                : 0
+              const catStatus = score >= 80 ? 'ready' : score >= 60 ? 'attention' : score >= 40 ? 'risk' : 'critical'
+              
+              return (
+                <div key={cat.id} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{cat.icon}</span>
+                      <span className="font-medium">{cat.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {catStatus === 'ready' && <CheckCircle className="w-5 h-5 text-green-600" />}
+                      {catStatus === 'attention' && <AlertTriangle className="w-5 h-5 text-amber-600" />}
+                      {catStatus === 'risk' && <AlertTriangle className="w-5 h-5 text-orange-600" />}
+                      {catStatus === 'critical' && <XCircle className="w-5 h-5 text-red-600" />}
+                      <span className={`font-bold ${
+                        catStatus === 'ready' ? 'text-green-600' :
+                        catStatus === 'attention' ? 'text-amber-600' :
+                        catStatus === 'risk' ? 'text-orange-600' : 'text-red-600'
+                      }`}>{score}%</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-1">{cat.description}</p>
+                  <p className="text-xs text-red-600">Penalty exposure: {cat.penaltyExposure}</p>
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
+                    <div 
+                      className={`h-full transition-all ${
+                        catStatus === 'ready' ? 'bg-green-500' :
+                        catStatus === 'attention' ? 'bg-amber-500' :
+                        catStatus === 'risk' ? 'bg-orange-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${score}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Action Items */}
+        {actionItems.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Prioritised Action Items</CardTitle>
+              <CardDescription>Steps to improve DPDP compliance before May 2027</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {actionItems.slice(0, 10).map((item: ActionItem & { penalty?: string }, index: number) => (
+                <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
+                  <div className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
+                    item.priority === 'high' ? 'bg-red-100 text-red-700' :
+                    item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {item.priority.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-gray-900 text-sm">{item.text}</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <span className="text-xs text-gray-500">{item.category}</span>
+                      {item.penalty && (
+                        <span className="text-xs text-red-600">Penalty: {item.penalty}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {actionItems.length > 10 && (
+                <p className="text-sm text-gray-500 text-center">
+                  + {actionItems.length - 10} more action items in full report
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Download & Share */}
+        <Card className="print:hidden">
+          <CardContent className="pt-6">
+            <DownloadWithFeedback assessmentType="dpdp" />
+            <p className="text-center text-sm text-gray-500 mt-4">
+              Report generated on {new Date().toLocaleDateString('en-IN', { 
+                day: 'numeric', month: 'long', year: 'numeric' 
+              })}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Disclaimer */}
+        <div className="mt-8 p-4 bg-amber-50 rounded-lg text-sm text-amber-800 print:bg-transparent print:border print:border-amber-300">
+          <strong>Disclaimer:</strong> This report is for informational purposes only and does not 
+          constitute legal advice. The DPDP Act 2023 and its Rules are subject to amendment. Please 
+          consult a qualified data protection professional for specific guidance on your compliance 
+          obligations.
+        </div>
+
+        {/* Upsell */}
+        <Card className="mt-6 border-green-200 bg-green-50 print:hidden">
+          <CardContent className="pt-6">
+            <h3 className="font-semibold text-gray-900 mb-2">Also Try: Statutory Health Check</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Check your compliance with PF, ESI, Professional Tax, Gratuity and Bonus requirements.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <Link href="/assessment/statutory-health">
+                <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-100">
+                  Statutory Health Check - FREE
+                </Button>
+              </Link>
+              <Link href="/assessment/labour-code">
+                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-100">
+                  Labour Code Readiness - FREE
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
 // Temporary Results Page (when DB not configured or temp ID)
 function TempResultsPage({ assessmentType }: { assessmentType: string }) {
   const isLabourCode = assessmentType === 'labour_code'
