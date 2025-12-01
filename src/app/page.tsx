@@ -60,8 +60,8 @@ export default function HomePage() {
           {/* Stats */}
           <div className="flex justify-center gap-12 mt-16 pt-8 border-t">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900">2</div>
-              <div className="text-gray-600 text-sm">Assessment Tools</div>
+              <div className="text-3xl font-bold text-gray-900">3</div>
+              <div className="text-gray-600 text-sm">Tools Available</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-900">10 min</div>
@@ -210,6 +210,49 @@ export default function HomePage() {
                   </li>
                 </ul>
                 <Button className="w-full" variant="outline" disabled>Coming Soon</Button>
+              </CardContent>
+            </Card>
+
+            {/* Document Templates - NEW */}
+            <Card className="border-2 border-gray-200 hover:shadow-lg transition-all">
+              <div className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                FREE BETA
+              </div>
+              <CardHeader>
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                  <FileText className="w-6 h-6 text-green-600" />
+                </div>
+                <CardTitle>Employee Consent Form</CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-bold text-green-600">FREE</span>
+                  <span className="text-lg text-gray-400 line-through">{RUPEE}499</span>
+                </div>
+                <CardDescription>
+                  DPDP Act 2023 compliant employee data consent template.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    Customisable consent form
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    All DPDP rights included
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    Ready-to-print PDF
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    Grievance officer section
+                  </li>
+                </ul>
+                <Link href="/documents/employee-consent">
+                  <Button className="w-full bg-green-600 hover:bg-green-700">Generate Document</Button>
+                </Link>
               </CardContent>
             </Card>
           </div>

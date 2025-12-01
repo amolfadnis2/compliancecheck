@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle, AlertTriangle, XCircle, ArrowLeft, Building } from 'lucide-react'
 import { STATUTORY_HEALTH_QUESTIONS, CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeActionItems, getComplianceStatus } from '@/lib/assessments/labour-code-questions'
+import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPComplianceStatus, getDaysUntilDeadline, type DPDPProfile } from '@/lib/assessments/dpdp-questions'
 import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
 
@@ -56,6 +57,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   
   const assessmentType = type || 'statutory_health'
   const isLabourCode = assessmentType === 'labour_code'
+  const isDPDP = assessmentType === 'dpdp'
 
   // Handle temporary/local IDs (when DB not configured or fallback)
   if (id.startsWith('temp_') || id.startsWith('local_')) {
@@ -80,7 +82,9 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   }
 
   // Render based on assessment type
-  if (isLabourCode) {
+  if (isDPDP) {
+    return <DPDPResultsView assessment={assessment} />
+  } else if (isLabourCode) {
     return <LabourCodeResultsView assessment={assessment} />
   } else {
     return <StatutoryHealthResultsView assessment={assessment} />
