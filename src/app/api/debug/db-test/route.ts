@@ -84,10 +84,12 @@ export async function GET(_request: NextRequest) {
 
   // Test 3: Try inserting a test user
   const testEmail = `test_${Date.now()}@debug.local`
+  const testId = crypto.randomUUID()
   try {
     const { data: testUser, error } = await supabase
       .from('users')
       .insert({
+        id: testId,
         email: testEmail,
         full_name: 'Debug Test User',
         is_deleted: false,
