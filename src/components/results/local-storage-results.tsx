@@ -10,6 +10,7 @@ import {
   FileText, Shield, AlertCircle
 } from 'lucide-react'
 import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
+import { DPDP_CATEGORIES } from '@/lib/assessments/dpdp-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
 
 // ============================================================================
@@ -108,7 +109,21 @@ interface LocalStorageResultsPageProps {
 // HELPER FUNCTIONS  
 // ============================================================================
 
-function getStatusFromScore(score: number) {
+function getStatusFromScore(score: number, isDPDP: boolean = false) {
+  if (isDPDP) {
+    // DPDP uses different status labels
+    if (score >= 80) {
+      return { status: 'Ready', color: 'green', description: 'Your organisation demonstrates strong DPDP compliance readiness.' }
+    } else if (score >= 60) {
+      return { status: 'Needs Attention', color: 'amber', description: 'Several areas require attention before May 2027 deadline.' }
+    } else if (score >= 40) {
+      return { status: 'At Risk', color: 'orange', description: 'Significant gaps. Immediate action needed to avoid penalties.' }
+    } else {
+      return { status: 'Critical', color: 'red', description: 'Critical compliance gaps. Immediate action required to avoid severe penalties.' }
+    }
+  }
+  
+  // Standard status for statutory/labour code
   if (score >= 80) {
     return { status: 'Compliant', color: 'green', description: 'Your organisation meets key compliance requirements.' }
   } else if (score >= 50) {
@@ -186,15 +201,32 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
   const answers = assessment.responses?.answers || {}
   const overallScore = assessment.overall_score || 50
   const categoryScores = assessment.category_scores || {}
-  const status = getStatusFromScore(overallScore)
+  const status = getStatusFromScore(overallScore, isDPDP)
   const { compliantItems, nonCompliantItems } = analyseResponses(answers)
+
+  // Get category info based on assessment type
+  const getCategoryInfo = (catId: string) => {
+    if (isDPDP) {
+      const dpdpCat = DPDP_CATEGORIES.find(c => c.id === catId)
+      return {
+        name: dpdpCat?.name || catId,
+        penaltyExposure: dpdpCat?.penaltyExposure || 'Variable'
+      }
+    }
+    return {
+      name: CATEGORY_INFO[catId as keyof typeof CATEGORY_INFO]?.name || catId,
+      penaltyExposure: null
+    }
+  }
 
   // Count by category
   const categoryStats = Object.entries(categoryScores).map(([cat, data]) => {
     const percentage = typeof data === 'number' ? data : data.percentage || 0
+    const catInfo = getCategoryInfo(cat)
     return {
       category: cat,
-      name: CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO]?.name || cat,
+      name: catInfo.name,
+      penaltyExposure: catInfo.penaltyExposure,
       percentage,
       status: percentage >= 80 ? 'compliant' : percentage >= 50 ? 'needs-attention' : 'non-compliant'
     }
@@ -232,6 +264,28 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
             </div>
           )}
         </div>
+
+        {/* DPDP Compliance Deadline Warning */}
+        {isDPDP && (
+          <Card className="mb-6 border-amber-300 bg-amber-50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
+                <div className="flex-1">
+                  <h3 className="font-bold text-amber-900 mb-1">COMPLIANCE DEADLINE: 13 May 2027</h3>
+                  <p className="text-sm text-amber-800 mb-2">
+                    All DPDP Act 2023 substantive obligations become enforceable in 527 days. 
+                    Penalties up to <strong>₹250 crore</strong> apply for non-compliance.
+                  </p>
+                  <p className="text-xs text-amber-700">
+                    Your assessment shows <strong>{nonCompliantItems.length} gaps</strong> requiring remediation 
+                    before this deadline.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Overall Score Card - Prominent */}
         <Card className={`mb-6 border-2 ${
@@ -357,27 +411,54 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
               <Shield className="w-5 h-5 text-blue-600" />
               Category-wise Compliance Status
             </CardTitle>
+            {isDPDP && (
+              <CardDescription className="text-amber-600 flex items-center gap-1">
+                <AlertTriangle className="w-4 h-4" />
+                Penalty exposure shown for each category
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className={`grid gap-4 ${isDPDP ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 md:grid-cols-5'}`}>
               {categoryStats.map((cat) => (
                 <div 
                   key={cat.category} 
-                  className={`p-4 rounded-lg text-center border-2 ${
-                    cat.status === 'compliant' ? 'bg-green-50 border-green-200' :
-                    cat.status === 'needs-attention' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'
+                  className={`p-4 rounded-lg ${isDPDP ? 'border-l-4' : 'text-center border-2'} ${
+                    cat.status === 'compliant' ? isDPDP ? 'bg-green-50 border-l-green-500' : 'bg-green-50 border-green-200' :
+                    cat.status === 'needs-attention' ? isDPDP ? 'bg-amber-50 border-l-amber-500' : 'bg-amber-50 border-amber-200' : 
+                    isDPDP ? 'bg-red-50 border-l-red-500' : 'bg-red-50 border-red-200'
                   }`}
                 >
-                  <div className="mb-2">
-                    {cat.status === 'compliant' && <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />}
-                    {cat.status === 'needs-attention' && <AlertTriangle className="w-6 h-6 text-amber-600 mx-auto" />}
-                    {cat.status === 'non-compliant' && <XCircle className="w-6 h-6 text-red-600 mx-auto" />}
+                  {!isDPDP && (
+                    <div className="mb-2">
+                      {cat.status === 'compliant' && <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />}
+                      {cat.status === 'needs-attention' && <AlertTriangle className="w-6 h-6 text-amber-600 mx-auto" />}
+                      {cat.status === 'non-compliant' && <XCircle className="w-6 h-6 text-red-600 mx-auto" />}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className={isDPDP ? 'flex-1' : ''}>
+                      <div className={`${isDPDP ? 'text-xl' : 'text-2xl'} font-bold ${
+                        cat.status === 'compliant' ? 'text-green-600' :
+                        cat.status === 'needs-attention' ? 'text-amber-600' : 'text-red-600'
+                      }`}>{cat.percentage}%</div>
+                      <div className={`${isDPDP ? 'text-sm' : 'text-xs'} text-gray-900 font-medium mt-1`}>
+                        {cat.name}
+                      </div>
+                      {isDPDP && cat.penaltyExposure && (
+                        <div className="text-xs text-red-600 font-semibold mt-1">
+                          Penalty: {cat.penaltyExposure}
+                        </div>
+                      )}
+                    </div>
+                    {isDPDP && (
+                      <div className="flex-shrink-0">
+                        {cat.status === 'compliant' && <CheckCircle className="w-6 h-6 text-green-600" />}
+                        {cat.status === 'needs-attention' && <AlertTriangle className="w-6 h-6 text-amber-600" />}
+                        {cat.status === 'non-compliant' && <XCircle className="w-6 h-6 text-red-600" />}
+                      </div>
+                    )}
                   </div>
-                  <div className={`text-2xl font-bold ${
-                    cat.status === 'compliant' ? 'text-green-600' :
-                    cat.status === 'needs-attention' ? 'text-amber-600' : 'text-red-600'
-                  }`}>{cat.percentage}%</div>
-                  <div className="text-xs text-gray-600 font-medium mt-1">{cat.name}</div>
                 </div>
               ))}
             </div>
@@ -385,30 +466,58 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
         </Card>
 
         {/* Download CTA - Prominent */}
-        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 print:hidden">
+        <Card className={`${isDPDP ? 'border-purple-300 bg-gradient-to-r from-purple-50 to-pink-50' : 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50'} print:hidden`}>
           <CardContent className="pt-6">
+            {isDPDP && (
+              <div className="mb-4 p-3 bg-white border border-purple-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <FileText className="w-5 h-5 text-purple-600 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-purple-900 mb-1">
+                      📋 Detailed Gap Analysis in PDF Report
+                    </p>
+                    <p className="text-xs text-purple-700">
+                      Your PDF report contains <strong>detailed remediation steps, legal references, 
+                      deadlines, and government portal links</strong> for each gap identified. 
+                      The summary above shows only high-level findings.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex flex-col md:flex-row items-center gap-6">
               <div className="flex-1 text-center md:text-left">
                 <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
-                  <FileText className="w-6 h-6 text-blue-600" />
-                  <h3 className="text-lg font-bold text-gray-900">Download Detailed Report</h3>
+                  <FileText className={`w-6 h-6 ${isDPDP ? 'text-purple-600' : 'text-blue-600'}`} />
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {isDPDP ? 'Download Your Complete DPDP Gap Report' : 'Download Detailed Report'}
+                  </h3>
                 </div>
                 <p className="text-gray-600 text-sm mb-2">
-                  Get the complete PDF report with:
+                  {isDPDP 
+                    ? 'Get your comprehensive 11-page report with:'
+                    : 'Get the complete PDF report with:'
+                  }
                 </p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    Step-by-step remediation actions
+                    {isDPDP ? 'Specific gaps with 5-step remediation plans' : 'Step-by-step remediation actions'}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    Legal references &amp; government portal links
+                    {isDPDP ? 'DPDP Act sections & penalty amounts for each gap' : 'Legal references & government portal links'}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    Deadlines &amp; penalty information
+                    {isDPDP ? 'Official portal links and compliance resources' : 'Deadlines & penalty information'}
                   </li>
+                  {isDPDP && (
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      Compliant items with maintenance guidance
+                    </li>
+                  )}
                 </ul>
               </div>
               <div className="w-full md:w-auto">

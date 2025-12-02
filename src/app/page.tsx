@@ -55,6 +55,11 @@ export default function HomePage() {
                 Labour Code Readiness
               </Button>
             </Link>
+            <Link href="/assessment/dpdp">
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
+                DPDP Gap Assessment
+              </Button>
+            </Link>
           </div>
           
           {/* Stats */}
