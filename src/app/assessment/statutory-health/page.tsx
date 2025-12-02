@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2 } from 'lucide-react'
 import { 
   STATUTORY_HEALTH_QUESTIONS, 
