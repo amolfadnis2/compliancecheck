@@ -333,8 +333,13 @@ export default function StatutoryHealthAssessmentPage() {
         {step === 1 && (
           <Card>
             <CardHeader>
-              <CardTitle>Your Details</CardTitle>
-              <CardDescription>We need some basic information to generate your report</CardDescription>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl">Statutory Health Check</CardTitle>
+              <CardDescription>Quick 10-minute assessment for PF, ESI, PT, Gratuity & Bonus compliance</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onUserDetailsSubmit)} className="space-y-4">

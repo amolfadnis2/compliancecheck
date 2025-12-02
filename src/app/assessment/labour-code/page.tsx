@@ -347,9 +347,9 @@ export default function LabourCodeAssessmentPage() {
                   <Building2 className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
-              <CardTitle className="text-2xl">Company Details</CardTitle>
+              <CardTitle className="text-2xl">Labour Code Readiness</CardTitle>
               <CardDescription>
-                Tell us about your organisation to personalise your Labour Code readiness assessment
+                Comprehensive assessment for all 4 new Labour Codes (effective November 2025)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
