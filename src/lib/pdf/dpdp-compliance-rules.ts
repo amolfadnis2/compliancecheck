@@ -217,7 +217,7 @@ export const DPDP_COMPLIANCE_RULES: Record<string, DPDPComplianceRule> = {
     governmentRef: 'DPDP Act 2023 - Section 11 | DPDP Rules 2025 - Rule 5',
     officialLink: 'https://www.meity.gov.in/data-protection-framework',
     deadline: '13 May 2027',
-    penalty: 'Up to Rs. 200 Cr for failing to respond to requests',
+    penalty: 'Up to Rs. 50 Cr for failing to respond to requests',
     actionIfNonCompliant: [
       'Build DSAR portal for users to submit access requests',
       'Implement identity verification for requesters',
@@ -234,7 +234,7 @@ export const DPDP_COMPLIANCE_RULES: Record<string, DPDPComplianceRule> = {
     governmentRef: 'DPDP Act 2023 - Section 12 | DPDP Rules 2025 - Rule 5',
     officialLink: 'https://www.meity.gov.in/data-protection-framework',
     deadline: '13 May 2027',
-    penalty: 'Up to Rs. 200 Cr for failing to correct inaccurate data',
+    penalty: 'Up to Rs. 50 Cr for failing to correct inaccurate data',
     actionIfNonCompliant: [
       'Provide self-service profile editing for basic fields',
       'Create correction request workflow for restricted fields',
@@ -251,7 +251,7 @@ export const DPDP_COMPLIANCE_RULES: Record<string, DPDPComplianceRule> = {
     governmentRef: 'DPDP Act 2023 - Section 12(2) | DPDP Rules 2025 - Rule 5',
     officialLink: 'https://www.meity.gov.in/data-protection-framework',
     deadline: '13 May 2027',
-    penalty: 'Up to Rs. 200 Cr for failing to erase data',
+    penalty: 'Up to Rs. 50 Cr for failing to erase data',
     actionIfNonCompliant: [
       'Build erasure request processing workflow',
       'Implement automated deletion across all systems and backups',
@@ -268,7 +268,7 @@ export const DPDP_COMPLIANCE_RULES: Record<string, DPDPComplianceRule> = {
     governmentRef: 'DPDP Act 2023 - Section 13 | DPDP Rules 2025 - Rule 6',
     officialLink: 'https://www.meity.gov.in/data-protection-framework',
     deadline: '13 May 2027',
-    penalty: 'Up to Rs. 200 Cr for inadequate grievance mechanism',
+    penalty: 'Up to Rs. 50 Cr for inadequate grievance mechanism',
     actionIfNonCompliant: [
       'Appoint Grievance Officer with published contact details',
       'Create dedicated grievance channel (email, portal, toll-free number)',
@@ -500,12 +500,65 @@ export const DPDP_COMPLIANCE_RULES: Record<string, DPDPComplianceRule> = {
     penalty: 'Up to Rs. 250 Cr for unauthorized transfers',
     actionIfNonCompliant: [
       'Document all cross-border data flows with destination countries',
-      'Check Central Government blacklist for prohibited destinations',
-      'Implement data localization for sensitive categories if required',
-      'Include cross-border transfer provisions in DPAs',
+      'Note: No government blacklist has been published yet (as of Dec 2025) - India uses permissive default allowing transfers unless specifically restricted',
+      'Monitor MeitY notifications for future country restrictions',
+      'Include cross-border transfer provisions in DPAs as precaution',
       'Consider local processing options to minimize transfers',
     ],
     actionIfCompliant: 'Cross-border compliance documented. Monitor government notifications for blacklist updates.',
+  },
+  
+  // HEALTHCARE-SPECIFIC ADVISORIES
+  healthcare_medical_records: {
+    questionId: 'healthcare_medical_records',
+    category: 'Healthcare-Specific',
+    requirement: 'Medical Record Retention vs DPDP Deletion Rights',
+    governmentRef: 'DPDP Act 2023 + Clinical Establishments Act + ABDM Guidelines',
+    officialLink: 'https://www.meity.gov.in/data-protection-framework',
+    deadline: '13 May 2027',
+    penalty: 'Up to Rs. 50 Cr for improper data handling',
+    actionIfNonCompliant: [
+      'Document legal basis for medical record retention (clinical necessity, statutory requirements)',
+      'Separate clinical records (must retain per medical regulations) from non-clinical data (can delete per DPDP)',
+      'Implement data minimization: delete administrative, marketing, and non-medical data upon request',
+      'Obtain separate consent for research vs treatment purposes',
+      'Note: Health data is 40x more valuable than financial data on dark web - prioritize security',
+    ],
+    actionIfCompliant: 'Medical record retention policy documented. Ensure separation between clinical and non-clinical data.',
+  },
+  healthcare_abdm_compliance: {
+    questionId: 'healthcare_abdm_compliance',
+    category: 'Healthcare-Specific',
+    requirement: 'Ayushman Bharat Digital Mission (ABDM) Integration',
+    governmentRef: 'ABDM Guidelines + DPDP Act 2023',
+    officialLink: 'https://abdm.gov.in',
+    deadline: '13 May 2027',
+    penalty: 'Regulatory non-compliance under both frameworks',
+    actionIfNonCompliant: [
+      'Ensure ABDM data exchange complies with DPDP consent requirements',
+      'Implement granular consent for health information exchange',
+      'Document data flows between your system and ABDM Health Data Exchange',
+      'Ensure Aadhaar-linked health records have proper consent trails',
+      'Balance ABDM interoperability with DPDP data minimization',
+    ],
+    actionIfCompliant: 'ABDM integration meets DPDP standards. Monitor ABDM policy updates for conflicts.',
+  },
+  healthcare_clinical_vs_commercial: {
+    questionId: 'healthcare_clinical_vs_commercial',
+    category: 'Healthcare-Specific',
+    requirement: 'Clinical vs Commercial Data Segregation',
+    governmentRef: 'DPDP Act 2023 - Best Practice for Healthcare',
+    officialLink: 'https://www.meity.gov.in/data-protection-framework',
+    deadline: '13 May 2027',
+    penalty: 'Up to Rs. 250 Cr for security failures',
+    actionIfNonCompliant: [
+      'Classify data into: (1) Clinical/medical records, (2) Administrative, (3) Marketing/analytics',
+      'Apply different retention policies: Clinical per medical law, others per DPDP deletion rights',
+      'Enable selective deletion: honor DPDP erasure for non-clinical while retaining clinical',
+      'Document justification for retaining clinical data despite erasure request',
+      'Audit: 8,600+ weekly cyberattacks target Indian healthcare - enhance security',
+    ],
+    actionIfCompliant: 'Data segregation implemented. Maintain separate policies for clinical vs commercial use.',
   },
 };
 
@@ -518,4 +571,5 @@ export const DPDP_CATEGORY_LABELS: Record<string, string> = {
   breach: 'Breach Response',
   children: "Children's Data",
   thirdparty: 'Third-Party & Transfers',
+  healthcare: 'Healthcare-Specific Advisories',
 };

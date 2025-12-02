@@ -84,7 +84,7 @@ export const DPDP_CATEGORIES: DPDPCategory[] = [
     name: 'Data Principal Rights',
     description: 'Access, correction, erasure, withdrawal, and grievance redressal',
     icon: '👤',
-    penaltyExposure: 'Up to Rs. 200 Cr',
+    penaltyExposure: 'Up to Rs. 50 Cr',
   },
   {
     id: 'security',
@@ -112,6 +112,13 @@ export const DPDP_CATEGORIES: DPDPCategory[] = [
     name: 'Third-Party & Transfers',
     description: 'Data Processing Agreements and cross-border transfers',
     icon: '🌐',
+    penaltyExposure: 'Up to Rs. 250 Cr',
+  },
+  {
+    id: 'healthcare',
+    name: 'Healthcare-Specific Advisories',
+    description: 'Medical record retention conflicts and ABDM compliance',
+    icon: '🏥',
     penaltyExposure: 'Up to Rs. 250 Cr',
   },
 ];
@@ -612,10 +619,10 @@ export function generateDPDPActionItems(
     notices_1: { text: 'Create standalone privacy notices presented before data collection', penalty: 'Rs. 50 Cr' },
     notices_2: { text: 'Rewrite privacy notice in plain language with clear DPO contact details', penalty: 'Rs. 50 Cr' },
     notices_3: { text: 'Implement process to update and re-notify users when privacy practices change', penalty: 'Rs. 50 Cr' },
-    rights_1: { text: 'Build data subject access request (DSAR) portal with 90-day SLA tracking', penalty: 'Rs. 200 Cr' },
-    rights_2: { text: 'Implement data correction workflow with audit trail', penalty: 'Rs. 200 Cr' },
-    rights_3: { text: 'Create data erasure process covering all systems including backups', penalty: 'Rs. 200 Cr' },
-    rights_4: { text: 'Establish dedicated grievance redressal channel with response SLAs', penalty: 'Rs. 200 Cr' },
+    rights_1: { text: 'Build data subject access request (DSAR) portal with 90-day SLA tracking', penalty: 'Rs. 50 Cr' },
+    rights_2: { text: 'Implement data correction workflow with audit trail', penalty: 'Rs. 50 Cr' },
+    rights_3: { text: 'Create data erasure process covering all systems including backups', penalty: 'Rs. 50 Cr' },
+    rights_4: { text: 'Establish dedicated grievance redressal channel with response SLAs', penalty: 'Rs. 50 Cr' },
     security_1: { text: 'Implement AES-256 encryption for all personal data at rest - HIGHEST PRIORITY', penalty: 'Rs. 250 Cr' },
     security_2: { text: 'Configure audit logging for all personal data access with 1-year retention', penalty: 'Rs. 250 Cr' },
     security_3: { text: 'Implement role-based access controls (RBAC) with least-privilege principles', penalty: 'Rs. 250 Cr' },
@@ -629,6 +636,11 @@ export function generateDPDPActionItems(
     thirdparty_1: { text: 'Execute Data Processing Agreements with all third-party processors', penalty: 'Rs. 250 Cr' },
     thirdparty_2: { text: 'Conduct security assessments of all data processors (require SOC 2/ISO 27001)', penalty: 'Rs. 250 Cr' },
     thirdparty_3: { text: 'Document cross-border transfer compliance with destination country assessment', penalty: 'Rs. 250 Cr' },
+    
+    // Healthcare-specific advisories
+    healthcare_medical_records: { text: 'Document legal basis for medical record retention vs DPDP deletion rights', penalty: 'Rs. 50 Cr' },
+    healthcare_abdm_compliance: { text: 'Ensure ABDM integration complies with DPDP consent requirements', penalty: 'Rs. 50 Cr' },
+    healthcare_clinical_vs_commercial: { text: 'Segregate clinical data (must retain) from commercial data (can delete per DPDP)', penalty: 'Rs. 250 Cr' },
   };
 
   // Priority mapping based on penalty
@@ -667,6 +679,33 @@ export function generateDPDPActionItems(
       });
     }
   });
+
+  // Add industry-specific advisory items
+  if (profile?.industry === 'Healthcare') {
+    // Always add healthcare-specific advisories for healthcare organizations
+    const healthcareCategory = DPDP_CATEGORIES.find(c => c.id === 'healthcare');
+    
+    actionItems.push({
+      priority: 'high',
+      text: 'Document legal basis for medical record retention vs DPDP deletion rights',
+      category: healthcareCategory?.name || 'Healthcare-Specific',
+      penalty: 'Rs. 50 Cr',
+    });
+    
+    actionItems.push({
+      priority: 'high',
+      text: 'Segregate clinical data (must retain) from commercial data (can delete per DPDP)',
+      category: healthcareCategory?.name || 'Healthcare-Specific',
+      penalty: 'Rs. 250 Cr',
+    });
+    
+    actionItems.push({
+      priority: 'medium',
+      text: 'Ensure ABDM integration complies with DPDP consent requirements',
+      category: healthcareCategory?.name || 'Healthcare-Specific',
+      penalty: 'Rs. 50 Cr',
+    });
+  }
 
   // Sort by priority
   return actionItems.sort((a, b) => {
