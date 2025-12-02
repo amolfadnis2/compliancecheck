@@ -544,9 +544,13 @@ export function calculateDPDPScore(
   Object.keys(categoryScores).forEach((cat) => {
     totalScore += categoryScores[cat];
     totalMaxScore += maxScores[cat];
-    categoryPercentages[cat] = maxScores[cat] > 0 
-      ? Math.round((categoryScores[cat] / maxScores[cat]) * 100) 
-      : 100; // If no questions in category, assume compliant
+    
+    // Only include categories with actual questions
+    // Empty categories (due to filtering) should not contribute to score
+    if (maxScores[cat] > 0) {
+      categoryPercentages[cat] = Math.round((categoryScores[cat] / maxScores[cat]) * 100);
+    }
+    // Categories with no questions are excluded from results
   });
 
   const overallScore = totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
