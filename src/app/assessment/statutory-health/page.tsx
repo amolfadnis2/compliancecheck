@@ -262,22 +262,28 @@ export default function StatutoryHealthAssessmentPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Statutory Health Check</h1>
-          <p className="text-gray-600">
-            <span className="text-green-600 font-semibold">FREE</span>
-            <span className="text-gray-400 line-through ml-2">₹999</span>
-            <span className="mx-2">•</span>
-            ~10 minutes
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <span className="font-semibold text-lg">ComplianceCheck</span>
+                <div className="text-xs text-gray-600">Statutory Health Check</div>
+              </div>
+            </div>
+            <Badge variant="secondary" className="bg-green-100 text-green-700">
+              FREE Assessment
+            </Badge>
+          </div>
         </div>
+      </header>
+
+      <div className="max-w-2xl mx-auto py-8 px-4">
 
         {/* Progress Bar with Save Status */}
         <div className="mb-8">

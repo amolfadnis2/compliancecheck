@@ -137,23 +137,36 @@ export default function EmployeeConsentFormGenerator() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-            <FileText className="w-8 h-8 text-blue-600" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <span className="font-semibold text-lg">ComplianceCheck</span>
+                <div className="text-xs text-gray-600">Employee Consent Form</div>
+              </div>
+            </div>
+            <Badge variant="secondary" className="bg-green-100 text-green-700">
+              FREE Template
+            </Badge>
           </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 max-w-4xl py-12">
+        {/* Intro Text */}
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Employee Data Consent Form Generator
           </h1>
           <p className="text-gray-600">
             Generate DPDP Act 2023 compliant consent forms for your employees
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-green-800">FREE during beta</span>
-          </div>
         </div>
 
         {/* Progress Steps */}

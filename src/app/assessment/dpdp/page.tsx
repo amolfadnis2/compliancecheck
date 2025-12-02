@@ -279,10 +279,13 @@ export default function DPDPAssessmentPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-500 flex items-center justify-center text-white font-bold">
-                ✓
+              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-              <span className="font-semibold text-lg">ComplianceCheck</span>
+              <div>
+                <span className="font-semibold text-lg">ComplianceCheck</span>
+                <div className="text-xs text-gray-600">DPDP Gap Assessment</div>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="bg-amber-100 text-amber-700">
