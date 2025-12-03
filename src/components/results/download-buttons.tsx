@@ -389,7 +389,7 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
     // Get data
     const userDetails = data.userDetails || data.responses?.userDetails || {}
     const answers = data.responses?.answers || {}
-    const overallScore = data.overall_score || 50
+    const overallScore = data.overall_score ?? 50  // Use ?? to preserve 0 scores
     const categoryScores = data.category_scores || {}
 
     // Helper: Add wrapped text
@@ -752,7 +752,7 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
 
     const userDetails = data.userDetails || data.responses?.userDetails || {}
     const answers = data.responses?.answers || {}
-    const overallScore = data.overall_score || 50
+    const overallScore = data.overall_score ?? 50  // Use ?? to preserve 0 scores
     const categoryScores = data.category_scores || {}
 
     const addText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5): number => {
