@@ -1,0 +1,186 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - text: 🚧 This site is under development. All assessments are
+      - strong [ref=e4]: FREE
+      - text: for a limited time. We'd love your feedback at
+      - link "compliancecheck@zohomail.in" [ref=e5] [cursor=pointer]:
+        - /url: mailto:compliancecheck@zohomail.in
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e10]
+          - generic [ref=e13]: ComplianceCheck
+        - link "Get Started" [ref=e14] [cursor=pointer]:
+          - /url: "#products"
+          - button "Get Started" [ref=e15]
+    - generic [ref=e17]:
+      - generic [ref=e18]: 🎉 FREE During Beta - Limited Time Only
+      - heading "Instant Compliance Reports for Indian SMEs" [level=1] [ref=e19]:
+        - text: Instant Compliance Reports
+        - text: for Indian SMEs
+      - paragraph [ref=e20]: Get compliance assessments in 10 minutes. No subscriptions. No consultants. Just answers you can act on.
+      - generic [ref=e21]:
+        - link "Statutory Health Check" [ref=e22] [cursor=pointer]:
+          - /url: /assessment/statutory-health
+          - button "Statutory Health Check" [ref=e23]
+        - link "Labour Code Readiness" [ref=e24] [cursor=pointer]:
+          - /url: /assessment/labour-code
+          - button "Labour Code Readiness" [ref=e25]
+        - link "DPDP Gap Assessment" [ref=e26] [cursor=pointer]:
+          - /url: /assessment/dpdp
+          - button "DPDP Gap Assessment" [ref=e27]
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]: "3"
+          - generic [ref=e31]: Tools Available
+        - generic [ref=e32]:
+          - generic [ref=e33]: 10 min
+          - generic [ref=e34]: Average Time
+        - generic [ref=e35]:
+          - generic [ref=e36]: FREE
+          - generic [ref=e37]: During Beta
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - heading "Choose Your Assessment" [level=2] [ref=e41]
+        - paragraph [ref=e42]: Get your compliance report instantly. Free during beta testing.
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: FREE BETA
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e52]: Statutory Health Check
+            - generic [ref=e53]:
+              - generic [ref=e54]: FREE
+              - generic [ref=e55]: ₹999
+            - generic [ref=e56]: Quick 10-minute check for PF, ESI, PT, Gratuity & Bonus compliance.
+          - generic [ref=e57]:
+            - list [ref=e58]:
+              - listitem [ref=e59]:
+                - img [ref=e60]
+                - text: 12 guided questions
+              - listitem [ref=e63]:
+                - img [ref=e64]
+                - text: Traffic-light compliance dashboard
+              - listitem [ref=e67]:
+                - img [ref=e68]
+                - text: Priority action items
+              - listitem [ref=e71]:
+                - img [ref=e72]
+                - text: PDF report included
+            - link "Start Free Assessment" [ref=e75] [cursor=pointer]:
+              - /url: /assessment/statutory-health
+              - button "Start Free Assessment" [ref=e76]
+        - generic [ref=e77]:
+          - generic [ref=e78]: MOST POPULAR
+          - generic [ref=e79]: FREE BETA
+          - generic [ref=e80]:
+            - img [ref=e82]
+            - generic [ref=e84]: Labour Code Readiness
+            - generic [ref=e85]:
+              - generic [ref=e86]: FREE
+              - generic [ref=e87]: ₹1,999
+            - generic [ref=e88]: Comprehensive assessment for all 4 new Labour Codes (effective Nov 2025).
+          - generic [ref=e89]:
+            - list [ref=e90]:
+              - listitem [ref=e91]:
+                - img [ref=e92]
+                - text: 30 detailed questions
+              - listitem [ref=e95]:
+                - img [ref=e96]
+                - text: Readiness score per code
+              - listitem [ref=e99]:
+                - img [ref=e100]
+                - text: Gap analysis report
+              - listitem [ref=e103]:
+                - img [ref=e104]
+                - text: Prioritised action items
+            - link "Start Free Assessment" [ref=e107] [cursor=pointer]:
+              - /url: /assessment/labour-code
+              - button "Start Free Assessment" [ref=e108]
+        - generic [ref=e109]:
+          - generic [ref=e110]: NEW
+          - generic [ref=e111]: FREE BETA
+          - generic [ref=e112]:
+            - img [ref=e114]
+            - generic [ref=e117]: DPDP Gap Assessment
+            - generic [ref=e118]:
+              - generic [ref=e119]: FREE
+              - generic [ref=e120]: ₹2,499
+            - generic [ref=e121]: "Data protection compliance for DPDP Act 2023. Deadline: May 2027."
+          - generic [ref=e122]:
+            - list [ref=e123]:
+              - listitem [ref=e124]:
+                - img [ref=e125]
+                - text: 25+ guided questions
+              - listitem [ref=e128]:
+                - img [ref=e129]
+                - text: Risk level assessment
+              - listitem [ref=e132]:
+                - img [ref=e133]
+                - text: Penalty exposure analysis
+              - listitem [ref=e136]:
+                - img [ref=e137]
+                - text: Remediation roadmap
+            - link "Start Free Assessment" [ref=e140] [cursor=pointer]:
+              - /url: /assessment/dpdp
+              - button "Start Free Assessment" [ref=e141]
+        - generic [ref=e142]:
+          - generic [ref=e143]: FREE BETA
+          - generic [ref=e144]:
+            - img [ref=e146]
+            - generic [ref=e149]: Employee Consent Form
+            - generic [ref=e150]:
+              - generic [ref=e151]: FREE
+              - generic [ref=e152]: ₹499
+            - generic [ref=e153]: DPDP Act 2023 compliant employee data consent template.
+          - generic [ref=e154]:
+            - list [ref=e155]:
+              - listitem [ref=e156]:
+                - img [ref=e157]
+                - text: Customisable consent form
+              - listitem [ref=e160]:
+                - img [ref=e161]
+                - text: All DPDP rights included
+              - listitem [ref=e164]:
+                - img [ref=e165]
+                - text: Ready-to-print PDF
+              - listitem [ref=e168]:
+                - img [ref=e169]
+                - text: Grievance officer section
+            - link "Generate Document" [ref=e172] [cursor=pointer]:
+              - /url: /documents/employee-consent
+              - button "Generate Document" [ref=e173]
+    - generic [ref=e175]:
+      - heading "How It Works" [level=2] [ref=e176]
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - generic [ref=e179]: "1"
+          - heading "Answer Questions" [level=3] [ref=e180]
+          - paragraph [ref=e181]: Simple yes/no questions about your current compliance practices.
+        - generic [ref=e182]:
+          - generic [ref=e183]: "2"
+          - heading "Get Your Score" [level=3] [ref=e184]
+          - paragraph [ref=e185]: Instant compliance score with category breakdown.
+        - generic [ref=e186]:
+          - generic [ref=e187]: "3"
+          - heading "Download Report" [level=3] [ref=e188]
+          - paragraph [ref=e189]: Get a PDF report with prioritised action items.
+    - contentinfo [ref=e190]:
+      - generic [ref=e191]:
+        - generic [ref=e192]:
+          - img [ref=e194]
+          - generic [ref=e197]: ComplianceCheck
+        - generic [ref=e198]:
+          - link "Privacy Policy" [ref=e199] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Service" [ref=e200] [cursor=pointer]:
+            - /url: /terms
+          - link "Contact" [ref=e201] [cursor=pointer]:
+            - /url: mailto:compliancecheck@zohomail.in
+        - generic [ref=e202]: © 2025 ComplianceCheck. Made in India 🇮🇳
+  - alert [ref=e203]
+```

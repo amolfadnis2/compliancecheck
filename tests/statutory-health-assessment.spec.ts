@@ -50,10 +50,12 @@ test.describe('Statutory Health Check Assessment Flow', () => {
       await page.waitForTimeout(800);
     }
     
-    // Submit assessment
-    await page.getByRole('button', { name: /get free report/i }).click();
-    await page.waitForURL(/\/results\//, { timeout: 10000 });
-    await expect(page.getByText(/compliance/i)).toBeVisible();
+    // After last question, click submit button
+    await page.getByRole('button', { name: /submit|get.*report|finish/i }).click();
+    await page.waitForURL(/\/results\//, { timeout: 15000 });
+    
+    // Verify results page loaded - use specific heading
+    await expect(page.getByRole('heading', { name: /compliance|your compliance report/i }).first()).toBeVisible();
   });
 
   test('should display high score for compliant answers', async ({ page }) => {

@@ -311,7 +311,7 @@ export default function DPDPAssessmentPage() {
             </span>
             <span>{progress}% complete</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-2" aria-label="Assessment progress" />
           
           {currentStep > 0 && profile && (
             <div className="flex gap-2 mt-4">

@@ -8,7 +8,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Beta Banner */}
-      <div className="bg-amber-500 text-white text-center py-2 px-4 text-sm font-medium fixed top-0 left-0 right-0 z-[60]">
+      <div className="bg-amber-700 text-white text-center py-2 px-4 text-sm font-medium fixed top-0 left-0 right-0 z-[60]">
         🚧 This site is under development. All assessments are <strong>FREE</strong> for a limited time. 
         We&apos;d love your feedback at{' '}
         <a href="mailto:compliancecheck@zohomail.in" className="underline font-bold">compliancecheck@zohomail.in</a>
@@ -46,7 +46,7 @@ export default function HomePage() {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/assessment/statutory-health">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
+              <Button size="lg" className="bg-green-700 hover:bg-green-800">
                 Statutory Health Check
               </Button>
             </Link>
@@ -92,7 +92,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6">
             {/* Statutory Health Check */}
             <Card className="border-2 border-green-600 hover:shadow-lg transition-all relative">
-              <div className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+              <div className="absolute -top-3 left-4 bg-green-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
                 FREE BETA
               </div>
               <CardHeader>
@@ -102,7 +102,7 @@ export default function HomePage() {
                 <CardTitle>Statutory Health Check</CardTitle>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-bold text-green-600">FREE</span>
-                  <span className="text-lg text-gray-400 line-through">{RUPEE}999</span>
+                  <span className="text-lg text-gray-600 line-through">{RUPEE}999</span>
                 </div>
                 <CardDescription>
                   Quick 10-minute check for PF, ESI, PT, Gratuity & Bonus compliance.
@@ -128,7 +128,7 @@ export default function HomePage() {
                   </li>
                 </ul>
                 <Link href="/assessment/statutory-health">
-                  <Button className="w-full bg-green-600 hover:bg-green-700">Start Free Assessment</Button>
+                  <Button className="w-full bg-green-700 hover:bg-green-800">Start Free Assessment</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -138,7 +138,7 @@ export default function HomePage() {
               <div className="absolute -top-3 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 MOST POPULAR
               </div>
-              <div className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+              <div className="absolute -top-3 right-4 bg-green-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
                 FREE BETA
               </div>
               <CardHeader>
@@ -148,7 +148,7 @@ export default function HomePage() {
                 <CardTitle>Labour Code Readiness</CardTitle>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-bold text-blue-600">FREE</span>
-                  <span className="text-lg text-gray-400 line-through">{RUPEE}1,999</span>
+                  <span className="text-lg text-gray-600 line-through">{RUPEE}1,999</span>
                 </div>
                 <CardDescription>
                   Comprehensive assessment for all 4 new Labour Codes (effective Nov 2025).
@@ -185,7 +185,7 @@ export default function HomePage() {
               <div className="absolute -top-3 left-4 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 NEW
               </div>
-              <div className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+              <div className="absolute -top-3 right-4 bg-green-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
                 FREE BETA
               </div>
               <CardHeader>
@@ -195,7 +195,7 @@ export default function HomePage() {
                 <CardTitle>DPDP Gap Assessment</CardTitle>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-bold text-purple-600">FREE</span>
-                  <span className="text-lg text-gray-400 line-through">{RUPEE}2,499</span>
+                  <span className="text-lg text-gray-600 line-through">{RUPEE}2,499</span>
                 </div>
                 <CardDescription>
                   Data protection compliance for DPDP Act 2023. Deadline: May 2027.
@@ -238,7 +238,7 @@ export default function HomePage() {
                 <CardTitle>Employee Consent Form</CardTitle>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-bold text-green-600">FREE</span>
-                  <span className="text-lg text-gray-400 line-through">{RUPEE}499</span>
+                  <span className="text-lg text-gray-600 line-through">{RUPEE}499</span>
                 </div>
                 <CardDescription>
                   DPDP Act 2023 compliant employee data consent template.
@@ -264,7 +264,7 @@ export default function HomePage() {
                   </li>
                 </ul>
                 <Link href="/documents/employee-consent">
-                  <Button className="w-full bg-green-600 hover:bg-green-700">Generate Document</Button>
+                  <Button className="w-full bg-green-700 hover:bg-green-800">Generate Document</Button>
                 </Link>
               </CardContent>
             </Card>

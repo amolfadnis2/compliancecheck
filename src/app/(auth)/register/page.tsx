@@ -176,7 +176,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
             <div className="flex">
-              <span className="inline-flex items-center px-3 text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md">
+              <span className="inline-flex items-center px-3 text-gray-600 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md">
                 +91
               </span>
               <Input id="phone" {...register('phone')} placeholder="9876543210" className="rounded-l-none" />
