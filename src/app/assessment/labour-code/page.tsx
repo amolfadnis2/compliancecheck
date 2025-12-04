@@ -239,6 +239,11 @@ export default function LabourCodeAssessmentPage() {
 
   const handleResponse = (questionId: string, value: string) => {
     setResponses(prev => ({ ...prev, [questionId]: value }));
+    
+    // Auto-advance to next question after 800ms delay
+    setTimeout(() => {
+      handleNext();
+    }, 800);
   };
 
   const isLastQuestion = () => {
@@ -576,17 +581,7 @@ export default function LabourCodeAssessmentPage() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           )}
-
-          {currentStep > 0 && !isLastQuestion() && (
-            <Button
-              onClick={handleNext}
-              disabled={!responses[currentQuestion?.id]}
-              className="flex items-center gap-2"
-            >
-              Next Question
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          )}
+          {/* Next button removed - auto-advances after answering */}
 
           {currentStep > 0 && isLastQuestion() && (
             <Button
