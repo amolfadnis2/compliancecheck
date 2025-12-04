@@ -1,0 +1,480 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\amol.fadnis\\compliancecheck\\playwright.config.ts",
+    "rootDir": "C:/Users/amol.fadnis/compliancecheck/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 6
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/amol.fadnis/compliancecheck/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/amol.fadnis/compliancecheck/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/amol.fadnis/compliancecheck/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/amol.fadnis/compliancecheck/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/amol.fadnis/compliancecheck/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/amol.fadnis/compliancecheck/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/amol.fadnis/compliancecheck/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "C:/Users/amol.fadnis/compliancecheck/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/amol.fadnis/compliancecheck/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "C:/Users/amol.fadnis/compliancecheck/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 6,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "statutory-health-assessment.spec.ts",
+      "file": "statutory-health-assessment.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Statutory Health Check Assessment Flow",
+          "file": "statutory-health-assessment.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load homepage with beta banner",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4811,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-04T09:27:47.030Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "77a33e06ea20360bd83a-e6d830dcd41b2eb63c72",
+              "file": "statutory-health-assessment.spec.ts",
+              "line": 15,
+              "column": 7
+            },
+            {
+              "title": "should navigate to assessment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4880,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-04T09:27:47.088Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "77a33e06ea20360bd83a-092be0fba081520adcb6",
+              "file": "statutory-health-assessment.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "should complete full assessment with compliant answers",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 20756,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n\n    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts:46:121",
+                        "location": {
+                          "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                          "column": 121,
+                          "line": 46
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 44 |\u001b[39m       \u001b[36mif\u001b[39m (i \u001b[33m<\u001b[39m \u001b[35m11\u001b[39m) {\n \u001b[90m 45 |\u001b[39m         \u001b[90m// Button might be \"Next Question\" or just \"Next\" or an arrow\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 46 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/next/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m'→'\u001b[39m }))\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 47 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m       }\n \u001b[90m 49 |\u001b[39m     }\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                            "column": 121,
+                            "line": 46
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 44 |\u001b[39m       \u001b[36mif\u001b[39m (i \u001b[33m<\u001b[39m \u001b[35m11\u001b[39m) {\n \u001b[90m 45 |\u001b[39m         \u001b[90m// Button might be \"Next Question\" or just \"Next\" or an arrow\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 46 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/next/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m'→'\u001b[39m }))\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 47 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m       }\n \u001b[90m 49 |\u001b[39m     }\u001b[0m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts:46:121\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-04T09:27:47.071Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-ec69b-ment-with-compliant-answers-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-ec69b-ment-with-compliant-answers-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-ec69b-ment-with-compliant-answers-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                        "column": 121,
+                        "line": 46
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "77a33e06ea20360bd83a-56b7ad4d418886b906c5",
+              "file": "statutory-health-assessment.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "should display high score for compliant answers",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 20007,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n\n    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts:71:121",
+                        "location": {
+                          "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                          "column": 121,
+                          "line": 71
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 69 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/^yes$/i\u001b[39m })\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m       \u001b[36mif\u001b[39m (i \u001b[33m<\u001b[39m \u001b[35m11\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 71 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/next/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m'→'\u001b[39m }))\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 72 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m300\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m       }\n \u001b[90m 74 |\u001b[39m     }\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                            "column": 121,
+                            "line": 71
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 69 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/^yes$/i\u001b[39m })\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m       \u001b[36mif\u001b[39m (i \u001b[33m<\u001b[39m \u001b[35m11\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 71 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/next/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m'→'\u001b[39m }))\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 72 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m300\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m       }\n \u001b[90m 74 |\u001b[39m     }\u001b[0m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts:71:121\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-04T09:27:47.083Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-51152-score-for-compliant-answers-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-51152-score-for-compliant-answers-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-51152-score-for-compliant-answers-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                        "column": 121,
+                        "line": 71
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "77a33e06ea20360bd83a-ac2a438bd6173e7fb9bd",
+              "file": "statutory-health-assessment.spec.ts",
+              "line": 57,
+              "column": 7
+            },
+            {
+              "title": "should trigger NPS modal on PDF download",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 19962,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n\n    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts:98:121",
+                        "location": {
+                          "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                          "column": 121,
+                          "line": 98
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  96 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/^yes$/i\u001b[39m })\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m  97 |\u001b[39m       \u001b[36mif\u001b[39m (i \u001b[33m<\u001b[39m \u001b[35m11\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  98 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/next/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m'→'\u001b[39m }))\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                                                                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  99 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 100 |\u001b[39m       }\n \u001b[90m 101 |\u001b[39m     }\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                            "column": 121,
+                            "line": 98
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /next/i }).or(getByRole('button').filter({ hasText: '→' })).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m  96 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/^yes$/i\u001b[39m })\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m  97 |\u001b[39m       \u001b[36mif\u001b[39m (i \u001b[33m<\u001b[39m \u001b[35m11\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  98 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/next/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m'→'\u001b[39m }))\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                                                                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  99 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 100 |\u001b[39m       }\n \u001b[90m 101 |\u001b[39m     }\u001b[0m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts:98:121\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-04T09:27:47.171Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-ed601-r-NPS-modal-on-PDF-download-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-ed601-r-NPS-modal-on-PDF-download-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\statutory-health-assessmen-ed601-r-NPS-modal-on-PDF-download-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\statutory-health-assessment.spec.ts",
+                        "column": 121,
+                        "line": 98
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "77a33e06ea20360bd83a-8e772e6727a8ae16ba68",
+              "file": "statutory-health-assessment.spec.ts",
+              "line": 84,
+              "column": 7
+            },
+            {
+              "title": "should work on mobile viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 5014,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-04T09:27:47.134Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "77a33e06ea20360bd83a-53b09829fea65522eaf5",
+              "file": "statutory-health-assessment.spec.ts",
+              "line": 110,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-12-04T09:27:45.734Z",
+    "duration": 22707.267,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}
