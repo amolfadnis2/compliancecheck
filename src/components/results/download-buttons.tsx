@@ -739,6 +739,179 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
   }
 
   // ==========================================================================
+  // LABOUR CODE PDF GENERATION
+  // ==========================================================================
+
+  const generateLabourCodePDF = (data: AssessmentData): Blob => {
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const margin = 15
+    const contentWidth = pageWidth - (margin * 2)
+    let yPos = margin
+
+    // Get data
+    const userDetails = data.userDetails || data.responses?.userDetails || {}
+    const overallScore = data.overall_score ?? 50
+    const categoryScores = data.category_scores || {}
+    const actionItems = (data as any).action_items || []
+
+    // Helper functions
+    const addText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5): number => {
+      const lines = doc.splitTextToSize(text, maxWidth)
+      doc.text(lines, x, y)
+      return y + (lines.length * lineHeight)
+    }
+
+    const checkPageBreak = (requiredSpace: number): void => {
+      if (yPos + requiredSpace > pageHeight - 25) {
+        doc.setFontSize(8)
+        doc.setTextColor(150)
+        doc.text('Page ' + doc.getNumberOfPages(), pageWidth / 2, pageHeight - 10, { align: 'center' })
+        doc.addPage()
+        yPos = margin
+      }
+    }
+
+    const drawSectionHeader = (title: string, bgColor: [number, number, number] = [30, 64, 175]): void => {
+      checkPageBreak(20)
+      doc.setFillColor(bgColor[0], bgColor[1], bgColor[2])
+      doc.rect(margin, yPos, contentWidth, 10, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.text(title, margin + 5, yPos + 7)
+      yPos += 15
+    }
+
+    // Header
+    doc.setFillColor(30, 64, 175)
+    doc.rect(0, 0, pageWidth, 45, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ComplianceCheck', margin, 25)
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Labour Code Readiness Assessment Report', margin, 36)
+    doc.setFontSize(10)
+    doc.text(new Date().toLocaleDateString('en-IN'), pageWidth - margin, 36, { align: 'right' })
+
+    yPos = 55
+
+    // Company Details
+    doc.setFillColor(249, 250, 251)
+    doc.roundedRect(margin, yPos, contentWidth, 40, 3, 3, 'F')
+    doc.setTextColor(31, 41, 55)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Organisation Details', margin + 5, yPos + 10)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text('Company: ' + (userDetails.companyName || 'N/A'), margin + 5, yPos + 20)
+    doc.text('Industry: ' + (userDetails.industry || 'N/A'), margin + 5, yPos + 28)
+    doc.text('Employees: ' + (userDetails.employeeCount || 'N/A'), pageWidth / 2, yPos + 20)
+    doc.text('State: ' + (userDetails.state || 'N/A'), pageWidth / 2, yPos + 28)
+
+    yPos += 50
+
+    // Overall Score
+    const scoreColor: [number, number, number] = overallScore >= 80 ? [5, 150, 105] : overallScore >= 50 ? [217, 119, 6] : [220, 38, 38]
+    doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2])
+    doc.roundedRect(margin, yPos, contentWidth, 25, 3, 3, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(16)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Overall Readiness: ' + Math.round(overallScore) + '%', pageWidth / 2, yPos + 12, { align: 'center' })
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    const status = overallScore >= 80 ? 'Ready' : overallScore >= 50 ? 'Needs Attention' : 'At Risk'
+    doc.text(status, pageWidth / 2, yPos + 19, { align: 'center' })
+
+    yPos += 35
+
+    // Category Scores
+    drawSectionHeader('Category Breakdown')
+    const categories = {
+      'wages': 'Code on Wages',
+      'social_security': 'Social Security Code',
+      'osh': 'OSH Code',
+      'industrial_relations': 'Industrial Relations Code'
+    }
+
+    Object.entries(categories).forEach(([key, label]) => {
+      const score = categoryScores[key]
+      const percentage = typeof score === 'number' ? score : (score?.percentage || 0)
+      checkPageBreak(12)
+      doc.setTextColor(31, 41, 55)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.text(label + ': ' + Math.round(percentage) + '%', margin, yPos)
+      doc.setFillColor(229, 231, 235)
+      doc.rect(margin, yPos + 2, contentWidth, 4, 'F')
+      const barColor = percentage >= 80 ? [5, 150, 105] : percentage >= 50 ? [217, 119, 6] : [220, 38, 38]
+      doc.setFillColor(barColor[0], barColor[1], barColor[2])
+      doc.rect(margin, yPos + 2, (contentWidth * percentage) / 100, 4, 'F')
+      yPos += 10
+    })
+
+    yPos += 10
+
+    // Action Items
+    if (actionItems.length > 0) {
+      drawSectionHeader('Priority Action Items', [220, 38, 38])
+      actionItems.sort((a: any, b: any) => {
+        const order = { high: 0, medium: 1, low: 2 }
+        return order[a.priority as 'high' | 'medium' | 'low'] - order[b.priority as 'high' | 'medium' | 'low']
+      })
+
+      actionItems.forEach((item: any) => {
+        checkPageBreak(15)
+        const badgeColor = item.priority === 'high' ? [220, 38, 38] : item.priority === 'medium' ? [217, 119, 6] : [107, 114, 128]
+        doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2])
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'bold')
+        const badgeText = item.priority.toUpperCase()
+        const badgeWidth = doc.getTextWidth(badgeText) + 4
+        doc.rect(margin, yPos, badgeWidth, 5, 'F')
+        doc.text(badgeText, margin + 2, yPos + 3.5)
+        doc.setTextColor(31, 41, 55)
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        yPos = addText(item.text, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
+        yPos += 6
+      })
+    }
+
+    // Disclaimer
+    doc.addPage()
+    yPos = margin
+    doc.setFillColor(254, 243, 199)
+    doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F')
+    doc.setTextColor(146, 64, 14)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Important Disclaimer', margin + 5, yPos + 8)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    const disclaimer = 'This report is based on your self-reported responses and is for informational purposes only. It does not constitute legal advice. Compliance requirements vary by state and specific circumstances. Consult a qualified Labour Law Consultant for specific advice. ComplianceCheck assumes no liability for actions taken based on this report.'
+    addText(disclaimer, margin + 5, yPos + 14, contentWidth - 10, 3.5)
+
+    // Footer
+    const totalPages = doc.getNumberOfPages()
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i)
+      doc.setFontSize(7)
+      doc.setTextColor(156, 163, 175)
+      doc.text('ComplianceCheck | compliancecheck.in', margin, pageHeight - 8)
+      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 8, { align: 'right' })
+    }
+
+    return doc.output('blob')
+  }
+
+  // ==========================================================================
   // DPDP PDF GENERATION
   // ==========================================================================
 
@@ -1083,12 +1256,22 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
 
       // Generate PDF client-side based on assessment type
       const assessmentType = data.assessment_type || 'statutory_health'
-      const blob = assessmentType === 'dpdp' ? generateDPDPPDF(data) : generatePDF(data)
+      
+      let blob: Blob
+      if (assessmentType === 'dpdp') {
+        blob = generateDPDPPDF(data)
+      } else if (assessmentType === 'labour_code') {
+        blob = generateLabourCodePDF(data)
+      } else {
+        blob = generatePDF(data)
+      }
       
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      const reportPrefix = assessmentType === 'dpdp' ? 'DPDP-Gap-Assessment' : 'ComplianceCheck-Report'
+      const reportPrefix = assessmentType === 'dpdp' ? 'DPDP-Gap-Assessment' : 
+                          assessmentType === 'labour_code' ? 'Labour-Code-Readiness' : 
+                          'ComplianceCheck-Report'
       link.download = reportPrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
       document.body.appendChild(link)
       link.click()

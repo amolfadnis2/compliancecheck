@@ -135,18 +135,21 @@ export default function StatutoryHealthAssessmentPage() {
     saveProgress()
   }
 
-  // Handle question answer
+  // Handle question answer with 800ms auto-advance delay
   const handleAnswer = (answer: string) => {
     setResponses(prev => ({
       ...prev,
       [currentQuestion.id]: answer
     }))
 
-    if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
-    } else {
-      setStep(3)
-    }
+    // Auto-advance after 800ms delay (consistent with other assessments)
+    setTimeout(() => {
+      if (currentQuestionIndex < totalQuestions - 1) {
+        setCurrentQuestionIndex(prev => prev + 1)
+      } else {
+        setStep(3)
+      }
+    }, 800)
   }
 
   // Go back to previous question
@@ -263,7 +266,7 @@ export default function StatutoryHealthAssessmentPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">

@@ -271,6 +271,19 @@ export default function LabourCodeAssessmentPage() {
       }
 
       const data = await response.json();
+      
+      // Save to localStorage as fallback (especially for temp_ IDs)
+      const assessmentData = {
+        userDetails,
+        responses: { answers: responses },
+        overall_score: data.overallScore,
+        category_scores: data.categoryScores,
+        action_items: data.actionItems,
+        assessment_type: 'labour_code',
+        created_at: new Date().toISOString(),
+      };
+      localStorage.setItem(`assessment_${data.assessmentId}`, JSON.stringify(assessmentData));
+      
       toast.success('Assessment completed!');
       router.push(`/results/${data.assessmentId}?type=labour_code`);
     } catch (error) {
