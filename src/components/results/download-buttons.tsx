@@ -322,6 +322,11 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
   const [downloadSuccess, setDownloadSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(null)
+  
+  // Email state
+  const [isEmailing, setIsEmailing] = useState(false)
+  const [emailSuccess, setEmailSuccess] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   useEffect(() => {
     const id = assessmentId || window.location.pathname.split('/').pop() || ''
@@ -1307,6 +1312,119 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
     }
   }
 
+  // ==========================================================================
+  // EMAIL HANDLER
+  // ==========================================================================
+
+  const handleEmailReport = async () => {
+    setIsEmailing(true)
+    setEmailError(null)
+    setEmailSuccess(false)
+
+    try {
+      const id = assessmentId || window.location.pathname.split('/').pop() || 'demo'
+      let data: AssessmentData | null = null
+      
+      // For local/temp IDs, use localStorage
+      if (id.startsWith('local_') || id.startsWith('temp_')) {
+        data = assessmentData || null
+      } else {
+        // For database IDs, fetch assessment data from API
+        try {
+          const response = await fetch('/api/assessment/' + id)
+          if (response.ok) {
+            const apiData = await response.json()
+            data = {
+              id: apiData.id,
+              assessment_type: apiData.assessment_type,
+              overall_score: apiData.overall_score,
+              category_scores: apiData.category_scores,
+              responses: apiData.responses,
+              userDetails: apiData.userDetails,
+            }
+          }
+        } catch (fetchError) {
+          console.error('Error fetching assessment:', fetchError)
+        }
+      }
+
+      // Use fallback if nothing found
+      if (!data) {
+        data = assessmentData || {
+          id,
+          assessment_type: 'statutory_health',
+          overall_score: 65,
+          category_scores: {},
+          userDetails: { companyName: 'Unknown' },
+        }
+      }
+
+      // Get email from user details
+      const userDetails = data.userDetails || data.responses?.userDetails || {}
+      const email = userDetails.email
+
+      if (!email) {
+        setEmailError('No email address found. Please download the report instead.')
+        return
+      }
+
+      // Generate PDF as base64
+      const assessmentType = data.assessment_type || 'statutory_health'
+      
+      let blob: Blob
+      if (assessmentType === 'dpdp') {
+        blob = generateDPDPPDF(data)
+      } else if (assessmentType === 'labour_code') {
+        blob = generateLabourCodePDF(data)
+      } else {
+        blob = generatePDF(data)
+      }
+      
+      // Convert blob to base64
+      const reader = new FileReader()
+      const pdfBase64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string
+          // Remove the data:application/pdf;base64, prefix
+          const base64 = result.split(',')[1]
+          resolve(base64)
+        }
+        reader.onerror = () => reject(new Error('Failed to read PDF'))
+        reader.readAsDataURL(blob)
+      })
+
+      // Send to email API
+      const response = await fetch('/api/email/send-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          assessmentId: id,
+          pdfBase64,
+          companyName: userDetails.companyName || 'Your Company',
+          score: data.overall_score || 0,
+          assessmentType,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to send email')
+      }
+
+      setEmailSuccess(true)
+      setTimeout(() => setEmailSuccess(false), 5000)
+    } catch (err) {
+      console.error('Email error:', err)
+      setEmailError(err instanceof Error ? err.message : 'Failed to send email. Please try again.')
+    } finally {
+      setIsEmailing(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
@@ -1332,13 +1450,38 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
             </>
           )}
         </Button>
-        <Button variant="outline" className="flex-1" disabled>
-          <Mail className="w-4 h-4 mr-2" />
-          Email Report (Coming Soon)
+        <Button 
+          variant="outline" 
+          className="flex-1" 
+          onClick={handleEmailReport}
+          disabled={isEmailing}
+        >
+          {isEmailing ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Sending...
+            </>
+          ) : emailSuccess ? (
+            <>
+              <Check className="w-4 h-4 mr-2 text-green-600" />
+              Sent to your email!
+            </>
+          ) : (
+            <>
+              <Mail className="w-4 h-4 mr-2" />
+              Email Report
+            </>
+          )}
         </Button>
       </div>
       {error && (
         <p className="text-sm text-amber-600 text-center">{error}</p>
+      )}
+      {emailError && (
+        <p className="text-sm text-red-600 text-center">{emailError}</p>
+      )}
+      {emailSuccess && (
+        <p className="text-sm text-green-600 text-center">Report sent successfully! Check your inbox.</p>
       )}
     </div>
   )
