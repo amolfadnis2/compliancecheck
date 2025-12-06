@@ -1,780 +1,708 @@
-/**
- * DPDP Act 2023 Gap Assessment Questions
- * Digital Personal Data Protection Act 2023 & DPDP Rules 2025
- * Compliance Deadline: May 13, 2027 (18 months from notification)
- * 
- * Categories:
- * 1. Data Inventory & Mapping
- * 2. Consent Management
- * 3. Privacy Notices
- * 4. Data Principal Rights
- * 5. Security Safeguards
- * 6. Breach Response
- * 7. Children's Data
- * 8. Third-Party & Transfers
- */
-
-export type DPDPQuestionType = 'yes_no' | 'multiple_choice';
-
-// Industry types
-export type DPDPIndustryType = 
-  | 'Information Technology'
-  | 'E-commerce'
-  | 'Financial Services'
-  | 'Healthcare'
-  | 'EdTech'
-  | 'Gaming & Entertainment'
-  | 'Social Media'
-  | 'Telecommunications'
-  | 'Travel & Hospitality'
-  | 'Manufacturing'
-  | 'Professional Services'
-  | 'Other';
-
-// Data principal count ranges
-export type DataPrincipalCount = '<1L' | '1L-10L' | '10L-1Cr' | '>1Cr';
-
 export interface DPDPQuestion {
-  id: string;
-  text: string;
-  type: DPDPQuestionType;
-  category: string;
-  weight: number;
-  helpText: string;
-  complianceAnswer?: string;
-  options?: { value: string; label: string }[];
-  // DPDP-specific filters
-  sdfOnly?: boolean;           // Show only for Significant Data Fiduciaries
-  childrenDataOnly?: boolean;  // Show only if processing children's data
-  crossBorderOnly?: boolean;   // Show only if international transfers
+  id: string
+  text: string
+  type: 'yes_no' | 'multiple_choice'
+  phase: 'consent' | 'security' | 'rights' | 'breach' | 'children' | 'governance'
+  phaseLabel: string
+  phaseNumber: number
+  options?: string[]
+  weight: number
+  helpText?: string
+  complianceAnswer?: string
+  isConditional?: boolean // Only shown if certain conditions met
 }
 
-export interface DPDPCategory {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  penaltyExposure: string;
-}
-
-export const DPDP_CATEGORIES: DPDPCategory[] = [
-  {
-    id: 'inventory',
-    name: 'Data Inventory & Mapping',
-    description: 'Personal data identification, data flows, and processing activities',
-    icon: '📊',
-    penaltyExposure: 'Up to Rs. 50 Cr',
-  },
-  {
-    id: 'consent',
-    name: 'Consent Management',
-    description: 'Granular consent, withdrawal parity, and multilingual notices',
-    icon: '✅',
-    penaltyExposure: 'Up to Rs. 50 Cr',
-  },
-  {
-    id: 'notices',
-    name: 'Privacy Notices',
-    description: 'Standalone notices, plain language, and pre-collection disclosure',
-    icon: '📄',
-    penaltyExposure: 'Up to Rs. 50 Cr',
-  },
-  {
-    id: 'rights',
-    name: 'Data Principal Rights',
-    description: 'Access, correction, erasure, withdrawal, and grievance redressal',
-    icon: '👤',
-    penaltyExposure: 'Up to Rs. 50 Cr',
-  },
-  {
-    id: 'security',
-    name: 'Security Safeguards',
-    description: 'Encryption, access controls, and audit logging',
-    icon: '🔒',
-    penaltyExposure: 'Up to Rs. 250 Cr',
-  },
-  {
-    id: 'breach',
-    name: 'Breach Response',
-    description: '72-hour notification and incident response procedures',
-    icon: '🚨',
-    penaltyExposure: 'Up to Rs. 200 Cr',
-  },
-  {
-    id: 'children',
-    name: "Children's Data",
-    description: 'Under-18 definition, parental consent, and tracking prohibition',
-    icon: '👶',
-    penaltyExposure: 'Up to Rs. 200 Cr',
-  },
-  {
-    id: 'thirdparty',
-    name: 'Third-Party & Transfers',
-    description: 'Data Processing Agreements and cross-border transfers',
-    icon: '🌐',
-    penaltyExposure: 'Up to Rs. 250 Cr',
-  },
-  {
-    id: 'healthcare',
-    name: 'Healthcare-Specific Advisories',
-    description: 'Medical record retention conflicts and ABDM compliance',
-    icon: '🏥',
-    penaltyExposure: 'Up to Rs. 250 Cr',
-  },
-];
-
-
-export const DPDP_QUESTIONS: DPDPQuestion[] = [
-  // ===== DATA INVENTORY & MAPPING (4 questions) =====
-  {
-    id: 'inventory_1',
-    text: 'Have you identified and documented all personal data you collect from Indian residents?',
-    type: 'yes_no',
-    category: 'inventory',
-    weight: 8,
-    complianceAnswer: 'yes',
-    helpText: 'Personal data includes any data about an identifiable individual: name, email, phone, Aadhaar, PAN, IP address, device identifiers, location data, biometrics, health data, financial data, and behavioural data.',
-  },
-  {
-    id: 'inventory_2',
-    text: 'Do you maintain a Records of Processing Activities (ROPA) documenting what data you process, why, and how?',
-    type: 'yes_no',
-    category: 'inventory',
-    weight: 7,
-    complianceAnswer: 'yes',
-    helpText: 'ROPA should include: categories of data principals, types of personal data, processing purposes, retention periods, security measures, and third-party sharing details.',
-  },
-  {
-    id: 'inventory_3',
-    text: 'Have you mapped data flows showing how personal data moves through your organisation and to third parties?',
-    type: 'yes_no',
-    category: 'inventory',
-    weight: 6,
-    complianceAnswer: 'yes',
-    helpText: 'Data flow maps help identify all touchpoints where personal data is collected, stored, processed, shared, and deleted.',
-  },
-  {
-    id: 'inventory_4',
-    text: 'Do you have a defined retention schedule specifying how long personal data is kept for each processing purpose?',
-    type: 'yes_no',
-    category: 'inventory',
-    weight: 7,
-    complianceAnswer: 'yes',
-    helpText: 'DPDP requires data to be retained only as long as necessary for the specified purpose. Retention schedules must be documented and enforced.',
-  },
-
-  // ===== CONSENT MANAGEMENT (4 questions) =====
+// Phase 1: Consent Management (9 questions, 20% weight)
+export const CONSENT_MANAGEMENT_QUESTIONS: DPDPQuestion[] = [
   {
     id: 'consent_1',
-    text: 'Do you obtain explicit consent before collecting personal data, with separate consent for each processing purpose?',
-    type: 'yes_no',
-    category: 'consent',
+    text: 'How do you obtain consent before collecting personal data from users?',
+    type: 'multiple_choice',
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
+    options: [
+      'Explicit consent with granular purpose-specific options',
+      'Separate checkboxes for different purposes (not pre-checked)',
+      'Single checkbox for general consent',
+      'Pre-checked consent boxes',
+      'Via Terms & Conditions only'
+    ],
     weight: 10,
-    complianceAnswer: 'yes',
-    helpText: 'DPDP requires free, specific, informed, unambiguous consent. Pre-ticked boxes are NOT valid. Bundled consent (one checkbox for multiple purposes) is NOT compliant. Penalty: Up to Rs. 50 Cr.',
+    complianceAnswer: 'Explicit consent with granular purpose-specific options',
+    helpText: 'DPDP requires free, specific, informed, and unambiguous consent. Pre-checked boxes violate this. Penalty: ₹50 crore'
   },
   {
     id: 'consent_2',
-    text: 'Can users withdraw consent as easily as they gave it?',
-    type: 'yes_no',
-    category: 'consent',
-    weight: 9,
-    complianceAnswer: 'yes',
-    helpText: 'Withdrawal must be as simple as giving consent. If consent was given with one click, withdrawal should also be one click. Hidden settings or multi-step processes violate this requirement.',
+    text: 'Can users easily withdraw their consent?',
+    type: 'multiple_choice',
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
+    options: [
+      'Yes, through same mechanism used to give consent (equally easy)',
+      'Yes, but requires email/customer support request',
+      'Yes, but requires written application',
+      'No mechanism currently available'
+    ],
+    weight: 10,
+    complianceAnswer: 'Yes, through same mechanism used to give consent (equally easy)',
+    helpText: 'Consent withdrawal must be as easy as giving consent. Penalty: ₹50 crore'
   },
   {
     id: 'consent_3',
-    text: 'Are your consent notices available in regional Indian languages relevant to your users?',
+    text: 'Are your privacy notices available in multiple Indian languages?',
     type: 'multiple_choice',
-    category: 'consent',
-    weight: 6,
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
     options: [
-      { value: 'all', label: 'Yes, in all 22 scheduled languages' },
-      { value: 'some', label: 'Yes, in Hindi and English plus some regional languages' },
-      { value: 'hindi_english', label: 'Only in Hindi and English' },
-      { value: 'english_only', label: 'Only in English' },
+      'Yes, in English + regional language(s) of service area',
+      'Yes, in English + Hindi only',
+      'English only',
+      'No privacy notice available'
     ],
-    helpText: 'DPDP mandates notices in languages specified in the Eighth Schedule to the Constitution. At minimum, provide Hindi and English. Best practice: cover languages of your primary user base.',
+    weight: 8,
+    complianceAnswer: 'Yes, in English + regional language(s) of service area',
+    helpText: 'DPDP requires notices in one of 22 scheduled languages. Penalty: ₹50 crore'
   },
   {
     id: 'consent_4',
-    text: 'Do you maintain timestamped records of when and how consent was obtained from each data principal?',
+    text: 'Do you limit data usage strictly to the purposes for which consent was obtained?',
     type: 'yes_no',
-    category: 'consent',
-    weight: 8,
-    complianceAnswer: 'yes',
-    helpText: 'Consent logs should be retained for 7 years and include: timestamp, IP address, consent version, purpose(s) consented to, and method of consent.',
-  },
-
-  // ===== PRIVACY NOTICES (3 questions) =====
-  {
-    id: 'notices_1',
-    text: 'Do you provide a standalone, easily accessible privacy notice before collecting any personal data?',
-    type: 'yes_no',
-    category: 'notices',
-    weight: 8,
-    complianceAnswer: 'yes',
-    helpText: 'Privacy notices must be provided BEFORE or AT the time of data collection. Buried links in terms & conditions are insufficient.',
-  },
-  {
-    id: 'notices_2',
-    text: 'Does your privacy notice clearly explain: what data is collected, why, how long it is kept, and how to contact your Data Protection Officer?',
-    type: 'yes_no',
-    category: 'notices',
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
     weight: 9,
     complianceAnswer: 'yes',
-    helpText: 'DPDP requires notices in plain language. Technical jargon and legalese violate the spirit of transparency requirements.',
+    helpText: 'Purpose limitation is mandatory. Using data for different purposes requires fresh consent. Penalty: ₹50 crore'
   },
   {
-    id: 'notices_3',
-    text: 'Do you update and re-notify users when your data processing purposes or practices change?',
+    id: 'consent_5',
+    text: 'Do you maintain records of when and how consent was obtained from each user?',
     type: 'yes_no',
-    category: 'notices',
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
+    weight: 8,
+    complianceAnswer: 'yes',
+    helpText: 'Consent records should include timestamp, consent version, and user acknowledgment. Retention: 7 years recommended'
+  },
+  {
+    id: 'consent_6',
+    text: 'Do you re-obtain consent when your privacy policy changes materially?',
+    type: 'yes_no',
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
     weight: 7,
     complianceAnswer: 'yes',
-    helpText: 'Material changes to processing require fresh notice and may require fresh consent. Silent policy updates are not compliant.',
+    helpText: 'Material changes to data processing require fresh consent. Penalty: ₹50 crore'
   },
-
-
-  // ===== DATA PRINCIPAL RIGHTS (4 questions) =====
   {
-    id: 'rights_1',
-    text: 'Can data principals access a summary of their personal data held by you within 90 days of request?',
+    id: 'consent_7',
+    text: 'Do you provide granular consent options for cookies and tracking?',
+    type: 'multiple_choice',
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
+    options: [
+      'Yes, users can opt-in/out of each cookie category',
+      'Yes, accept all or reject all only',
+      'No cookie consent mechanism',
+      'Not applicable - we don\'t use cookies'
+    ],
+    weight: 7,
+    complianceAnswer: 'Yes, users can opt-in/out of each cookie category',
+    helpText: 'Granular consent for non-essential cookies is best practice under DPDP'
+  },
+  {
+    id: 'consent_8',
+    text: 'Do you obtain separate, specific consent before sharing data with third parties?',
     type: 'yes_no',
-    category: 'rights',
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
     weight: 9,
     complianceAnswer: 'yes',
-    helpText: 'The 90-day SLA is mandatory under DPDP. This includes providing processing activities, categories of data, and third parties with whom data was shared.',
+    helpText: 'Third-party data sharing requires explicit, separate consent. Penalty: ₹50 crore'
   },
   {
-    id: 'rights_2',
-    text: 'Do you have a process to correct inaccurate or incomplete personal data upon request?',
+    id: 'consent_9',
+    text: 'Do you track and manage consent version history?',
     type: 'yes_no',
-    category: 'rights',
-    weight: 8,
+    phase: 'consent',
+    phaseLabel: 'Consent Management',
+    phaseNumber: 1,
+    weight: 7,
     complianceAnswer: 'yes',
-    helpText: 'Correction requests must be actioned promptly. Document the process and maintain audit trails of corrections made.',
-  },
-  {
-    id: 'rights_3',
-    text: 'Can data principals request erasure of their personal data, and do you have a process to fulfil this?',
-    type: 'yes_no',
-    category: 'rights',
-    weight: 9,
-    complianceAnswer: 'yes',
-    helpText: 'Erasure must cover all systems including backups (within reasonable timeframes). Exceptions exist for legal compliance and legitimate archival.',
-  },
-  {
-    id: 'rights_4',
-    text: 'Do you have a designated grievance redressal mechanism with response SLAs for data principal complaints?',
-    type: 'yes_no',
-    category: 'rights',
-    weight: 10,
-    complianceAnswer: 'yes',
-    helpText: 'A dedicated channel (email, portal) for data protection complaints is mandatory. Response within 30 days recommended. Penalty for non-compliance: Up to Rs. 200 Cr.',
-  },
+    helpText: 'Consent version tracking helps demonstrate compliance during audits'
+  }
+];
 
-  // ===== SECURITY SAFEGUARDS (4 questions) =====
+// Phase 2: Security Safeguards (9 questions, 20% weight)
+export const SECURITY_SAFEGUARDS_QUESTIONS: DPDPQuestion[] = [
   {
     id: 'security_1',
-    text: 'Is all personal data encrypted at rest using industry-standard encryption (AES-256 or equivalent)?',
-    type: 'yes_no',
-    category: 'security',
-    weight: 10,
-    complianceAnswer: 'yes',
-    helpText: 'Rule 6 of DPDP Rules mandates encryption. Failure to implement reasonable security safeguards carries the HIGHEST penalty: Up to Rs. 250 Cr.',
+    text: 'Is all personal data encrypted at rest (when stored in databases)?',
+    type: 'multiple_choice',
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    options: [
+      'Yes, AES-256 or equivalent encryption for all personal data',
+      'Yes, basic encryption (AES-128)',
+      'Only sensitive fields encrypted',
+      'No encryption at rest'
+    ],
+    weight: 12,
+    complianceAnswer: 'Yes, AES-256 or equivalent encryption for all personal data',
+    helpText: 'Failure to implement reasonable security safeguards: ₹250 crore maximum penalty'
   },
   {
     id: 'security_2',
-    text: 'Do you maintain audit logs of all personal data access for at least 1 year?',
-    type: 'yes_no',
-    category: 'security',
-    weight: 8,
-    complianceAnswer: 'yes',
-    helpText: 'DPDP Rules require minimum 1-year retention of processing logs and traffic data for regulatory assessment and law enforcement purposes.',
+    text: 'Is all personal data encrypted during transmission (in transit)?',
+    type: 'multiple_choice',
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    options: [
+      'Yes, TLS 1.3 for all data transfers',
+      'Yes, TLS 1.2 minimum',
+      'Partial encryption (some APIs only)',
+      'No encryption in transit'
+    ],
+    weight: 11,
+    complianceAnswer: 'Yes, TLS 1.3 for all data transfers',
+    helpText: 'TLS 1.2+ required. TLS 1.3 recommended. Penalty: ₹250 crore'
   },
   {
     id: 'security_3',
-    text: 'Do you have role-based access controls (RBAC) ensuring personal data is accessible only on a need-to-know basis?',
+    text: 'Do you use tokenization or pseudonymization to protect personal data?',
     type: 'yes_no',
-    category: 'security',
-    weight: 9,
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    weight: 8,
     complianceAnswer: 'yes',
-    helpText: 'Access to personal data should be limited to authorised personnel. Implement least-privilege principles and regular access reviews.',
+    helpText: 'Tokenization/pseudonymization reduces risk of data breaches'
   },
   {
     id: 'security_4',
-    text: 'Do you use tokenisation or masking for sensitive personal data (Aadhaar, PAN, financial details)?',
+    text: 'Do you have role-based access control (RBAC) limiting who can access personal data?',
     type: 'yes_no',
-    category: 'security',
-    weight: 8,
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    weight: 10,
     complianceAnswer: 'yes',
-    helpText: 'Tokenisation replaces sensitive data with non-sensitive placeholders. This is especially important for payment data and government identifiers.',
+    helpText: 'Need-to-know principle: Only authorized personnel should access personal data. Penalty: ₹250 crore'
   },
-
-  // ===== BREACH RESPONSE (3 questions) =====
   {
-    id: 'breach_1',
-    text: 'Do you have a documented incident response plan for personal data breaches?',
+    id: 'security_5',
+    text: 'Do you maintain audit logs of data access with minimum 1-year retention?',
     type: 'yes_no',
-    category: 'breach',
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
     weight: 9,
     complianceAnswer: 'yes',
-    helpText: 'The plan should include: detection procedures, assessment criteria, escalation paths, notification templates, and post-incident review processes.',
+    helpText: '1-year minimum log retention helps investigate breaches. Penalty: ₹250 crore'
+  },
+  {
+    id: 'security_6',
+    text: 'Do you have intrusion detection systems monitoring for security threats?',
+    type: 'yes_no',
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    weight: 8,
+    complianceAnswer: 'yes',
+    helpText: 'Real-time threat monitoring is critical for breach prevention'
+  },
+  {
+    id: 'security_7',
+    text: 'Are data backups tested and recovery procedures documented?',
+    type: 'yes_no',
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    weight: 7,
+    complianceAnswer: 'yes',
+    helpText: 'Test recovery quarterly to ensure data can be restored securely'
+  },
+  {
+    id: 'security_8',
+    text: 'Do you conduct regular security vulnerability assessments?',
+    type: 'multiple_choice',
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    options: [
+      'Yes, continuous/automated scanning with quarterly reviews',
+      'Yes, annual third-party security audit',
+      'Yes, ad-hoc internal reviews only',
+      'No formal vulnerability assessment process'
+    ],
+    weight: 9,
+    complianceAnswer: 'Yes, continuous/automated scanning with quarterly reviews',
+    helpText: 'Regular vulnerability assessments prevent security failures. Penalty: ₹250 crore'
+  },
+  {
+    id: 'security_9',
+    text: 'Do you follow secure software development practices (SSDLC)?',
+    type: 'yes_no',
+    phase: 'security',
+    phaseLabel: 'Security Safeguards',
+    phaseNumber: 2,
+    weight: 8,
+    complianceAnswer: 'yes',
+    helpText: 'Security-by-design minimizes vulnerabilities from development stage'
+  }
+];
+
+// Phase 3: Data Principal Rights (6 questions, 10% weight)
+export const DATA_PRINCIPAL_RIGHTS_QUESTIONS: DPDPQuestion[] = [
+  {
+    id: 'rights_1',
+    text: 'Can users access their personal data through a self-service mechanism?',
+    type: 'multiple_choice',
+    phase: 'rights',
+    phaseLabel: 'Data Principal Rights',
+    phaseNumber: 3,
+    options: [
+      'Yes, instant download of all data',
+      'Yes, provided within 7 days via email request',
+      'Yes, but requires written application',
+      'No mechanism available'
+    ],
+    weight: 10,
+    complianceAnswer: 'Yes, instant download of all data',
+    helpText: 'Right to access must be fulfilled promptly. Penalty: ₹50 crore'
+  },
+  {
+    id: 'rights_2',
+    text: 'Can users correct inaccurate personal data?',
+    type: 'yes_no',
+    phase: 'rights',
+    phaseLabel: 'Data Principal Rights',
+    phaseNumber: 3,
+    weight: 9,
+    complianceAnswer: 'yes',
+    helpText: 'Users must be able to correct incomplete or inaccurate data. Penalty: ₹50 crore'
+  },
+  {
+    id: 'rights_3',
+    text: 'Can users request deletion of their personal data (Right to Erasure)?',
+    type: 'multiple_choice',
+    phase: 'rights',
+    phaseLabel: 'Data Principal Rights',
+    phaseNumber: 3,
+    options: [
+      'Yes, instant deletion with confirmation',
+      'Yes, processed within 30 days',
+      'Yes, but requires email/support request',
+      'No deletion mechanism available'
+    ],
+    weight: 10,
+    complianceAnswer: 'Yes, instant deletion with confirmation',
+    helpText: '48-hour advance notice before deletion is mandatory. Penalty: ₹50 crore'
+  },
+  {
+    id: 'rights_4',
+    text: 'Do you have a grievance redressal mechanism for data-related complaints?',
+    type: 'yes_no',
+    phase: 'rights',
+    phaseLabel: 'Data Principal Rights',
+    phaseNumber: 3,
+    weight: 8,
+    complianceAnswer: 'yes',
+    helpText: 'Grievance officer must respond within reasonable timeframe (30 days). Penalty: ₹50 crore'
+  },
+  {
+    id: 'rights_5',
+    text: 'What is your typical response time for Data Principal rights requests?',
+    type: 'multiple_choice',
+    phase: 'rights',
+    phaseLabel: 'Data Principal Rights',
+    phaseNumber: 3,
+    options: [
+      'Within 48-72 hours',
+      'Within 7 days',
+      'Within 30 days',
+      'No defined timeline'
+    ],
+    weight: 7,
+    complianceAnswer: 'Within 48-72 hours',
+    helpText: 'While no strict timeline in DPDP, 7-30 days is reasonable. Faster is better'
+  },
+  {
+    id: 'rights_6',
+    text: 'Can users nominate someone to exercise their rights in case of death/incapacity?',
+    type: 'yes_no',
+    phase: 'rights',
+    phaseLabel: 'Data Principal Rights',
+    phaseNumber: 3,
+    weight: 6,
+    complianceAnswer: 'yes',
+    helpText: 'DPDP allows nomination of representative for rights exercise'
+  }
+];
+
+// Phase 4: Breach Response (5 questions, 15% weight)
+export const BREACH_RESPONSE_QUESTIONS: DPDPQuestion[] = [
+  {
+    id: 'breach_1',
+    text: 'Do you have a documented data breach response plan?',
+    type: 'yes_no',
+    phase: 'breach',
+    phaseLabel: 'Breach Response',
+    phaseNumber: 4,
+    weight: 12,
+    complianceAnswer: 'yes',
+    helpText: 'Must notify Data Protection Board within 72 hours. Penalty: ₹200 crore'
   },
   {
     id: 'breach_2',
-    text: 'Can you notify the Data Protection Board within 72 hours of detecting a personal data breach?',
-    type: 'yes_no',
-    category: 'breach',
-    weight: 10,
-    complianceAnswer: 'yes',
-    helpText: '72-hour notification to DPB is MANDATORY. The clock starts from detection, not confirmation. Penalty for failure: Up to Rs. 200 Cr.',
+    text: 'Can you detect and report a data breach to the Data Protection Board within 72 hours?',
+    type: 'multiple_choice',
+    phase: 'breach',
+    phaseLabel: 'Breach Response',
+    phaseNumber: 4,
+    options: [
+      'Yes, automated detection and notification process',
+      'Yes, manual process within 72 hours',
+      'Likely but not guaranteed',
+      'No process in place'
+    ],
+    weight: 15,
+    complianceAnswer: 'Yes, automated detection and notification process',
+    helpText: '72-hour notification to Board is mandatory. Penalty: ₹200 crore'
   },
   {
     id: 'breach_3',
-    text: 'Do you have a process to notify affected data principals immediately after a breach?',
+    text: 'Do you notify affected individuals in case of a data breach?',
     type: 'yes_no',
-    category: 'breach',
-    weight: 9,
+    phase: 'breach',
+    phaseLabel: 'Breach Response',
+    phaseNumber: 4,
+    weight: 12,
     complianceAnswer: 'yes',
-    helpText: 'Affected individuals must be notified without delay. Notification should include: nature of breach, likely consequences, and mitigation steps.',
+    helpText: 'Affected Data Principals must be notified. Penalty: ₹200 crore'
   },
-
-
-  // ===== CHILDREN'S DATA (3 questions - conditional) =====
   {
-    id: 'children_1',
-    text: 'Do you obtain verifiable parental consent before processing any data of users under 18?',
+    id: 'breach_4',
+    text: 'Do you maintain documentation of past security incidents and breaches?',
     type: 'yes_no',
-    category: 'children',
+    phase: 'breach',
+    phaseLabel: 'Breach Response',
+    phaseNumber: 4,
     weight: 10,
     complianceAnswer: 'yes',
-    childrenDataOnly: true,
-    helpText: 'India defines a child as anyone under 18 (stricter than GDPR at 16). Verification must confirm the consenting person is the parent/guardian. Methods: government ID, DigiLocker tokens, or reliable identity documents. Penalty: Up to Rs. 200 Cr.',
+    helpText: 'Incident documentation helps with root cause analysis and prevention'
+  },
+  {
+    id: 'breach_5',
+    text: 'Do you conduct post-incident reviews and remediation tracking?',
+    type: 'yes_no',
+    phase: 'breach',
+    phaseLabel: 'Breach Response',
+    phaseNumber: 4,
+    weight: 11,
+    complianceAnswer: 'yes',
+    helpText: 'Post-incident analysis prevents repeat violations'
+  }
+];
+
+// Phase 5: Children's Data (5 questions, 15% weight) - CONDITIONAL
+export const CHILDREN_DATA_QUESTIONS: DPDPQuestion[] = [
+  {
+    id: 'children_1',
+    text: 'Do you obtain verifiable parental consent before processing data of anyone under 18?',
+    type: 'multiple_choice',
+    phase: 'children',
+    phaseLabel: 'Children\'s Data Protection',
+    phaseNumber: 5,
+    options: [
+      'Yes, verified via OTP/document upload/digital signature',
+      'Yes, via email confirmation from parent',
+      'Yes, via checkbox confirmation',
+      'No parental consent mechanism'
+    ],
+    weight: 15,
+    complianceAnswer: 'Yes, verified via OTP/document upload/digital signature',
+    helpText: 'Verifiable parental consent mandatory for <18. India uses under-18 definition. Penalty: ₹200 crore',
+    isConditional: true
   },
   {
     id: 'children_2',
-    text: 'Have you disabled all behavioural tracking, profiling, and targeted advertising for users under 18?',
-    type: 'yes_no',
-    category: 'children',
-    weight: 10,
-    complianceAnswer: 'yes',
-    childrenDataOnly: true,
-    helpText: 'ABSOLUTELY PROHIBITED: behavioural monitoring, profiling, or targeted advertising directed at children. No exceptions for "legitimate interest" or "service improvement". Penalty: Up to Rs. 200 Cr.',
+    text: 'Have you implemented age verification mechanisms?',
+    type: 'multiple_choice',
+    phase: 'children',
+    phaseLabel: 'Children\'s Data Protection',
+    phaseNumber: 5,
+    options: [
+      'Yes, verified via government ID/document validation',
+      'Yes, self-declared age confirmation',
+      'No age verification implemented',
+      'Not applicable - adults only'
+    ],
+    weight: 12,
+    complianceAnswer: 'Yes, verified via government ID/document validation',
+    helpText: 'Robust age verification prevents inadvertent children\'s data processing. Penalty: ₹200 crore',
+    isConditional: true
   },
   {
     id: 'children_3',
-    text: 'Do you have age-verification mechanisms to identify and protect users under 18?',
+    text: 'Have you disabled behavioral tracking and targeted advertising for users under 18?',
     type: 'yes_no',
-    category: 'children',
-    weight: 8,
+    phase: 'children',
+    phaseLabel: 'Children\'s Data Protection',
+    phaseNumber: 5,
+    weight: 14,
     complianceAnswer: 'yes',
-    childrenDataOnly: true,
-    helpText: 'Age gates with self-declaration may be insufficient. Consider more robust verification for services likely to attract children (gaming, education, social media).',
-  },
-
-  // ===== THIRD-PARTY & TRANSFERS (3 questions) =====
-  {
-    id: 'thirdparty_1',
-    text: 'Do you have Data Processing Agreements (DPAs) with all third parties who process personal data on your behalf?',
-    type: 'yes_no',
-    category: 'thirdparty',
-    weight: 9,
-    complianceAnswer: 'yes',
-    helpText: 'DPAs are mandatory for all data processors (vendors, cloud providers, analytics tools). The DPA should specify: processing scope, security requirements, breach notification, and audit rights.',
+    helpText: 'Behavioral tracking of children is prohibited. Penalty: ₹200 crore',
+    isConditional: true
   },
   {
-    id: 'thirdparty_2',
-    text: 'Do you conduct due diligence or audits of third-party data processors for security and compliance?',
+    id: 'children_4',
+    text: 'Do you have processes to delete children\'s data upon parental request?',
     type: 'yes_no',
-    category: 'thirdparty',
-    weight: 7,
+    phase: 'children',
+    phaseLabel: 'Children\'s Data Protection',
+    phaseNumber: 5,
+    weight: 12,
     complianceAnswer: 'yes',
-    helpText: 'You remain responsible for data even when processed by third parties. Conduct annual security assessments or require SOC 2 / ISO 27001 certifications.',
+    helpText: 'Parents can request deletion of child\'s data at any time. Penalty: ₹200 crore',
+    isConditional: true
   },
   {
-    id: 'thirdparty_3',
-    text: 'If you transfer personal data outside India, do you have documented compliance with cross-border transfer requirements?',
+    id: 'children_5',
+    text: 'Do you clearly inform parents about data collection purposes when obtaining consent?',
     type: 'yes_no',
-    category: 'thirdparty',
-    weight: 9,
+    phase: 'children',
+    phaseLabel: 'Children\'s Data Protection',
+    phaseNumber: 5,
+    weight: 12,
     complianceAnswer: 'yes',
-    crossBorderOnly: true,
-    helpText: 'Cross-border transfers are permitted except to countries blacklisted by the Central Government. Document: destination countries, legal basis, and contractual safeguards. Penalty: Up to Rs. 250 Cr.',
-  },
+    helpText: 'Transparent communication with parents is mandatory. Penalty: ₹200 crore',
+    isConditional: true
+  }
 ];
 
-// Applicability profile type
-export interface DPDPProfile {
-  industry: DPDPIndustryType;
-  dataPrincipalCount: DataPrincipalCount;
-  processesChildrenData: boolean;
-  crossBorderTransfers: boolean;
-  isDigitalPlatform: boolean;
-}
-
-// Check if organisation qualifies as Significant Data Fiduciary
-export function isSignificantDataFiduciary(profile: DPDPProfile): boolean {
-  // SDF criteria based on DPDP Rules:
-  // - Processing personal data of 1 Cr+ individuals, OR
-  // - Processing sensitive personal data at scale, OR
-  // - Operating specific platform types
-  if (profile.dataPrincipalCount === '>1Cr') return true;
-  if (profile.dataPrincipalCount === '10L-1Cr' && profile.isDigitalPlatform) return true;
-  // Platforms handling children's data at scale (10L-1Cr without digital platform flag)
-  if (profile.processesChildrenData && profile.dataPrincipalCount === '10L-1Cr') {
-    return true;
+// Phase 6: Governance & Retention (4 questions, 10% weight)
+export const GOVERNANCE_QUESTIONS: DPDPQuestion[] = [
+  {
+    id: 'gov_1',
+    text: 'Have you designated a Data Protection Officer (DPO) or authorized representative?',
+    type: 'multiple_choice',
+    phase: 'governance',
+    phaseLabel: 'Governance & Retention',
+    phaseNumber: 6,
+    options: [
+      'Yes, India-based DPO reporting to Board',
+      'Yes, authorized representative with contact details published',
+      'Yes, but contact details not published',
+      'No DPO or representative designated'
+    ],
+    weight: 12,
+    complianceAnswer: 'Yes, India-based DPO reporting to Board',
+    helpText: 'DPO contact must be published in privacy policy. SDFs require India-based DPO. Penalty: ₹150 crore'
+  },
+  {
+    id: 'gov_2',
+    text: 'Do you have a documented data retention policy?',
+    type: 'multiple_choice',
+    phase: 'governance',
+    phaseLabel: 'Governance & Retention',
+    phaseNumber: 6,
+    options: [
+      'Yes, written policy with specific retention periods by data type',
+      'Yes, general policy without specific periods',
+      'No written policy but informal practices',
+      'No retention policy'
+    ],
+    weight: 10,
+    complianceAnswer: 'Yes, written policy with specific retention periods by data type',
+    helpText: 'Data must be deleted within 1 year of last interaction unless legally required'
+  },
+  {
+    id: 'gov_3',
+    text: 'Do you maintain Records of Processing Activities (RoPA)?',
+    type: 'yes_no',
+    phase: 'governance',
+    phaseLabel: 'Governance & Retention',
+    phaseNumber: 6,
+    weight: 9,
+    complianceAnswer: 'yes',
+    helpText: 'RoPA documents what data is collected, why, where stored, and retention periods'
+  },
+  {
+    id: 'gov_4',
+    text: 'Do you provide employee training on data protection and privacy?',
+    type: 'multiple_choice',
+    phase: 'governance',
+    phaseLabel: 'Governance & Retention',
+    phaseNumber: 6,
+    options: [
+      'Yes, mandatory annual training for all employees',
+      'Yes, training for data-handling staff only',
+      'Ad-hoc training when needed',
+      'No formal training program'
+    ],
+    weight: 9,
+    complianceAnswer: 'Yes, mandatory annual training for all employees',
+    helpText: 'Regular training reduces human error - the leading cause of data breaches'
   }
-  return false;
-}
+];
 
+// Combine all questions
+export const ALL_DPDP_QUESTIONS = [
+  ...CONSENT_MANAGEMENT_QUESTIONS,
+  ...SECURITY_SAFEGUARDS_QUESTIONS,
+  ...DATA_PRINCIPAL_RIGHTS_QUESTIONS,
+  ...BREACH_RESPONSE_QUESTIONS,
+  ...CHILDREN_DATA_QUESTIONS,
+  ...GOVERNANCE_QUESTIONS
+];
 
-/**
- * Filter questions based on user profile (children's data, cross-border, SDF status)
- */
-export function getFilteredDPDPQuestions(profile: DPDPProfile): DPDPQuestion[] {
-  return DPDP_QUESTIONS.filter((question) => {
-    // Children's data questions only if processing children's data
-    if (question.childrenDataOnly && !profile.processesChildrenData) {
-      return false;
-    }
-    // Cross-border questions only if doing international transfers
-    if (question.crossBorderOnly && !profile.crossBorderTransfers) {
-      return false;
-    }
-    // SDF-only questions (if we add any in future)
-    if (question.sdfOnly && !isSignificantDataFiduciary(profile)) {
-      return false;
-    }
-    return true;
-  });
-}
-
-/**
- * Get questions for a specific category (filtered by profile)
- */
-export function getDPDPQuestionsByCategory(
-  categoryId: string,
-  profile?: DPDPProfile
-): DPDPQuestion[] {
-  let questions = DPDP_QUESTIONS.filter((q) => q.category === categoryId);
-  
-  if (profile) {
-    questions = questions.filter((question) => {
-      if (question.childrenDataOnly && !profile.processesChildrenData) return false;
-      if (question.crossBorderOnly && !profile.crossBorderTransfers) return false;
-      if (question.sdfOnly && !isSignificantDataFiduciary(profile)) return false;
-      return true;
-    });
+// Category/Phase information
+export const PHASE_INFO = {
+  consent: {
+    label: 'Consent Management',
+    weight: 0.20,
+    description: 'Free, specific, informed consent mechanisms',
+    maxPenalty: '₹50 crore'
+  },
+  security: {
+    label: 'Security Safeguards',
+    weight: 0.20,
+    description: 'Encryption, access controls, monitoring',
+    maxPenalty: '₹250 crore'
+  },
+  rights: {
+    label: 'Data Principal Rights',
+    weight: 0.10,
+    description: 'Access, correction, erasure, grievance',
+    maxPenalty: '₹50 crore'
+  },
+  breach: {
+    label: 'Breach Response',
+    weight: 0.15,
+    description: '72-hour notification, incident management',
+    maxPenalty: '₹200 crore'
+  },
+  children: {
+    label: 'Children\'s Data Protection',
+    weight: 0.15,
+    description: 'Parental consent, behavioral tracking prohibition',
+    maxPenalty: '₹200 crore'
+  },
+  governance: {
+    label: 'Governance & Retention',
+    weight: 0.10,
+    description: 'DPO, retention policy, training',
+    maxPenalty: '₹150 crore'
   }
-  
-  return questions;
-}
+};
 
-/**
- * Calculate DPDP compliance score with risk multipliers
- */
-export function calculateDPDPScore(
-  responses: Record<string, string>,
-  profile?: DPDPProfile
-): {
-  overallScore: number;
-  categoryScores: Record<string, number>;
-  maxScores: Record<string, number>;
-  questionsAnswered: number;
-  totalQuestions: number;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  estimatedPenaltyExposure: string;
-} {
-  const applicableQuestions = profile
-    ? getFilteredDPDPQuestions(profile)
-    : DPDP_QUESTIONS;
+// Maturity levels
+export const MATURITY_LEVELS = [
+  { level: 1, name: 'Initial', min: 0, max: 20, color: 'red', description: 'Ad-hoc, no formal privacy program' },
+  { level: 2, name: 'Developing', min: 21, max: 40, color: 'orange', description: 'Policies drafted, limited implementation' },
+  { level: 3, name: 'Defined', min: 41, max: 60, color: 'yellow', description: 'Documented processes, partial automation' },
+  { level: 4, name: 'Managed', min: 61, max: 80, color: 'lime', description: 'Metrics-driven, regular audits' },
+  { level: 5, name: 'Optimized', min: 81, max: 100, color: 'green', description: 'Continuous improvement, privacy-by-design embedded' }
+];
 
-  const categoryScores: Record<string, number> = {};
-  const maxScores: Record<string, number> = {};
-  let questionsAnswered = 0;
+// Risk multipliers
+export const RISK_MULTIPLIERS = {
+  childrenData: 2.0,
+  healthData: 1.8,
+  financialData: 1.5,
+  crossBorder: 1.5,
+  sdfDesignation: 2.0
+};
 
-  // Risk multipliers based on DPDP penalty structure
-  const riskMultipliers: Record<string, number> = {
-    children: 2.0,   // Rs. 200 Cr penalty
-    security: 1.8,   // Rs. 250 Cr penalty (highest)
-    breach: 1.5,     // Rs. 200 Cr penalty
-    rights: 1.3,     // Rs. 200 Cr penalty
-    thirdparty: 1.5, // Rs. 250 Cr penalty
-    consent: 1.0,
-    notices: 1.0,
-    inventory: 1.0,
-  };
+// SDF threshold (conservative estimate)
+export const SDF_REVENUE_THRESHOLD = 500; // ₹500 crore
 
-  // Initialize scores
-  DPDP_CATEGORIES.forEach((cat) => {
-    categoryScores[cat.id] = 0;
-    maxScores[cat.id] = 0;
-  });
+// Dropdown options
+export const REVENUE_OPTIONS = [
+  'Below ₹5 crore',
+  '₹5-10 crore',
+  '₹10-50 crore',
+  '₹50-100 crore',
+  '₹100-500 crore',
+  '₹500+ crore' // SDF risk threshold
+];
 
-  // Calculate scores
-  applicableQuestions.forEach((question) => {
-    const response = responses[question.id];
-    const multiplier = riskMultipliers[question.category] || 1.0;
-    const adjustedWeight = question.weight * multiplier;
-    
-    maxScores[question.category] += adjustedWeight;
-
-    if (!response) return;
-    questionsAnswered++;
-
-    if (question.type === 'yes_no') {
-      if (response === question.complianceAnswer) {
-        categoryScores[question.category] += adjustedWeight;
-      }
-    } else if (question.type === 'multiple_choice') {
-      // First option is typically most compliant
-      if (question.options && question.options.length > 0) {
-        if (response === question.options[0].value) {
-          categoryScores[question.category] += adjustedWeight;
-        } else if (response === question.options[1]?.value) {
-          categoryScores[question.category] += adjustedWeight * 0.7;
-        } else if (response === question.options[2]?.value) {
-          categoryScores[question.category] += adjustedWeight * 0.4;
-        }
-        // Last option (english_only) gets 0
-      }
-    }
-  });
-
-  // Calculate percentages and overall score
-  let totalScore = 0;
-  let totalMaxScore = 0;
-  const categoryPercentages: Record<string, number> = {};
-
-  Object.keys(categoryScores).forEach((cat) => {
-    totalScore += categoryScores[cat];
-    totalMaxScore += maxScores[cat];
-    
-    // Only include categories with actual questions
-    // Empty categories (due to filtering) should not contribute to score
-    if (maxScores[cat] > 0) {
-      categoryPercentages[cat] = Math.round((categoryScores[cat] / maxScores[cat]) * 100);
-    }
-    // Categories with no questions are excluded from results
-  });
-
-  const overallScore = totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
-
-  // Determine risk level and penalty exposure
-  let riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  let estimatedPenaltyExposure: string;
-
-  if (overallScore >= 80) {
-    riskLevel = 'low';
-    estimatedPenaltyExposure = 'Minimal - Under Rs. 10 Cr';
-  } else if (overallScore >= 60) {
-    riskLevel = 'medium';
-    estimatedPenaltyExposure = 'Moderate - Rs. 10 Cr to Rs. 50 Cr';
-  } else if (overallScore >= 40) {
-    riskLevel = 'high';
-    estimatedPenaltyExposure = 'Significant - Rs. 50 Cr to Rs. 150 Cr';
+// Get questions based on organization profile
+export function getRelevantQuestions(processesChildrenData: boolean): DPDPQuestion[] {
+  if (processesChildrenData) {
+    return ALL_DPDP_QUESTIONS; // All 45 questions including children's data
   } else {
-    riskLevel = 'critical';
-    estimatedPenaltyExposure = 'Critical - Up to Rs. 250 Cr';
-  }
-
-  return {
-    overallScore,
-    categoryScores: categoryPercentages,
-    maxScores,
-    questionsAnswered,
-    totalQuestions: applicableQuestions.length,
-    riskLevel,
-    estimatedPenaltyExposure,
-  };
-}
-
-
-/**
- * Generate prioritised action items based on responses
- */
-export function generateDPDPActionItems(
-  responses: Record<string, string>,
-  profile?: DPDPProfile
-): Array<{ priority: 'high' | 'medium' | 'low'; text: string; category: string; penalty: string }> {
-  const actionItems: Array<{ priority: 'high' | 'medium' | 'low'; text: string; category: string; penalty: string }> = [];
-
-  const applicableQuestions = profile
-    ? getFilteredDPDPQuestions(profile)
-    : DPDP_QUESTIONS;
-  const applicableIds = new Set(applicableQuestions.map(q => q.id));
-
-  // Action item definitions with penalties
-  const actionMap: Record<string, { text: string; penalty: string }> = {
-    inventory_1: { text: 'Create a comprehensive personal data inventory covering all data collected from Indian residents', penalty: 'Rs. 50 Cr' },
-    inventory_2: { text: 'Implement Records of Processing Activities (ROPA) documenting data categories, purposes, and retention', penalty: 'Rs. 50 Cr' },
-    inventory_3: { text: 'Map all data flows within the organisation and to external third parties', penalty: 'Rs. 50 Cr' },
-    inventory_4: { text: 'Define and document retention schedules for all categories of personal data', penalty: 'Rs. 50 Cr' },
-    consent_1: { text: 'Implement granular consent mechanisms with separate consent for each processing purpose', penalty: 'Rs. 50 Cr' },
-    consent_2: { text: 'Ensure consent withdrawal is as easy as giving consent (one-click withdrawal)', penalty: 'Rs. 50 Cr' },
-    consent_3: { text: 'Provide consent notices in Hindi, English, and relevant regional languages', penalty: 'Rs. 50 Cr' },
-    consent_4: { text: 'Implement consent logging with timestamps, IP addresses, and consent versions', penalty: 'Rs. 50 Cr' },
-    notices_1: { text: 'Create standalone privacy notices presented before data collection', penalty: 'Rs. 50 Cr' },
-    notices_2: { text: 'Rewrite privacy notice in plain language with clear DPO contact details', penalty: 'Rs. 50 Cr' },
-    notices_3: { text: 'Implement process to update and re-notify users when privacy practices change', penalty: 'Rs. 50 Cr' },
-    rights_1: { text: 'Build data subject access request (DSAR) portal with 90-day SLA tracking', penalty: 'Rs. 50 Cr' },
-    rights_2: { text: 'Implement data correction workflow with audit trail', penalty: 'Rs. 50 Cr' },
-    rights_3: { text: 'Create data erasure process covering all systems including backups', penalty: 'Rs. 50 Cr' },
-    rights_4: { text: 'Establish dedicated grievance redressal channel with response SLAs', penalty: 'Rs. 50 Cr' },
-    security_1: { text: 'Implement AES-256 encryption for all personal data at rest - HIGHEST PRIORITY', penalty: 'Rs. 250 Cr' },
-    security_2: { text: 'Configure audit logging for all personal data access with 1-year retention', penalty: 'Rs. 250 Cr' },
-    security_3: { text: 'Implement role-based access controls (RBAC) with least-privilege principles', penalty: 'Rs. 250 Cr' },
-    security_4: { text: 'Deploy tokenisation for sensitive identifiers (Aadhaar, PAN, financial data)', penalty: 'Rs. 250 Cr' },
-    breach_1: { text: 'Create documented incident response plan with detection, assessment, and notification procedures', penalty: 'Rs. 200 Cr' },
-    breach_2: { text: 'Establish 72-hour breach notification capability to Data Protection Board', penalty: 'Rs. 200 Cr' },
-    breach_3: { text: 'Implement affected party notification process with templated communications', penalty: 'Rs. 200 Cr' },
-    children_1: { text: 'Implement verifiable parental consent mechanism (DigiLocker, ID verification)', penalty: 'Rs. 200 Cr' },
-    children_2: { text: 'Disable all behavioural tracking and targeted advertising for under-18 users', penalty: 'Rs. 200 Cr' },
-    children_3: { text: 'Implement robust age-verification mechanisms beyond self-declaration', penalty: 'Rs. 200 Cr' },
-    thirdparty_1: { text: 'Execute Data Processing Agreements with all third-party processors', penalty: 'Rs. 250 Cr' },
-    thirdparty_2: { text: 'Conduct security assessments of all data processors (require SOC 2/ISO 27001)', penalty: 'Rs. 250 Cr' },
-    thirdparty_3: { text: 'Document cross-border transfer compliance with destination country assessment', penalty: 'Rs. 250 Cr' },
-    
-    // Healthcare-specific advisories
-    healthcare_medical_records: { text: 'Document legal basis for medical record retention vs DPDP deletion rights', penalty: 'Rs. 50 Cr' },
-    healthcare_abdm_compliance: { text: 'Ensure ABDM integration complies with DPDP consent requirements', penalty: 'Rs. 50 Cr' },
-    healthcare_clinical_vs_commercial: { text: 'Segregate clinical data (must retain) from commercial data (can delete per DPDP)', penalty: 'Rs. 250 Cr' },
-  };
-
-  // Priority mapping based on penalty
-  const penaltyPriority: Record<string, 'high' | 'medium' | 'low'> = {
-    'Rs. 250 Cr': 'high',
-    'Rs. 200 Cr': 'high',
-    'Rs. 50 Cr': 'medium',
-  };
-
-  // Check each applicable question
-  applicableQuestions.forEach((question) => {
-    if (!applicableIds.has(question.id)) return;
-    
-    const response = responses[question.id];
-    const action = actionMap[question.id];
-    if (!action) return;
-
-    let isNonCompliant = false;
-
-    if (question.type === 'yes_no') {
-      isNonCompliant = response !== question.complianceAnswer;
-    } else if (question.type === 'multiple_choice') {
-      // Not fully compliant if not the best option
-      if (question.options && question.options.length > 0) {
-        isNonCompliant = response !== question.options[0].value;
-      }
-    }
-
-    if (isNonCompliant || !response) {
-      const category = DPDP_CATEGORIES.find(c => c.id === question.category);
-      actionItems.push({
-        priority: penaltyPriority[action.penalty] || 'medium',
-        text: action.text,
-        category: category?.name || question.category,
-        penalty: action.penalty,
-      });
-    }
-  });
-
-  // Add industry-specific advisory items
-  if (profile?.industry === 'Healthcare') {
-    // Always add healthcare-specific advisories for healthcare organizations
-    const healthcareCategory = DPDP_CATEGORIES.find(c => c.id === 'healthcare');
-    
-    actionItems.push({
-      priority: 'high',
-      text: 'Document legal basis for medical record retention vs DPDP deletion rights',
-      category: healthcareCategory?.name || 'Healthcare-Specific',
-      penalty: 'Rs. 50 Cr',
-    });
-    
-    actionItems.push({
-      priority: 'high',
-      text: 'Segregate clinical data (must retain) from commercial data (can delete per DPDP)',
-      category: healthcareCategory?.name || 'Healthcare-Specific',
-      penalty: 'Rs. 250 Cr',
-    });
-    
-    actionItems.push({
-      priority: 'medium',
-      text: 'Ensure ABDM integration complies with DPDP consent requirements',
-      category: healthcareCategory?.name || 'Healthcare-Specific',
-      penalty: 'Rs. 50 Cr',
-    });
-  }
-
-  // Sort by priority
-  return actionItems.sort((a, b) => {
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    return priorityOrder[a.priority] - priorityOrder[b.priority];
-  });
-}
-
-/**
- * Get compliance status based on score
- */
-export function getDPDPComplianceStatus(score: number): {
-  status: 'Ready' | 'Needs Attention' | 'At Risk' | 'Critical';
-  color: string;
-  description: string;
-} {
-  if (score >= 80) {
-    return {
-      status: 'Ready',
-      color: 'green',
-      description: 'Your organisation is well-prepared for DPDP Act compliance by May 2027.',
-    };
-  } else if (score >= 60) {
-    return {
-      status: 'Needs Attention',
-      color: 'amber',
-      description: 'Several areas require attention before the May 2027 compliance deadline.',
-    };
-  } else if (score >= 40) {
-    return {
-      status: 'At Risk',
-      color: 'orange',
-      description: 'Significant gaps exist. Prioritise remediation to avoid penalties up to Rs. 250 Cr.',
-    };
-  } else {
-    return {
-      status: 'Critical',
-      color: 'red',
-      description: 'Critical compliance gaps. Immediate action required to avoid severe penalties.',
-    };
+    // Filter out conditional children's data questions
+    return ALL_DPDP_QUESTIONS.filter(q => !q.isConditional);
   }
 }
 
-/**
- * Get question summary for a given profile
- */
-export function getDPDPQuestionSummary(profile: DPDPProfile): {
-  total: number;
-  byCategory: Record<string, number>;
-} {
-  const filtered = getFilteredDPDPQuestions(profile);
-  const byCategory: Record<string, number> = {};
-  
-  DPDP_CATEGORIES.forEach((cat) => {
-    byCategory[cat.id] = filtered.filter((q) => q.category === cat.id).length;
-  });
-  
-  return {
-    total: filtered.length,
-    byCategory,
-  };
+// Calculate maturity level from score
+export function getMaturityLevel(score: number) {
+  const level = MATURITY_LEVELS.find(l => score >= l.min && score <= l.max);
+  return level || MATURITY_LEVELS[0];
 }
 
-/**
- * Calculate days until DPDP compliance deadline
- */
-export function getDaysUntilDeadline(): number {
-  const deadline = new Date('2027-05-13');
-  const today = new Date();
-  const diffTime = deadline.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+// Calculate risk multipliers based on profile
+export function calculateRiskMultipliers(profile: {
+  processesChildrenData?: boolean;
+  processesHealthData?: boolean;
+  processesFinancialData?: boolean;
+  crossBorderTransfers?: boolean;
+  revenue?: string;
+}) {
+  const multipliers: { factor: string; multiplier: number; reason: string }[] = [];
+
+  if (profile.processesChildrenData) {
+    multipliers.push({
+      factor: 'Children\'s Data',
+      multiplier: RISK_MULTIPLIERS.childrenData,
+      reason: 'Processing data of individuals under 18 years'
+    });
+  }
+
+  if (profile.processesHealthData) {
+    multipliers.push({
+      factor: 'Health Data',
+      multiplier: RISK_MULTIPLIERS.healthData,
+      reason: 'Processing sensitive health/medical information'
+    });
+  }
+
+  if (profile.processesFinancialData) {
+    multipliers.push({
+      factor: 'Financial Data',
+      multiplier: RISK_MULTIPLIERS.financialData,
+      reason: 'Processing banking/payment information'
+    });
+  }
+
+  if (profile.crossBorderTransfers) {
+    multipliers.push({
+      factor: 'Cross-Border Transfers',
+      multiplier: RISK_MULTIPLIERS.crossBorder,
+      reason: 'Transferring data outside India'
+    });
+  }
+
+  // Check SDF designation risk
+  if (profile.revenue === '₹500+ crore') {
+    multipliers.push({
+      factor: 'SDF Designation Risk',
+      multiplier: RISK_MULTIPLIERS.sdfDesignation,
+      reason: 'Revenue exceeds ₹500 crore - likely SDF designation'
+    });
+  }
+
+  return multipliers;
 }

@@ -1,0 +1,50 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e11]:
+            - text: ComplianceCheck
+            - generic [ref=e12]: DPDP Gap Assessment
+        - generic [ref=e13]:
+          - generic [ref=e14]:
+            - img [ref=e15]
+            - text: 525 days to deadline
+          - generic [ref=e17]: FREE Assessment
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]: Data Inventory & Mapping (0/4)
+          - generic [ref=e22]: 0% complete
+        - progressbar "Assessment progress" [ref=e23]
+        - generic [ref=e25]:
+          - 'generic "Data Inventory & Mapping: 4 questions" [ref=e26]'
+          - 'generic "Consent Management: 4 questions" [ref=e27]'
+          - 'generic "Privacy Notices: 3 questions" [ref=e28]'
+          - 'generic "Data Principal Rights: 4 questions" [ref=e29]'
+          - 'generic "Security Safeguards: 4 questions" [ref=e30]'
+          - 'generic "Breach Response: 3 questions" [ref=e31]'
+          - 'generic "Third-Party & Transfers: 2 questions" [ref=e32]'
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: 📊
+            - generic [ref=e37]: Data Inventory & Mapping
+            - generic [ref=e38]: "Penalty: Up to Rs. 50 Cr"
+          - generic [ref=e39]: Have you identified and documented all personal data you collect from Indian residents?
+          - generic [ref=e40]: "💡 Personal data includes any data about an identifiable individual: name, email, phone, Aadhaar, PAN, IP address, device identifiers, location data, biometrics, health data, financial data, and behavioural data."
+        - generic [ref=e43]:
+          - button "Yes" [ref=e44] [cursor=pointer]:
+            - img
+            - text: "Yes"
+          - button "No" [ref=e45] [cursor=pointer]
+      - button "Back" [ref=e47] [cursor=pointer]:
+        - img
+        - text: Back
+      - generic [ref=e48]: Question 1 of 4 in Data Inventory & Mapping•0 of 24 total answered
+```
