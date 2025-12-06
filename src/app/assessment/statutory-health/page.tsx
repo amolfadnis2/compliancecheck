@@ -11,15 +11,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2 } from 'lucide-react'
+import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { 
   STATUTORY_HEALTH_QUESTIONS, 
-  INDIAN_STATES, 
-  EMPLOYEE_COUNT_OPTIONS, 
-  INDUSTRY_OPTIONS,
   CATEGORY_INFO,
 } from '@/lib/assessments/statutory-health-questions'
+import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
 
 // Form validation schema
 const userDetailsSchema = z.object({
@@ -267,25 +265,12 @@ export default function StatutoryHealthAssessmentPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="font-semibold text-lg">ComplianceCheck</span>
-                <div className="text-xs text-gray-600">Statutory Health Check</div>
-              </div>
-            </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
-              FREE Assessment
-            </Badge>
-          </div>
-        </div>
-      </header>
+      <AssessmentHeader 
+        title="ComplianceCheck"
+        subtitle="Statutory Health Check"
+        badgeText="FREE Assessment"
+        badgeVariant="free"
+      />
 
       <div className="max-w-2xl mx-auto py-8 px-4">
 

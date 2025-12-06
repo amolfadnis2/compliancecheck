@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -20,16 +19,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2, Shield, AlertTriangle } from 'lucide-react'
+import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { 
-  ALL_DPDP_QUESTIONS,
   getRelevantQuestions,
   PHASE_INFO,
   REVENUE_OPTIONS,
-  getMaturityLevel,
-  calculateRiskMultipliers,
   type DPDPQuestion
 } from '@/lib/assessments/dpdp-questions'
-import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/assessments/statutory-health-questions'
+import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
 
 // Form validation schema for organization profile
 const organizationProfileSchema = z.object({
@@ -162,12 +159,6 @@ export default function DPDPAssessmentPage() {
   }
 
   // Navigation handlers
-  const handleNext = () => {
-    if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
-    }
-  }
-
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1)
@@ -223,29 +214,15 @@ export default function DPDPAssessmentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            DPDP Gap Assessment
-          </h1>
-          <p className="text-lg text-gray-600">
-            Digital Personal Data Protection Act 2023 Compliance
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
+      <AssessmentHeader 
+        title="ComplianceCheck"
+        subtitle="DPDP Gap Assessment"
+        badgeText="FREE during Beta"
+        badgeVariant="free"
+      />
 
-        {/* Beta Badge */}
-        <div className="mb-6">
-          <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">
-            ✓ FREE during Beta • Usually ₹2,499
-          </Badge>
-        </div>
-
+      <div className="container mx-auto px-4 max-w-4xl py-8">
         {/* Progress Bar (only show during questions) */}
         {step > 0 && (
           <div className="mb-8">
@@ -368,8 +345,8 @@ export default function DPDPAssessmentPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {EMPLOYEE_COUNT_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -388,8 +365,8 @@ export default function DPDPAssessmentPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {INDUSTRY_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>

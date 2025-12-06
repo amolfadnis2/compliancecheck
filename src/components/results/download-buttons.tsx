@@ -251,11 +251,25 @@ const COMPLIANCE_RULES: Record<string, ComplianceRule> = {
 // ASSESSMENT DATA TYPES
 // ============================================================================
 
+interface ActionItem {
+  id?: string;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  phase?: string;
+  category?: string;
+  title?: string;
+  text?: string;
+  description?: string;
+  deadline?: string;
+  penalty?: string;
+  questionId?: string;
+}
+
 interface AssessmentData {
   id: string
   assessment_type: string
   overall_score?: number
   category_scores?: Record<string, { score?: number; max?: number; percentage: number } | number>
+  action_items?: ActionItem[]
   userDetails?: {
     companyName?: string
     fullName?: string
@@ -754,7 +768,7 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
     const userDetails = data.userDetails || data.responses?.userDetails || {}
     const overallScore = data.overall_score ?? 50
     const categoryScores = data.category_scores || {}
-    const actionItems = (data as any).action_items || []
+    const actionItems: ActionItem[] = data.action_items || []
 
     // Helper functions
     const addText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5): number => {
@@ -860,14 +874,18 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
     // Action Items
     if (actionItems.length > 0) {
       drawSectionHeader('Priority Action Items', [220, 38, 38])
-      actionItems.sort((a: any, b: any) => {
-        const order = { high: 0, medium: 1, low: 2 }
-        return order[a.priority as 'high' | 'medium' | 'low'] - order[b.priority as 'high' | 'medium' | 'low']
+      const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
+      actionItems.sort((a, b) => {
+        return (priorityOrder[a.priority] ?? 3) - (priorityOrder[b.priority] ?? 3)
       })
 
-      actionItems.forEach((item: any) => {
+      actionItems.forEach((item) => {
         checkPageBreak(15)
-        const badgeColor = item.priority === 'high' ? [220, 38, 38] : item.priority === 'medium' ? [217, 119, 6] : [107, 114, 128]
+        const badgeColor = item.priority === 'high' || item.priority === 'critical' 
+          ? [220, 38, 38] 
+          : item.priority === 'medium' 
+            ? [217, 119, 6] 
+            : [107, 114, 128]
         doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2])
         doc.setTextColor(255, 255, 255)
         doc.setFontSize(7)
@@ -879,7 +897,8 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
         doc.setTextColor(31, 41, 55)
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(8)
-        yPos = addText(item.text, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
+        const itemText = item.text || item.title || item.description || ''
+        yPos = addText(itemText, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
         yPos += 6
       })
     }

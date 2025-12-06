@@ -706,3 +706,237 @@ export function calculateRiskMultipliers(profile: {
 
   return multipliers;
 }
+
+// ============================================================================
+// ADDITIONAL EXPORTS FOR RESULTS PAGE COMPATIBILITY
+// ============================================================================
+
+// Alias for PHASE_INFO (used by results components)
+export const DPDP_CATEGORIES = PHASE_INFO;
+
+// DPDP compliance deadline
+const DPDP_DEADLINE = new Date('2025-08-31'); // Expected enforcement date
+
+// Calculate days until DPDP deadline
+export function getDaysUntilDeadline(): number {
+  const today = new Date();
+  const diffTime = DPDP_DEADLINE.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+}
+
+// Get DPDP compliance status based on score
+export function getDPDPComplianceStatus(score: number): {
+  status: 'compliant' | 'partial' | 'non-compliant';
+  label: string;
+  color: string;
+  description: string;
+} {
+  if (score >= 80) {
+    return {
+      status: 'compliant',
+      label: 'Compliance Ready',
+      color: 'green',
+      description: 'Your organization meets most DPDP requirements. Focus on continuous improvement.'
+    };
+  } else if (score >= 50) {
+    return {
+      status: 'partial',
+      label: 'Partial Compliance',
+      color: 'yellow',
+      description: 'Significant gaps exist. Prioritize high-risk areas before enforcement.'
+    };
+  } else {
+    return {
+      status: 'non-compliant',
+      label: 'Non-Compliant',
+      color: 'red',
+      description: 'Major compliance gaps. Immediate action required to avoid penalties.'
+    };
+  }
+}
+
+// Calculate DPDP score from responses
+export function calculateDPDPScore(
+  responses: Record<string, string>,
+  profile: {
+    processesChildrenData?: string | boolean;
+    processesHealthData?: string | boolean;
+    processesSensitiveData?: string | boolean;
+  }
+): {
+  overallScore: number;
+  phaseScores: Record<string, { score: number; maxScore: number; percentage: number }>;
+  maturityLevel: string;
+  questionsAnswered: number;
+  totalQuestions: number;
+} {
+  const processesChildren = profile.processesChildrenData === 'yes' || profile.processesChildrenData === true;
+  const relevantQuestions = getRelevantQuestions(processesChildren);
+  
+  const phaseScores: Record<string, { score: number; maxScore: number; percentage: number }> = {};
+  let totalScore = 0;
+  let maxTotalScore = 0;
+  let questionsAnswered = 0;
+
+  // Initialize phase scores
+  const phases = ['consent', 'security', 'rights', 'breach', 'governance'];
+  if (processesChildren) phases.push('children');
+
+  phases.forEach(phase => {
+    const phaseQuestions = relevantQuestions.filter(q => q.phase === phase);
+    let phaseScore = 0;
+    let maxPhaseScore = 0;
+
+    phaseQuestions.forEach(q => {
+      maxPhaseScore += q.weight;
+      const answer = responses[q.id];
+      
+      if (answer) {
+        questionsAnswered++;
+        
+        // Check if answer is compliant
+        if (q.complianceAnswer) {
+          if (answer === q.complianceAnswer || 
+              answer.toLowerCase().includes('yes') ||
+              answer.includes('AES-256') ||
+              answer.includes('Explicit consent')) {
+            phaseScore += q.weight;
+          } else if (answer.toLowerCase().includes('partial') || 
+                     answer.includes('email') ||
+                     answer.includes('Some')) {
+            phaseScore += q.weight * 0.5; // Partial credit
+          }
+        } else if (answer === 'yes' || answer.toLowerCase().includes('yes')) {
+          phaseScore += q.weight;
+        }
+      }
+    });
+
+    const percentage = maxPhaseScore > 0 ? Math.round((phaseScore / maxPhaseScore) * 100) : 0;
+    phaseScores[phase] = {
+      score: Math.round(phaseScore),
+      maxScore: maxPhaseScore,
+      percentage
+    };
+
+    // Apply phase weights to total score
+    const phaseWeight = PHASE_INFO[phase as keyof typeof PHASE_INFO]?.weight || 0.10;
+    totalScore += (percentage / 100) * phaseWeight * 100;
+    maxTotalScore += phaseWeight * 100;
+  });
+
+  const overallScore = maxTotalScore > 0 ? Math.round((totalScore / maxTotalScore) * 100) : 0;
+  const maturity = getMaturityLevel(overallScore);
+
+  return {
+    overallScore,
+    phaseScores,
+    maturityLevel: maturity.name,
+    questionsAnswered,
+    totalQuestions: relevantQuestions.length
+  };
+}
+
+// Generate action items based on responses
+export function generateDPDPActionItems(
+  responses: Record<string, string>,
+  profile: {
+    processesChildrenData?: string | boolean;
+    processesHealthData?: string | boolean;
+  }
+): Array<{
+  id: string;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  phase: string;
+  title: string;
+  description: string;
+  deadline: string;
+  penalty: string;
+}> {
+  const actionItems: Array<{
+    id: string;
+    priority: 'critical' | 'high' | 'medium' | 'low';
+    phase: string;
+    title: string;
+    description: string;
+    deadline: string;
+    penalty: string;
+  }> = [];
+
+  const processesChildren = profile.processesChildrenData === 'yes' || profile.processesChildrenData === true;
+  const relevantQuestions = getRelevantQuestions(processesChildren);
+
+  relevantQuestions.forEach(q => {
+    const answer = responses[q.id];
+    
+    // Check if answer indicates non-compliance
+    const isNonCompliant = !answer || 
+      answer === 'no' || 
+      answer.toLowerCase().includes('no ') ||
+      answer.includes('Pre-checked') ||
+      answer.includes('Terms & Conditions only') ||
+      answer.includes('No mechanism') ||
+      answer.includes('No privacy notice') ||
+      answer.includes('Not encrypted') ||
+      answer.includes('No access controls');
+
+    if (isNonCompliant) {
+      const phaseInfo = PHASE_INFO[q.phase as keyof typeof PHASE_INFO];
+      const priority = getPriorityFromPhase(q.phase, q.weight);
+      
+      actionItems.push({
+        id: q.id,
+        priority,
+        phase: q.phase,
+        title: getActionTitle(q),
+        description: q.helpText || `Address compliance gap in ${phaseInfo?.label || q.phase}`,
+        deadline: 'Before DPDP enforcement',
+        penalty: phaseInfo?.maxPenalty || '₹50 crore'
+      });
+    }
+  });
+
+  // Sort by priority
+  const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  actionItems.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+  return actionItems.slice(0, 15); // Return top 15 action items
+}
+
+// Helper function to determine priority based on phase and weight
+function getPriorityFromPhase(phase: string, weight: number): 'critical' | 'high' | 'medium' | 'low' {
+  if (phase === 'security' || phase === 'breach') {
+    return weight >= 9 ? 'critical' : 'high';
+  }
+  if (phase === 'consent' || phase === 'children') {
+    return weight >= 8 ? 'high' : 'medium';
+  }
+  return weight >= 7 ? 'medium' : 'low';
+}
+
+// Helper function to generate action title
+function getActionTitle(question: DPDPQuestion): string {
+  const titleMap: Record<string, string> = {
+    consent_1: 'Implement granular consent mechanisms',
+    consent_2: 'Enable easy consent withdrawal',
+    consent_3: 'Provide multilingual privacy notices',
+    consent_4: 'Enforce purpose limitation controls',
+    consent_5: 'Establish consent record management',
+    security_1: 'Implement data encryption at rest',
+    security_2: 'Deploy encryption in transit',
+    security_3: 'Set up role-based access controls',
+    security_4: 'Implement security monitoring',
+    breach_1: 'Create breach notification procedures',
+    breach_2: 'Establish 72-hour reporting process',
+    rights_1: 'Build data access request portal',
+    rights_2: 'Enable data correction mechanisms',
+    rights_3: 'Implement right to erasure',
+    children_1: 'Obtain verifiable parental consent',
+    children_2: 'Disable behavioral tracking for minors',
+    governance_1: 'Appoint Data Protection Officer',
+    governance_2: 'Define data retention policies',
+  };
+
+  return titleMap[question.id] || `Address: ${question.text.substring(0, 50)}...`;
+}

@@ -169,33 +169,5 @@ export const CATEGORY_INFO = {
   bonus: { name: 'Bonus', description: 'Payment of Bonus Act 1965', maxScore: 16 },
 }
 
-export const INDIAN_STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Puducherry', 'Chandigarh',
-  'Andaman and Nicobar Islands', 'Dadra and Nagar Haveli and Daman and Diu', 'Lakshadweep'
-]
-
-export const EMPLOYEE_COUNT_OPTIONS = [
-  { value: '1-10', label: '1-10 employees' },
-  { value: '11-20', label: '11-20 employees' },
-  { value: '21-50', label: '21-50 employees' },
-  { value: '51-100', label: '51-100 employees' },
-  { value: '101-500', label: '101-500 employees' },
-  { value: '500+', label: '500+ employees' },
-]
-
-export const INDUSTRY_OPTIONS = [
-  { value: 'it', label: 'IT / Software' },
-  { value: 'manufacturing', label: 'Manufacturing' },
-  { value: 'retail', label: 'Retail / E-commerce' },
-  { value: 'healthcare', label: 'Healthcare' },
-  { value: 'fintech', label: 'Fintech / BFSI' },
-  { value: 'consulting', label: 'Consulting / Professional Services' },
-  { value: 'education', label: 'Education' },
-  { value: 'hospitality', label: 'Hospitality' },
-  { value: 'other', label: 'Other' },
-]
+// Re-export shared constants for backward compatibility
+export { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'

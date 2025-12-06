@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle, AlertTriangle, XCircle, ArrowLeft, Building } from 'lucide-react'
 import { STATUTORY_HEALTH_QUESTIONS, CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeActionItems, getComplianceStatus } from '@/lib/assessments/labour-code-questions'
-import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPComplianceStatus, getDaysUntilDeadline, type DPDPProfile } from '@/lib/assessments/dpdp-questions'
+import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPComplianceStatus, getDaysUntilDeadline } from '@/lib/assessments/dpdp-questions'
 import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
 

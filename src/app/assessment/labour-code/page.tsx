@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,42 +19,13 @@ import {
   type IndustryType,
   type EmployeeCountRange,
 } from '@/lib/assessments/labour-code-questions';
-import { ArrowLeft, ArrowRight, CheckCircle2, Building2, Loader2, Info } from 'lucide-react';
-
-// Indian states for dropdown
-const INDIAN_STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Puducherry', 'Chandigarh',
-  'Andaman and Nicobar Islands', 'Dadra and Nagar Haveli and Daman and Diu', 'Lakshadweep'
-];
-
-const EMPLOYEE_COUNTS = [
-  { value: '1-9', label: '1-9 employees' },
-  { value: '10-19', label: '10-19 employees' },
-  { value: '20-49', label: '20-49 employees' },
-  { value: '50-99', label: '50-99 employees' },
-  { value: '100-299', label: '100-299 employees' },
-  { value: '300-499', label: '300-499 employees' },
-  { value: '500+', label: '500+ employees' },
-];
-
-const INDUSTRY_TYPES: IndustryType[] = [
-  'Information Technology',
-  'Manufacturing',
-  'Retail & E-commerce',
-  'Healthcare',
-  'Financial Services',
-  'Education',
-  'Hospitality',
-  'Construction',
-  'Logistics & Transportation',
-  'Professional Services',
-  'Other',
-];
+import { 
+  INDIAN_STATES, 
+  EMPLOYEE_COUNT_OPTIONS, 
+  INDUSTRY_OPTIONS 
+} from '@/lib/constants';
+import { AssessmentHeader } from '@/components/assessment/assessment-header';
+import { ArrowLeft, ArrowRight, CheckCircle2, Building2, Loader2, Info, Save } from 'lucide-react';
 
 interface UserDetails {
   companyName: string;
@@ -63,6 +34,19 @@ interface UserDetails {
   state: string;
   contactName: string;
   contactEmail: string;
+  phone: string;
+}
+
+// Local storage key for progress persistence
+const STORAGE_KEY = 'labour_code_progress';
+
+interface SavedProgress {
+  currentStep: number;
+  currentCategoryIndex: number;
+  currentQuestionIndex: number;
+  responses: Record<string, string>;
+  userDetails: UserDetails;
+  savedAt: string;
 }
 
 export default function LabourCodeAssessmentPage() {
@@ -75,11 +59,14 @@ export default function LabourCodeAssessmentPage() {
     state: '',
     contactName: '',
     contactEmail: '',
+    phone: '',
   });
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
 
   // Get filtered questions based on industry and employee count
   const filteredQuestions = useMemo(() => {
@@ -132,6 +119,64 @@ export default function LabourCodeAssessmentPage() {
     }
     return getDynamicHelpText(currentQuestion, userDetails.employeeCount as EmployeeCountRange);
   }, [currentQuestion, userDetails.employeeCount]);
+
+  // Load saved progress on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const progress: SavedProgress = JSON.parse(saved);
+        // Only restore if saved within last 24 hours
+        const savedTime = new Date(progress.savedAt).getTime();
+        const now = Date.now();
+        if (now - savedTime < 24 * 60 * 60 * 1000) {
+          setCurrentStep(progress.currentStep);
+          setCurrentCategoryIndex(progress.currentCategoryIndex);
+          setCurrentQuestionIndex(progress.currentQuestionIndex);
+          setResponses(progress.responses);
+          setUserDetails(progress.userDetails);
+          setHasRestoredProgress(true);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading saved progress:', e);
+    }
+  }, []);
+
+  // Auto-save progress
+  const saveProgress = useCallback(() => {
+    setSaveStatus('saving');
+    try {
+      const progress: SavedProgress = {
+        currentStep,
+        currentCategoryIndex,
+        currentQuestionIndex,
+        responses,
+        userDetails,
+        savedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (e) {
+      console.error('Error saving progress:', e);
+      setSaveStatus('idle');
+    }
+  }, [currentStep, currentCategoryIndex, currentQuestionIndex, responses, userDetails]);
+
+  // Auto-save when responses change
+  useEffect(() => {
+    if (Object.keys(responses).length > 0 || currentStep > 0) {
+      const timer = setTimeout(saveProgress, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [responses, currentStep, saveProgress]);
+
+  // Clear saved progress
+  const clearProgress = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setHasRestoredProgress(false);
+  };
 
   const handleUserDetailsChange = (field: keyof UserDetails, value: string) => {
     setUserDetails(prev => ({ ...prev, [field]: value }));
@@ -284,6 +329,9 @@ export default function LabourCodeAssessmentPage() {
       };
       localStorage.setItem(`assessment_${data.assessmentId}`, JSON.stringify(assessmentData));
       
+      // Clear saved progress on successful submission
+      clearProgress();
+      
       toast.success('Assessment completed!');
       router.push(`/results/${data.assessmentId}?type=labour_code`);
     } catch (error) {
@@ -298,27 +346,42 @@ export default function LabourCodeAssessmentPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="font-semibold text-lg">ComplianceCheck</span>
-                <div className="text-xs text-gray-600">Labour Code Readiness</div>
-              </div>
-            </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
-              FREE Assessment
-            </Badge>
-          </div>
-        </div>
-      </header>
+      <AssessmentHeader 
+        title="ComplianceCheck"
+        subtitle="Labour Code Readiness"
+        badgeText="FREE Assessment"
+        badgeVariant="free"
+      />
 
       <main className="container mx-auto px-4 py-8 max-w-3xl">
+        {/* Restored Progress Notice */}
+        {hasRestoredProgress && currentStep === 0 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center justify-between">
+            <span>📝 Your previous progress has been restored.</span>
+            <button 
+              onClick={() => {
+                clearProgress();
+                setCurrentStep(0);
+                setCurrentCategoryIndex(0);
+                setCurrentQuestionIndex(0);
+                setResponses({});
+                setUserDetails({
+                  companyName: '',
+                  industry: '',
+                  employeeCount: '',
+                  state: '',
+                  contactName: '',
+                  contactEmail: '',
+                  phone: '',
+                });
+              }}
+              className="text-blue-600 hover:underline"
+            >
+              Start Fresh
+            </button>
+          </div>
+        )}
+
         {/* Progress */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-slate-600 mb-2">
@@ -327,7 +390,21 @@ export default function LabourCodeAssessmentPage() {
                 ? 'Company Details' 
                 : `${currentCategory?.name} (${answeredInCategory}/${categoryQuestions.length})`}
             </span>
-            <span>{progress}% complete</span>
+            <div className="flex items-center gap-2">
+              {saveStatus === 'saving' && (
+                <span className="flex items-center text-blue-600">
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Saving...
+                </span>
+              )}
+              {saveStatus === 'saved' && (
+                <span className="flex items-center text-green-600">
+                  <Save className="w-3 h-3 mr-1" />
+                  Saved
+                </span>
+              )}
+              <span>{progress}% complete</span>
+            </div>
           </div>
           <Progress value={progress} className="h-2" aria-label="Assessment progress" />
           
@@ -393,9 +470,9 @@ export default function LabourCodeAssessmentPage() {
                         <SelectValue placeholder="Select industry" />
                       </SelectTrigger>
                       <SelectContent>
-                        {INDUSTRY_TYPES.map((industry) => (
-                          <SelectItem key={industry} value={industry}>
-                            {industry}
+                        {INDUSTRY_OPTIONS.map((industry) => (
+                          <SelectItem key={industry.value} value={industry.value}>
+                            {industry.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -412,7 +489,7 @@ export default function LabourCodeAssessmentPage() {
                         <SelectValue placeholder="Select range" />
                       </SelectTrigger>
                       <SelectContent>
-                        {EMPLOYEE_COUNTS.map((count) => (
+                        {EMPLOYEE_COUNT_OPTIONS.map((count) => (
                           <SelectItem key={count.value} value={count.value}>
                             {count.label}
                           </SelectItem>
@@ -460,6 +537,23 @@ export default function LabourCodeAssessmentPage() {
                       placeholder="you@company.com"
                       value={userDetails.contactEmail}
                       onChange={(e) => handleUserDetailsChange('contactEmail', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 text-gray-600 bg-gray-100 border border-r-0 rounded-l-md">
+                      +91
+                    </span>
+                    <Input
+                      id="phone"
+                      placeholder="9876543210"
+                      value={userDetails.phone}
+                      onChange={(e) => handleUserDetailsChange('phone', e.target.value)}
+                      className="rounded-l-none"
+                      maxLength={10}
                     />
                   </div>
                 </div>
