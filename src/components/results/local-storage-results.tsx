@@ -207,10 +207,10 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
   // Get category info based on assessment type
   const getCategoryInfo = (catId: string) => {
     if (isDPDP) {
-      const dpdpCat = DPDP_CATEGORIES.find(c => c.id === catId)
+      const dpdpCat = DPDP_CATEGORIES[catId as keyof typeof DPDP_CATEGORIES]
       return {
-        name: dpdpCat?.name || catId,
-        penaltyExposure: dpdpCat?.penaltyExposure || 'Variable'
+        name: dpdpCat?.label || catId,
+        penaltyExposure: dpdpCat?.maxPenalty || 'Variable'
       }
     }
     return {

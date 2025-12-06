@@ -12,9 +12,15 @@ import { LocalStorageResultsPage } from '@/components/results/local-storage-resu
 
 // Type definitions
 interface ActionItem {
-  priority: 'high' | 'medium' | 'low';
-  text: string;
-  category: string;
+  id?: string;
+  priority: 'high' | 'medium' | 'low' | 'critical';
+  text?: string;
+  title?: string;
+  category?: string;
+  phase?: string;
+  description?: string;
+  deadline?: string;
+  penalty?: string;
 }
 
 interface CompanyDetails {
@@ -33,6 +39,7 @@ interface AssessmentData {
   responses: {
     userDetails?: Record<string, string>;
     answers?: Record<string, string>;
+    profile?: DPDPProfile;
   };
   overall_score?: number;
   category_scores?: Record<string, number>;
@@ -40,6 +47,14 @@ interface AssessmentData {
   company_details?: CompanyDetails;
   started_at?: string;
   completed_at?: string;
+}
+
+// DPDP Profile type for organization context
+interface DPDPProfile {
+  processesChildrenData?: string | boolean;
+  processesHealthData?: string | boolean;
+  processesSensitiveData?: string | boolean;
+  revenue?: string;
 }
 
 // Initialize Supabase conditionally
@@ -216,7 +231,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
                   </div>
                   <div>
                     <p className="text-gray-900">{item.text}</p>
-                    <p className="text-sm text-gray-500 capitalize">{item.category.replace('_', ' ')}</p>
+                    <p className="text-sm text-gray-500 capitalize">{item.category?.replace('_', ' ') || 'General'}</p>
                   </div>
                 </div>
               ))}
@@ -487,13 +502,13 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
   const responses = assessment.responses?.answers || {}
   const companyDetails = assessment.company_details || assessment.responses?.userDetails || {}
-  const profile: DPDPProfile | undefined = (assessment.responses as { profile?: DPDPProfile })?.profile
+  const profile = assessment.responses?.profile
 
   // Use stored scores or calculate fresh
-  const scoreResult = calculateDPDPScore(responses, profile)
+  const scoreResult = calculateDPDPScore(responses, profile || {})
   const overallScore = assessment.overall_score || scoreResult.overallScore
-  const categoryScores = assessment.category_scores || scoreResult.categoryScores
-  const actionItems = assessment.action_items || generateDPDPActionItems(responses, profile)
+  const categoryScores = assessment.category_scores || scoreResult.phaseScores
+  const actionItems = assessment.action_items || generateDPDPActionItems(responses, profile || {})
   const status = getDPDPComplianceStatus(overallScore)
   const daysUntilDeadline = getDaysUntilDeadline()
 
@@ -563,7 +578,9 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
               <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-red-900 mb-1">Penalty Exposure</h3>
-                <p className="text-sm text-red-700 mb-2">{scoreResult.estimatedPenaltyExposure}</p>
+                <p className="text-sm text-red-700 mb-2">
+                  {overallScore < 50 ? 'Up to ₹250 crore' : overallScore < 80 ? 'Up to ₹50 crore' : 'Minimal exposure'}
+                </p>
                 <p className="text-xs text-red-600">
                   Compliance deadline: 13 May 2027 ({daysUntilDeadline} days remaining)
                 </p>
@@ -579,18 +596,18 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
             <CardDescription>Readiness status for each DPDP requirement area</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {DPDP_CATEGORIES.map((cat) => {
-              const score = typeof categoryScores[cat.id] === 'number' 
-                ? categoryScores[cat.id] 
-                : 0
+            {Object.entries(DPDP_CATEGORIES).map(([catId, cat]) => {
+              const catScore = categoryScores[catId]
+              const score = typeof catScore === 'number' 
+                ? catScore 
+                : (catScore?.percentage || 0)
               const catStatus = score >= 80 ? 'ready' : score >= 60 ? 'attention' : score >= 40 ? 'risk' : 'critical'
               
               return (
-                <div key={cat.id} className="p-4 bg-gray-50 rounded-lg">
+                <div key={catId} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{cat.icon}</span>
-                      <span className="font-medium">{cat.name}</span>
+                      <span className="font-medium">{cat.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {catStatus === 'ready' && <CheckCircle className="w-5 h-5 text-green-600" />}
@@ -601,11 +618,11 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
                         catStatus === 'ready' ? 'text-green-600' :
                         catStatus === 'attention' ? 'text-amber-600' :
                         catStatus === 'risk' ? 'text-orange-600' : 'text-red-600'
-                      }`}>{score}%</span>
+                      }`}>{Math.round(score)}%</span>
                     </div>
                   </div>
                   <p className="text-sm text-gray-500 mb-1">{cat.description}</p>
-                  <p className="text-xs text-red-600">Penalty exposure: {cat.penaltyExposure}</p>
+                  <p className="text-xs text-red-600">Max penalty: {cat.maxPenalty}</p>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
                     <div 
                       className={`h-full transition-all ${
