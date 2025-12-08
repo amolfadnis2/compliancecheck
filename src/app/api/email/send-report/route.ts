@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { 
       email, 
-      assessmentId, 
+      // assessmentId - available in body if needed for future analytics
       pdfBase64, 
       companyName, 
       score, 

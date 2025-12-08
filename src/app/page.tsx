@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, ClipboardCheck, Shield, FileText } from 'lucide-react'
+import { CheckCircle, ClipboardCheck, Shield, FileText, Calculator } from 'lucide-react'
 import { RUPEE } from '@/lib/constants'
 
 export default function HomePage() {
@@ -55,9 +55,9 @@ export default function HomePage() {
                 Labour Code Readiness
               </Button>
             </Link>
-            <Link href="/assessment/dpdp">
-              <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
-                DPDP Gap Assessment
+            <Link href="/calculator/gratuity">
+              <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                Gratuity Calculator
               </Button>
             </Link>
           </div>
@@ -65,7 +65,7 @@ export default function HomePage() {
           {/* Stats */}
           <div className="flex justify-center gap-12 mt-16 pt-8 border-t">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900">3</div>
+              <div className="text-3xl font-bold text-gray-900">4</div>
               <div className="text-gray-600 text-sm">Tools Available</div>
             </div>
             <div className="text-center">
@@ -266,6 +266,105 @@ export default function HomePage() {
                 <Link href="/documents/employee-consent">
                   <Button className="w-full bg-green-700 hover:bg-green-800">Generate Document</Button>
                 </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Free Tools Section */}
+      <section id="free-tools" className="py-20 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              🧮 Free Calculators
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Compliance Calculators</h2>
+            <p className="text-gray-600">Free tools based on 2025 Labour Code rules. Always free, no registration required.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {/* Gratuity Calculator */}
+            <Card className="border-2 border-blue-600 hover:shadow-lg transition-all relative">
+              <div className="absolute -top-3 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                NEW
+              </div>
+              <div className="absolute -top-3 right-4 bg-green-700 text-white text-xs font-bold px-3 py-1 rounded-full">
+                ALWAYS FREE
+              </div>
+              <CardHeader>
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                  <Calculator className="w-6 h-6 text-blue-600" />
+                </div>
+                <CardTitle>Gratuity Calculator</CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-bold text-blue-600">FREE</span>
+                  <span className="text-sm text-green-600 font-medium">Forever</span>
+                </div>
+                <CardDescription>
+                  Calculate gratuity under new Labour Codes. Fixed-term employees now eligible after 1 year!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    2025 Labour Code formula
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    Fixed-term employee support
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    Rs.20 lakh ceiling applied
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    Tax exemption details
+                  </li>
+                </ul>
+                <Link href="/calculator/gratuity">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">Calculate Gratuity</Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Coming Soon: PF Calculator */}
+            <Card className="border-2 border-gray-200 hover:shadow-lg transition-all opacity-75">
+              <div className="absolute -top-3 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full">
+                COMING SOON
+              </div>
+              <CardHeader>
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+                  <Calculator className="w-6 h-6 text-gray-400" />
+                </div>
+                <CardTitle className="text-gray-500">PF Contribution Calculator</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Calculate EPF contributions with employer and employee breakdowns.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button disabled className="w-full" variant="outline">Coming Soon</Button>
+              </CardContent>
+            </Card>
+
+            {/* Coming Soon: CTC Calculator */}
+            <Card className="border-2 border-gray-200 hover:shadow-lg transition-all opacity-75">
+              <div className="absolute -top-3 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full">
+                COMING SOON
+              </div>
+              <CardHeader>
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+                  <Calculator className="w-6 h-6 text-gray-400" />
+                </div>
+                <CardTitle className="text-gray-500">CTC to In-Hand Calculator</CardTitle>
+                <CardDescription className="text-gray-400">
+                  New 50% basic salary rule applied. Calculate take-home salary.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button disabled className="w-full" variant="outline">Coming Soon</Button>
               </CardContent>
             </Card>
           </div>
