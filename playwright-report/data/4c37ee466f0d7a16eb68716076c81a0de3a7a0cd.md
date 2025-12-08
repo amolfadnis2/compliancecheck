@@ -1,0 +1,42 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link "ComplianceCheck Labour Code Readiness" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e8]
+          - generic [ref=e11]:
+            - text: ComplianceCheck
+            - generic [ref=e12]: Labour Code Readiness
+        - generic [ref=e13]: FREE Assessment
+    - main [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]: Code on Social Security (6/7)
+          - generic [ref=e19]: 57% complete
+        - progressbar "Assessment progress" [ref=e20]
+        - generic [ref=e22]:
+          - 'generic "Code on Wages: 6 questions" [ref=e23]'
+          - 'generic "Code on Social Security: 7 questions" [ref=e24]'
+          - 'generic "OSH Code: 4 questions" [ref=e25]'
+          - 'generic "Industrial Relations Code: 4 questions" [ref=e26]'
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - generic [ref=e30]: 🛡️
+            - generic [ref=e31]: Code on Social Security
+          - generic [ref=e32]: If you engage gig/platform workers, do you contribute 1-2% of annual turnover to the Social Security Fund?
+          - generic [ref=e33]: 💡 NEW provision for aggregators (ride-sharing, food delivery, logistics, etc.).
+        - generic [ref=e36]:
+          - button "Yes, we contribute" [ref=e37] [cursor=pointer]
+          - button "No, we don't contribute" [ref=e38] [cursor=pointer]
+          - button "Not applicable - we don't engage gig workers" [ref=e39] [cursor=pointer]
+      - button "Back" [ref=e41] [cursor=pointer]:
+        - img
+        - text: Back
+      - generic [ref=e42]: Question 7 of 7 in Code on Social Security•12 of 21 total answered
+  - alert [ref=e43]
+```

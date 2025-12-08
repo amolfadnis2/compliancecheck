@@ -228,7 +228,7 @@ export default function HomePage() {
 
             {/* Document Templates - NEW */}
             <Card className="border-2 border-gray-200 hover:shadow-lg transition-all">
-              <div className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+              <div className="absolute -top-3 right-4 bg-green-800 text-white text-xs font-bold px-3 py-1 rounded-full">
                 FREE BETA
               </div>
               <CardHeader>

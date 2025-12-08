@@ -122,25 +122,59 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.57.0",
-    "workers": 6,
+    "workers": 1,
     "webServer": null
   },
   "suites": [
     {
-      "title": "dpdp-assessment.spec.ts",
-      "file": "dpdp-assessment.spec.ts",
+      "title": "labour-code-assessment.spec.ts",
+      "file": "labour-code-assessment.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "DPDP Assessment - Core Flow",
-          "file": "dpdp-assessment.spec.ts",
-          "line": 13,
+          "title": "Labour Code Readiness Assessment Flow",
+          "file": "labour-code-assessment.spec.ts",
+          "line": 102,
           "column": 6,
           "specs": [
             {
-              "title": "should complete DPDP assessment with fully compliant answers",
+              "title": "should navigate to Labour Code assessment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5570,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:00:02.513Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-afc38ad598c08355b283",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 108,
+              "column": 7
+            },
+            {
+              "title": "should complete IT company assessment",
               "ok": false,
               "tags": [],
               "tests": [
@@ -154,63 +188,527 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 24541,
+                      "status": "timedOut",
+                      "duration": 66380,
                       "error": {
-                        "message": "TimeoutError: locator.check: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('radio').first()\u001b[22m\n",
-                        "stack": "TimeoutError: locator.check: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('radio').first()\u001b[22m\n\n    at answerConsentManagementQuestions (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\dpdp-assessment.spec.ts:1014:17)\n    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\dpdp-assessment.spec.ts:38:11",
-                        "location": {
-                          "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\dpdp-assessment.spec.ts",
-                          "column": 17,
-                          "line": 1014
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 1012 |\u001b[39m   \u001b[36mfor\u001b[39m (\u001b[36mlet\u001b[39m i \u001b[33m=\u001b[39m \u001b[35m0\u001b[39m\u001b[33m;\u001b[39m i \u001b[33m<\u001b[39m questionCount\u001b[33m;\u001b[39m i\u001b[33m++\u001b[39m) {\n \u001b[90m 1013 |\u001b[39m     \u001b[36mconst\u001b[39m radio \u001b[33m=\u001b[39m getRadioByResponseType(page\u001b[33m,\u001b[39m responseType\u001b[33m,\u001b[39m i)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1014 |\u001b[39m     \u001b[36mawait\u001b[39m radio\u001b[33m.\u001b[39mcheck()\u001b[33m;\u001b[39m\n \u001b[90m      |\u001b[39m                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 1015 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Auto-advance timeout\u001b[39m\n \u001b[90m 1016 |\u001b[39m   }\n \u001b[90m 1017 |\u001b[39m }\u001b[0m"
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
                           "location": {
-                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\dpdp-assessment.spec.ts",
-                            "column": 17,
-                            "line": 1014
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                            "column": 16,
+                            "line": 86
                           },
-                          "message": "TimeoutError: locator.check: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('radio').first()\u001b[22m\n\n\n  1012 |   for (let i = 0; i < questionCount; i++) {\n  1013 |     const radio = getRadioByResponseType(page, responseType, i);\n> 1014 |     await radio.check();\n       |                 ^\n  1015 |     await page.waitForTimeout(800); // Auto-advance timeout\n  1016 |   }\n  1017 | }\n    at answerConsentManagementQuestions (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\dpdp-assessment.spec.ts:1014:17)\n    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\dpdp-assessment.spec.ts:38:11"
+                          "message": "Error: page.waitForTimeout: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 84 |\u001b[39m     \n \u001b[90m 85 |\u001b[39m     \u001b[90m// Small wait before next iteration\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 86 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 87 |\u001b[39m   }\n \u001b[90m 88 |\u001b[39m   \n \u001b[90m 89 |\u001b[39m   \u001b[90m// Final attempt to click submit if visible and enabled\u001b[39m\u001b[0m\n\u001b[2m    at answerAllQuestionsYes (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:86:16)\u001b[22m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:129:20\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-04T16:52:30.675Z",
+                      "startTime": "2025-12-08T09:00:08.341Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\dpdp-assessment-DPDP-Asses-76c69-ith-fully-compliant-answers-chromium\\test-failed-1.png"
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-38ae6-plete-IT-company-assessment-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\dpdp-assessment-DPDP-Asses-76c69-ith-fully-compliant-answers-chromium\\video.webm"
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-38ae6-plete-IT-company-assessment-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\dpdp-assessment-DPDP-Asses-76c69-ith-fully-compliant-answers-chromium\\error-context.md"
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-38ae6-plete-IT-company-assessment-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-3ad1cca1e7364a21db44",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 114,
+              "column": 7
+            },
+            {
+              "title": "should complete Manufacturing company assessment",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 64338,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                            "column": 16,
+                            "line": 86
+                          },
+                          "message": "Error: page.waitForTimeout: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 84 |\u001b[39m     \n \u001b[90m 85 |\u001b[39m     \u001b[90m// Small wait before next iteration\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 86 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 87 |\u001b[39m   }\n \u001b[90m 88 |\u001b[39m   \n \u001b[90m 89 |\u001b[39m   \u001b[90m// Final attempt to click submit if visible and enabled\u001b[39m\u001b[0m\n\u001b[2m    at answerAllQuestionsYes (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:86:16)\u001b[22m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:153:20\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:01:16.930Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-75f87-acturing-company-assessment-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-75f87-acturing-company-assessment-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-75f87-acturing-company-assessment-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-139963a8add0a881b1be",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 138,
+              "column": 7
+            },
+            {
+              "title": "should show Labour Code categories in results",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 62024,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                            "column": 16,
+                            "line": 86
+                          },
+                          "message": "Error: page.waitForTimeout: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 84 |\u001b[39m     \n \u001b[90m 85 |\u001b[39m     \u001b[90m// Small wait before next iteration\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 86 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 87 |\u001b[39m   }\n \u001b[90m 88 |\u001b[39m   \n \u001b[90m 89 |\u001b[39m   \u001b[90m// Final attempt to click submit if visible and enabled\u001b[39m\u001b[0m\n\u001b[2m    at answerAllQuestionsYes (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:86:16)\u001b[22m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:173:20\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:02:24.503Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-0b51e--Code-categories-in-results-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-0b51e--Code-categories-in-results-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-0b51e--Code-categories-in-results-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-7a02da7c231f965dd5f4",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 159,
+              "column": 7
+            },
+            {
+              "title": "should handle small company (10-19 employees)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 77738,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                            "column": 16,
+                            "line": 86
+                          },
+                          "message": "Error: page.waitForTimeout: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 84 |\u001b[39m     \n \u001b[90m 85 |\u001b[39m     \u001b[90m// Small wait before next iteration\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 86 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 87 |\u001b[39m   }\n \u001b[90m 88 |\u001b[39m   \n \u001b[90m 89 |\u001b[39m   \u001b[90m// Final attempt to click submit if visible and enabled\u001b[39m\u001b[0m\n\u001b[2m    at answerAllQuestionsYes (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:86:16)\u001b[22m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:199:20\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:03:28.664Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-a7a78-ll-company-10-19-employees--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-a7a78-ll-company-10-19-employees--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-a7a78-ll-company-10-19-employees--chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-fb9c38a396b2d3f82f40",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 185,
+              "column": 7
+            },
+            {
+              "title": "should handle large enterprise (500+ employees)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 64940,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                            "column": 16,
+                            "line": 86
+                          },
+                          "message": "Error: page.waitForTimeout: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 84 |\u001b[39m     \n \u001b[90m 85 |\u001b[39m     \u001b[90m// Small wait before next iteration\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 86 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 87 |\u001b[39m   }\n \u001b[90m 88 |\u001b[39m   \n \u001b[90m 89 |\u001b[39m   \u001b[90m// Final attempt to click submit if visible and enabled\u001b[39m\u001b[0m\n\u001b[2m    at answerAllQuestionsYes (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:86:16)\u001b[22m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:219:20\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:05:10.564Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-9df33-e-enterprise-500-employees--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-9df33-e-enterprise-500-employees--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-9df33-e-enterprise-500-employees--chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-508c9d484961666330af",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 205,
+              "column": 7
+            },
+            {
+              "title": "should display progress indicator",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15000,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:06:25.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-0fb3a01a4ab7d09e31e7",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 225,
+              "column": 7
+            },
+            {
+              "title": "should trigger NPS modal after completion",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 66337,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                            "column": 16,
+                            "line": 86
+                          },
+                          "message": "Error: page.waitForTimeout: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 84 |\u001b[39m     \n \u001b[90m 85 |\u001b[39m     \u001b[90m// Small wait before next iteration\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 86 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 87 |\u001b[39m   }\n \u001b[90m 88 |\u001b[39m   \n \u001b[90m 89 |\u001b[39m   \u001b[90m// Final attempt to click submit if visible and enabled\u001b[39m\u001b[0m\n\u001b[2m    at answerAllQuestionsYes (C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:86:16)\u001b[22m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:270:20\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:06:41.376Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-2b73e--NPS-modal-after-completion-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-2b73e--NPS-modal-after-completion-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-2b73e--NPS-modal-after-completion-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-cf021121daa86ff03696",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 256,
+              "column": 7
+            },
+            {
+              "title": "should work on mobile viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10624,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:07:57.799Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b522d94aa8c86183537-c7500cc53f4ba80c831f",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 281,
+              "column": 7
+            },
+            {
+              "title": "should persist assessment to database",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 60363,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m\n    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:323:26",
+                        "location": {
+                          "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                          "column": 26,
+                          "line": 323
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 321 |\u001b[39m     \u001b[36mconst\u001b[39m url \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39murl()\u001b[33m;\u001b[39m\n \u001b[90m 322 |\u001b[39m     \u001b[36mconst\u001b[39m assessmentId \u001b[33m=\u001b[39m url\u001b[33m.\u001b[39mmatch(\u001b[35m/\\/results\\/([a-f0-9-]+)/\u001b[39m)\u001b[33m?\u001b[39m\u001b[33m.\u001b[39m[\u001b[35m1\u001b[39m]\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 323 |\u001b[39m     expect(assessmentId)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 324 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 325 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 326 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                            "column": 26,
+                            "line": 323
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m\n\n\u001b[0m \u001b[90m 321 |\u001b[39m     \u001b[36mconst\u001b[39m url \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39murl()\u001b[33m;\u001b[39m\n \u001b[90m 322 |\u001b[39m     \u001b[36mconst\u001b[39m assessmentId \u001b[33m=\u001b[39m url\u001b[33m.\u001b[39mmatch(\u001b[35m/\\/results\\/([a-f0-9-]+)/\u001b[39m)\u001b[33m?\u001b[39m\u001b[33m.\u001b[39m[\u001b[35m1\u001b[39m]\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 323 |\u001b[39m     expect(assessmentId)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 324 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 325 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 326 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts:323:26\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-08T09:08:09.889Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-e2f1f-sist-assessment-to-database-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-e2f1f-sist-assessment-to-database-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\amol.fadnis\\compliancecheck\\test-results\\labour-code-assessment-Lab-e2f1f-sist-assessment-to-database-chromium\\error-context.md"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\dpdp-assessment.spec.ts",
-                        "column": 17,
-                        "line": 1014
+                        "file": "C:\\Users\\amol.fadnis\\compliancecheck\\tests\\labour-code-assessment.spec.ts",
+                        "column": 26,
+                        "line": 323
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "24bc87f3197c22f7560b-40dc7c69351d9b4d7896",
-              "file": "dpdp-assessment.spec.ts",
-              "line": 19,
+              "id": "7b522d94aa8c86183537-c2a272f519d70895cf34",
+              "file": "labour-code-assessment.spec.ts",
+              "line": 303,
               "column": 7
             }
           ]
@@ -220,11 +718,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-12-04T16:52:29.184Z",
-    "duration": 26522.587,
-    "expected": 0,
+    "startTime": "2025-12-08T09:00:01.727Z",
+    "duration": 553753.3640000001,
+    "expected": 3,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 7,
     "flaky": 0
   }
 }

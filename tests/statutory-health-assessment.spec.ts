@@ -33,8 +33,8 @@ test.describe('Statutory Health Check Assessment Flow', () => {
     await page.getByLabel(/phone/i).fill('9876543210');
     await page.getByLabel(/company name/i).fill('Test Tech Pvt Ltd');
     await page.getByLabel(/state/i).selectOption('Maharashtra');
-    await page.getByLabel(/employee count/i).selectOption('21-50 employees');
-    await page.getByLabel(/industry/i).selectOption('IT / Software');
+    await page.getByLabel(/employee count/i).selectOption('20-49 employees');
+    await page.getByLabel(/industry/i).selectOption('Information Technology');
     await page.getByRole('button', { name: /continue to assessment/i }).click();
     await page.waitForTimeout(500);
     
@@ -65,8 +65,8 @@ test.describe('Statutory Health Check Assessment Flow', () => {
     await page.getByLabel(/phone/i).fill('9876543210');
     await page.getByLabel(/company name/i).fill('Compliant Co');
     await page.getByLabel(/state/i).selectOption('Maharashtra');
-    await page.getByLabel(/employee count/i).selectOption('21-50 employees');
-    await page.getByLabel(/industry/i).selectOption('IT / Software');
+    await page.getByLabel(/employee count/i).selectOption('20-49 employees');
+    await page.getByLabel(/industry/i).selectOption('Information Technology');
     await page.getByRole('button', { name: /continue to assessment/i }).click();
     
     for (let i = 0; i < 12; i++) {
@@ -90,8 +90,8 @@ test.describe('Statutory Health Check Assessment Flow', () => {
     await page.getByLabel(/phone/i).fill('9876543210');
     await page.getByLabel(/company name/i).fill('NPS Test Co');
     await page.getByLabel(/state/i).selectOption('Maharashtra');
-    await page.getByLabel(/employee count/i).selectOption('21-50 employees');
-    await page.getByLabel(/industry/i).selectOption('IT / Software');
+    await page.getByLabel(/employee count/i).selectOption('20-49 employees');
+    await page.getByLabel(/industry/i).selectOption('Information Technology');
     await page.getByRole('button', { name: /continue to assessment/i }).click();
     
     for (let i = 0; i < 12; i++) {

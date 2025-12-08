@@ -62,8 +62,8 @@ test.describe('Database Integration Tests', () => {
     await page.getByLabel(/phone/i).fill('9876543210');
     await page.getByLabel(/company name/i).fill('DB Test Co');
     await page.getByLabel(/state/i).selectOption('Maharashtra');
-    await page.getByLabel(/employee count/i).selectOption('21-50 employees');
-    await page.getByLabel(/industry/i).selectOption('IT / Software');
+    await page.getByLabel(/employee count/i).selectOption('20-49 employees');
+    await page.getByLabel(/industry/i).selectOption('Information Technology');
     await page.getByRole('button', { name: /continue to assessment/i }).click();
     
     for (let i = 0; i < 12; i++) {
@@ -92,8 +92,8 @@ test.describe('Error Handling Tests', () => {
     await page.getByLabel(/phone/i).fill('9876543210');
     await page.getByLabel(/company name/i).fill('Test');
     await page.getByLabel(/state/i).selectOption('Delhi');
-    await page.getByLabel(/employee count/i).selectOption('11-20 employees');
-    await page.getByLabel(/industry/i).selectOption('IT / Software');
+    await page.getByLabel(/employee count/i).selectOption('10-19 employees');
+    await page.getByLabel(/industry/i).selectOption('Information Technology');
     await page.getByRole('button', { name: /continue to assessment/i }).click();
     
     await expect(page.getByText(/invalid.*email|valid.*email/i)).toBeVisible();
