@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     // Send email with PDF attachment
     const { data, error } = await getResendClient().emails.send({
-      from: process.env.EMAIL_FROM || 'ComplianceCheck <reports@compliancecheck.in>',
+      from: process.env.EMAIL_FROM || 'ComplianceCheck <noreply@compliancecheck.co.in>',
       to: email,
       subject: `Your ${reportLabel} Report - ${companyName || 'Assessment Complete'}`,
       html: `
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
             
             <!-- CTA -->
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://compliancecheck.in" style="display: inline-block; background: #1E40AF; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+              <a href="https://compliancecheck.co.in" style="display: inline-block; background: #1E40AF; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600;">
                 Take Another Assessment
               </a>
             </div>
@@ -144,9 +144,9 @@ export async function POST(request: NextRequest) {
               ComplianceCheck | Simplifying compliance for Indian businesses
             </p>
             <p style="color: #9CA3AF; margin: 10px 0 0 0; font-size: 12px;">
-              <a href="https://compliancecheck.in/privacy" style="color: #6B7280; text-decoration: none;">Privacy Policy</a>
+              <a href="https://compliancecheck.co.in/privacy" style="color: #6B7280; text-decoration: none;">Privacy Policy</a>
               &nbsp;|&nbsp;
-              <a href="https://compliancecheck.in/terms" style="color: #6B7280; text-decoration: none;">Terms of Service</a>
+              <a href="https://compliancecheck.co.in/terms" style="color: #6B7280; text-decoration: none;">Terms of Service</a>
             </p>
           </div>
           

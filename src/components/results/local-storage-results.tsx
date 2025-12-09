@@ -21,6 +21,7 @@ import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment
 // Types moved inline where needed
 
 const QUESTION_SUMMARIES: Record<string, { compliant: string; nonCompliant: string; priority: 'high' | 'medium' | 'low' }> = {
+  // STATUTORY HEALTH CHECK QUESTIONS
   pf_1: { 
     compliant: 'EPFO Registration is active',
     nonCompliant: 'EPFO Registration missing - mandatory for 20+ employees',
@@ -80,7 +81,165 @@ const QUESTION_SUMMARIES: Record<string, { compliant: string; nonCompliant: stri
     compliant: 'Bonus registers maintained properly',
     nonCompliant: 'Bonus registers not maintained - Form A, B, C, D required',
     priority: 'medium'
-  }
+  },
+
+  // LABOUR CODE QUESTIONS - Code on Wages
+  wages_1: {
+    compliant: 'Minimum wage compliance in place',
+    nonCompliant: 'Minimum wage not being paid - immediate rectification needed',
+    priority: 'high'
+  },
+  wages_2: {
+    compliant: 'Wages paid within 7-day timeline',
+    nonCompliant: 'Wage payment delays - Code mandates payment within 7 days',
+    priority: 'high'
+  },
+  wages_3: {
+    compliant: 'Full & final settlement within 2 days',
+    nonCompliant: 'F&F settlement delayed - Code requires 2 working days',
+    priority: 'medium'
+  },
+  wages_4: {
+    compliant: 'Basic wage is 50%+ of CTC',
+    nonCompliant: 'Basic wage below 50% - restructure CTC to avoid PF/gratuity recalculation',
+    priority: 'high'
+  },
+  wages_5: {
+    compliant: 'Overtime paid at 2x rate',
+    nonCompliant: 'Overtime rate non-compliant - must be 2x normal wage',
+    priority: 'medium'
+  },
+  wages_6: {
+    compliant: 'Gender pay parity maintained',
+    nonCompliant: 'Gender pay gap exists - Equal Remuneration provisions apply',
+    priority: 'high'
+  },
+  wages_7: {
+    compliant: 'Statutory bonus paid on time',
+    nonCompliant: 'Bonus payment delayed - pay within 8 months of year end',
+    priority: 'high'
+  },
+
+  // LABOUR CODE QUESTIONS - Social Security
+  ss_1: {
+    compliant: 'All eligible employees enrolled in EPF',
+    nonCompliant: 'EPF enrolment gaps - register all eligible employees',
+    priority: 'high'
+  },
+  ss_2: {
+    compliant: 'All eligible employees covered under ESI',
+    nonCompliant: 'ESI coverage gaps - mandatory for 10+ employees',
+    priority: 'high'
+  },
+  ss_3: {
+    compliant: 'Gratuity insurance/provision in place',
+    nonCompliant: 'Gratuity liability not secured - consider LIC Group Gratuity',
+    priority: 'medium'
+  },
+  ss_4: {
+    compliant: 'Maternity benefits compliant',
+    nonCompliant: 'Maternity benefit gaps - 26 weeks paid leave mandatory',
+    priority: 'high'
+  },
+  ss_5: {
+    compliant: 'Gig/platform workers provisions addressed',
+    nonCompliant: 'Gig worker social security not addressed',
+    priority: 'medium'
+  },
+  ss_6: {
+    compliant: 'Creche facility provided',
+    nonCompliant: 'Creche facility missing - mandatory for 50+ employees',
+    priority: 'medium'
+  },
+  ss_7: {
+    compliant: 'Building workers cess compliant',
+    nonCompliant: 'Building workers cess not paid',
+    priority: 'medium'
+  },
+  ss_8: {
+    compliant: 'Social security contributions regular',
+    nonCompliant: 'Social security contribution delays',
+    priority: 'high'
+  },
+
+  // LABOUR CODE QUESTIONS - OSH Code
+  osh_1: {
+    compliant: 'Shram Suvidha registration complete',
+    nonCompliant: 'Shram Suvidha registration pending - complete within 60 days',
+    priority: 'high'
+  },
+  osh_2: {
+    compliant: 'Working hours within 8-hour limit',
+    nonCompliant: 'Working hours exceed 8-hour daily limit',
+    priority: 'medium'
+  },
+  osh_3: {
+    compliant: 'Overtime consent process in place',
+    nonCompliant: 'Overtime consent not being obtained',
+    priority: 'medium'
+  },
+  osh_4: {
+    compliant: 'Women night shift provisions met',
+    nonCompliant: 'Women night shift safeguards missing',
+    priority: 'medium'
+  },
+  osh_5: {
+    compliant: 'Contract labour registration complete',
+    nonCompliant: 'Contract labour registration missing - required for 50+ contract workers',
+    priority: 'high'
+  },
+  osh_6: {
+    compliant: 'Factory/establishment registration valid',
+    nonCompliant: 'Factory registration not valid or missing',
+    priority: 'high'
+  },
+  osh_7: {
+    compliant: 'Safety committee formed',
+    nonCompliant: 'Safety committee not formed - required for hazardous industries',
+    priority: 'medium'
+  },
+  osh_8: {
+    compliant: 'Leave policy compliant with Code',
+    nonCompliant: 'Leave entitlements not as per OSH Code',
+    priority: 'medium'
+  },
+
+  // LABOUR CODE QUESTIONS - Industrial Relations
+  industrial_relations_1: {
+    compliant: 'Grievance Redressal Committee formed',
+    nonCompliant: 'GRC not formed - mandatory for 20+ employees',
+    priority: 'high'
+  },
+  industrial_relations_2: {
+    compliant: 'Standing Orders certified',
+    nonCompliant: 'Standing Orders not certified - required for 300+ employees',
+    priority: 'high'
+  },
+  industrial_relations_3: {
+    compliant: 'Works Committee constituted',
+    nonCompliant: 'Works Committee missing - required for 100+ employees',
+    priority: 'medium'
+  },
+  industrial_relations_4: {
+    compliant: 'Strike/lockout notice procedures known',
+    nonCompliant: 'Strike notice procedures not established',
+    priority: 'low'
+  },
+  industrial_relations_5: {
+    compliant: 'Fixed-term employee benefits equal to permanent staff',
+    nonCompliant: 'Fixed-term employees not getting equal benefits',
+    priority: 'high'
+  },
+  industrial_relations_6: {
+    compliant: 'Retrenchment procedures documented',
+    nonCompliant: 'Retrenchment process not compliant with Code',
+    priority: 'medium'
+  },
+  industrial_relations_7: {
+    compliant: 'Trade union recognition process in place',
+    nonCompliant: 'Trade union recognition procedures not established',
+    priority: 'low'
+  },
 }
 
 // ============================================================================
