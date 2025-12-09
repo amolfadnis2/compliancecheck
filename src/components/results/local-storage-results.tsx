@@ -12,7 +12,7 @@ import {
 import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { DPDP_CATEGORIES } from '@/lib/assessments/dpdp-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
-import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 
 // ============================================================================
 // COMPLIANCE SUMMARY DATA
@@ -171,13 +171,19 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(`assessment_${id}`)
+      const storageKey = getLocalStorageKey(id)
+      console.log('[LocalStorageResults] Loading from key:', storageKey)
+      const stored = localStorage.getItem(storageKey)
       if (stored) {
         const data = JSON.parse(stored)
+        console.log('[LocalStorageResults] Found data:', data.id, data.assessment_type)
         setAssessment(data)
+      } else {
+        console.log('[LocalStorageResults] No data found. Available keys:', 
+          Object.keys(localStorage).filter(k => k.startsWith('assessment_')))
       }
     } catch (e) {
-      console.error('Error loading from localStorage:', e)
+      console.error('[LocalStorageResults] Error loading:', e)
     } finally {
       setLoading(false)
     }
@@ -580,7 +586,24 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
 // ============================================================================
 
 function DemoResultsView({ assessmentType }: { assessmentType: string }) {
-  const isLabourCode = assessmentType === 'labour_code'
+  const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
+  const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
+  
+  // Get badge styling and text based on assessment type
+  const getBadgeConfig = () => {
+    if (isDPDP) return { className: 'bg-purple-100 text-purple-700', text: 'DPDP Gap Assessment' }
+    if (isLabourCode) return { className: 'bg-blue-100 text-blue-700', text: 'Labour Code Readiness' }
+    return { className: 'bg-green-100 text-green-700', text: 'Statutory Health Check' }
+  }
+  
+  // Get assessment URL based on type
+  const getAssessmentUrl = () => {
+    if (isDPDP) return '/assessment/dpdp'
+    if (isLabourCode) return '/assessment/labour-code'
+    return '/assessment/statutory-health'
+  }
+  
+  const badgeConfig = getBadgeConfig()
   
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -590,8 +613,8 @@ function DemoResultsView({ assessmentType }: { assessmentType: string }) {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Link>
-          <Badge className={isLabourCode ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}>
-            {isLabourCode ? 'Labour Code Readiness' : 'Statutory Health Check'}
+          <Badge className={badgeConfig.className}>
+            {badgeConfig.text}
           </Badge>
           <h1 className="text-2xl font-bold text-gray-900 mt-2">Assessment Results</h1>
           <p className="text-amber-600 text-sm mt-1">Note: Could not load saved results.</p>
@@ -605,7 +628,7 @@ function DemoResultsView({ assessmentType }: { assessmentType: string }) {
               We couldn&apos;t find your assessment results. This may happen if your browser 
               cleared storage or if you&apos;re on a different device.
             </p>
-            <Link href={isLabourCode ? '/assessment/labour-code' : '/assessment/statutory-health'}>
+            <Link href={getAssessmentUrl()}>
               <Button>Take the Assessment Again</Button>
             </Link>
           </CardContent>

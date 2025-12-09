@@ -188,6 +188,7 @@ export default function DPDPAssessmentPage() {
         localStorage.removeItem(STORAGE_KEY)
         
         // Save to localStorage for results page (in case DB fetch fails)
+        const storageKey = getLocalStorageKey(data.assessmentId)
         const assessmentLocalData = {
           id: data.assessmentId,
           assessment_type: ASSESSMENT_TYPES.DPDP,
@@ -199,7 +200,9 @@ export default function DPDPAssessmentPage() {
           action_items: data.actionItems,
           created_at: new Date().toISOString()
         }
-        localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify(assessmentLocalData))
+        console.log('[DPDP] Saving to localStorage:', storageKey, assessmentLocalData.id)
+        localStorage.setItem(storageKey, JSON.stringify(assessmentLocalData))
+        console.log('[DPDP] Saved. Navigating to:', `/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.DPDP}`)
         
         // Navigate to results
         router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.DPDP}`)
