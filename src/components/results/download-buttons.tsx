@@ -6,6 +6,7 @@ import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import { createBrowserClient } from '@supabase/ssr'
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from '@/lib/pdf/dpdp-compliance-rules'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Helper to detect UUID format
 function isValidUUID(id: string): boolean {
@@ -273,11 +274,14 @@ interface AssessmentData {
   userDetails?: {
     companyName?: string
     fullName?: string
+    contactName?: string
     email?: string
+    contactEmail?: string
     industry?: string
     employeeCount?: string
     state?: string
   }
+  user_details?: Record<string, string>
   responses?: {
     userDetails?: Record<string, string>
     answers?: Record<string, string>
@@ -287,6 +291,8 @@ interface AssessmentData {
 
 interface DownloadButtonsProps {
   assessmentId?: string
+  assessmentType?: string
+  autoTrigger?: 'download' | 'email' | null
 }
 
 // ============================================================================
@@ -317,11 +323,12 @@ function getStatusColour(score: number): [number, number, number] {
 // MAIN COMPONENT
 // ============================================================================
 
-export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
+export function DownloadButtons({ assessmentId, assessmentType: propAssessmentType, autoTrigger }: DownloadButtonsProps) {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadSuccess, setDownloadSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(null)
+  const [autoTriggered, setAutoTriggered] = useState(false)
   
   // Email state
   const [isEmailing, setIsEmailing] = useState(false)
@@ -358,18 +365,20 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
           
           if (data) {
             // Transform DB data to match AssessmentData interface
+            // Email can be in multiple places depending on assessment type
+            const userDetailsFromResponses = data.responses?.userDetails || {}
             setAssessmentData({
               id: data.id,
               assessment_type: data.assessment_type,
               overall_score: data.overall_score,
               category_scores: data.category_scores,
               userDetails: {
-                companyName: data.company_name,
-                fullName: data.full_name,
-                email: data.email,
-                industry: data.industry,
-                employeeCount: data.employee_count,
-                state: data.state,
+                companyName: data.company_name || userDetailsFromResponses.companyName,
+                fullName: data.full_name || userDetailsFromResponses.fullName || userDetailsFromResponses.contactName,
+                email: data.email || userDetailsFromResponses.email || userDetailsFromResponses.contactEmail,
+                industry: data.industry || userDetailsFromResponses.industry,
+                employeeCount: data.employee_count || userDetailsFromResponses.employeeCount,
+                state: data.state || userDetailsFromResponses.state,
               },
               responses: data.responses,
               created_at: data.created_at,
@@ -392,6 +401,22 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
       }
     }
   }, [assessmentId])
+
+  // Auto-trigger download or email after feedback completion
+  useEffect(() => {
+    if (autoTrigger && !autoTriggered) {
+      setAutoTriggered(true)
+      // Small delay to ensure component is fully mounted
+      const timer = setTimeout(() => {
+        if (autoTrigger === 'download') {
+          handleDownload()
+        } else if (autoTrigger === 'email') {
+          handleEmailReport()
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [autoTrigger, autoTriggered])
 
   // ==========================================================================
   // PDF GENERATION - ASCII SAFE VERSION
@@ -1265,7 +1290,7 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
       if (!data) {
         data = {
           id,
-          assessment_type: 'statutory_health',
+          assessment_type: ASSESSMENT_TYPES.STATUTORY_HEALTH,
           overall_score: 65,
           category_scores: {
             pf: { percentage: 70 },
@@ -1279,12 +1304,12 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
       }
 
       // Generate PDF client-side based on assessment type
-      const assessmentType = data.assessment_type || 'statutory_health'
+      const assessmentType = data.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH
       
       let blob: Blob
-      if (assessmentType === 'dpdp') {
+      if (assessmentType === ASSESSMENT_TYPES.DPDP) {
         blob = generateDPDPPDF(data)
-      } else if (assessmentType === 'labour_code') {
+      } else if (assessmentType === ASSESSMENT_TYPES.LABOUR_CODE) {
         blob = generateLabourCodePDF(data)
       } else {
         blob = generatePDF(data)
@@ -1293,8 +1318,8 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      const reportPrefix = assessmentType === 'dpdp' ? 'DPDP-Gap-Assessment' : 
-                          assessmentType === 'labour_code' ? 'Labour-Code-Readiness' : 
+      const reportPrefix = assessmentType === ASSESSMENT_TYPES.DPDP ? 'DPDP-Gap-Assessment' : 
+                          assessmentType === ASSESSMENT_TYPES.LABOUR_CODE ? 'Labour-Code-Readiness' : 
                           'ComplianceCheck-Report'
       link.download = reportPrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
       document.body.appendChild(link)
@@ -1325,9 +1350,22 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
       const id = assessmentId || window.location.pathname.split('/').pop() || 'demo'
       let data: AssessmentData | null = null
       
-      // For local/temp IDs, use localStorage
+      // For local/temp IDs, try localStorage first (both from state and direct read)
       if (id.startsWith('local_') || id.startsWith('temp_')) {
+        // First try from state
         data = assessmentData || null
+        
+        // If state is empty, try loading directly from localStorage
+        if (!data) {
+          try {
+            const stored = localStorage.getItem(`assessment_${id}`)
+            if (stored) {
+              data = JSON.parse(stored)
+            }
+          } catch (e) {
+            console.error('Error loading from localStorage:', e)
+          }
+        }
       } else {
         // For database IDs, fetch assessment data from API
         try {
@@ -1348,33 +1386,68 @@ export function DownloadButtons({ assessmentId }: DownloadButtonsProps) {
         }
       }
 
-      // Use fallback if nothing found
+      // Use fallback if nothing found - try localStorage one more time
+      if (!data) {
+        try {
+          const stored = localStorage.getItem(`assessment_${id}`)
+          if (stored) {
+            data = JSON.parse(stored)
+          }
+        } catch (e) {
+          console.error('Final localStorage fallback failed:', e)
+        }
+      }
+      
+      // If still no data, use minimal fallback
       if (!data) {
         data = assessmentData || {
           id,
-          assessment_type: 'statutory_health',
+          assessment_type: ASSESSMENT_TYPES.STATUTORY_HEALTH,
           overall_score: 65,
           category_scores: {},
           userDetails: { companyName: 'Unknown' },
         }
       }
 
-      // Get email from user details
-      const userDetails = data.userDetails || data.responses?.userDetails || {}
-      const email = userDetails.email
+      // Get email from user details (check ALL possible field names and structures)
+      // Different assessment types store email in different places:
+      // - Statutory Health: userDetails.email (from responses.userDetails.email)
+      // - Labour Code: userDetails.contactEmail (from responses.userDetails.contactEmail)
+      // - DPDP: user_details.email or organizationProfile.email
+      const userDetails = data.userDetails || data.user_details || data.responses?.userDetails || {}
+      const responsesUserDetails = data.responses?.userDetails || {}
+      const dataAsUnknown = data as unknown as Record<string, unknown>
+      const orgProfile = dataAsUnknown.organizationProfile as Record<string, unknown> | undefined
+      const userDetailsField = dataAsUnknown.user_details as Record<string, unknown> | undefined
+      
+      // Check all possible email field names across all assessment types
+      const email = userDetails.email || 
+                   userDetails.contactEmail || 
+                   responsesUserDetails.email || 
+                   responsesUserDetails.contactEmail ||
+                   userDetailsField?.email ||
+                   orgProfile?.email ||
+                   dataAsUnknown.email ||
+                   dataAsUnknown.contactEmail
 
       if (!email) {
+        console.error('Email lookup failed. Data structure:', {
+          userDetails,
+          responsesUserDetails,
+          orgProfile,
+          dataKeys: Object.keys(data || {}),
+        })
         setEmailError('No email address found. Please download the report instead.')
         return
       }
 
       // Generate PDF as base64
-      const assessmentType = data.assessment_type || 'statutory_health'
+      const assessmentType = data.assessment_type || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
       
       let blob: Blob
-      if (assessmentType === 'dpdp') {
+      if (assessmentType === ASSESSMENT_TYPES.DPDP) {
         blob = generateDPDPPDF(data)
-      } else if (assessmentType === 'labour_code') {
+      } else if (assessmentType === ASSESSMENT_TYPES.LABOUR_CODE) {
         blob = generateLabourCodePDF(data)
       } else {
         blob = generatePDF(data)

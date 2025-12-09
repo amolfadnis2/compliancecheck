@@ -9,6 +9,7 @@ import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeAct
 import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPComplianceStatus, getDaysUntilDeadline } from '@/lib/assessments/dpdp-questions'
 import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Type definitions
 interface ActionItem {
@@ -70,9 +71,9 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   const { id } = await params
   const { type } = await searchParams
   
-  const assessmentType = type || 'statutory_health'
-  const isLabourCode = assessmentType === 'labour_code'
-  const isDPDP = assessmentType === 'dpdp'
+  const assessmentType = type || ASSESSMENT_TYPES.STATUTORY_HEALTH
+  const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
+  const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
 
   // Handle temporary/local IDs (when DB not configured or fallback)
   if (id.startsWith('temp_') || id.startsWith('local_')) {

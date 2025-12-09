@@ -3,18 +3,17 @@
  * Type-safe event definitions for all analytics tracking
  */
 
+import { ASSESSMENT_TYPES, type AssessmentType as BaseAssessmentType } from '@/lib/constants/assessment-types';
+
 // =============================================================================
-// ASSESSMENT TYPES
+// ASSESSMENT TYPES - Re-export from single source of truth
 // =============================================================================
 
-export type AssessmentType = 
-  | 'statutory_health'
-  | 'labour_code_readiness'
-  | 'dpdp_gap'
-  | 'code_on_wages'
-  | 'social_security'
-  | 'osh_code'
-  | 'industrial_relations';
+// Use the canonical types from constants file
+export type AssessmentType = BaseAssessmentType | 'code_on_wages' | 'social_security' | 'osh_code' | 'industrial_relations';
+
+// Re-export for convenience
+export { ASSESSMENT_TYPES };
 
 export type UserTier = 'free' | 'pro' | 'enterprise';
 

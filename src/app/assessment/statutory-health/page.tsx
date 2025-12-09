@@ -18,6 +18,7 @@ import {
   CATEGORY_INFO,
 } from '@/lib/assessments/statutory-health-questions'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
+import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 
 // Form validation schema
 const userDetailsSchema = z.object({
@@ -195,7 +196,7 @@ export default function StatutoryHealthAssessmentPage() {
         body: JSON.stringify({
           userDetails,
           responses,
-          assessmentType: 'statutory_health',
+          assessmentType: ASSESSMENT_TYPES.STATUTORY_HEALTH,
         }),
       })
 
@@ -208,7 +209,7 @@ export default function StatutoryHealthAssessmentPage() {
       // If using local storage (database not available), save the assessment data locally
       if (data.storageType === 'local' && data.assessmentData) {
         // Store assessment data in localStorage for results page to read
-        localStorage.setItem(`assessment_${data.assessmentId}`, JSON.stringify({
+        localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify({
           ...data.assessmentData,
           overall_score: calculateScore(),
           category_scores: getCategoryScores(),
@@ -219,8 +220,8 @@ export default function StatutoryHealthAssessmentPage() {
       // Clear saved progress on successful submission
       clearProgress()
 
-      // Redirect to results page
-      router.push(`/results/${data.assessmentId}`)
+      // Redirect to results page with type for consistency
+      router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.STATUTORY_HEALTH}`)
 
     } catch (error) {
       console.error('Submit error:', error)

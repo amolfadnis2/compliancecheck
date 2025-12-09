@@ -12,6 +12,7 @@ import {
 import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { DPDP_CATEGORIES } from '@/lib/assessments/dpdp-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // ============================================================================
 // COMPLIANCE SUMMARY DATA
@@ -165,8 +166,8 @@ function analyseResponses(answers: Record<string, string>): {
 export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResultsPageProps) {
   const [loading, setLoading] = useState(true)
   const [assessment, setAssessment] = useState<LocalAssessmentData | null>(null)
-  const isLabourCode = assessmentType === 'labour_code'
-  const isDPDP = assessmentType === 'dpdp'
+  const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
+  const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
 
   useEffect(() => {
     try {
@@ -521,7 +522,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
                 </ul>
               </div>
               <div className="w-full md:w-auto">
-                <DownloadButtons assessmentId={id} />
+                <DownloadButtons assessmentId={id} assessmentType={assessmentType} />
               </div>
             </div>
           </CardContent>

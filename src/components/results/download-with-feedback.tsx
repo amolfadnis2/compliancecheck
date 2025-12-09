@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import { DownloadButtons as OriginalDownloadButtons } from '@/components/results/download-buttons'
 import { posthog } from '@/components/providers/posthog-provider'
+import { Button } from '@/components/ui/button'
+import { Download, Mail, FileText, CheckCircle } from 'lucide-react'
 
 interface DownloadWithFeedbackProps {
   assessmentId?: string
@@ -13,14 +15,14 @@ interface DownloadWithFeedbackProps {
 export function DownloadWithFeedback({ assessmentId, assessmentType = 'statutory_health' }: DownloadWithFeedbackProps) {
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackCompleted, setFeedbackCompleted] = useState(false)
-  const [showOriginal, setShowOriginal] = useState(false)
+  const [pendingAction, setPendingAction] = useState<'download' | 'email' | null>(null)
 
   // Get ID from URL if not provided
   const id = assessmentId || (typeof window !== 'undefined' ? window.location.pathname.split('/').pop() : '') || ''
 
-  const handleDownloadClick = () => {
+  const handleActionClick = (action: 'download' | 'email') => {
     try {
-      posthog.capture('download_report_clicked', {
+      posthog.capture(action === 'download' ? 'download_report_clicked' : 'email_report_clicked', {
         assessment_type: assessmentType,
         assessment_id: id,
         feedback_completed: feedbackCompleted,
@@ -30,16 +32,16 @@ export function DownloadWithFeedback({ assessmentId, assessmentType = 'statutory
     }
 
     if (!feedbackCompleted) {
+      setPendingAction(action)
       setShowFeedback(true)
     } else {
-      setShowOriginal(true)
+      setPendingAction(action)
     }
   }
 
   const handleFeedbackComplete = () => {
     setFeedbackCompleted(true)
     setShowFeedback(false)
-    setShowOriginal(true)
   }
 
   const handleSkipFeedback = () => {
@@ -53,10 +55,9 @@ export function DownloadWithFeedback({ assessmentId, assessmentType = 'statutory
     }
     setFeedbackCompleted(true)
     setShowFeedback(false)
-    setShowOriginal(true)
   }
 
-  // Show feedback form modal
+  // Show feedback form modal when triggered
   if (showFeedback) {
     return (
       <>
@@ -66,34 +67,80 @@ export function DownloadWithFeedback({ assessmentId, assessmentType = 'statutory
           onComplete={handleFeedbackComplete}
           onSkip={handleSkipFeedback}
         />
-        <button
-          onClick={handleDownloadClick}
-          className="w-full py-4 px-6 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          Download PDF Report
-        </button>
+        {/* Show buttons below feedback form */}
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+          <div className="flex items-center gap-2 text-blue-700 mb-2">
+            <FileText className="w-5 h-5" />
+            <span className="font-semibold">Download Detailed Report</span>
+          </div>
+          <p className="text-sm text-blue-600">
+            Complete the quick feedback above to unlock your detailed PDF report with:
+          </p>
+          <ul className="text-sm text-blue-600 mt-2 space-y-1">
+            <li className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Step-by-step remediation actions
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Legal references & government portal links
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Deadlines & penalty information
+            </li>
+          </ul>
+        </div>
       </>
     )
   }
 
-  // Show original download button after feedback
-  if (showOriginal) {
-    return <OriginalDownloadButtons assessmentId={id} />
+  // After feedback completed (or skipped), show full download buttons
+  if (feedbackCompleted) {
+    return <OriginalDownloadButtons assessmentId={id} assessmentType={assessmentType} autoTrigger={pendingAction} />
   }
 
-  // Initial state - show button that triggers feedback
+  // Initial state - show both buttons that trigger feedback first
   return (
-    <button
-      onClick={handleDownloadClick}
-      className="w-full py-4 px-6 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl"
-    >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
-      Download PDF Report
-    </button>
+    <div className="bg-blue-50 rounded-lg p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <FileText className="w-5 h-5 text-blue-700" />
+        <h3 className="font-semibold text-gray-900">Download Detailed Report</h3>
+      </div>
+      <p className="text-sm text-gray-600 mb-4">
+        Get the complete PDF report with:
+      </p>
+      <ul className="text-sm text-gray-600 mb-4 space-y-1">
+        <li className="flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          Step-by-step remediation actions
+        </li>
+        <li className="flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          Legal references & government portal links
+        </li>
+        <li className="flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          Deadlines & penalty information
+        </li>
+      </ul>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button 
+          onClick={() => handleActionClick('download')}
+          className="flex-1 bg-blue-600 hover:bg-blue-700"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Download Detailed Report
+        </Button>
+        <Button 
+          variant="outline"
+          onClick={() => handleActionClick('email')}
+          className="flex-1"
+        >
+          <Mail className="w-4 h-4 mr-2" />
+          Email Report
+        </Button>
+      </div>
+    </div>
   )
 }

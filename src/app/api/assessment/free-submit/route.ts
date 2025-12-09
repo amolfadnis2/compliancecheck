@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Server-side validation schema
 const userDetailsSchema = z.object({
@@ -24,7 +25,7 @@ const userDetailsSchema = z.object({
 const submissionSchema = z.object({
   userDetails: userDetailsSchema,
   responses: z.record(z.string(), z.string().max(1000)),
-  assessmentType: z.enum(['statutory_health', 'labour_code', 'dpdp']),
+  assessmentType: z.enum([ASSESSMENT_TYPES.STATUTORY_HEALTH, ASSESSMENT_TYPES.LABOUR_CODE, ASSESSMENT_TYPES.DPDP]),
 })
 
 // Sanitize input to prevent XSS

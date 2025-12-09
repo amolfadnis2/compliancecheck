@@ -27,6 +27,7 @@ import {
   type DPDPQuestion
 } from '@/lib/assessments/dpdp-questions'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
+import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 
 // Form validation schema for organization profile
 const organizationProfileSchema = z.object({
@@ -186,28 +187,50 @@ export default function DPDPAssessmentPage() {
         // Clear saved progress
         localStorage.removeItem(STORAGE_KEY)
         
+        // Save to localStorage for results page (in case DB fetch fails)
+        const assessmentLocalData = {
+          id: data.assessmentId,
+          assessment_type: ASSESSMENT_TYPES.DPDP,
+          organizationProfile,
+          userDetails: organizationProfile, // Also save as userDetails for consistency
+          responses: { answers: responses },
+          overall_score: data.overallScore,
+          category_scores: data.categoryScores,
+          action_items: data.actionItems,
+          created_at: new Date().toISOString()
+        }
+        localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify(assessmentLocalData))
+        
         // Navigate to results
-        router.push(`/results/${data.assessmentId}?type=dpdp`)
+        router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.DPDP}`)
       } else {
         // Fallback: save to localStorage and navigate
+        const localId = `local_${Date.now()}`
         const assessmentData = {
+          id: localId,
+          assessment_type: ASSESSMENT_TYPES.DPDP,
           organizationProfile,
-          responses,
+          userDetails: organizationProfile, // Also save as userDetails for consistency
+          responses: { answers: responses },
           timestamp: new Date().toISOString()
         }
-        localStorage.setItem('lastAssessment', JSON.stringify(assessmentData))
-        router.push(`/results/local_${Date.now()}?type=dpdp`)
+        localStorage.setItem(getLocalStorageKey(localId), JSON.stringify(assessmentData))
+        router.push(`/results/${localId}?type=${ASSESSMENT_TYPES.DPDP}`)
       }
     } catch (error) {
       console.error('Submission error:', error)
       // Fallback to localStorage
+      const localId = `local_${Date.now()}`
       const assessmentData = {
+        id: localId,
+        assessment_type: ASSESSMENT_TYPES.DPDP,
         organizationProfile,
-        responses,
+        userDetails: organizationProfile, // Also save as userDetails for consistency
+        responses: { answers: responses },
         timestamp: new Date().toISOString()
       }
-      localStorage.setItem('lastAssessment', JSON.stringify(assessmentData))
-      router.push(`/results/local_${Date.now()}?type=dpdp`)
+      localStorage.setItem(getLocalStorageKey(localId), JSON.stringify(assessmentData))
+      router.push(`/results/${localId}?type=${ASSESSMENT_TYPES.DPDP}`)
     } finally {
       setIsSubmitting(false)
     }

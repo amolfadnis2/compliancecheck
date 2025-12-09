@@ -7,6 +7,7 @@ import {
   type IndustryType,
   type EmployeeCountRange,
 } from '@/lib/assessments/labour-code-questions'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Initialize Supabase with service role for admin operations
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
         user_id: finalUserId,
         company_id: companyId,
         payment_id: null,
-        assessment_type: assessmentType || 'labour_code',
+        assessment_type: assessmentType || ASSESSMENT_TYPES.LABOUR_CODE,
         status: 'completed',
         responses: {
           userDetails,

@@ -5,6 +5,7 @@ import {
   generateDPDPActionItems,
   calculateRiskMultipliers 
 } from '@/lib/assessments/dpdp-questions'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Type definition for organization profile
 interface OrganizationProfile {
@@ -71,10 +72,10 @@ export async function POST(req: NextRequest) {
             processesHealthData: organizationProfile.processesHealthData === 'yes',
             processesSensitiveData: organizationProfile.processesSensitiveData === 'yes'
           },
-          assessment_type: 'dpdp_gap',
+          assessment_type: ASSESSMENT_TYPES.DPDP,
           responses,
           overall_score: scoreResults.overallScore,
-          phase_scores: scoreResults.phaseScores,
+          category_scores: scoreResults.phaseScores,
           maturity_level: scoreResults.maturityLevel,
           risk_multipliers: riskMultipliers,
           action_items: actionItems
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
       success: true,
       assessmentId,
       overallScore: scoreResults.overallScore,
-      phaseScores: scoreResults.phaseScores,
+      categoryScores: scoreResults.phaseScores,
       maturityLevel: scoreResults.maturityLevel,
       questionsAnswered: scoreResults.questionsAnswered,
       totalQuestions: scoreResults.totalQuestions,

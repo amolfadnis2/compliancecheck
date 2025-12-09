@@ -1,6 +1,17 @@
 // Currency constants - using Unicode escape for guaranteed proper encoding
 export const RUPEE = '\u20B9' // ₹
 
+// =============================================================================
+// ASSESSMENT TYPES - Single source of truth for all assessment type strings
+// =============================================================================
+export const ASSESSMENT_TYPES = {
+  STATUTORY_HEALTH: 'statutory_health',
+  LABOUR_CODE: 'labour_code',
+  DPDP: 'dpdp',
+} as const
+
+export type AssessmentType = typeof ASSESSMENT_TYPES[keyof typeof ASSESSMENT_TYPES]
+
 // Indian States (all states and union territories)
 export const INDIAN_STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',

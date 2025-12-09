@@ -49,25 +49,45 @@ export async function GET(
     }
 
     // Format response with combined data
+    // Check all possible locations for user details (different assessment types store differently)
+    const responsesUserDetails = assessment.responses?.userDetails || {}
+    const userDetailsField = assessment.user_details || {}
+    
     const formattedResponse = {
       id: assessment.id,
       assessment_type: assessment.assessment_type,
       status: assessment.status,
       overall_score: assessment.overall_score,
-      category_scores: assessment.category_scores,
+      category_scores: assessment.category_scores || assessment.phase_scores,
       action_items: assessment.action_items,
       responses: assessment.responses,
       created_at: assessment.created_at,
       completed_at: assessment.completed_at,
-      // Combine user and company details
+      // Combine user and company details (check multiple field names across all assessment types)
       userDetails: {
-        fullName: assessment.users?.full_name || assessment.responses?.userDetails?.fullName,
-        email: assessment.users?.email || assessment.responses?.userDetails?.email,
-        phone: assessment.users?.phone || assessment.responses?.userDetails?.phone,
-        companyName: assessment.companies?.company_name || assessment.responses?.userDetails?.companyName,
-        industry: assessment.companies?.industry_type || assessment.responses?.userDetails?.industry,
-        employeeCount: assessment.companies?.employee_count || assessment.responses?.userDetails?.employeeCount,
-        state: assessment.companies?.registered_state || assessment.responses?.userDetails?.state,
+        fullName: assessment.users?.full_name || 
+                  responsesUserDetails.fullName || 
+                  responsesUserDetails.contactName ||
+                  userDetailsField.fullName,
+        email: assessment.users?.email || 
+               responsesUserDetails.email || 
+               responsesUserDetails.contactEmail ||
+               userDetailsField.email,
+        phone: assessment.users?.phone || 
+               responsesUserDetails.phone ||
+               userDetailsField.phone,
+        companyName: assessment.companies?.company_name || 
+                     responsesUserDetails.companyName ||
+                     userDetailsField.companyName,
+        industry: assessment.companies?.industry_type || 
+                  responsesUserDetails.industry ||
+                  userDetailsField.industry,
+        employeeCount: assessment.companies?.employee_count || 
+                       responsesUserDetails.employeeCount ||
+                       userDetailsField.employeeCount,
+        state: assessment.companies?.registered_state || 
+               responsesUserDetails.state ||
+               userDetailsField.state,
       }
     }
 

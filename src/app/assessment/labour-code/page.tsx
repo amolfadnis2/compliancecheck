@@ -24,6 +24,7 @@ import {
   EMPLOYEE_COUNT_OPTIONS, 
   INDUSTRY_OPTIONS 
 } from '@/lib/constants';
+import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
 import { ArrowLeft, ArrowRight, CheckCircle2, Building2, Loader2, Info, Save } from 'lucide-react';
 
@@ -306,7 +307,7 @@ export default function LabourCodeAssessmentPage() {
         body: JSON.stringify({
           userDetails,
           responses,
-          assessmentType: 'labour_code',
+          assessmentType: ASSESSMENT_TYPES.LABOUR_CODE,
           filteredQuestionCount: filteredQuestions.length,
         }),
       });
@@ -324,16 +325,16 @@ export default function LabourCodeAssessmentPage() {
         overall_score: data.overallScore,
         category_scores: data.categoryScores,
         action_items: data.actionItems,
-        assessment_type: 'labour_code',
+        assessment_type: ASSESSMENT_TYPES.LABOUR_CODE,
         created_at: new Date().toISOString(),
       };
-      localStorage.setItem(`assessment_${data.assessmentId}`, JSON.stringify(assessmentData));
+      localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify(assessmentData));
       
       // Clear saved progress on successful submission
       clearProgress();
       
       toast.success('Assessment completed!');
-      router.push(`/results/${data.assessmentId}?type=labour_code`);
+      router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.LABOUR_CODE}`);
     } catch (error) {
       console.error('Submission error:', error);
       toast.error('Failed to submit assessment. Please try again.');
