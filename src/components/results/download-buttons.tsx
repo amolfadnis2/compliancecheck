@@ -416,7 +416,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [autoTrigger, autoTriggered])
+  }, [autoTrigger, autoTriggered, handleDownload, handleEmailReport])
 
   // ==========================================================================
   // PDF GENERATION - ASCII SAFE VERSION

@@ -357,7 +357,7 @@ export default function CTCCalculatorPage() {
                     <SelectItem value="old">Old Regime (With Deductions)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-1">We'll compare both regimes in results</p>
+                <p className="text-xs text-gray-500 mt-1">We&apos;ll compare both regimes in results</p>
               </div>
 
               {taxRegime === 'old' && (
