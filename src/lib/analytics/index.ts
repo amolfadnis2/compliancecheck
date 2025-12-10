@@ -38,6 +38,7 @@ export {
   trackOrganizationCreated,
   trackUserInvited,
   trackFeedbackSubmitted,
+  trackEvent, // Generic event tracking for calculators and other features
 } from './tracking';
 
 // Export types from events

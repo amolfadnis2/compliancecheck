@@ -182,6 +182,14 @@ export const trackFeedbackSubmitted = (props: FeedbackSubmittedProps) => {
 // UNIFIED ANALYTICS OBJECT (for cleaner imports)
 // =============================================================================
 
+// =============================================================================
+// GENERIC EVENT TRACKING (for calculators and other features)
+// =============================================================================
+
+export const trackEvent = (eventName: string, properties?: Record<string, unknown>) => {
+  safeCapture(eventName, properties);
+};
+
 export const analytics = {
   // User
   identify: identifyUser,
@@ -214,6 +222,9 @@ export const analytics = {
   
   // Feedback
   feedbackSubmitted: trackFeedbackSubmitted,
+  
+  // Generic tracking
+  trackEvent,
 };
 
 export default analytics;

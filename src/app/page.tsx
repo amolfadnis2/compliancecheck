@@ -55,9 +55,9 @@ export default function HomePage() {
                 Labour Code Readiness
               </Button>
             </Link>
-            <Link href="/calculator/gratuity">
-              <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                Gratuity Calculator
+            <Link href="/calculator/ctc">
+              <Button size="lg" variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
+                CTC Calculator
               </Button>
             </Link>
           </div>
@@ -349,22 +349,49 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            {/* Coming Soon: CTC Calculator */}
-            <Card className="border-2 border-gray-200 hover:shadow-lg transition-all opacity-75">
-              <div className="absolute -top-3 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full">
-                COMING SOON
+            {/* CTC Calculator */}
+            <Card className="border-2 border-green-600 hover:shadow-lg transition-all relative">
+              <div className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                MOST POPULAR
+              </div>
+              <div className="absolute -top-3 right-4 bg-green-700 text-white text-xs font-bold px-3 py-1 rounded-full">
+                ALWAYS FREE
               </div>
               <CardHeader>
-                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
-                  <Calculator className="w-6 h-6 text-gray-400" />
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                  <Calculator className="w-6 h-6 text-green-600" />
                 </div>
-                <CardTitle className="text-gray-500">CTC to In-Hand Calculator</CardTitle>
-                <CardDescription className="text-gray-400">
-                  New 50% basic salary rule applied. Calculate take-home salary.
+                <CardTitle>CTC to In-Hand Calculator</CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-bold text-green-600">FREE</span>
+                  <span className="text-sm text-green-600 font-medium">Forever</span>
+                </div>
+                <CardDescription>
+                  Calculate your actual take-home salary. 2025 Labour Code 50% basic rule applied!
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button disabled className="w-full" variant="outline">Coming Soon</Button>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    50% basic salary rule (2025)
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    State-wise Professional Tax
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    New vs Old tax regime
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    Instant breakdown report
+                  </li>
+                </ul>
+                <Link href="/calculator/ctc">
+                  <Button className="w-full bg-green-600 hover:bg-green-700">Calculate Salary</Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
