@@ -198,7 +198,8 @@ export const PROFESSIONAL_TAX: Record<string, (monthly: number, gender?: 'male' 
     if (annual <= 1000000) return 175
     return 208
   },
-  'Bihar': (_monthly) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  'Bihar': (monthly) => {
     // Annual PT - calculated annually based on yearly income
     return 0 // Monthly, paid annually
   },

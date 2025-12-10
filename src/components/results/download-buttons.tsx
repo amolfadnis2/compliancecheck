@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { jsPDF } from 'jspdf'
@@ -1254,7 +1254,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
   // DOWNLOAD HANDLER
   // ==========================================================================
 
-  const handleDownload = async () => {
+  const handleDownload = useCallback(async () => {
     setIsDownloading(true)
     setError(null)
     setDownloadSuccess(false)
@@ -1335,13 +1335,13 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     } finally {
       setIsDownloading(false)
     }
-  }
+  }, [assessmentId, assessmentData])
 
   // ==========================================================================
   // EMAIL HANDLER
   // ==========================================================================
 
-  const handleEmailReport = async () => {
+  const handleEmailReport = useCallback(async () => {
     setIsEmailing(true)
     setEmailError(null)
     setEmailSuccess(false)
@@ -1496,7 +1496,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     } finally {
       setIsEmailing(false)
     }
-  }
+  }, [assessmentId, assessmentData, propAssessmentType])
 
   return (
     <div className="space-y-4">
