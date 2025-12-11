@@ -193,10 +193,10 @@ export default function CTCCalculatorPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AssessmentHeader 
-        progress={getProgress()}
-        saveStatus={saveStatus}
         title="CTC to In-Hand Calculator"
         subtitle="Based on 2025 Labour Code rules"
+        badgeText="ALWAYS FREE"
+        badgeVariant="free"
       />
 
       <div className="max-w-4xl mx-auto px-4 py-8 pt-32">
