@@ -402,22 +402,6 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     }
   }, [assessmentId])
 
-  // Auto-trigger download or email after feedback completion
-  useEffect(() => {
-    if (autoTrigger && !autoTriggered) {
-      setAutoTriggered(true)
-      // Small delay to ensure component is fully mounted
-      const timer = setTimeout(() => {
-        if (autoTrigger === 'download') {
-          handleDownload()
-        } else if (autoTrigger === 'email') {
-          handleEmailReport()
-        }
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [autoTrigger, autoTriggered, handleDownload, handleEmailReport])
-
   // ==========================================================================
   // PDF GENERATION - ASCII SAFE VERSION
   // ==========================================================================
@@ -1497,6 +1481,24 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       setIsEmailing(false)
     }
   }, [assessmentId, assessmentData, propAssessmentType])
+
+  // Auto-trigger download or email after feedback completion
+  // Note: Functions defined above, safe to reference now
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (autoTrigger && !autoTriggered) {
+      setAutoTriggered(true)
+      // Small delay to ensure component is fully mounted
+      const timer = setTimeout(() => {
+        if (autoTrigger === 'download') {
+          handleDownload()
+        } else if (autoTrigger === 'email') {
+          handleEmailReport()
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [autoTrigger, autoTriggered])
 
   return (
     <div className="space-y-4">
