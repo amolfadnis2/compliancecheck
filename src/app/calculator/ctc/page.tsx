@@ -50,7 +50,6 @@ interface SavedProgress {
 export default function CTCCalculatorPage() {
   const [step, setStep] = useState(1)
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
 
   // Calculator input states
   const [annualCTC, setAnnualCTC] = useState<string>('')
@@ -94,7 +93,6 @@ export default function CTCCalculatorPage() {
 
   // Auto-save progress
   const saveProgress = useCallback(() => {
-    setSaveStatus('saving')
     try {
       const progress: SavedProgress = {
         step,
@@ -102,24 +100,14 @@ export default function CTCCalculatorPage() {
         savedAt: new Date().toISOString(),
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
-      setSaveStatus('saved')
-      setTimeout(() => setSaveStatus('idle'), 2000)
     } catch (e) {
       console.error('Error saving progress:', e)
-      setSaveStatus('idle')
     }
   }, [step, userDetails])
 
   // Clear saved progress
   const clearProgress = () => {
     localStorage.removeItem(STORAGE_KEY)
-  }
-
-  // Calculate progress percentage
-  const getProgress = () => {
-    if (step === 1) return 10
-    if (step === 2) return 50
-    return 100
   }
 
   // Handle user details submission
