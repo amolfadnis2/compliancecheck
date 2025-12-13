@@ -13,7 +13,7 @@ export default function LandingPage() {
             ComplianceCheck
           </Link>
           <Link 
-            href="https://compliancecheck-app.netlify.app" 
+            href="/assessment/statutory-health" 
             className="bg-neutral-900 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-neutral-800 transition-all hover:-translate-y-0.5"
           >
             Start Free Assessment
@@ -44,31 +44,31 @@ export default function LandingPage() {
           {/* Tool Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-10">
             <Link
-              href="https://compliancecheck-app.netlify.app/assessment/statutory-health-check"
+              href="/assessment/statutory-health"
               className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-success to-success-light shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
               Statutory Health Check
             </Link>
             <Link
-              href="https://compliancecheck-app.netlify.app/assessment/labour-code-readiness"
+              href="/assessment/labour-code"
               className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-primary to-primary-light shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
               Labour Code Readiness
             </Link>
             <Link
-              href="https://compliancecheck-app.netlify.app/tools/ctc-calculator"
+              href="/calculator/ctc"
               className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-400 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
               CTC Calculator
             </Link>
             <Link
-              href="https://compliancecheck-app.netlify.app/tools/gratuity-calculator"
+              href="/calculator/gratuity"
               className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-amber-500 to-yellow-400 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
               Gratuity Calculator
             </Link>
             <Link
-              href="https://compliancecheck-app.netlify.app/assessment/dpdp-gap-assessment"
+              href="/assessment/dpdp"
               className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-red-600 to-red-400 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
               DPDP Gap Assessment
@@ -354,13 +354,13 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4 mb-5">
               <Link
-                href="https://compliancecheck-app.netlify.app/assessment/statutory-health-check"
+                href="/assessment/statutory-health"
                 className="bg-white text-primary px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
               >
                 Start Assessment
               </Link>
               <Link
-                href="https://compliancecheck-app.netlify.app/tools/ctc-calculator"
+                href="/calculator/ctc"
                 className="bg-white/20 text-white px-8 py-4 rounded-xl font-semibold border border-white/30 hover:bg-white/30 transition-all"
               >
                 Try CTC Calculator
