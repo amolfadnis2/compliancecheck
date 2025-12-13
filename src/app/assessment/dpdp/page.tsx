@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,10 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2, Shield, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2, Shield, AlertTriangle, Info } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { 
   getRelevantQuestions,
+  getDPDPQuestionSummary,
   PHASE_INFO,
   REVENUE_OPTIONS,
   type DPDPQuestion
@@ -68,9 +69,18 @@ export default function DPDPAssessmentPage() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [relevantQuestions, setRelevantQuestions] = useState<DPDPQuestion[]>([])
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<OrganizationProfile>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<OrganizationProfile>({
     resolver: zodResolver(organizationProfileSchema),
   })
+
+  // Watch the processesChildrenData field for question preview
+  const watchProcessesChildren = watch('processesChildrenData')
+
+  // Calculate question summary for preview widget
+  const questionSummary = useMemo(() => {
+    const processesChildren = watchProcessesChildren === 'yes'
+    return getDPDPQuestionSummary(processesChildren)
+  }, [watchProcessesChildren])
 
   // Get relevant questions based on organization profile
   useEffect(() => {
@@ -279,147 +289,148 @@ export default function DPDPAssessmentPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onProfileSubmit)} className="space-y-6">
-                {/* Full Name */}
-                <div>
-                  <Label htmlFor="fullName">Your Full Name</Label>
-                  <Input
-                    id="fullName"
-                    {...register('fullName')}
-                    placeholder="John Doe"
-                    className="mt-1"
-                  />
-                  {errors.fullName && (
-                    <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>
-                  )}
-                </div>
-
-                {/* Email */}
-                <div>
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register('email')}
-                    placeholder="john@company.com"
-                    className="mt-1"
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-                  )}
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="flex mt-1">
-                    <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
-                      +91
-                    </span>
+                {/* Row 1: Full Name + Company Name */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Your Full Name</Label>
                     <Input
-                      id="phone"
-                      {...register('phone')}
-                      placeholder="9876543210"
-                      className="rounded-l-none"
-                      maxLength={10}
+                      id="fullName"
+                      {...register('fullName')}
+                      placeholder="John Doe"
                     />
+                    {errors.fullName && (
+                      <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>
+                    )}
                   </div>
-                  {errors.phone && (
-                    <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>
-                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName">Company Name</Label>
+                    <Input
+                      id="companyName"
+                      {...register('companyName')}
+                      placeholder="Acme Technologies Pvt Ltd"
+                    />
+                    {errors.companyName && (
+                      <p className="text-sm text-red-600 mt-1">{errors.companyName.message}</p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Company Name */}
-                <div>
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input
-                    id="companyName"
-                    {...register('companyName')}
-                    placeholder="Acme Technologies Pvt Ltd"
-                    className="mt-1"
-                  />
-                  {errors.companyName && (
-                    <p className="text-sm text-red-600 mt-1">{errors.companyName.message}</p>
-                  )}
+                {/* Row 2: Email + Phone */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      {...register('email')}
+                      placeholder="john@company.com"
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
+                        +91
+                      </span>
+                      <Input
+                        id="phone"
+                        {...register('phone')}
+                        placeholder="9876543210"
+                        className="rounded-l-none"
+                        maxLength={10}
+                      />
+                    </div>
+                    {errors.phone && (
+                      <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>
+                    )}
+                  </div>
                 </div>
 
-                {/* State */}
-                <div>
-                  <Label htmlFor="state">State/UT</Label>
-                  <Select onValueChange={(value) => setValue('state', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select your state" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDIAN_STATES.map((state) => (
-                        <SelectItem key={state} value={state}>
-                          {state}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.state && (
-                    <p className="text-sm text-red-600 mt-1">{errors.state.message}</p>
-                  )}
+                {/* Row 3: State + Employee Count */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State/UT</Label>
+                    <Select onValueChange={(value) => setValue('state', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.state && (
+                      <p className="text-sm text-red-600 mt-1">{errors.state.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="employeeCount">Number of Employees</Label>
+                    <Select onValueChange={(value) => setValue('employeeCount', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employee count" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EMPLOYEE_COUNT_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.employeeCount && (
+                      <p className="text-sm text-red-600 mt-1">{errors.employeeCount.message}</p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Employee Count */}
-                <div>
-                  <Label htmlFor="employeeCount">Number of Employees</Label>
-                  <Select onValueChange={(value) => setValue('employeeCount', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select employee count" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EMPLOYEE_COUNT_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.employeeCount && (
-                    <p className="text-sm text-red-600 mt-1">{errors.employeeCount.message}</p>
-                  )}
-                </div>
+                {/* Row 4: Industry + Revenue */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="industry">Industry</Label>
+                    <Select onValueChange={(value) => setValue('industry', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your industry" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDUSTRY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.industry && (
+                      <p className="text-sm text-red-600 mt-1">{errors.industry.message}</p>
+                    )}
+                  </div>
 
-                {/* Industry */}
-                <div>
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select onValueChange={(value) => setValue('industry', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select your industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDUSTRY_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.industry && (
-                    <p className="text-sm text-red-600 mt-1">{errors.industry.message}</p>
-                  )}
-                </div>
-
-                {/* Annual Revenue */}
-                <div>
-                  <Label htmlFor="revenue">Annual Revenue</Label>
-                  <Select onValueChange={(value) => setValue('revenue', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select annual revenue" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {REVENUE_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.revenue && (
-                    <p className="text-sm text-red-600 mt-1">{errors.revenue.message}</p>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="revenue">Annual Revenue</Label>
+                    <Select onValueChange={(value) => setValue('revenue', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select annual revenue" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REVENUE_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.revenue && (
+                      <p className="text-sm text-red-600 mt-1">{errors.revenue.message}</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Data Type Questions */}
@@ -511,9 +522,43 @@ export default function DPDPAssessmentPage() {
                   </div>
                 </div>
 
+                {/* Question Summary Preview Widget */}
+                {questionSummary && (
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="flex items-start gap-3">
+                      <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-blue-900 mb-2">
+                          Your Personalised Assessment: {questionSummary.total} Questions
+                        </h4>
+                        <p className="text-sm text-blue-700 mb-3">
+                          Based on your data processing profile, we&apos;ve tailored the assessment to show only relevant questions.
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          {Object.entries(PHASE_INFO).map(([phase, info]) => {
+                            const count = questionSummary.byPhase[phase] || 0;
+                            if (count === 0) return null;
+                            return (
+                              <div key={phase} className="flex items-center gap-2 text-blue-800">
+                                <span>{info.icon}</span>
+                                <span>{info.label}: {count}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {watchProcessesChildren !== 'yes' && questionSummary.totalWithChildren > questionSummary.total && (
+                          <p className="text-xs text-blue-600 mt-3">
+                            💡 {questionSummary.totalWithChildren - questionSummary.total} children&apos;s data questions skipped as not applicable to your profile
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <Button type="submit" className="w-full" size="lg">
-                  Continue to Assessment
+                  Start Assessment ({questionSummary.total} questions)
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </form>

@@ -572,37 +572,43 @@ export const PHASE_INFO = {
     label: 'Consent Management',
     weight: 0.20,
     description: 'Free, specific, informed consent mechanisms',
-    maxPenalty: '₹50 crore'
+    maxPenalty: '₹50 crore',
+    icon: '✅'
   },
   security: {
     label: 'Security Safeguards',
     weight: 0.20,
     description: 'Encryption, access controls, monitoring',
-    maxPenalty: '₹250 crore'
+    maxPenalty: '₹250 crore',
+    icon: '🔒'
   },
   rights: {
     label: 'Data Principal Rights',
     weight: 0.10,
     description: 'Access, correction, erasure, grievance',
-    maxPenalty: '₹50 crore'
+    maxPenalty: '₹50 crore',
+    icon: '👤'
   },
   breach: {
     label: 'Breach Response',
     weight: 0.15,
     description: '72-hour notification, incident management',
-    maxPenalty: '₹200 crore'
+    maxPenalty: '₹200 crore',
+    icon: '🚨'
   },
   children: {
     label: 'Children\'s Data Protection',
     weight: 0.15,
     description: 'Parental consent, behavioral tracking prohibition',
-    maxPenalty: '₹200 crore'
+    maxPenalty: '₹200 crore',
+    icon: '👶'
   },
   governance: {
     label: 'Governance & Retention',
     weight: 0.10,
     description: 'DPO, retention policy, training',
-    maxPenalty: '₹150 crore'
+    maxPenalty: '₹150 crore',
+    icon: '📋'
   }
 };
 
@@ -645,6 +651,28 @@ export function getRelevantQuestions(processesChildrenData: boolean): DPDPQuesti
     // Filter out conditional children's data questions
     return ALL_DPDP_QUESTIONS.filter(q => !q.isConditional);
   }
+}
+
+// Get summary of questions that will be shown (for preview widget)
+export function getDPDPQuestionSummary(processesChildrenData: boolean): {
+  total: number;
+  totalWithChildren: number;
+  byPhase: Record<string, number>;
+} {
+  const questions = getRelevantQuestions(processesChildrenData);
+  const allQuestions = ALL_DPDP_QUESTIONS;
+  const byPhase: Record<string, number> = {};
+  
+  // Count questions by phase
+  Object.keys(PHASE_INFO).forEach((phase) => {
+    byPhase[phase] = questions.filter((q) => q.phase === phase).length;
+  });
+  
+  return {
+    total: questions.length,
+    totalWithChildren: allQuestions.length,
+    byPhase,
+  };
 }
 
 // Calculate maturity level from score
