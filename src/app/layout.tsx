@@ -1,27 +1,45 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { PostHogProvider } from "@/components/providers/posthog-provider";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs",
-  description: "Get compliance assessments in 10 minutes. No subscriptions. No consultants. Just answers you can act on.",
-  metadataBase: new URL('https://compliancecheck-app.netlify.app'),
+  title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs | Labour Code & DPDP Assessments",
+  description: "Get instant compliance assessments for Indian Labour Codes, DPDP Act, PF, ESI & more. Pay per use (₹999-2,499). No subscriptions. Professional PDF reports in 10 minutes.",
+  keywords: [
+    "labour code compliance India",
+    "DPDP compliance assessment",
+    "PF ESI compliance check",
+    "statutory compliance India",
+    "labour law compliance tool",
+    "DPDP Act 2023",
+    "CTC calculator India",
+    "gratuity calculator India"
+  ],
+  authors: [{ name: "ComplianceCheck" }],
   openGraph: {
-    title: "ComplianceCheck - Instant Compliance Reports",
-    description: "Free compliance assessments for Indian SMEs",
+    title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs",
+    description: "Get instant compliance assessments for Indian Labour Codes, DPDP Act, PF, ESI & more. Pay per use. No subscriptions.",
     type: "website",
+    url: "https://compliancecheck.co.in",
+    images: [
+      {
+        url: "https://compliancecheck.co.in/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "ComplianceCheck - Compliance Assessments for Indian SMEs",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs",
+    description: "Get instant compliance assessments for Indian Labour Codes, DPDP Act & more. Pay per use.",
+    images: ["https://compliancecheck.co.in/og-image.jpg"],
+  },
+  alternates: {
+    canonical: "https://compliancecheck.co.in",
   },
 };
 
@@ -33,16 +51,28 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Structured Data for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "ComplianceCheck",
+              applicationCategory: "BusinessApplication",
+              offers: {
+                "@type": "AggregateOffer",
+                lowPrice: "999",
+                highPrice: "2499",
+                priceCurrency: "INR",
+              },
+              description:
+                "Instant compliance assessments for Indian SMEs covering Labour Codes, DPDP Act, and statutory requirements",
+            }),
+          }}
+        />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <PostHogProvider>
-          {children}
-        </PostHogProvider>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
