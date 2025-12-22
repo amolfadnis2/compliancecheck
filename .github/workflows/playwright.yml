@@ -1,0 +1,165 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+  schedule:
+    # Run tests daily at 6 AM IST (12:30 AM UTC)
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub UI
+
+env:
+  BASE_URL: https://compliancecheck-app.netlify.app
+
+jobs:
+  test:
+    name: Tests (${{ matrix.browser }})
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+
+    - name: Run Playwright tests
+      run: npx playwright test --project=${{ matrix.browser }}
+      env:
+        BASE_URL: ${{ env.BASE_URL }}
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: playwright-report/
+        retention-days: 30
+
+    - name: Upload test artifacts on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: test-results-${{ matrix.browser }}
+        path: test-results/
+        retention-days: 30
+
+  accessibility:
+    name: Accessibility & Performance
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright
+      run: npx playwright install --with-deps chromium
+
+    - name: Run accessibility tests
+      run: npx playwright test accessibility-performance --project=chromium
+      env:
+        BASE_URL: ${{ env.BASE_URL }}
+
+    - name: Upload accessibility report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: accessibility-report
+        path: playwright-report/
+        retention-days: 30
+
+  smoke-test:
+    name: Quick Smoke Test
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright
+      run: npx playwright install --with-deps chromium
+
+    - name: Run smoke tests
+      run: npx playwright test all-features-smoke --project=chromium
+      env:
+        BASE_URL: ${{ env.BASE_URL }}
+
+  notify:
+    name: Notify on Failure
+    needs: [test, accessibility, smoke-test]
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+    - name: Create failure summary
+      run: |
+        echo "## ❌ Test Failure Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "One or more test jobs have failed." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Check the [Actions tab](https://github.com/${{ github.repository }}/actions) for details." >> $GITHUB_STEP_SUMMARY
+
+
+  summary:
+    name: Test Summary
+    needs: [test, accessibility, smoke-test]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Create success summary
+      if: ${{ needs.test.result == 'success' && needs.accessibility.result == 'success' && needs.smoke-test.result == 'success' }}
+      run: |
+        echo "## ✅ All Tests Passed!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Chrome Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        echo "| Firefox Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        echo "| Safari Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        echo "| Accessibility | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        echo "| Smoke Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Ready to deploy!** 🚀" >> $GITHUB_STEP_SUMMARY
