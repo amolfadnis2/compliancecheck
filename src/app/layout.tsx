@@ -5,6 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://compliancecheck.co.in'),
   title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs | Labour Code & DPDP Assessments",
   description: "Get instant compliance assessments for Indian Labour Codes, DPDP Act, PF, ESI & more. Pay per use (₹999-2,499). No subscriptions. Professional PDF reports in 10 minutes.",
   keywords: [
