@@ -165,7 +165,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Statutory Health Check */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all">
+            <Link href="/assessment/statutory-health" className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all cursor-pointer block">
               <div className="text-5xl mb-5 bg-neutral-50 w-18 h-18 flex items-center justify-center rounded-xl">
                 📋
               </div>
@@ -196,10 +196,10 @@ export default function LandingPage() {
                   Professional PDF report
                 </li>
               </ul>
-            </div>
+            </Link>
 
             {/* Labour Code Readiness */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-primary hover:-translate-y-1 transition-all relative">
+            <Link href="/assessment/labour-code" className="bg-white p-8 rounded-2xl border-2 border-primary hover:-translate-y-1 transition-all relative cursor-pointer block">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-xs font-semibold">
                 Most Popular
               </div>
@@ -237,10 +237,10 @@ export default function LandingPage() {
                   Industry-specific guidance
                 </li>
               </ul>
-            </div>
+            </Link>
 
             {/* DPDP Gap Assessment */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all">
+            <Link href="/assessment/dpdp" className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all cursor-pointer block">
               <div className="text-5xl mb-5 bg-neutral-50 w-18 h-18 flex items-center justify-center rounded-xl">
                 🔒
               </div>
@@ -275,10 +275,10 @@ export default function LandingPage() {
                   Risk assessment & remediation
                 </li>
               </ul>
-            </div>
+            </Link>
 
             {/* State-Wise Compliance */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-violet-300 hover:border-violet-500 hover:-translate-y-1 transition-all relative">
+            <Link href="/assessment/state-wise-compliance" className="bg-white p-8 rounded-2xl border-2 border-violet-300 hover:border-violet-500 hover:-translate-y-1 transition-all relative cursor-pointer block">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white px-4 py-1 rounded-full text-xs font-semibold">
                 NEW
               </div>
@@ -316,10 +316,10 @@ export default function LandingPage() {
                   Priority-based action items
                 </li>
               </ul>
-            </div>
+            </Link>
 
             {/* CTC Calculator */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all">
+            <Link href="/calculator/ctc" className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all cursor-pointer block">
               <div className="text-5xl mb-5 bg-neutral-50 w-18 h-18 flex items-center justify-center rounded-xl">
                 💰
               </div>
@@ -350,10 +350,10 @@ export default function LandingPage() {
                   Downloadable PDF summary
                 </li>
               </ul>
-            </div>
+            </Link>
 
             {/* Gratuity Calculator */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all">
+            <Link href="/calculator/gratuity" className="bg-white p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-light hover:-translate-y-1 transition-all cursor-pointer block">
               <div className="text-5xl mb-5 bg-neutral-50 w-18 h-18 flex items-center justify-center rounded-xl">
                 🧮
               </div>
@@ -384,7 +384,7 @@ export default function LandingPage() {
                   Tax exemption details
                 </li>
               </ul>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
