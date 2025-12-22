@@ -74,6 +74,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   const assessmentType = type || ASSESSMENT_TYPES.STATUTORY_HEALTH
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
   const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
+  const isStateWise = assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE
 
   // Handle temporary/local IDs (when DB not configured or fallback)
   if (id.startsWith('temp_') || id.startsWith('local_')) {
@@ -102,6 +103,8 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
     return <DPDPResultsView assessment={assessment} />
   } else if (isLabourCode) {
     return <LabourCodeResultsView assessment={assessment} />
+  } else if (isStateWise) {
+    return <StateWiseResultsView assessment={assessment} />
   } else {
     return <StatutoryHealthResultsView assessment={assessment} />
   }
@@ -271,6 +274,200 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
                 Start Statutory Health Check - FREE
               </Button>
             </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// State-Wise Compliance Results Component
+function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
+  const responses = assessment.responses || {}
+  const userDetails = responses.userDetails || {}
+  const overallScore = assessment.overall_score ?? 50
+  const categoryScores = assessment.category_scores || {}
+  const actionItems = assessment.action_items || []
+  const applicabilityResults = (responses as { applicabilityResults?: Array<{ name: string; applies: boolean; priority: string; reason: string; threshold?: string }> }).applicabilityResults || []
+  const compliantItems = (responses as { compliantItems?: Array<{ question: { category: string; text: string } }> }).compliantItems || []
+  
+  // Derive counts from actual data
+  const gapsCount = actionItems.length
+  const compliantCount = compliantItems.length
+  const applicableCount = applicabilityResults.filter(r => r.applies).length
+  
+  // Status based on score
+  const status = overallScore >= 80 ? { text: 'On Track', color: 'green', bg: 'bg-green-50', border: 'border-green-200' } :
+                 overallScore >= 50 ? { text: 'Needs Attention', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' } :
+                 { text: 'At Risk', color: 'red', bg: 'bg-red-50', border: 'border-red-200' }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge className="bg-purple-100 text-purple-700">State-Wise Compliance</Badge>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Compliance Assessment Report</h1>
+          {userDetails.companyName && (
+            <div className="flex items-center gap-2 text-gray-600 mt-1">
+              <Building className="w-4 h-4" />
+              <span>{userDetails.companyName}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Overall Score Card */}
+        <Card className={`mb-6 ${status.bg} ${status.border} border-2`}>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  {status.color === 'green' && <CheckCircle className="w-6 h-6 text-green-600" />}
+                  {status.color === 'amber' && <AlertTriangle className="w-6 h-6 text-amber-600" />}
+                  {status.color === 'red' && <XCircle className="w-6 h-6 text-red-600" />}
+                  <h2 className={`text-xl font-bold ${
+                    status.color === 'green' ? 'text-green-700' :
+                    status.color === 'amber' ? 'text-amber-700' : 'text-red-700'
+                  }`}>{status.text}</h2>
+                </div>
+                <p className="text-gray-600 text-sm mb-3">
+                  {status.color === 'green' ? 'Your compliance posture is strong.' :
+                   status.color === 'amber' ? 'Several areas require immediate attention to avoid penalties.' :
+                   'Critical compliance gaps detected. Immediate action required.'}
+                </p>
+                <div className="flex gap-4 text-sm">
+                  <span className="flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    {compliantCount} compliant
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <XCircle className="w-4 h-4 text-red-500" />
+                    {gapsCount} gaps found
+                  </span>
+                  <span className="flex items-center gap-1 text-gray-500">
+                    {Object.keys(categoryScores).length}/{applicableCount} categories OK
+                  </span>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className={`text-5xl font-bold ${
+                  status.color === 'green' ? 'text-green-600' :
+                  status.color === 'amber' ? 'text-amber-600' : 'text-red-600'
+                }`}>{Math.round(overallScore)}%</div>
+                <div className="text-gray-500 text-sm">Compliance Score</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Compliant vs Gaps */}
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-green-700 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                What You&apos;re Doing Right
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">{compliantCount} areas compliant</p>
+              {compliantCount === 0 ? (
+                <p className="text-sm text-gray-400 italic mt-2">No compliant items found. Review all areas below.</p>
+              ) : (
+                <p className="text-sm text-green-600 mt-2">Keep up the good work!</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-red-700 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Action Required
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">{gapsCount} areas need attention</p>
+              {gapsCount === 0 ? (
+                <div className="flex items-center gap-2 text-green-600 mt-2">
+                  <CheckCircle className="w-5 h-5" />
+                  All areas compliant!
+                </div>
+              ) : (
+                <p className="text-sm text-red-600 mt-2">Review action items below</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Category Scores */}
+        {Object.keys(categoryScores).length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Category-wise Compliance Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {Object.entries(categoryScores).map(([category, scores]) => {
+                const scoreData = typeof scores === 'object' && scores !== null ? scores as { percentage?: number } : { percentage: 0 }
+                const percentage = scoreData.percentage || 0
+                const catStatus = percentage >= 80 ? 'compliant' : percentage >= 50 ? 'needs-attention' : 'non-compliant'
+                
+                return (
+                  <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="font-medium capitalize">{category.replace(/_/g, ' ')}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            catStatus === 'compliant' ? 'bg-green-500' :
+                            catStatus === 'needs-attention' ? 'bg-amber-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <span className={`font-bold ${
+                        catStatus === 'compliant' ? 'text-green-600' :
+                        catStatus === 'needs-attention' ? 'text-amber-600' : 'text-red-600'
+                      }`}>{percentage}%</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Action Items */}
+        {actionItems.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-red-700">Action Items ({actionItems.length})</CardTitle>
+              <CardDescription>Address these gaps to improve your compliance score</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {actionItems.map((item, idx) => (
+                <div key={idx} className="p-3 bg-red-50 border-l-4 border-red-500 rounded">
+                  <div className="font-medium text-red-800">{item.category || 'General'}</div>
+                  <p className="text-sm text-gray-700 mt-1">{item.text || item.description}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Download Section */}
+        <Card className="print:hidden">
+          <CardContent className="pt-6">
+            <DownloadWithFeedback 
+              assessmentId={assessment.id}
+              assessmentType={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}
+            />
           </CardContent>
         </Card>
       </div>

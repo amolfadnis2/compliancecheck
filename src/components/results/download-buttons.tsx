@@ -285,6 +285,17 @@ interface AssessmentData {
   responses?: {
     userDetails?: Record<string, string>
     answers?: Record<string, string>
+    applicabilityResults?: Array<{ name: string; applies: boolean; priority: string; reason: string; threshold?: string }>
+    applicabilitySummary?: { applicableCount?: number; criticalCount?: number }
+  }
+  // State-wise compliance specific fields
+  applicabilityResults?: Array<{ name: string; applies: boolean; priority: string; reason: string; threshold?: string }>
+  applicabilitySummary?: { applicableCount?: number; criticalCount?: number }
+  scoreResult?: {
+    overallScore?: number
+    categoryScores?: Record<string, { score?: number; max?: number; percentage: number }>
+    gaps?: Array<{ question: { category: string; text?: string }; recommendation: string }>
+    compliantItems?: Array<{ question?: { category?: string; text?: string } }>
   }
   created_at?: string
 }
@@ -1235,6 +1246,260 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
   }
 
   // ==========================================================================
+  // STATE-WISE COMPLIANCE PDF GENERATION
+  // ==========================================================================
+
+  const generateStateWiseCompliancePDF = (data: AssessmentData): Blob => {
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const margin = 15
+    const contentWidth = pageWidth - (margin * 2)
+    let yPos = margin
+
+    // Get data - handle both database and localStorage formats
+    const userDetails = data.userDetails || data.responses?.userDetails || {}
+    const overallScore = data.overall_score ?? data.scoreResult?.overallScore ?? 50
+    const categoryScores = data.category_scores || data.scoreResult?.categoryScores || {}
+    const actionItems: ActionItem[] = data.action_items || data.scoreResult?.gaps?.map((g: { question: { category: string }; recommendation: string }) => ({
+      category: g.question?.category || 'General',
+      text: g.recommendation || 'Review this area',
+      priority: 'high' as const
+    })) || []
+    const applicabilityResults = data.responses?.applicabilityResults || data.applicabilityResults || []
+    const applicabilitySummary = data.responses?.applicabilitySummary || data.applicabilitySummary || {}
+    // compliantItems could be in responses (from DB) or scoreResult (from localStorage)
+    const responsesWithCompliant = data.responses as { compliantItems?: Array<{ question?: { category?: string; text?: string } }> } | undefined
+    const compliantItems = responsesWithCompliant?.compliantItems || data.scoreResult?.compliantItems || []
+
+    // Helper functions
+    const sanitize = (text: string | undefined | null): string => {
+      if (!text) return ''
+      return text
+        .replace(/₹/g, 'Rs.')
+        .replace(/[^\x00-\x7F]/g, '')
+    }
+
+    const addText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5): number => {
+      const lines = doc.splitTextToSize(sanitize(text), maxWidth)
+      doc.text(lines, x, y)
+      return y + (lines.length * lineHeight)
+    }
+
+    const checkPageBreak = (requiredSpace: number): void => {
+      if (yPos + requiredSpace > pageHeight - 25) {
+        doc.addPage()
+        yPos = margin
+      }
+    }
+
+    // Header
+    doc.setFillColor(124, 58, 237) // Purple
+    doc.rect(0, 0, pageWidth, 45, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ComplianceCheck', margin, 25)
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text('State-Wise Comprehensive Compliance Report', margin, 36)
+    doc.setFontSize(10)
+    doc.text(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }), pageWidth - margin, 36, { align: 'right' })
+
+    yPos = 55
+
+    // Company Info
+    doc.setTextColor(55, 65, 81)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Assessment for: ' + sanitize(userDetails.companyName || 'Your Company'), margin, yPos)
+    yPos += 8
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    if (userDetails.email) {
+      doc.text('Contact: ' + sanitize(userDetails.email), margin, yPos)
+      yPos += 6
+    }
+    yPos += 5
+
+    // Score Box
+    const scoreColor = overallScore >= 80 ? [5, 150, 105] : overallScore >= 50 ? [217, 119, 6] : [220, 38, 38]
+    doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2])
+    doc.roundedRect(pageWidth - 70, 50, 55, 30, 3, 3, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(24)
+    doc.setFont('helvetica', 'bold')
+    doc.text(overallScore + '%', pageWidth - 42, 66, { align: 'center' })
+    doc.setFontSize(8)
+    doc.text('Compliance', pageWidth - 42, 74, { align: 'center' })
+
+    // Applicability Summary
+    yPos += 10
+    doc.setFillColor(240, 240, 250)
+    doc.roundedRect(margin, yPos, contentWidth, 25, 3, 3, 'F')
+    doc.setTextColor(55, 65, 81)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Applicability Summary', margin + 5, yPos + 8)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    const appCount = applicabilitySummary.applicableCount || applicabilityResults.filter((r: { applies: boolean }) => r.applies).length || 0
+    const criticalCount = applicabilitySummary.criticalCount || 0
+    doc.text('Applicable: ' + appCount + ' areas  |  Critical: ' + criticalCount + ' areas', margin + 5, yPos + 18)
+    yPos += 35
+
+    // Applicable Compliance Areas
+    doc.setFillColor(124, 58, 237)
+    doc.rect(margin, yPos, contentWidth, 10, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Applicable Compliance Areas', margin + 5, yPos + 7)
+    yPos += 15
+
+    const applicable = applicabilityResults.filter((r: { applies: boolean }) => r.applies)
+    if (applicable.length > 0) {
+      applicable.forEach((item: { name: string; priority: string; reason: string; threshold?: string }) => {
+        checkPageBreak(20)
+        const priorityColor = item.priority === 'critical' ? [220, 38, 38] : 
+                             item.priority === 'high' ? [217, 119, 6] : [100, 116, 139]
+        doc.setFillColor(priorityColor[0], priorityColor[1], priorityColor[2])
+        doc.roundedRect(margin, yPos, 35, 5, 1, 1, 'F')
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(7)
+        doc.text(item.priority?.toUpperCase() || 'MEDIUM', margin + 17.5, yPos + 3.5, { align: 'center' })
+        
+        doc.setTextColor(55, 65, 81)
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'bold')
+        doc.text(sanitize(item.name), margin + 40, yPos + 4)
+        yPos += 8
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        yPos = addText(sanitize(item.reason), margin + 3, yPos, contentWidth - 10, 4)
+        yPos += 4
+      })
+    } else {
+      doc.setTextColor(100, 116, 139)
+      doc.setFontSize(9)
+      doc.text('No applicable compliance areas identified.', margin + 3, yPos)
+      yPos += 10
+    }
+
+    // Action Items (Gaps)
+    if (actionItems.length > 0) {
+      checkPageBreak(30)
+      yPos += 5
+      doc.setFillColor(220, 38, 38)
+      doc.rect(margin, yPos, contentWidth, 10, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Action Required (' + actionItems.length + ' items)', margin + 5, yPos + 7)
+      yPos += 15
+
+      actionItems.forEach((item, idx) => {
+        checkPageBreak(15)
+        doc.setTextColor(220, 38, 38)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text((idx + 1) + '. ' + sanitize(item.category), margin, yPos)
+        yPos += 5
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(55, 65, 81)
+        doc.setFontSize(8)
+        yPos = addText(sanitize(item.text), margin + 5, yPos, contentWidth - 10, 4)
+        yPos += 3
+      })
+    }
+
+    // Compliant Items
+    if (compliantItems && compliantItems.length > 0) {
+      checkPageBreak(30)
+      yPos += 5
+      doc.setFillColor(5, 150, 105)
+      doc.rect(margin, yPos, contentWidth, 10, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Compliant Areas (' + compliantItems.length + ' items)', margin + 5, yPos + 7)
+      yPos += 15
+
+      doc.setTextColor(55, 65, 81)
+      doc.setFontSize(8)
+      try {
+        compliantItems.slice(0, 15).forEach((item: unknown) => {
+          checkPageBreak(8)
+          // Handle various data structures safely
+          const itemObj = item as { question?: { category?: string; text?: string }; category?: string; text?: string } | null
+          const questionText = itemObj?.question?.text || itemObj?.text || itemObj?.question?.category || itemObj?.category || 'Compliance item'
+          const category = itemObj?.question?.category || itemObj?.category || 'General'
+          const safeText = String(questionText || 'Compliance item')
+          const truncatedText = safeText.length > 70 ? safeText.substring(0, 70) + '...' : safeText
+          doc.text('[PASS] ' + sanitize(category) + ': ' + sanitize(truncatedText), margin + 3, yPos)
+          yPos += 5
+        })
+      } catch (e) {
+        console.error('Error rendering compliant items:', e)
+        doc.text('Compliant items available in full report', margin + 3, yPos)
+        yPos += 5
+      }
+      if (compliantItems.length > 15) {
+        doc.text('... and ' + (compliantItems.length - 15) + ' more compliant items', margin + 3, yPos)
+        yPos += 5
+      }
+    }
+
+    // Category Scores
+    checkPageBreak(40)
+    yPos += 10
+    doc.setFillColor(75, 85, 99)
+    doc.rect(margin, yPos, contentWidth, 10, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Category-wise Scores', margin + 5, yPos + 7)
+    yPos += 15
+
+    Object.entries(categoryScores).forEach(([cat, scores]) => {
+      checkPageBreak(8)
+      const scoreVal = typeof scores === 'object' && scores !== null ? (scores as { percentage?: number }).percentage ?? 0 : 0
+      const catColor = scoreVal >= 80 ? [5, 150, 105] : scoreVal >= 50 ? [217, 119, 6] : [220, 38, 38]
+      doc.setTextColor(55, 65, 81)
+      doc.setFontSize(9)
+      doc.text(sanitize(cat), margin + 3, yPos)
+      doc.setTextColor(catColor[0], catColor[1], catColor[2])
+      doc.text(scoreVal + '%', pageWidth - margin - 10, yPos, { align: 'right' })
+      yPos += 6
+    })
+
+    // Disclaimer
+    checkPageBreak(35)
+    yPos += 10
+    doc.setFillColor(254, 243, 199)
+    doc.roundedRect(margin, yPos, contentWidth, 30, 3, 3, 'F')
+    doc.setTextColor(146, 64, 14)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Important Disclaimer', margin + 5, yPos + 8)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    addText('This report is for informational purposes only and does not constitute legal advice. Compliance requirements vary by state and industry. Always verify with official government sources and consult qualified professionals (CA/CS/Lawyers) for specific compliance matters.', margin + 5, yPos + 14, contentWidth - 10, 3.5)
+
+    // Footer on all pages
+    const totalPages = doc.getNumberOfPages()
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i)
+      doc.setFontSize(7)
+      doc.setTextColor(156, 163, 175)
+      doc.text('ComplianceCheck | State-Wise Compliance Report', margin, pageHeight - 8)
+      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 8, { align: 'right' })
+    }
+
+    return doc.output('blob')
+  }
+
+  // ==========================================================================
   // DOWNLOAD HANDLER
   // ==========================================================================
 
@@ -1295,6 +1560,8 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         blob = generateDPDPPDF(data)
       } else if (assessmentType === ASSESSMENT_TYPES.LABOUR_CODE) {
         blob = generateLabourCodePDF(data)
+      } else if (assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE) {
+        blob = generateStateWiseCompliancePDF(data)
       } else {
         blob = generatePDF(data)
       }
@@ -1304,6 +1571,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       link.href = url
       const reportPrefix = assessmentType === ASSESSMENT_TYPES.DPDP ? 'DPDP-Gap-Assessment' : 
                           assessmentType === ASSESSMENT_TYPES.LABOUR_CODE ? 'Labour-Code-Readiness' : 
+                          assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE ? 'State-Wise-Compliance' :
                           'ComplianceCheck-Report'
       link.download = reportPrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
       document.body.appendChild(link)
@@ -1433,6 +1701,8 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         blob = generateDPDPPDF(data)
       } else if (assessmentType === ASSESSMENT_TYPES.LABOUR_CODE) {
         blob = generateLabourCodePDF(data)
+      } else if (assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE) {
+        blob = generateStateWiseCompliancePDF(data)
       } else {
         blob = generatePDF(data)
       }

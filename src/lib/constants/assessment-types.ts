@@ -18,6 +18,7 @@ export const ASSESSMENT_TYPES = {
   STATUTORY_HEALTH: 'statutory_health',
   LABOUR_CODE: 'labour_code',
   DPDP: 'dpdp',
+  STATE_WISE_COMPLIANCE: 'state_wise_compliance',
 } as const;
 
 // Type for assessment type values
@@ -38,6 +39,7 @@ export function getAssessmentDisplayName(type: AssessmentType): string {
     [ASSESSMENT_TYPES.STATUTORY_HEALTH]: 'Statutory Health Check',
     [ASSESSMENT_TYPES.LABOUR_CODE]: 'Labour Code Readiness',
     [ASSESSMENT_TYPES.DPDP]: 'DPDP Gap Assessment',
+    [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: 'State-Wise Compliance Check',
   };
   return displayNames[type] || type;
 }

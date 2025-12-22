@@ -327,6 +327,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
   const [assessment, setAssessment] = useState<LocalAssessmentData | null>(null)
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
   const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
+  const isStateWise = assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE
 
   useEffect(() => {
     try {
@@ -411,8 +412,8 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
             Back to Home
           </Link>
           <div className="flex items-center gap-2 mb-2">
-            <Badge className={isDPDP ? 'bg-purple-100 text-purple-700' : isLabourCode ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}>
-              {isDPDP ? 'DPDP Gap Assessment' : isLabourCode ? 'Labour Code Readiness' : 'Statutory Health Check'}
+            <Badge className={isDPDP ? 'bg-purple-100 text-purple-700' : isLabourCode ? 'bg-blue-100 text-blue-700' : isStateWise ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}>
+              {isDPDP ? 'DPDP Gap Assessment' : isLabourCode ? 'Labour Code Readiness' : isStateWise ? 'State-Wise Compliance' : 'Statutory Health Check'}
             </Badge>
             <Badge variant="outline" className="text-gray-500">
               {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
