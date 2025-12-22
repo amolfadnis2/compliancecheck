@@ -56,6 +56,12 @@ export default function LandingPage() {
               Labour Code Readiness
             </Link>
             <Link
+              href="/assessment/state-wise-compliance"
+              className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-500 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
+            >
+              State-Wise Compliance
+            </Link>
+            <Link
               href="/calculator/ctc"
               className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-400 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
@@ -78,7 +84,7 @@ export default function LandingPage() {
           {/* Stats */}
           <div className="flex flex-wrap justify-center gap-12 pt-10 mt-10 border-t border-neutral-200">
             <div className="text-center">
-              <div className="text-4xl font-bold text-neutral-900">5</div>
+              <div className="text-4xl font-bold text-neutral-900">6</div>
               <div className="text-sm text-neutral-600 mt-1">Assessment Tools</div>
             </div>
             <div className="text-center">
@@ -267,6 +273,47 @@ export default function LandingPage() {
                 <li className="flex items-start text-neutral-700 text-sm">
                   <span className="text-success font-semibold mr-2">✓</span>
                   Risk assessment & remediation
+                </li>
+              </ul>
+            </div>
+
+            {/* State-Wise Compliance */}
+            <div className="bg-white p-8 rounded-2xl border-2 border-violet-300 hover:border-violet-500 hover:-translate-y-1 transition-all relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white px-4 py-1 rounded-full text-xs font-semibold">
+                NEW
+              </div>
+              <div className="text-5xl mb-5 bg-neutral-50 w-18 h-18 flex items-center justify-center rounded-xl">
+                🗺️
+              </div>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-3">
+                State-Wise Compliance
+              </h3>
+              <div className="text-3xl font-bold text-neutral-900 mb-4">
+                FREE <span className="text-sm font-medium text-neutral-600 ml-2">during beta</span>
+              </div>
+              <p className="text-neutral-600 mb-6 leading-relaxed">
+                Comprehensive compliance check covering central laws + state-specific requirements.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-start text-neutral-700 text-sm">
+                  <span className="text-success font-semibold mr-2">✓</span>
+                  Two-phase assessment
+                </li>
+                <li className="flex items-start text-neutral-700 text-sm">
+                  <span className="text-success font-semibold mr-2">✓</span>
+                  20+ compliance areas checked
+                </li>
+                <li className="flex items-start text-neutral-700 text-sm">
+                  <span className="text-success font-semibold mr-2">✓</span>
+                  State-specific PT, LWF, S&E
+                </li>
+                <li className="flex items-start text-neutral-700 text-sm">
+                  <span className="text-success font-semibold mr-2">✓</span>
+                  Industry-specific triggers
+                </li>
+                <li className="flex items-start text-neutral-700 text-sm">
+                  <span className="text-success font-semibold mr-2">✓</span>
+                  Priority-based action items
                 </li>
               </ul>
             </div>
