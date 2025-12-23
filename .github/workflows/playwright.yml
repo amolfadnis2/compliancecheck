@@ -122,9 +122,43 @@ jobs:
       env:
         BASE_URL: ${{ env.BASE_URL }}
 
+  summary-pdf-email:
+    name: Summary, PDF & Email Tests
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright
+      run: npx playwright install --with-deps chromium
+
+    - name: Run summary, PDF and email tests
+      run: npx playwright test summary-pdf-email --project=chromium
+      env:
+        BASE_URL: ${{ env.BASE_URL }}
+
+    - name: Upload test artifacts on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: summary-pdf-email-results
+        path: test-results/
+        retention-days: 30
+
   notify:
     name: Notify on Failure
-    needs: [test, accessibility, smoke-test]
+    needs: [test, accessibility, smoke-test, summary-pdf-email]
     runs-on: ubuntu-latest
     if: failure()
     
@@ -144,13 +178,13 @@ jobs:
 
   summary:
     name: Test Summary
-    needs: [test, accessibility, smoke-test]
+    needs: [test, accessibility, smoke-test, summary-pdf-email]
     runs-on: ubuntu-latest
     if: always()
     
     steps:
     - name: Create success summary
-      if: ${{ needs.test.result == 'success' && needs.accessibility.result == 'success' && needs.smoke-test.result == 'success' }}
+      if: ${{ needs.test.result == 'success' && needs.accessibility.result == 'success' && needs.smoke-test.result == 'success' && needs.summary-pdf-email.result == 'success' }}
       run: |
         echo "## ✅ All Tests Passed!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -161,5 +195,6 @@ jobs:
         echo "| Safari Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
         echo "| Accessibility | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
         echo "| Smoke Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+        echo "| Summary/PDF/Email | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Ready to deploy!** 🚀" >> $GITHUB_STEP_SUMMARY
