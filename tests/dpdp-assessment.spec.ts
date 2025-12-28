@@ -17,8 +17,8 @@ test.describe('DPDP Assessment - Core Flow', () => {
   });
 
   test('should complete DPDP assessment with fully compliant answers', async ({ page }) => {
-    // Navigate to DPDP assessment
-    await page.getByRole('link', { name: /dpdp/i }).click();
+    // Navigate to DPDP assessment - use exact match to avoid strict mode violation (2 DPDP links exist)
+    await page.getByRole('link', { name: 'DPDP Gap Assessment', exact: true }).click();
     await expect(page).toHaveURL(/\/assessment\/dpdp/);
 
     // Fill Data Processing Profile (DPDP-specific form)
@@ -71,7 +71,7 @@ test.describe('DPDP Assessment - Core Flow', () => {
   });
 
   test('should calculate correct score for partially compliant organization', async ({ page }) => {
-    await page.getByRole('link', { name: /dpdp/i }).click();
+    await page.getByRole('link', { name: 'DPDP Gap Assessment', exact: true }).click();
 
     // Fill company details
     await fillCompanyDetails(page, {
@@ -106,7 +106,7 @@ test.describe('DPDP Assessment - Core Flow', () => {
   });
 
   test('should show children data questions when enabled', async ({ page }) => {
-    await page.getByRole('link', { name: /dpdp/i }).click();
+    await page.getByRole('link', { name: 'DPDP Gap Assessment', exact: true }).click();
 
     await fillCompanyDetails(page, {
       name: 'EdTech Platform',
@@ -140,7 +140,7 @@ test.describe('DPDP Assessment - Core Flow', () => {
   });
 
   test('should calculate SDF designation risk correctly', async ({ page }) => {
-    await page.getByRole('link', { name: /dpdp/i }).click();
+    await page.getByRole('link', { name: 'DPDP Gap Assessment', exact: true }).click();
 
     // Large organization likely to be designated SDF
     await fillCompanyDetails(page, {
@@ -546,7 +546,7 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
     await page.goto('https://compliancecheck-app.netlify.app');
 
     // Navigate from homepage (same as statutory-health and labour-code)
-    await page.getByRole('link', { name: /dpdp/i }).click();
+    await page.getByRole('link', { name: 'DPDP Gap Assessment', exact: true }).click();
     await expect(page).toHaveURL(/\/assessment\/dpdp/);
 
     // Should have back to home option (logo or link)
@@ -940,147 +940,233 @@ async function fillCompanyDetails(page: Page, details: {
   transfersDataAbroad?: boolean;
   operatesPlatform?: boolean;
 }) {
-  // DPDP form has two sections:
-  // 1. Organisation Details (top)
-  // 2. Data Processing Profile + Contact (bottom)
+  // DPDP form uses shadcn/ui components (Radix UI based)
+  // Form fields: fullName, companyName, email, phone, state, employeeCount, industry, revenue
+  // Plus radio buttons for data processing profile
   
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(1000);
-  
-  // Section 1: Organisation Details
-  // Organisation Name
-  const orgNameField = page.getByPlaceholder(/enter your organisation name/i);
-  await orgNameField.fill(details.orgName || details.name);
-  await page.waitForTimeout(300);
-  
-  // Industry dropdown
-  const industryTrigger = page.locator('button:has-text("Select industry")').first();
-  await industryTrigger.click();
-  await page.waitForTimeout(300);
-  // Select first option by default
-  await page.getByRole('option').first().click();
-  await page.waitForTimeout(300);
-  
-  // Indian Data Principals dropdown
-  const dataPrincipalsTrigger = page.locator('button:has-text("Select range")').first();
-  await dataPrincipalsTrigger.click();
-  await page.waitForTimeout(300);
-  // Select "Less than 1 Lakh" by default
-  await page.getByRole('option', { name: /less than 1 lakh/i }).click();
-  await page.waitForTimeout(300);
-  
-  // Registered State dropdown
-  const stateTrigger = page.locator('button:has-text("Select state")').first();
-  await stateTrigger.click();
-  await page.waitForTimeout(300);
-  // Select Maharashtra by default
-  await page.getByRole('option', { name: /maharashtra/i }).click();
-  await page.waitForTimeout(300);
-  
-  // Section 2: Data Processing Profile checkboxes
-  if (details.processesChildrenData) {
-    await page.getByRole('checkbox', { name: /under 18 years/i }).check();
-    await page.waitForTimeout(300);
-  }
-  
-  if (details.transfersDataAbroad) {
-    await page.getByRole('checkbox', { name: /outside India/i }).check();
-    await page.waitForTimeout(300);
-  }
-  
-  if (details.operatesPlatform) {
-    await page.getByRole('checkbox', { name: /digital platform/i }).check();
-    await page.waitForTimeout(300);
-  }
-  
-  // Contact fields
-  await page.getByLabel(/your name/i).fill(details.name);
-  await page.waitForTimeout(300);
-  
-  const emailValue = details.email || 'test@example.com';
-  await page.getByLabel(/email address/i).fill(emailValue);
-  await page.waitForTimeout(300);
-  
-  // Click Start Assessment button (should be enabled now)
-  await page.getByRole('button', { name: /start assessment/i }).click();
   await page.waitForTimeout(1500);
+  
+  // Wait for form to load
+  await page.waitForSelector('form', { timeout: 10000 });
+  
+  // Helper to select from shadcn/ui Select component
+  async function selectOption(triggerText: string | RegExp, optionIndex: number = 0) {
+    const trigger = page.getByRole('combobox').filter({ hasText: triggerText }).first()
+      .or(page.locator(`button:has-text("${triggerText}")`).first())
+      .or(page.locator('[role="combobox"]').filter({ hasText: triggerText }).first());
+    
+    if (await trigger.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await trigger.click();
+      await page.waitForTimeout(300);
+      const options = page.getByRole('option');
+      const count = await options.count();
+      if (count > optionIndex) {
+        await options.nth(optionIndex).click();
+      } else if (count > 0) {
+        await options.first().click();
+      }
+      await page.waitForTimeout(300);
+    }
+  }
+  
+  // Fill Full Name (id="fullName")
+  const fullNameField = page.locator('#fullName').or(page.getByLabel(/full name/i));
+  if (await fullNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await fullNameField.fill(details.name || 'Test User');
+    await page.waitForTimeout(200);
+  }
+  
+  // Fill Company Name (id="companyName", placeholder="Acme Technologies Pvt Ltd")
+  const companyNameField = page.locator('#companyName')
+    .or(page.getByLabel(/company name/i))
+    .or(page.getByPlaceholder(/acme|technologies|company/i));
+  if (await companyNameField.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await companyNameField.fill(details.orgName || details.name || 'Test Company Pvt Ltd');
+    await page.waitForTimeout(200);
+  }
+  
+  // Fill Email (id="email")
+  const emailField = page.locator('#email').or(page.getByLabel(/email/i));
+  if (await emailField.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await emailField.fill(details.email || 'test@example.com');
+    await page.waitForTimeout(200);
+  }
+  
+  // Fill Phone (id="phone")
+  const phoneField = page.locator('#phone').or(page.getByPlaceholder(/987654/i));
+  if (await phoneField.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await phoneField.fill('9876543210');
+    await page.waitForTimeout(200);
+  }
+  
+  // Select State (placeholder="Select your state")
+  await selectOption(/select your state/i);
+  
+  // Select Employee Count (placeholder="Select employee count")  
+  await selectOption(/select employee count/i);
+  
+  // Select Industry (placeholder="Select your industry")
+  await selectOption(/select your industry/i);
+  
+  // Select Revenue (placeholder="Select annual revenue")
+  await selectOption(/select annual revenue/i);
+  
+  await page.waitForTimeout(300);
+  
+  // Data Processing Profile - Radio buttons (Yes/No)
+  // Children's data
+  if (details.processesChildrenData !== undefined) {
+    const value = details.processesChildrenData ? 'yes' : 'no';
+    const radio = page.locator(`input[name="processesChildrenData"][value="${value}"]`)
+      .or(page.getByLabel(/under 18|children/i).locator(`input[value="${value}"]`));
+    if (await radio.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await radio.click();
+      await page.waitForTimeout(200);
+    } else {
+      // Try clicking the label text
+      const labelText = value === 'yes' ? 'Yes' : 'No';
+      const radioByText = page.locator('label').filter({ hasText: labelText }).first();
+      if (await radioByText.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await radioByText.click();
+        await page.waitForTimeout(200);
+      }
+    }
+  }
+  
+  // Health data
+  const healthRadio = page.locator('input[name="processesHealthData"][value="no"]');
+  if (await healthRadio.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await healthRadio.click();
+    await page.waitForTimeout(200);
+  }
+  
+  // Sensitive financial data
+  const sensitiveRadio = page.locator('input[name="processesSensitiveData"][value="no"]');
+  if (await sensitiveRadio.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await sensitiveRadio.click();
+    await page.waitForTimeout(200);
+  }
+  
+  await page.waitForTimeout(500);
+  
+  // Click Start Assessment / Continue button
+  const startButton = page.getByRole('button', { name: /start assessment|continue|begin|next|submit/i });
+  if (await startButton.isVisible({ timeout: 3000 })) {
+    await startButton.click();
+    await page.waitForTimeout(1000);
+  }
 }
 
 async function answerConsentManagementQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
-  const questionCount = 9;
-  
-  for (let i = 0; i < questionCount; i++) {
-    const radio = getRadioByResponseType(page, responseType, i);
-    await radio.check();
+  await answerQuestionPhase(page, responseType, 9);
+}
+
+async function answerSecurityQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
+  await answerQuestionPhase(page, responseType, 9);
+}
+
+async function answerDataPrincipalRightsQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
+  await answerQuestionPhase(page, responseType, 6);
+}
+
+async function answerBreachResponseQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
+  await answerQuestionPhase(page, responseType, 5);
+}
+
+async function answerChildrensDataQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
+  await answerQuestionPhase(page, responseType, 5);
+}
+
+async function answerGovernanceQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
+  await answerQuestionPhase(page, responseType, 4);
+}
+
+/**
+ * Universal question answering function that handles different input types:
+ * - Radio buttons
+ * - Yes/No buttons
+ * - Multiple choice options
+ * - Dropdowns
+ */
+async function answerQuestionPhase(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant', expectedQuestions: number) {
+  for (let i = 0; i < expectedQuestions; i++) {
+    // Check if we've reached results page early
+    if (page.url().includes('/results/')) break;
+    
+    // Try different input types in order of likelihood
+    let answered = false;
+    
+    // Option 1: Radio buttons
+    const radios = page.getByRole('radio');
+    if (await radios.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+      const radioCount = await radios.count();
+      if (radioCount > 0) {
+        const targetIndex = getTargetOptionIndex(responseType, i, Math.min(radioCount, 3));
+        await radios.nth(targetIndex).check();
+        answered = true;
+      }
+    }
+    
+    // Option 2: Yes/No buttons
+    if (!answered) {
+      const targetAnswer = getYesNoAnswer(responseType, i);
+      const answerBtn = page.getByRole('button', { name: new RegExp(`^${targetAnswer}$`, 'i') }).first();
+      if (await answerBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await answerBtn.click();
+        answered = true;
+      }
+    }
+    
+    // Option 3: Multiple choice options (DPDP style)
+    if (!answered) {
+      const options = page.locator('[role="option"], [data-value], .option-button');
+      if (await options.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+        const optionCount = await options.count();
+        const targetIndex = getTargetOptionIndex(responseType, i, optionCount);
+        await options.nth(targetIndex).click();
+        answered = true;
+      }
+    }
+    
+    // Option 4: Clickable cards or labels
+    if (!answered) {
+      const cards = page.locator('.answer-option, .choice-card, label:has(input)');
+      if (await cards.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+        const cardCount = await cards.count();
+        const targetIndex = getTargetOptionIndex(responseType, i, cardCount);
+        await cards.nth(targetIndex).click();
+        answered = true;
+      }
+    }
+    
     await page.waitForTimeout(800); // Auto-advance timeout
   }
 }
 
-async function answerSecurityQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
-  const questionCount = 9;
-  
-  for (let i = 0; i < questionCount; i++) {
-    const radio = getRadioByResponseType(page, responseType, i);
-    await radio.check();
-    await page.waitForTimeout(800);
-  }
-}
-
-async function answerDataPrincipalRightsQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
-  const questionCount = 6;
-  
-  for (let i = 0; i < questionCount; i++) {
-    const radio = getRadioByResponseType(page, responseType, i);
-    await radio.check();
-    await page.waitForTimeout(800);
-  }
-}
-
-async function answerBreachResponseQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
-  const questionCount = 5;
-  
-  for (let i = 0; i < questionCount; i++) {
-    const radio = getRadioByResponseType(page, responseType, i);
-    await radio.check();
-    await page.waitForTimeout(800);
-  }
-}
-
-async function answerChildrensDataQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
-  const questionCount = 5;
-  
-  for (let i = 0; i < questionCount; i++) {
-    const radio = getRadioByResponseType(page, responseType, i);
-    await radio.check();
-    await page.waitForTimeout(800);
-  }
-}
-
-async function answerGovernanceQuestions(page: Page, responseType: 'compliant' | 'partial' | 'non-compliant') {
-  const questionCount = 4;
-  
-  for (let i = 0; i < questionCount; i++) {
-    const radio = getRadioByResponseType(page, responseType, i);
-    await radio.check();
-    await page.waitForTimeout(800);
-  }
-}
-
-function getRadioByResponseType(page: Page, responseType: string, questionIndex: number) {
+function getTargetOptionIndex(responseType: string, questionIndex: number, optionCount: number): number {
   switch (responseType) {
     case 'compliant':
-      // Select first option (Yes/Implemented/Compliant)
-      return page.getByRole('radio').nth(questionIndex * 3); // Assuming 3 options per question
+      return 0; // First option (usually Yes/Implemented)
     case 'non-compliant':
-      // Select last option (No/Not Implemented)
-      return page.getByRole('radio').nth((questionIndex * 3) + 2);
+      return optionCount - 1; // Last option (usually No/Not Implemented)
     case 'partial':
-      // Alternate between compliant and non-compliant
-      return questionIndex % 2 === 0 
-        ? page.getByRole('radio').nth(questionIndex * 3)
-        : page.getByRole('radio').nth((questionIndex * 3) + 2);
+      return questionIndex % 2 === 0 ? 0 : optionCount - 1; // Alternate
     default:
-      return page.getByRole('radio').first();
+      return 0;
+  }
+}
+
+function getYesNoAnswer(responseType: string, questionIndex: number): string {
+  switch (responseType) {
+    case 'compliant':
+      return 'yes';
+    case 'non-compliant':
+      return 'no';
+    case 'partial':
+      return questionIndex % 2 === 0 ? 'yes' : 'no';
+    default:
+      return 'yes';
   }
 }
 

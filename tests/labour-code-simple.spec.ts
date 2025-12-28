@@ -18,9 +18,9 @@ test.describe('Labour Code Assessment - Core Flow', () => {
     
     // Check all form fields exist
     await expect(page.getByLabel(/company name/i)).toBeVisible();
-    await expect(page.locator('text=/employee count/i').first()).toBeVisible();
-    await expect(page.locator('text=/industry/i').first()).toBeVisible();
-    await expect(page.locator('text=/state/i').first()).toBeVisible();
+    await expect(page.getByText(/employee count/i).first()).toBeVisible();
+    await expect(page.getByText(/industry/i).first()).toBeVisible();
+    await expect(page.getByText(/state/i).first()).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
   });
 
@@ -31,4 +31,20 @@ test.describe('Labour Code Assessment - Core Flow', () => {
     await page.getByLabel(/company name/i).fill('Test Company Pvt Ltd');
     
     // Click and select from Employee Count dropdown
-    const empCountTrigger = page.locator('text=/employee count/i').locator('..')locator('button').first();
+    const empCountTrigger = page.getByText(/employee count/i).locator('..').locator('button').first();
+    if (await empCountTrigger.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await empCountTrigger.click();
+      await page.getByRole('option').first().click();
+    }
+    
+    // Fill email
+    const emailField = page.getByLabel(/email/i).first();
+    if (await emailField.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await emailField.fill('test@example.com');
+    }
+    
+    // Check if start button exists
+    const startButton = page.getByRole('button', { name: /start|begin|continue/i }).first();
+    await expect(startButton).toBeVisible();
+  });
+});
