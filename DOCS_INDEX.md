@@ -13,7 +13,8 @@
 - **Running first test?** See [tests/README.md](./tests/README.md)
 
 ### 👨‍💻 For Developers
-- **Building new assessment?** Use [NEW_ASSESSMENT_CHECKLIST.md](./NEW_ASSESSMENT_CHECKLIST.md)
+- **Building new assessment?** Start with [ASSESSMENT_FRAMEWORK.md](./ASSESSMENT_FRAMEWORK.md) ⭐ NEW
+- **Step-by-step checklist?** Use [NEW_ASSESSMENT_CHECKLIST.md](./NEW_ASSESSMENT_CHECKLIST.md)
 - **Development standards?** See [ASSESSMENT_BASELINE_STANDARD.md](./ASSESSMENT_BASELINE_STANDARD.md)
 - **Testing best practices?** Read [TESTING_BEST_PRACTICES.md](./TESTING_BEST_PRACTICES.md)
 
@@ -37,6 +38,7 @@
 |----------|---------|----------|-------------|
 | [README.md](./README.md) | Project overview | All | Project intro |
 | [QUICKSTART.md](./QUICKSTART.md) | 5-minute setup | New devs | First time setup |
+| [ASSESSMENT_FRAMEWORK.md](./ASSESSMENT_FRAMEWORK.md) | **Assessment dev framework** | Developers | **New assessment** |
 | [TESTING_BEST_PRACTICES.md](./TESTING_BEST_PRACTICES.md) | Testing standards | All devs | Before every commit |
 | [ASSESSMENT_BASELINE_STANDARD.md](./ASSESSMENT_BASELINE_STANDARD.md) | Development standards | Developers | Building features |
 | [NEW_ASSESSMENT_CHECKLIST.md](./NEW_ASSESSMENT_CHECKLIST.md) | Step-by-step guide | Developers | New assessment |

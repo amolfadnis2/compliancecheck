@@ -107,7 +107,7 @@ async function sendReportEmail(
   const resendApiKey = process.env.RESEND_API_KEY;
   if (!resendApiKey) { console.log('Resend API key not configured'); return; }
   
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://compliancecheck-app.netlify.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://compliancecheck.co.in';
   const resultsUrl = `${appUrl}/results/${assessmentId}`;
   const statusColor = scoreResult.status === 'Compliant' ? '#059669' : scoreResult.status === 'Needs Attention' ? '#D97706' : '#DC2626';
   

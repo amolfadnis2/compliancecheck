@@ -277,7 +277,7 @@ test.describe('Security - Authentication (if applicable)', () => {
     
     const isOnDashboard = page.url().includes('/dashboard');
     const isOnLogin = page.url().includes('/login');
-    const isOnHome = page.url() === 'https://compliancecheck-app.netlify.app/';
+    const isOnHome = page.url() === 'https://compliancecheck.co.in/';
     const hasAccessDenied = await page.getByText(/login|sign in|access denied/i).isVisible().catch(() => false);
     
     // Either redirected or shows login prompt

@@ -13,7 +13,7 @@ import { test, expect, Page } from '@playwright/test';
 test.describe('DPDP Assessment - Core Flow', () => {
   
   test.beforeEach(async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app');
+    await page.goto('https://compliancecheck.co.in');
   });
 
   test('should complete DPDP assessment with fully compliant answers', async ({ page }) => {
@@ -169,7 +169,7 @@ test.describe('DPDP Assessment - Core Flow', () => {
 test.describe('DPDP Assessment - Phase Navigation', () => {
   
   test('should show correct progress through phases', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -193,7 +193,7 @@ test.describe('DPDP Assessment - Phase Navigation', () => {
   });
 
   test('should allow navigation back to previous phases', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -220,7 +220,7 @@ test.describe('DPDP Assessment - Phase Navigation', () => {
 test.describe('DPDP Assessment - Scoring Verification', () => {
   
   test('should calculate baseline score correctly for all compliant', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Fully Compliant Org',
@@ -254,7 +254,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
   });
 
   test('should calculate score correctly with specific phase gaps', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Mixed Compliance Org',
@@ -294,7 +294,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
   });
 
   test('should verify each phase contributes correct weight', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Weight Test Org',
@@ -336,7 +336,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
     ];
 
     for (const testCase of testCases) {
-      await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+      await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
       await fillCompanyDetails(page, {
         name: `Test ${testCase.pattern}`,
@@ -371,7 +371,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
   });
 
   test('should show detailed breakdown by question category', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Detailed Breakdown Test',
@@ -412,7 +412,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
 test.describe('DPDP Assessment - Action Items', () => {
   
   test('should generate correct action items for gaps', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -441,7 +441,7 @@ test.describe('DPDP Assessment - Action Items', () => {
   });
 
   test('should link action items to government resources', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -469,7 +469,7 @@ test.describe('DPDP Assessment - Action Items', () => {
 test.describe('DPDP Assessment - UI Consistency', () => {
   
   test('should match form field structure of other assessments', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -489,7 +489,7 @@ test.describe('DPDP Assessment - UI Consistency', () => {
   });
 
   test('should use consistent dropdown options across assessments', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     // Indian Data Principals dropdown (DPDP-specific label)
     const dataprincipalsSelect = page.getByLabel(/indian data principals/i);
@@ -501,7 +501,7 @@ test.describe('DPDP Assessment - UI Consistency', () => {
   });
 
   test('should use consistent color scheme', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     // Complete assessment to see results
     await fillCompanyDetails(page, {
@@ -526,7 +526,7 @@ test.describe('DPDP Assessment - UI Consistency', () => {
   });
 
   test('should have consistent typography and spacing', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     // Verify page has main heading (DPDP Gap Assessment)
     await expect(page.getByText(/DPDP Gap Assessment/i).first()).toBeVisible();
@@ -543,7 +543,7 @@ test.describe('DPDP Assessment - UI Consistency', () => {
 test.describe('DPDP Assessment - Navigation Patterns', () => {
   
   test('should follow same navigation flow as other assessments', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app');
+    await page.goto('https://compliancecheck.co.in');
 
     // Navigate from homepage (same as statutory-health and labour-code)
     await page.getByRole('link', { name: 'DPDP Gap Assessment', exact: true }).click();
@@ -552,14 +552,14 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
     // Should have back to home option (logo or link)
     const homeLink = page.getByRole('link', { name: /home|back|compliancecheck/i }).first();
     // Logo link may not have text, so check if any navigation to home exists
-    const logoLink = page.locator('a[href="/"], a[href="https://compliancecheck-app.netlify.app"]').first();
+    const logoLink = page.locator('a[href="/"], a[href="https://compliancecheck.co.in"]').first();
     const hasHomeNavigation = await homeLink.isVisible().catch(() => false) || 
                                await logoLink.isVisible().catch(() => false);
     expect(hasHomeNavigation).toBeTruthy();
   });
 
   test('should have progress indicator like other assessments', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -577,7 +577,7 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
   });
 
   test('should auto-advance after 800ms like other assessments', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -599,7 +599,7 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
   });
 
   test('should have previous/next navigation buttons', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -623,7 +623,7 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
 test.describe('DPDP Assessment - Results Page Comprehensive', () => {
   
   test('should display complete results page structure', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Tech Solutions',
@@ -668,7 +668,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
   });
 
   test('should show category-specific scores and status', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -696,7 +696,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
   });
 
   test('should display prioritized action items correctly', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -725,7 +725,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
   });
 
   test('should link to government resources', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -755,7 +755,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
 test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
   
   test('should have PDF download button matching other assessments', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Tech Solutions',
@@ -784,7 +784,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
   });
 
   test('should trigger NPS modal before PDF download', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -814,7 +814,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
   });
 
   test('should complete NPS flow and then download PDF', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company',
@@ -861,7 +861,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
   });
 
   test('should store NPS feedback in database', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company ' + Date.now(), // Unique
@@ -896,7 +896,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
 test.describe('DPDP Assessment - Database Integration', () => {
   
   test('should persist assessment to database', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     await fillCompanyDetails(page, {
       name: 'Test Company ' + Date.now(), // Unique name
@@ -1173,7 +1173,7 @@ function getYesNoAnswer(responseType: string, questionIndex: number): string {
 test.describe('DPDP Assessment - Accessibility', () => {
   
   test('should have no critical accessibility violations', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     // Check page structure (main heading)
     await expect(page.getByText(/DPDP Gap Assessment/i).first()).toBeVisible();
@@ -1193,7 +1193,7 @@ test.describe('DPDP Assessment - Accessibility', () => {
   });
 
   test('should support keyboard navigation', async ({ page }) => {
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     // Tab through form fields
     await page.keyboard.press('Tab');
@@ -1209,7 +1209,7 @@ test.describe('DPDP Assessment - Mobile Responsive', () => {
   
   test('should work on mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 }); // iPhone SE
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
 
     // Verify content visible and interactive
     await expect(page.getByRole('heading')).toBeVisible();
@@ -1236,7 +1236,7 @@ test.describe('DPDP Assessment - Performance', () => {
   
   test('should load within performance budget', async ({ page }) => {
     const startTime = Date.now();
-    await page.goto('https://compliancecheck-app.netlify.app/assessment/dpdp');
+    await page.goto('https://compliancecheck.co.in/assessment/dpdp');
     const loadTime = Date.now() - startTime;
 
     // Should load in under 3 seconds
