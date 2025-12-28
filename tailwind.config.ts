@@ -12,11 +12,17 @@ const config: Config = {
       colors: {
         primary: {
           DEFAULT: '#1E40AF',
+          foreground: '#FFFFFF',
           light: '#3B82F6',
         },
         success: {
           DEFAULT: '#059669',
+          foreground: '#FFFFFF',
           light: '#10B981',
+        },
+        destructive: {
+          DEFAULT: '#DC2626',
+          foreground: '#FFFFFF',
         },
         warning: {
           DEFAULT: '#D97706',

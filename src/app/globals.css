@@ -5,8 +5,10 @@
 @layer base {
   :root {
     --primary: #1E40AF;
+    --primary-foreground: #FFFFFF;
     --primary-light: #3B82F6;
     --success: #059669;
+    --success-foreground: #FFFFFF;
     --success-light: #10B981;
   }
   
