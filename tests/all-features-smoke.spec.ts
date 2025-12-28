@@ -17,11 +17,13 @@ test.describe('All Features Smoke Test', () => {
     // Check page loaded successfully - look for main content or any heading
     await expect(page.locator('main, [role="main"], body')).toBeVisible();
     
-    // All 4 product cards visible
+    // All 6 product cards visible (assessments + calculators)
     await expect(page.getByText(/statutory health check/i).first()).toBeVisible();
     await expect(page.getByText(/labour code readiness/i).first()).toBeVisible();
     await expect(page.getByText(/dpdp gap assessment/i).first()).toBeVisible();
-    await expect(page.getByText(/employee consent form/i).first()).toBeVisible();
+    await expect(page.getByText(/state-wise compliance/i).first()).toBeVisible();
+    await expect(page.getByText(/ctc calculator/i).first()).toBeVisible();
+    await expect(page.getByText(/gratuity calculator/i).first()).toBeVisible();
     
     // Check for FREE badges - may be styled differently
     const freeBadges = page.getByText(/free/i);
@@ -97,8 +99,11 @@ test.describe('All Features Smoke Test', () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(500);
     
-    // Privacy Policy link - try multiple approaches
-    const privacyLink = page.getByRole('link', { name: /privacy/i }).first();
+    // Footer is in the last section - be more specific with selector
+    const footer = page.locator('footer');
+    
+    // Privacy Policy link - look specifically in footer
+    const privacyLink = footer.getByRole('link', { name: /privacy policy/i });
     if (await privacyLink.isVisible({ timeout: 3000 }).catch(() => false)) {
       await privacyLink.click();
       await page.waitForLoadState('networkidle');
@@ -110,8 +115,8 @@ test.describe('All Features Smoke Test', () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(500);
     
-    // Terms link
-    const termsLink = page.getByRole('link', { name: /terms/i }).first();
+    // Terms link - look specifically in footer
+    const termsLink = footer.getByRole('link', { name: /terms of service/i });
     if (await termsLink.isVisible({ timeout: 3000 }).catch(() => false)) {
       await termsLink.click();
       await page.waitForLoadState('networkidle');

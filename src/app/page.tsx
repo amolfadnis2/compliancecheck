@@ -478,13 +478,13 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-between items-center gap-6">
             <div className="text-xl font-bold">ComplianceCheck</div>
             <div className="flex gap-8">
-              <Link href="#" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/privacy" className="text-white/70 hover:text-white transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/terms" className="text-white/70 hover:text-white transition-colors">
                 Terms of Service
               </Link>
-              <Link href="mailto:hello@compliancecheck.in" className="text-white/70 hover:text-white transition-colors">
+              <Link href="mailto:compliancecheck@zohomail.in" className="text-white/70 hover:text-white transition-colors">
                 Contact
               </Link>
             </div>
