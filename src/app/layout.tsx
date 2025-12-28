@@ -1,48 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { PostHogProvider } from "@/components/providers/posthog-provider";  // Add this
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://compliancecheck.co.in'),
-  title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs | Labour Code & DPDP Assessments",
-  description: "Get instant compliance assessments for Indian Labour Codes, DPDP Act, PF, ESI & more. Pay per use (₹999-2,499). No subscriptions. Professional PDF reports in 10 minutes.",
-  keywords: [
-    "labour code compliance India",
-    "DPDP compliance assessment",
-    "PF ESI compliance check",
-    "statutory compliance India",
-    "labour law compliance tool",
-    "DPDP Act 2023",
-    "CTC calculator India",
-    "gratuity calculator India"
-  ],
-  authors: [{ name: "ComplianceCheck" }],
-  openGraph: {
-    title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs",
-    description: "Get instant compliance assessments for Indian Labour Codes, DPDP Act, PF, ESI & more. Pay per use. No subscriptions.",
-    type: "website",
-    url: "https://compliancecheck.co.in",
-    images: [
-      {
-        url: "https://compliancecheck.co.in/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "ComplianceCheck - Compliance Assessments for Indian SMEs",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ComplianceCheck - Instant Compliance Reports for Indian SMEs",
-    description: "Get instant compliance assessments for Indian Labour Codes, DPDP Act & more. Pay per use.",
-    images: ["https://compliancecheck.co.in/og-image.jpg"],
-  },
-  alternates: {
-    canonical: "https://compliancecheck.co.in",
-  },
-};
+// ... metadata stays the same ...
 
 export default function RootLayout({
   children,
@@ -73,7 +36,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
+      </body>
     </html>
   );
 }
