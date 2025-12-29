@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Brand colors
         primary: {
           DEFAULT: '#1E40AF',
           foreground: '#FFFFFF',
@@ -36,6 +37,32 @@ const config: Config = {
           700: '#374151',
           800: '#1F2937',
           900: '#111827',
+        },
+        // shadcn/ui required colors - fixes dropdown transparency
+        background: '#FFFFFF',
+        foreground: '#111827',
+        popover: {
+          DEFAULT: '#FFFFFF',
+          foreground: '#111827',
+        },
+        muted: {
+          DEFAULT: '#F3F4F6',
+          foreground: '#6B7280',
+        },
+        accent: {
+          DEFAULT: '#F3F4F6',
+          foreground: '#111827',
+        },
+        border: '#E5E7EB',
+        input: '#E5E7EB',
+        ring: '#1E40AF',
+        card: {
+          DEFAULT: '#FFFFFF',
+          foreground: '#111827',
+        },
+        secondary: {
+          DEFAULT: '#F3F4F6',
+          foreground: '#111827',
         },
       },
     },

@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { PostHogProvider } from "@/components/providers/posthog-provider";  // Add this
+import { PostHogProvider } from "@/components/providers/posthog-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// ... metadata stays the same ...
+export const metadata: Metadata = {
+  title: "ComplianceCheck - Labour Code & DPDP Compliance for Indian SMEs",
+  description: "Instant compliance assessments for Indian SMEs covering Labour Codes 2025, DPDP Act 2023, and statutory requirements. Get audit-ready reports in minutes.",
+  keywords: ["labour code compliance", "DPDP compliance", "Indian SME compliance", "statutory compliance", "HR compliance India"],
+};
 
 export default function RootLayout({
   children,
