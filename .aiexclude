@@ -1,0 +1,21 @@
+# Files excluded from all Gemini Code Assist analysis
+# These files will not be sent to Google's servers
+
+# Environment and secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+
+# Supabase secrets
+supabase/.env
+supabase/config.toml
+
+# Any credential files
+**/credentials/**
+**/secrets/**
+
+# Database dumps
+*.sql
+*.dump

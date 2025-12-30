@@ -1,0 +1,43 @@
+# Gemini Code Assist Configuration for ComplianceCheck
+# Documentation: https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github
+
+have_fun: false  # Keep reviews professional for compliance SaaS
+
+code_review:
+  disable: false
+  comment_severity_threshold: LOW  # Show all severity levels
+  max_review_comments: -1          # Unlimited comments
+  
+  pull_request_opened:
+    help: false           # Don't post help message on every PR
+    summary: true         # Auto-generate PR summary
+    code_review: true     # Auto-review code
+    include_drafts: false # Skip draft PRs until ready
+
+# Files to ignore during review
+ignore_patterns:
+  # Dependencies and build artifacts
+  - "**/node_modules/**"
+  - "**/.next/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.netlify/**"
+  
+  # Generated files
+  - "**/*.min.js"
+  - "**/*.min.css"
+  - "**/package-lock.json"
+  - "**/pnpm-lock.yaml"
+  - "**/yarn.lock"
+  
+  # Test reports and results
+  - "**/playwright-report/**"
+  - "**/test-results/**"
+  - "**/coverage/**"
+  
+  # Documentation (review manually)
+  - "**/*.md"
+  
+  # Environment and config that shouldn't be AI-analyzed
+  - "**/.env*"
+  - "**/tsconfig.tsbuildinfo"
