@@ -24,9 +24,5 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Redirects (optional - for custom domain)
-# [[redirects]]
-#   from = "https://compliancecheck.netlify.app/*"
-#   to = "https://compliancecheck.in/:splat"
-#   status = 301
-#   force = true
+# Custom domain configured in Netlify Dashboard
+# Primary domain: compliancecheck.co.in

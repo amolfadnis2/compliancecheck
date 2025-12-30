@@ -6,9 +6,20 @@ import { PostHogProvider } from "@/components/providers/posthog-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://compliancecheck.co.in'),
   title: "ComplianceCheck - Labour Code & DPDP Compliance for Indian SMEs",
   description: "Instant compliance assessments for Indian SMEs covering Labour Codes 2025, DPDP Act 2023, and statutory requirements. Get audit-ready reports in minutes.",
   keywords: ["labour code compliance", "DPDP compliance", "Indian SME compliance", "statutory compliance", "HR compliance India"],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "ComplianceCheck - Labour Code & DPDP Compliance for Indian SMEs",
+    description: "Instant compliance assessments for Indian SMEs. Get audit-ready reports in minutes.",
+    url: 'https://compliancecheck.co.in',
+    siteName: 'ComplianceCheck',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
