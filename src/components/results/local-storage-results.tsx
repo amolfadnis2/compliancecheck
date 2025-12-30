@@ -364,12 +364,61 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
     return <DemoResultsView assessmentType={assessmentType} />
   }
 
-  const userDetails = assessment.userDetails || assessment.responses?.userDetails || {}
-  const answers = assessment.responses?.answers || {}
-  const overallScore = assessment.overall_score || 50
-  const categoryScores = assessment.category_scores || {}
+  // Handle State-Wise Compliance data structure differently
+  // State-wise stores: userDetails, phase2Responses, scoreResult.overallScore, scoreResult.categoryScores
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const assessmentData = assessment as any
+  
+  let userDetails: Record<string, string> = {}
+  let answers: Record<string, string> = {}
+  let overallScore = 50
+  let categoryScores: Record<string, { score?: number; max?: number; percentage?: number } | number> = {}
+  let stateWiseActionItems: Array<{ category: string; text: string; priority: string }> = []
+  let stateWiseCompliantItems: Array<{ question: { category: string; text: string } }> = []
+  
+  if (isStateWise) {
+    // State-wise compliance specific data extraction
+    userDetails = assessmentData.userDetails || {}
+    answers = assessmentData.phase2Responses || {}
+    overallScore = assessmentData.scoreResult?.overallScore ?? 50
+    categoryScores = assessmentData.scoreResult?.categoryScores || {}
+    // State-wise uses 'gaps' not 'actionItems'
+    stateWiseActionItems = (assessmentData.scoreResult?.gaps || []).map((gap: { question?: { category?: string; text?: string }; recommendation?: string }) => ({
+      category: gap.question?.category || 'General',
+      text: gap.recommendation || gap.question?.text || 'Action required',
+      priority: 'high'
+    }))
+    stateWiseCompliantItems = assessmentData.scoreResult?.compliantItems || []
+  } else {
+    // Standard data extraction for other assessment types
+    userDetails = assessment.userDetails || assessment.responses?.userDetails || {}
+    answers = assessment.responses?.answers || {}
+    overallScore = assessment.overall_score || 50
+    categoryScores = assessment.category_scores || {}
+  }
+  
   const status = getStatusFromScore(overallScore, isDPDP)
-  const { compliantItems, nonCompliantItems } = analyseResponses(answers)
+  
+  // For state-wise, use the pre-computed items; for others, analyze responses
+  let compliantItems: { id: string; text: string }[] = []
+  let nonCompliantItems: { id: string; text: string; priority: 'high' | 'medium' | 'low' }[] = []
+  
+  if (isStateWise) {
+    // Convert state-wise format to display format
+    compliantItems = stateWiseCompliantItems.map((item, idx) => ({
+      id: `compliant_${idx}`,
+      text: `${item.question?.category || 'General'}: ${item.question?.text || 'Compliant'}`
+    }))
+    nonCompliantItems = stateWiseActionItems.map((item, idx) => ({
+      id: `action_${idx}`,
+      text: item.text || item.category || 'Action required',
+      priority: (item.priority as 'high' | 'medium' | 'low') || 'medium'
+    }))
+  } else {
+    const analysisResult = analyseResponses(answers)
+    compliantItems = analysisResult.compliantItems
+    nonCompliantItems = analysisResult.nonCompliantItems
+  }
 
   // Get category info based on assessment type
   const getCategoryInfo = (catId: string) => {

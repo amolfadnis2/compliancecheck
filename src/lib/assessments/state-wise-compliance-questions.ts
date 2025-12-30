@@ -710,6 +710,8 @@ export const PHASE2_QUESTIONS: Question[] = [
     required: true,
     weight: 8,
     phase: 2,
+    minEmployees: 1,
+    applicabilityCodes: ['EPF', 'ESI', 'GRATUITY', 'MATERNITY', 'POSH'],
     options: [
       { value: 'yes', label: 'Yes, Basic + DA is at least 50% of total salary' },
       { value: 'no', label: 'No, Basic + DA is less than 50% of total salary' },
@@ -728,6 +730,7 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     minEmployees: 20,
+    applicabilityCodes: ['EPF', 'ESI', 'GRATUITY', 'MATERNITY', 'POSH'],
     helpText: 'Grievance Redressal Committee mandatory for 20+ employees under IR Code.',
   },
   {
@@ -739,6 +742,8 @@ export const PHASE2_QUESTIONS: Question[] = [
     weight: 7,
     complianceAnswer: 'yes',
     phase: 2,
+    minEmployees: 1,
+    applicabilityCodes: ['EPF', 'ESI', 'GRATUITY', 'MATERNITY', 'POSH'],
     helpText: 'Review definitions of wages, worker, employee, and working hours.',
   },
   {
@@ -750,6 +755,8 @@ export const PHASE2_QUESTIONS: Question[] = [
     weight: 6,
     complianceAnswer: 'yes',
     phase: 2,
+    minEmployees: 1,
+    applicabilityCodes: ['EPF', 'ESI', 'GRATUITY', 'MATERNITY', 'POSH'],
     helpText: 'Labour Codes allow single register instead of multiple separate registers.',
   },
   // FSSAI (2 questions)

@@ -190,7 +190,7 @@ export default function StateWiseComplianceAssessment() {
           status: scoreResult.status,
         });
         
-        router.push(`/results/${result.assessmentId}`);
+        router.push(`/results/${result.assessmentId}?type=state_wise_compliance`);
       } else {
         throw new Error(result.error || 'Submission failed');
       }
@@ -213,7 +213,7 @@ export default function StateWiseComplianceAssessment() {
         timestamp: new Date().toISOString(),
       }));
       
-      router.push(`/results/${localId}`);
+      router.push(`/results/${localId}?type=state_wise_compliance`);
     }
   };
 
