@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2 } from 'lucide-react'
+import { Check } from 'lucide-react'
 
 interface AssessmentHeaderProps {
   title: string
@@ -39,8 +39,8 @@ export function AssessmentHeader({
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-blue-500 flex items-center justify-center">
+              <Check className="w-6 h-6 text-white" strokeWidth={3} />
             </div>
             <div>
               <span className="font-semibold text-lg">{title}</span>

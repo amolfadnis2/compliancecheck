@@ -546,7 +546,7 @@ export default function DPDPAssessmentPage() {
                             );
                           })}
                         </div>
-                        {watchProcessesChildren !== 'yes' && questionSummary.totalWithChildren > questionSummary.total && (
+                        {watchProcessesChildren === 'no' && questionSummary.totalWithChildren > questionSummary.total && (
                           <p className="text-xs text-blue-600 mt-3">
                             💡 {questionSummary.totalWithChildren - questionSummary.total} children&apos;s data questions skipped as not applicable to your profile
                           </p>

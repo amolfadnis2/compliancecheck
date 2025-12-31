@@ -1553,7 +1553,9 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       }
 
       // Generate PDF client-side based on assessment type
-      const assessmentType = data.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH
+      // Handle both snake_case (from DB) and camelCase (from localStorage)
+      const dataWithType = data as unknown as { assessmentType?: string }
+      const assessmentType = data.assessment_type || dataWithType.assessmentType || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
       
       let blob: Blob
       if (assessmentType === ASSESSMENT_TYPES.DPDP) {
@@ -1694,7 +1696,9 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       }
 
       // Generate PDF as base64
-      const assessmentType = data.assessment_type || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
+      // Handle both snake_case (from DB) and camelCase (from localStorage)
+      const dataWithType = data as unknown as { assessmentType?: string }
+      const assessmentType = data.assessment_type || dataWithType.assessmentType || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
       
       let blob: Blob
       if (assessmentType === ASSESSMENT_TYPES.DPDP) {
