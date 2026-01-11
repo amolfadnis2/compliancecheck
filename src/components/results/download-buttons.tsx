@@ -6,6 +6,8 @@ import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import { createBrowserClient } from '@supabase/ssr'
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from '@/lib/pdf/dpdp-compliance-rules'
+import { STATE_WISE_COMPLIANCE_RULES } from '@/lib/pdf/state-wise-compliance-rules'
+import { LABOUR_CODE_COMPLIANCE_RULES } from '@/lib/pdf/labour-code-compliance-rules'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Helper to detect UUID format
@@ -896,7 +898,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     yPos += 10
 
-    // Action Items
+    // Action Items - WITH DETAILED COMPLIANCE RULES
     if (actionItems.length > 0) {
       drawSectionHeader('Priority Action Items', [220, 38, 38])
       const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
@@ -905,28 +907,118 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       })
 
       actionItems.forEach((item) => {
-        checkPageBreak(15)
-        const badgeColor = item.priority === 'high' || item.priority === 'critical' 
-          ? [220, 38, 38] 
-          : item.priority === 'medium' 
-            ? [217, 119, 6] 
-            : [107, 114, 128]
-        doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2])
-        doc.setTextColor(255, 255, 255)
-        doc.setFontSize(7)
-        doc.setFont('helvetica', 'bold')
-        const badgeText = item.priority.toUpperCase()
-        const badgeWidth = doc.getTextWidth(badgeText) + 4
-        doc.rect(margin, yPos, badgeWidth, 5, 'F')
-        doc.text(badgeText, margin + 2, yPos + 3.5)
-        doc.setTextColor(31, 41, 55)
-        doc.setFont('helvetica', 'normal')
-        doc.setFontSize(8)
-        const itemText = item.text || item.title || item.description || ''
-        yPos = addText(itemText, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
-        yPos += 6
+        // Try to get detailed rule from LABOUR_CODE_COMPLIANCE_RULES
+        const questionId = item.id || item.questionId
+        const rule = questionId ? LABOUR_CODE_COMPLIANCE_RULES[questionId] : null
+
+        if (rule) {
+          // Detailed compliance rule available - render rich content
+          checkPageBreak(80)
+          
+          // Red box header with requirement name
+          doc.setFillColor(254, 226, 226)
+          doc.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'F')
+          doc.setTextColor(185, 28, 28)
+          doc.setFontSize(10)
+          doc.setFont('helvetica', 'bold')
+          doc.text('[FAIL] ' + rule.requirement + ' - Non-Compliant', margin + 3, yPos + 5.5)
+          yPos += 12
+
+          // Legal Reference
+          doc.setTextColor(55, 65, 81)
+          doc.setFontSize(8)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Legal Reference: ', margin, yPos)
+          doc.setFont('helvetica', 'normal')
+          doc.text(rule.governmentRef, margin + 28, yPos)
+          yPos += 5
+
+          // Deadline
+          doc.setFont('helvetica', 'bold')
+          doc.text('Deadline: ', margin, yPos)
+          doc.setFont('helvetica', 'normal')
+          doc.text(rule.deadline, margin + 18, yPos)
+          yPos += 5
+
+          // Penalty - highlighted in red
+          doc.setFont('helvetica', 'bold')
+          doc.text('Penalty for Non-Compliance: ', margin, yPos)
+          doc.setTextColor(185, 28, 28)
+          doc.setFont('helvetica', 'normal')
+          yPos = addText(rule.penalty, margin + 48, yPos, contentWidth - 50, 4)
+          yPos += 3
+
+          // Remediation Steps
+          doc.setTextColor(55, 65, 81)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Remediation Steps:', margin, yPos)
+          yPos += 5
+          doc.setFont('helvetica', 'normal')
+          doc.setFontSize(7)
+          rule.actionIfNonCompliant.forEach((step, idx) => {
+            checkPageBreak(6)
+            yPos = addText((idx + 1) + '. ' + step, margin + 3, yPos, contentWidth - 8, 3.5)
+          })
+          yPos += 2
+
+          // Official Portal
+          doc.setTextColor(29, 78, 216)
+          doc.setFontSize(7)
+          doc.text('Official Portal: ' + rule.officialLink, margin, yPos)
+          yPos += 8
+        } else {
+          // Fallback for items without detailed rules
+          checkPageBreak(20)
+          const badgeColor = item.priority === 'high' || item.priority === 'critical' 
+            ? [220, 38, 38] 
+            : item.priority === 'medium' 
+              ? [217, 119, 6] 
+              : [107, 114, 128]
+          doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2])
+          doc.setTextColor(255, 255, 255)
+          doc.setFontSize(7)
+          doc.setFont('helvetica', 'bold')
+          const badgeText = item.priority.toUpperCase()
+          const badgeWidth = doc.getTextWidth(badgeText) + 4
+          doc.rect(margin, yPos, badgeWidth, 5, 'F')
+          doc.text(badgeText, margin + 2, yPos + 3.5)
+          doc.setTextColor(31, 41, 55)
+          doc.setFont('helvetica', 'normal')
+          doc.setFontSize(8)
+          const itemText = item.text || item.title || item.description || ''
+          yPos = addText(itemText, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
+          yPos += 6
+        }
       })
     }
+
+    // Government References Section
+    checkPageBreak(60)
+    yPos += 5
+    drawSectionHeader('Government References', [30, 64, 175])
+    const govReferences = [
+      { name: 'Ministry of Labour', url: 'https://labour.gov.in', desc: 'Labour Codes, notifications, rules' },
+      { name: 'Shram Suvidha Portal', url: 'https://shramsuvidha.gov.in', desc: 'Single registration, compliance' },
+      { name: 'EPFO Unified Portal', url: 'https://unifiedportal-emp.epfindia.gov.in', desc: 'EPF registration, ECR filing' },
+      { name: 'ESIC Portal', url: 'https://www.esic.gov.in', desc: 'ESI registration, contributions' },
+      { name: 'e-Shram Portal', url: 'https://eshram.gov.in', desc: 'Unorganised worker registration' },
+    ]
+    doc.setFontSize(8)
+    govReferences.forEach((ref) => {
+      checkPageBreak(10)
+      doc.setTextColor(30, 64, 175)
+      doc.setFont('helvetica', 'bold')
+      doc.text(ref.name, margin + 3, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(55, 65, 81)
+      doc.text(' - ' + ref.desc, margin + 3 + doc.getTextWidth(ref.name), yPos)
+      yPos += 4
+      doc.setTextColor(100, 116, 139)
+      doc.setFontSize(7)
+      doc.text(ref.url, margin + 3, yPos)
+      yPos += 6
+      doc.setFontSize(8)
+    })
 
     // Disclaimer
     doc.addPage()
@@ -1386,7 +1478,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       yPos += 10
     }
 
-    // Action Items (Gaps)
+    // Action Items (Gaps) - NOW WITH DETAILED COMPLIANCE RULES
     if (actionItems.length > 0) {
       checkPageBreak(30)
       yPos += 5
@@ -1395,25 +1487,87 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
-      doc.text('Action Required (' + actionItems.length + ' items)', margin + 5, yPos + 7)
+      doc.text('[ACTION REQUIRED] Areas Needing Immediate Attention', margin + 5, yPos + 7)
       yPos += 15
 
-      actionItems.forEach((item, idx) => {
-        checkPageBreak(15)
-        doc.setTextColor(220, 38, 38)
-        doc.setFontSize(9)
-        doc.setFont('helvetica', 'bold')
-        doc.text((idx + 1) + '. ' + sanitize(item.category), margin, yPos)
-        yPos += 5
-        doc.setFont('helvetica', 'normal')
-        doc.setTextColor(55, 65, 81)
-        doc.setFontSize(8)
-        yPos = addText(sanitize(item.text), margin + 5, yPos, contentWidth - 10, 4)
-        yPos += 3
+      actionItems.forEach((item) => {
+        // Try to get detailed rule from STATE_WISE_COMPLIANCE_RULES
+        const questionId = item.id || item.questionId
+        const rule = questionId ? STATE_WISE_COMPLIANCE_RULES[questionId] : null
+
+        if (rule) {
+          // Detailed compliance rule available - render rich content
+          checkPageBreak(80)
+          
+          // Red box header with requirement name
+          doc.setFillColor(254, 226, 226)
+          doc.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'F')
+          doc.setTextColor(185, 28, 28)
+          doc.setFontSize(10)
+          doc.setFont('helvetica', 'bold')
+          doc.text('[FAIL] ' + sanitize(rule.requirement) + ' - Non-Compliant', margin + 3, yPos + 5.5)
+          yPos += 12
+
+          // Legal Reference
+          doc.setTextColor(55, 65, 81)
+          doc.setFontSize(8)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Legal Reference: ', margin, yPos)
+          doc.setFont('helvetica', 'normal')
+          doc.text(sanitize(rule.governmentRef), margin + 28, yPos)
+          yPos += 5
+
+          // Deadline
+          doc.setFont('helvetica', 'bold')
+          doc.text('Deadline: ', margin, yPos)
+          doc.setFont('helvetica', 'normal')
+          doc.text(sanitize(rule.deadline), margin + 18, yPos)
+          yPos += 5
+
+          // Penalty - highlighted in red
+          doc.setFont('helvetica', 'bold')
+          doc.text('Penalty for Non-Compliance: ', margin, yPos)
+          doc.setTextColor(185, 28, 28)
+          doc.setFont('helvetica', 'normal')
+          yPos = addText(sanitize(rule.penalty), margin + 48, yPos, contentWidth - 50, 4)
+          yPos += 3
+
+          // Remediation Steps
+          doc.setTextColor(55, 65, 81)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Remediation Steps:', margin, yPos)
+          yPos += 5
+          doc.setFont('helvetica', 'normal')
+          doc.setFontSize(7)
+          rule.actionIfNonCompliant.forEach((step, idx) => {
+            checkPageBreak(6)
+            yPos = addText((idx + 1) + '. ' + sanitize(step), margin + 3, yPos, contentWidth - 8, 3.5)
+          })
+          yPos += 2
+
+          // Official Portal
+          doc.setTextColor(29, 78, 216)
+          doc.setFontSize(7)
+          doc.text('Official Portal: ' + sanitize(rule.officialLink), margin, yPos)
+          yPos += 8
+        } else {
+          // Fallback for items without detailed rules
+          checkPageBreak(20)
+          doc.setTextColor(220, 38, 38)
+          doc.setFontSize(9)
+          doc.setFont('helvetica', 'bold')
+          doc.text('[FAIL] ' + sanitize(item.category || 'Compliance Gap'), margin, yPos)
+          yPos += 5
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(55, 65, 81)
+          doc.setFontSize(8)
+          yPos = addText('Action needed: ' + sanitize(item.text || item.description || 'Review this compliance area'), margin + 5, yPos, contentWidth - 10, 4)
+          yPos += 5
+        }
       })
     }
 
-    // Compliant Items
+    // Compliant Items - NOW WITH MAINTENANCE GUIDANCE
     if (compliantItems && compliantItems.length > 0) {
       checkPageBreak(30)
       yPos += 5
@@ -1422,30 +1576,50 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
-      doc.text('Compliant Areas (' + compliantItems.length + ' items)', margin + 5, yPos + 7)
+      doc.text('[COMPLIANT] What You Are Doing Right (' + compliantItems.length + ' items)', margin + 5, yPos + 7)
       yPos += 15
 
       doc.setTextColor(55, 65, 81)
       doc.setFontSize(8)
       try {
-        compliantItems.slice(0, 15).forEach((item: unknown) => {
-          checkPageBreak(8)
-          // Handle various data structures safely
-          const itemObj = item as { question?: { category?: string; text?: string }; category?: string; text?: string } | null
-          const questionText = itemObj?.question?.text || itemObj?.text || itemObj?.question?.category || itemObj?.category || 'Compliance item'
-          const category = itemObj?.question?.category || itemObj?.category || 'General'
-          const safeText = String(questionText || 'Compliance item')
-          const truncatedText = safeText.length > 70 ? safeText.substring(0, 70) + '...' : safeText
-          doc.text('[PASS] ' + sanitize(category) + ': ' + sanitize(truncatedText), margin + 3, yPos)
-          yPos += 5
+        compliantItems.slice(0, 10).forEach((item: unknown) => {
+          checkPageBreak(20)
+          const itemObj = item as { question?: { id?: string; category?: string; text?: string }; id?: string; questionId?: string; category?: string; text?: string } | null
+          const questionId = itemObj?.question?.id || itemObj?.id || itemObj?.questionId
+          const rule = questionId ? STATE_WISE_COMPLIANCE_RULES[questionId] : null
+          
+          if (rule) {
+            // Green box with pass indicator
+            doc.setFillColor(236, 253, 245)
+            doc.roundedRect(margin, yPos, contentWidth, 12, 2, 2, 'F')
+            doc.setTextColor(5, 150, 105)
+            doc.setFont('helvetica', 'bold')
+            doc.text('[PASS] ' + sanitize(rule.requirement), margin + 3, yPos + 5)
+            yPos += 7
+            doc.setTextColor(55, 65, 81)
+            doc.setFont('helvetica', 'normal')
+            doc.setFontSize(7)
+            yPos = addText(sanitize(rule.actionIfCompliant), margin + 3, yPos, contentWidth - 10, 3.5)
+            yPos += 4
+          } else {
+            // Fallback for items without rules
+            const category = itemObj?.question?.category || itemObj?.category || 'General'
+            const questionText = itemObj?.question?.text || itemObj?.text || 'Compliance requirement met'
+            const safeText = String(questionText || 'Compliance item')
+            const truncatedText = safeText.length > 80 ? safeText.substring(0, 80) + '...' : safeText
+            doc.setTextColor(5, 150, 105)
+            doc.text('[PASS] ' + sanitize(category) + ': ' + sanitize(truncatedText), margin + 3, yPos)
+            yPos += 5
+          }
         })
       } catch (e) {
         console.error('Error rendering compliant items:', e)
         doc.text('Compliant items available in full report', margin + 3, yPos)
         yPos += 5
       }
-      if (compliantItems.length > 15) {
-        doc.text('... and ' + (compliantItems.length - 15) + ' more compliant items', margin + 3, yPos)
+      if (compliantItems.length > 10) {
+        doc.setTextColor(100, 116, 139)
+        doc.text('... and ' + (compliantItems.length - 10) + ' more compliant areas', margin + 3, yPos)
         yPos += 5
       }
     }
@@ -1471,6 +1645,73 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.setTextColor(catColor[0], catColor[1], catColor[2])
       doc.text(scoreVal + '%', pageWidth - margin - 10, yPos, { align: 'right' })
       yPos += 6
+    })
+
+    // Government References Section
+    checkPageBreak(80)
+    yPos += 10
+    doc.setFillColor(30, 64, 175)
+    doc.rect(margin, yPos, contentWidth, 10, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Government References and Official Portals', margin + 5, yPos + 7)
+    yPos += 15
+
+    const govReferences = [
+      { name: 'EPFO Unified Portal', url: 'https://unifiedportal-emp.epfindia.gov.in', desc: 'EPF registration, challan, returns' },
+      { name: 'ESIC Portal', url: 'https://www.esic.gov.in', desc: 'ESI registration, contributions, claims' },
+      { name: 'Ministry of Labour', url: 'https://labour.gov.in', desc: 'Labour laws, codes, notifications' },
+      { name: 'Shram Suvidha Portal', url: 'https://shramsuvidha.gov.in', desc: 'Single registration for labour laws' },
+      { name: 'GST Portal', url: 'https://www.gst.gov.in', desc: 'GST returns, e-invoicing, ITC' },
+      { name: 'Udyam Registration', url: 'https://udyamregistration.gov.in', desc: 'MSME registration and verification' },
+      { name: 'PARIVESH Portal', url: 'https://parivesh.nic.in', desc: 'Environmental clearances' },
+      { name: 'MeitY (DPDP)', url: 'https://www.meity.gov.in', desc: 'Data protection framework' },
+    ]
+
+    doc.setFontSize(8)
+    govReferences.forEach((ref) => {
+      checkPageBreak(10)
+      doc.setTextColor(30, 64, 175)
+      doc.setFont('helvetica', 'bold')
+      doc.text(sanitize(ref.name), margin + 3, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.text(' - ' + sanitize(ref.desc), margin + 3 + doc.getTextWidth(sanitize(ref.name)), yPos)
+      yPos += 4
+      doc.setTextColor(100, 116, 139)
+      doc.setFontSize(7)
+      doc.text(sanitize(ref.url), margin + 3, yPos)
+      yPos += 6
+      doc.setFontSize(8)
+    })
+
+    // Applicable Legislation
+    yPos += 5
+    doc.setTextColor(55, 65, 81)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Applicable Legislation', margin, yPos)
+    yPos += 5
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    const legislation = [
+      'Employees Provident Funds and Miscellaneous Provisions Act, 1952',
+      'Employees State Insurance Act, 1948',
+      'Payment of Gratuity Act, 1972',
+      'Maternity Benefit Act, 1961 (as amended 2017)',
+      'Sexual Harassment of Women at Workplace (Prevention) Act, 2013',
+      'State Shops & Establishments Acts',
+      'State Professional Tax Acts',
+      'Code on Wages, 2019 (upon notification)',
+      'Code on Social Security, 2020 (upon notification)',
+      'Industrial Relations Code, 2020 (upon notification)',
+      'Occupational Safety, Health & Working Conditions Code, 2020 (upon notification)',
+      'Digital Personal Data Protection Act, 2023',
+    ]
+    legislation.forEach((law) => {
+      checkPageBreak(5)
+      doc.text('* ' + sanitize(law), margin + 3, yPos)
+      yPos += 4
     })
 
     // Disclaimer
