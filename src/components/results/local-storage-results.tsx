@@ -748,11 +748,13 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
 function DemoResultsView({ assessmentType }: { assessmentType: string }) {
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
   const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
+  const isFoodBusiness = assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS
   
   // Get badge styling and text based on assessment type
   const getBadgeConfig = () => {
     if (isDPDP) return { className: 'bg-purple-100 text-purple-700', text: 'DPDP Gap Assessment' }
     if (isLabourCode) return { className: 'bg-blue-100 text-blue-700', text: 'Labour Code Readiness' }
+    if (isFoodBusiness) return { className: 'bg-orange-100 text-orange-700', text: 'Food Business Compliance' }
     return { className: 'bg-green-100 text-green-700', text: 'Statutory Health Check' }
   }
   
@@ -760,6 +762,7 @@ function DemoResultsView({ assessmentType }: { assessmentType: string }) {
   const getAssessmentUrl = () => {
     if (isDPDP) return '/assessment/dpdp'
     if (isLabourCode) return '/assessment/labour-code'
+    if (isFoodBusiness) return '/assessment/food-business'
     return '/assessment/statutory-health'
   }
   

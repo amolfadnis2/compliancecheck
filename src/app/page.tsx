@@ -234,7 +234,6 @@ export default function LandingPage() {
                 href="/assessment/state-wise-compliance"
                 className="bg-white rounded-2xl p-6 border border-neutral-200 hover:border-violet-500 hover:shadow-lg hover:-translate-y-1 transition-all group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
               >
-                <span className="absolute -top-2 right-4 bg-violet-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">NEW</span>
                 <div className="mb-4">
                   <span className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center text-2xl" aria-hidden="true">🗺️</span>
                 </div>
@@ -248,6 +247,29 @@ export default function LandingPage() {
                 </div>
                 <div className="text-xs text-neutral-400 mb-2">Rs.1,499 post-beta</div>
                 <div className="text-sm font-semibold text-violet-600 group-hover:translate-x-1 transition-transform">
+                  Start assessment →
+                </div>
+              </Link>
+
+              {/* Restaurant & Food Business Compliance */}
+              <Link 
+                href="/assessment/food-business"
+                className="bg-white rounded-2xl p-6 border border-neutral-200 hover:border-orange-500 hover:shadow-lg hover:-translate-y-1 transition-all group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+              >
+                <span className="absolute -top-2 right-4 bg-orange-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full">NEW</span>
+                <div className="mb-4">
+                  <span className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-2xl" aria-hidden="true">🍽️</span>
+                </div>
+                <h3 className="text-lg font-bold text-neutral-900 mb-2">Restaurant & Food Business</h3>
+                <p className="text-sm text-neutral-600 leading-relaxed mb-4">
+                  FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  <span className="text-xs bg-neutral-100 px-2 py-0.5 rounded-full text-neutral-500">25-67 questions</span>
+                  <span className="text-xs bg-neutral-100 px-2 py-0.5 rounded-full text-neutral-500">8 compliance areas</span>
+                </div>
+                <div className="text-xs text-neutral-400 mb-2">Rs.999 post-beta</div>
+                <div className="text-sm font-semibold text-orange-600 group-hover:translate-x-1 transition-transform">
                   Start assessment →
                 </div>
               </Link>
