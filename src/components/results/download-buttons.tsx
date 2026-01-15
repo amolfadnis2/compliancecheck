@@ -6,8 +6,7 @@ import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import { createBrowserClient } from '@supabase/ssr'
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from '@/lib/pdf/dpdp-compliance-rules'
-import { STATE_WISE_COMPLIANCE_RULES } from '@/lib/pdf/state-wise-compliance-rules'
-import { LABOUR_CODE_COMPLIANCE_RULES } from '@/lib/pdf/labour-code-compliance-rules'
+import { FOOD_COMPLIANCE_RULES, FOOD_CATEGORY_LABELS } from '@/lib/pdf/food-business-compliance-rules'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Helper to detect UUID format
@@ -509,7 +508,9 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     doc.text('Contact: ' + contactName, margin + 5, yPos + 36)
     doc.text('Employees: ' + employeeCount, pageWidth / 2, yPos + 20)
     doc.text('State: ' + state, pageWidth / 2, yPos + 28)
-    doc.text('Report ID: ' + data.id.substring(0, 20) + '...', pageWidth / 2, yPos + 36)
+    const idStr = data.id ? String(data.id) : ''
+    const reportIdDisplay = idStr ? (idStr.length > 20 ? idStr.substring(0, 20) + '...' : idStr) : 'N/A'
+    doc.text('Report ID: ' + reportIdDisplay, pageWidth / 2, yPos + 36)
 
     yPos += 50
 
@@ -898,7 +899,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     yPos += 10
 
-    // Action Items - WITH DETAILED COMPLIANCE RULES
+    // Action Items
     if (actionItems.length > 0) {
       drawSectionHeader('Priority Action Items', [220, 38, 38])
       const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
@@ -907,118 +908,28 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       })
 
       actionItems.forEach((item) => {
-        // Try to get detailed rule from LABOUR_CODE_COMPLIANCE_RULES
-        const questionId = item.id || item.questionId
-        const rule = questionId ? LABOUR_CODE_COMPLIANCE_RULES[questionId] : null
-
-        if (rule) {
-          // Detailed compliance rule available - render rich content
-          checkPageBreak(80)
-          
-          // Red box header with requirement name
-          doc.setFillColor(254, 226, 226)
-          doc.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'F')
-          doc.setTextColor(185, 28, 28)
-          doc.setFontSize(10)
-          doc.setFont('helvetica', 'bold')
-          doc.text('[FAIL] ' + rule.requirement + ' - Non-Compliant', margin + 3, yPos + 5.5)
-          yPos += 12
-
-          // Legal Reference
-          doc.setTextColor(55, 65, 81)
-          doc.setFontSize(8)
-          doc.setFont('helvetica', 'bold')
-          doc.text('Legal Reference: ', margin, yPos)
-          doc.setFont('helvetica', 'normal')
-          doc.text(rule.governmentRef, margin + 28, yPos)
-          yPos += 5
-
-          // Deadline
-          doc.setFont('helvetica', 'bold')
-          doc.text('Deadline: ', margin, yPos)
-          doc.setFont('helvetica', 'normal')
-          doc.text(rule.deadline, margin + 18, yPos)
-          yPos += 5
-
-          // Penalty - highlighted in red
-          doc.setFont('helvetica', 'bold')
-          doc.text('Penalty for Non-Compliance: ', margin, yPos)
-          doc.setTextColor(185, 28, 28)
-          doc.setFont('helvetica', 'normal')
-          yPos = addText(rule.penalty, margin + 48, yPos, contentWidth - 50, 4)
-          yPos += 3
-
-          // Remediation Steps
-          doc.setTextColor(55, 65, 81)
-          doc.setFont('helvetica', 'bold')
-          doc.text('Remediation Steps:', margin, yPos)
-          yPos += 5
-          doc.setFont('helvetica', 'normal')
-          doc.setFontSize(7)
-          rule.actionIfNonCompliant.forEach((step, idx) => {
-            checkPageBreak(6)
-            yPos = addText((idx + 1) + '. ' + step, margin + 3, yPos, contentWidth - 8, 3.5)
-          })
-          yPos += 2
-
-          // Official Portal
-          doc.setTextColor(29, 78, 216)
-          doc.setFontSize(7)
-          doc.text('Official Portal: ' + rule.officialLink, margin, yPos)
-          yPos += 8
-        } else {
-          // Fallback for items without detailed rules
-          checkPageBreak(20)
-          const badgeColor = item.priority === 'high' || item.priority === 'critical' 
-            ? [220, 38, 38] 
-            : item.priority === 'medium' 
-              ? [217, 119, 6] 
-              : [107, 114, 128]
-          doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2])
-          doc.setTextColor(255, 255, 255)
-          doc.setFontSize(7)
-          doc.setFont('helvetica', 'bold')
-          const badgeText = item.priority.toUpperCase()
-          const badgeWidth = doc.getTextWidth(badgeText) + 4
-          doc.rect(margin, yPos, badgeWidth, 5, 'F')
-          doc.text(badgeText, margin + 2, yPos + 3.5)
-          doc.setTextColor(31, 41, 55)
-          doc.setFont('helvetica', 'normal')
-          doc.setFontSize(8)
-          const itemText = item.text || item.title || item.description || ''
-          yPos = addText(itemText, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
-          yPos += 6
-        }
+        checkPageBreak(15)
+        const badgeColor = item.priority === 'high' || item.priority === 'critical' 
+          ? [220, 38, 38] 
+          : item.priority === 'medium' 
+            ? [217, 119, 6] 
+            : [107, 114, 128]
+        doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2])
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'bold')
+        const badgeText = item.priority.toUpperCase()
+        const badgeWidth = doc.getTextWidth(badgeText) + 4
+        doc.rect(margin, yPos, badgeWidth, 5, 'F')
+        doc.text(badgeText, margin + 2, yPos + 3.5)
+        doc.setTextColor(31, 41, 55)
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        const itemText = item.text || item.title || item.description || ''
+        yPos = addText(itemText, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
+        yPos += 6
       })
     }
-
-    // Government References Section
-    checkPageBreak(60)
-    yPos += 5
-    drawSectionHeader('Government References', [30, 64, 175])
-    const govReferences = [
-      { name: 'Ministry of Labour', url: 'https://labour.gov.in', desc: 'Labour Codes, notifications, rules' },
-      { name: 'Shram Suvidha Portal', url: 'https://shramsuvidha.gov.in', desc: 'Single registration, compliance' },
-      { name: 'EPFO Unified Portal', url: 'https://unifiedportal-emp.epfindia.gov.in', desc: 'EPF registration, ECR filing' },
-      { name: 'ESIC Portal', url: 'https://www.esic.gov.in', desc: 'ESI registration, contributions' },
-      { name: 'e-Shram Portal', url: 'https://eshram.gov.in', desc: 'Unorganised worker registration' },
-    ]
-    doc.setFontSize(8)
-    govReferences.forEach((ref) => {
-      checkPageBreak(10)
-      doc.setTextColor(30, 64, 175)
-      doc.setFont('helvetica', 'bold')
-      doc.text(ref.name, margin + 3, yPos)
-      doc.setFont('helvetica', 'normal')
-      doc.setTextColor(55, 65, 81)
-      doc.text(' - ' + ref.desc, margin + 3 + doc.getTextWidth(ref.name), yPos)
-      yPos += 4
-      doc.setTextColor(100, 116, 139)
-      doc.setFontSize(7)
-      doc.text(ref.url, margin + 3, yPos)
-      yPos += 6
-      doc.setFontSize(8)
-    })
 
     // Disclaimer
     doc.addPage()
@@ -1119,7 +1030,9 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     doc.text('Company: ' + (userDetails.companyName || 'Not specified'), margin + 5, yPos + 20)
     doc.text('Industry: ' + (userDetails.industry || 'Not specified'), margin + 5, yPos + 28)
     doc.text('State: ' + (userDetails.state || 'Not specified'), margin + 5, yPos + 36)
-    doc.text('Report ID: ' + data.id.substring(0, 20) + '...', pageWidth / 2, yPos + 20)
+    const reportIdStr = data.id ? String(data.id) : ''
+    const reportId = reportIdStr ? (reportIdStr.length > 20 ? reportIdStr.substring(0, 20) + '...' : reportIdStr) : 'N/A'
+    doc.text('Report ID: ' + reportId, pageWidth / 2, yPos + 20)
     yPos += 50
 
     // Deadline Warning
@@ -1478,7 +1391,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       yPos += 10
     }
 
-    // Action Items (Gaps) - NOW WITH DETAILED COMPLIANCE RULES
+    // Action Items (Gaps)
     if (actionItems.length > 0) {
       checkPageBreak(30)
       yPos += 5
@@ -1487,87 +1400,25 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
-      doc.text('[ACTION REQUIRED] Areas Needing Immediate Attention', margin + 5, yPos + 7)
+      doc.text('Action Required (' + actionItems.length + ' items)', margin + 5, yPos + 7)
       yPos += 15
 
-      actionItems.forEach((item) => {
-        // Try to get detailed rule from STATE_WISE_COMPLIANCE_RULES
-        const questionId = item.id || item.questionId
-        const rule = questionId ? STATE_WISE_COMPLIANCE_RULES[questionId] : null
-
-        if (rule) {
-          // Detailed compliance rule available - render rich content
-          checkPageBreak(80)
-          
-          // Red box header with requirement name
-          doc.setFillColor(254, 226, 226)
-          doc.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'F')
-          doc.setTextColor(185, 28, 28)
-          doc.setFontSize(10)
-          doc.setFont('helvetica', 'bold')
-          doc.text('[FAIL] ' + sanitize(rule.requirement) + ' - Non-Compliant', margin + 3, yPos + 5.5)
-          yPos += 12
-
-          // Legal Reference
-          doc.setTextColor(55, 65, 81)
-          doc.setFontSize(8)
-          doc.setFont('helvetica', 'bold')
-          doc.text('Legal Reference: ', margin, yPos)
-          doc.setFont('helvetica', 'normal')
-          doc.text(sanitize(rule.governmentRef), margin + 28, yPos)
-          yPos += 5
-
-          // Deadline
-          doc.setFont('helvetica', 'bold')
-          doc.text('Deadline: ', margin, yPos)
-          doc.setFont('helvetica', 'normal')
-          doc.text(sanitize(rule.deadline), margin + 18, yPos)
-          yPos += 5
-
-          // Penalty - highlighted in red
-          doc.setFont('helvetica', 'bold')
-          doc.text('Penalty for Non-Compliance: ', margin, yPos)
-          doc.setTextColor(185, 28, 28)
-          doc.setFont('helvetica', 'normal')
-          yPos = addText(sanitize(rule.penalty), margin + 48, yPos, contentWidth - 50, 4)
-          yPos += 3
-
-          // Remediation Steps
-          doc.setTextColor(55, 65, 81)
-          doc.setFont('helvetica', 'bold')
-          doc.text('Remediation Steps:', margin, yPos)
-          yPos += 5
-          doc.setFont('helvetica', 'normal')
-          doc.setFontSize(7)
-          rule.actionIfNonCompliant.forEach((step, idx) => {
-            checkPageBreak(6)
-            yPos = addText((idx + 1) + '. ' + sanitize(step), margin + 3, yPos, contentWidth - 8, 3.5)
-          })
-          yPos += 2
-
-          // Official Portal
-          doc.setTextColor(29, 78, 216)
-          doc.setFontSize(7)
-          doc.text('Official Portal: ' + sanitize(rule.officialLink), margin, yPos)
-          yPos += 8
-        } else {
-          // Fallback for items without detailed rules
-          checkPageBreak(20)
-          doc.setTextColor(220, 38, 38)
-          doc.setFontSize(9)
-          doc.setFont('helvetica', 'bold')
-          doc.text('[FAIL] ' + sanitize(item.category || 'Compliance Gap'), margin, yPos)
-          yPos += 5
-          doc.setFont('helvetica', 'normal')
-          doc.setTextColor(55, 65, 81)
-          doc.setFontSize(8)
-          yPos = addText('Action needed: ' + sanitize(item.text || item.description || 'Review this compliance area'), margin + 5, yPos, contentWidth - 10, 4)
-          yPos += 5
-        }
+      actionItems.forEach((item, idx) => {
+        checkPageBreak(15)
+        doc.setTextColor(220, 38, 38)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text((idx + 1) + '. ' + sanitize(item.category), margin, yPos)
+        yPos += 5
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(55, 65, 81)
+        doc.setFontSize(8)
+        yPos = addText(sanitize(item.text), margin + 5, yPos, contentWidth - 10, 4)
+        yPos += 3
       })
     }
 
-    // Compliant Items - NOW WITH MAINTENANCE GUIDANCE
+    // Compliant Items
     if (compliantItems && compliantItems.length > 0) {
       checkPageBreak(30)
       yPos += 5
@@ -1576,50 +1427,30 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
-      doc.text('[COMPLIANT] What You Are Doing Right (' + compliantItems.length + ' items)', margin + 5, yPos + 7)
+      doc.text('Compliant Areas (' + compliantItems.length + ' items)', margin + 5, yPos + 7)
       yPos += 15
 
       doc.setTextColor(55, 65, 81)
       doc.setFontSize(8)
       try {
-        compliantItems.slice(0, 10).forEach((item: unknown) => {
-          checkPageBreak(20)
-          const itemObj = item as { question?: { id?: string; category?: string; text?: string }; id?: string; questionId?: string; category?: string; text?: string } | null
-          const questionId = itemObj?.question?.id || itemObj?.id || itemObj?.questionId
-          const rule = questionId ? STATE_WISE_COMPLIANCE_RULES[questionId] : null
-          
-          if (rule) {
-            // Green box with pass indicator
-            doc.setFillColor(236, 253, 245)
-            doc.roundedRect(margin, yPos, contentWidth, 12, 2, 2, 'F')
-            doc.setTextColor(5, 150, 105)
-            doc.setFont('helvetica', 'bold')
-            doc.text('[PASS] ' + sanitize(rule.requirement), margin + 3, yPos + 5)
-            yPos += 7
-            doc.setTextColor(55, 65, 81)
-            doc.setFont('helvetica', 'normal')
-            doc.setFontSize(7)
-            yPos = addText(sanitize(rule.actionIfCompliant), margin + 3, yPos, contentWidth - 10, 3.5)
-            yPos += 4
-          } else {
-            // Fallback for items without rules
-            const category = itemObj?.question?.category || itemObj?.category || 'General'
-            const questionText = itemObj?.question?.text || itemObj?.text || 'Compliance requirement met'
-            const safeText = String(questionText || 'Compliance item')
-            const truncatedText = safeText.length > 80 ? safeText.substring(0, 80) + '...' : safeText
-            doc.setTextColor(5, 150, 105)
-            doc.text('[PASS] ' + sanitize(category) + ': ' + sanitize(truncatedText), margin + 3, yPos)
-            yPos += 5
-          }
+        compliantItems.slice(0, 15).forEach((item: unknown) => {
+          checkPageBreak(8)
+          // Handle various data structures safely
+          const itemObj = item as { question?: { category?: string; text?: string }; category?: string; text?: string } | null
+          const questionText = itemObj?.question?.text || itemObj?.text || itemObj?.question?.category || itemObj?.category || 'Compliance item'
+          const category = itemObj?.question?.category || itemObj?.category || 'General'
+          const safeText = String(questionText || 'Compliance item')
+          const truncatedText = safeText.length > 70 ? safeText.substring(0, 70) + '...' : safeText
+          doc.text('[PASS] ' + sanitize(category) + ': ' + sanitize(truncatedText), margin + 3, yPos)
+          yPos += 5
         })
       } catch (e) {
         console.error('Error rendering compliant items:', e)
         doc.text('Compliant items available in full report', margin + 3, yPos)
         yPos += 5
       }
-      if (compliantItems.length > 10) {
-        doc.setTextColor(100, 116, 139)
-        doc.text('... and ' + (compliantItems.length - 10) + ' more compliant areas', margin + 3, yPos)
+      if (compliantItems.length > 15) {
+        doc.text('... and ' + (compliantItems.length - 15) + ' more compliant items', margin + 3, yPos)
         yPos += 5
       }
     }
@@ -1647,73 +1478,6 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       yPos += 6
     })
 
-    // Government References Section
-    checkPageBreak(80)
-    yPos += 10
-    doc.setFillColor(30, 64, 175)
-    doc.rect(margin, yPos, contentWidth, 10, 'F')
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Government References and Official Portals', margin + 5, yPos + 7)
-    yPos += 15
-
-    const govReferences = [
-      { name: 'EPFO Unified Portal', url: 'https://unifiedportal-emp.epfindia.gov.in', desc: 'EPF registration, challan, returns' },
-      { name: 'ESIC Portal', url: 'https://www.esic.gov.in', desc: 'ESI registration, contributions, claims' },
-      { name: 'Ministry of Labour', url: 'https://labour.gov.in', desc: 'Labour laws, codes, notifications' },
-      { name: 'Shram Suvidha Portal', url: 'https://shramsuvidha.gov.in', desc: 'Single registration for labour laws' },
-      { name: 'GST Portal', url: 'https://www.gst.gov.in', desc: 'GST returns, e-invoicing, ITC' },
-      { name: 'Udyam Registration', url: 'https://udyamregistration.gov.in', desc: 'MSME registration and verification' },
-      { name: 'PARIVESH Portal', url: 'https://parivesh.nic.in', desc: 'Environmental clearances' },
-      { name: 'MeitY (DPDP)', url: 'https://www.meity.gov.in', desc: 'Data protection framework' },
-    ]
-
-    doc.setFontSize(8)
-    govReferences.forEach((ref) => {
-      checkPageBreak(10)
-      doc.setTextColor(30, 64, 175)
-      doc.setFont('helvetica', 'bold')
-      doc.text(sanitize(ref.name), margin + 3, yPos)
-      doc.setFont('helvetica', 'normal')
-      doc.text(' - ' + sanitize(ref.desc), margin + 3 + doc.getTextWidth(sanitize(ref.name)), yPos)
-      yPos += 4
-      doc.setTextColor(100, 116, 139)
-      doc.setFontSize(7)
-      doc.text(sanitize(ref.url), margin + 3, yPos)
-      yPos += 6
-      doc.setFontSize(8)
-    })
-
-    // Applicable Legislation
-    yPos += 5
-    doc.setTextColor(55, 65, 81)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Applicable Legislation', margin, yPos)
-    yPos += 5
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(7)
-    const legislation = [
-      'Employees Provident Funds and Miscellaneous Provisions Act, 1952',
-      'Employees State Insurance Act, 1948',
-      'Payment of Gratuity Act, 1972',
-      'Maternity Benefit Act, 1961 (as amended 2017)',
-      'Sexual Harassment of Women at Workplace (Prevention) Act, 2013',
-      'State Shops & Establishments Acts',
-      'State Professional Tax Acts',
-      'Code on Wages, 2019 (upon notification)',
-      'Code on Social Security, 2020 (upon notification)',
-      'Industrial Relations Code, 2020 (upon notification)',
-      'Occupational Safety, Health & Working Conditions Code, 2020 (upon notification)',
-      'Digital Personal Data Protection Act, 2023',
-    ]
-    legislation.forEach((law) => {
-      checkPageBreak(5)
-      doc.text('* ' + sanitize(law), margin + 3, yPos)
-      yPos += 4
-    })
-
     // Disclaimer
     checkPageBreak(35)
     yPos += 10
@@ -1734,6 +1498,336 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.setFontSize(7)
       doc.setTextColor(156, 163, 175)
       doc.text('ComplianceCheck | State-Wise Compliance Report', margin, pageHeight - 8)
+      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 8, { align: 'right' })
+    }
+
+    return doc.output('blob')
+  }
+
+  // ==========================================================================
+  // FOOD BUSINESS PDF GENERATION
+  // ==========================================================================
+
+  const generateFoodBusinessPDF = (data: AssessmentData): Blob => {
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const margin = 15
+    const contentWidth = pageWidth - (margin * 2)
+    let yPos = margin
+
+    // Get data
+    const userDetails = data.userDetails || data.responses?.userDetails || {}
+    // Food business stores answers in 'main', other assessments may use 'answers'
+    const responsesWithMain = data.responses as Record<string, unknown> | undefined
+    const answers = responsesWithMain?.main || data.responses?.answers || data.responses || {}
+    const overallScore = data.overall_score ?? 50
+    const categoryScores = data.category_scores || {}
+    const applicabilityResults = (data.responses?.applicabilityResults || responsesWithMain?.applicability_results || []) as Array<{ name: string; applies: boolean; priority: string; reason: string }>
+
+    // Helper functions
+    const sanitize = (text: string | undefined | null): string => {
+      if (!text) return ''
+      return text.replace(/₹/g, 'Rs.').replace(/[^\x00-\x7F]/g, '')
+    }
+
+    const addText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5): number => {
+      const lines = doc.splitTextToSize(sanitize(text), maxWidth)
+      doc.text(lines, x, y)
+      return y + (lines.length * lineHeight)
+    }
+
+    const checkPageBreak = (requiredSpace: number): void => {
+      if (yPos + requiredSpace > pageHeight - 25) {
+        doc.addPage()
+        yPos = margin
+      }
+    }
+
+    const drawSectionHeader = (title: string, bgColor: [number, number, number] = [234, 88, 12]): void => {
+      checkPageBreak(20)
+      doc.setFillColor(bgColor[0], bgColor[1], bgColor[2])
+      doc.rect(margin, yPos, contentWidth, 10, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.text(title, margin + 5, yPos + 7)
+      yPos += 15
+    }
+
+    // ========== COVER PAGE ==========
+    doc.setFillColor(234, 88, 12) // Orange
+    doc.rect(0, 0, pageWidth, 45, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.text('ComplianceCheck', margin, 25)
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Restaurant & Food Business Compliance Report', margin, 36)
+    doc.setFontSize(10)
+    doc.text(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }), pageWidth - margin, 36, { align: 'right' })
+    yPos = 55
+
+    // Company Info
+    doc.setFillColor(249, 250, 251)
+    doc.roundedRect(margin, yPos, contentWidth, 40, 3, 3, 'F')
+    doc.setDrawColor(229, 231, 235)
+    doc.roundedRect(margin, yPos, contentWidth, 40, 3, 3, 'S')
+    doc.setTextColor(31, 41, 55)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Business Details', margin + 5, yPos + 10)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text('Business: ' + sanitize(userDetails.companyName || 'Not specified'), margin + 5, yPos + 20)
+    doc.text('Contact: ' + sanitize(userDetails.fullName || userDetails.contactName || 'Not specified'), margin + 5, yPos + 28)
+    doc.text('State: ' + sanitize(userDetails.state || (userDetails as Record<string, string>).primaryState || 'Not specified'), margin + 5, yPos + 36)
+    const reportIdStr = data.id ? String(data.id) : ''
+    const reportId = reportIdStr ? (reportIdStr.length > 20 ? reportIdStr.substring(0, 20) + '...' : reportIdStr) : 'N/A'
+    doc.text('Report ID: ' + reportId, pageWidth / 2, yPos + 20)
+    yPos += 50
+
+    // Key Compliance Areas
+    const applicableCount = applicabilityResults.filter((r: { applies: boolean }) => r.applies).length || 8
+    doc.setFillColor(254, 243, 199)
+    doc.roundedRect(margin, yPos, contentWidth, 15, 3, 3, 'F')
+    doc.setTextColor(146, 64, 14)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Applicable Compliance Areas: ' + applicableCount + ' | Key: FSSAI, GST, Fire Safety, Labour Laws', margin + 5, yPos + 10)
+    yPos += 20
+
+    // Overall Score
+    const statusColour: [number, number, number] = overallScore >= 80 ? [5, 150, 105] : overallScore >= 60 ? [217, 119, 6] : overallScore >= 40 ? [234, 88, 12] : [220, 38, 38]
+    const statusText = overallScore >= 80 ? 'Compliant' : overallScore >= 60 ? 'Needs Attention' : overallScore >= 40 ? 'At Risk' : 'Critical'
+    doc.setFillColor(statusColour[0], statusColour[1], statusColour[2])
+    doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Overall Compliance Score', margin + 10, yPos + 15)
+    doc.setFontSize(32)
+    doc.text(overallScore + '%', pageWidth - margin - 10, yPos + 25, { align: 'right' })
+    doc.setFontSize(11)
+    doc.text(statusText, margin + 10, yPos + 28)
+    yPos += 45
+
+    // Category Summary Table
+    doc.setTextColor(31, 41, 55)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Compliance by Category', margin, yPos)
+    yPos += 8
+    doc.setFillColor(243, 244, 246)
+    doc.rect(margin, yPos, contentWidth, 8, 'F')
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Category', margin + 3, yPos + 5.5)
+    doc.text('Score', margin + 100, yPos + 5.5)
+    doc.text('Status', margin + 130, yPos + 5.5)
+    yPos += 8
+
+    doc.setFont('helvetica', 'normal')
+    Object.entries(categoryScores).forEach(([cat, scoreData]) => {
+      const percentage = typeof scoreData === 'number' ? scoreData : (scoreData as { percentage?: number })?.percentage || 0
+      const catStatus = percentage >= 80 ? 'Compliant' : percentage >= 60 ? 'Needs Attention' : 'Non-Compliant'
+      const catColour: [number, number, number] = percentage >= 80 ? [5, 150, 105] : percentage >= 60 ? [217, 119, 6] : [220, 38, 38]
+      doc.setDrawColor(229, 231, 235)
+      doc.line(margin, yPos, margin + contentWidth, yPos)
+      doc.setTextColor(55, 65, 81)
+      doc.text(FOOD_CATEGORY_LABELS[cat] || cat, margin + 3, yPos + 5)
+      doc.setTextColor(catColour[0], catColour[1], catColour[2])
+      doc.text(percentage + '%', margin + 100, yPos + 5)
+      doc.text(catStatus, margin + 130, yPos + 5)
+      yPos += 8
+    })
+    yPos += 10
+
+    // ========== PAGE 2+: DETAILED FINDINGS ==========
+    doc.addPage()
+    yPos = margin
+
+    const compliantItems: string[] = []
+    const nonCompliantItems: { questionId: string; rule: typeof FOOD_COMPLIANCE_RULES[string] }[] = []
+
+    Object.entries(answers).forEach(([questionId, answer]) => {
+      const rule = FOOD_COMPLIANCE_RULES[questionId]
+      if (!rule) return
+      if (answer === 'yes') compliantItems.push(questionId)
+      else if (answer === 'no') nonCompliantItems.push({ questionId, rule })
+    })
+
+    // Compliant Items
+    if (compliantItems.length > 0) {
+      drawSectionHeader('[COMPLIANT] Areas Meeting Requirements', [5, 150, 105])
+      compliantItems.forEach((questionId) => {
+        const rule = FOOD_COMPLIANCE_RULES[questionId]
+        if (!rule) return
+        checkPageBreak(25)
+        doc.setFillColor(236, 253, 245)
+        doc.roundedRect(margin, yPos, contentWidth, 18, 2, 2, 'F')
+        doc.setTextColor(5, 150, 105)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text('[PASS] ' + sanitize(rule.requirement), margin + 3, yPos + 6)
+        doc.setTextColor(55, 65, 81)
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        yPos = addText(sanitize(rule.actionIfCompliant), margin + 3, yPos + 12, contentWidth - 6, 4)
+        yPos += 5
+      })
+    }
+
+    // Non-Compliant Items
+    if (nonCompliantItems.length > 0) {
+      yPos += 5
+      drawSectionHeader('[ACTION REQUIRED] Gaps Requiring Remediation', [220, 38, 38])
+      nonCompliantItems.forEach(({ rule }) => {
+        checkPageBreak(70)
+        doc.setFillColor(254, 242, 242)
+        doc.setDrawColor(252, 165, 165)
+        doc.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'FD')
+        doc.setTextColor(185, 28, 28)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text('[GAP] ' + sanitize(rule.requirement), margin + 3, yPos + 5.5)
+        yPos += 12
+        doc.setTextColor(75, 85, 99)
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
+        doc.setFont('helvetica', 'bold')
+        doc.text('Legal Reference:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        yPos = addText(sanitize(rule.governmentRef), margin + 28, yPos, contentWidth - 28, 4)
+        yPos += 2
+        doc.setFont('helvetica', 'bold')
+        doc.text('Deadline:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        doc.text(sanitize(rule.deadline), margin + 20, yPos)
+        yPos += 5
+        doc.setTextColor(185, 28, 28)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Penalty:', margin, yPos)
+        doc.setFont('helvetica', 'normal')
+        yPos = addText(sanitize(rule.penalty), margin + 18, yPos, contentWidth - 18, 4)
+        yPos += 3
+        doc.setTextColor(31, 41, 55)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Remediation Steps:', margin, yPos)
+        yPos += 5
+        doc.setFont('helvetica', 'normal')
+        rule.actionIfNonCompliant.forEach((action, idx) => {
+          checkPageBreak(8)
+          yPos = addText((idx + 1) + '. ' + sanitize(action), margin + 3, yPos, contentWidth - 6, 4)
+          yPos += 2
+        })
+        doc.setTextColor(234, 88, 12)
+        doc.setFont('helvetica', 'italic')
+        doc.text('Official Portal: ' + rule.officialLink, margin, yPos)
+        yPos += 10
+        doc.setDrawColor(229, 231, 235)
+        doc.line(margin, yPos, margin + contentWidth, yPos)
+        yPos += 8
+      })
+    }
+
+    // ========== REFERENCES PAGE ==========
+    doc.addPage()
+    yPos = margin
+    drawSectionHeader('Government References and Official Portals', [234, 88, 12])
+    const foodRefs = [
+      { name: 'FSSAI FoSCoS Portal', url: 'https://foscos.fssai.gov.in', desc: 'FSSAI license registration and renewal' },
+      { name: 'FOSTAC Training', url: 'https://fostac.fssai.gov.in', desc: 'Food Safety Training & Certification' },
+      { name: 'FSSAI Hygiene Rating', url: 'https://hygiene.fssai.gov.in', desc: 'Hygiene audit and rating' },
+      { name: 'GST Portal', url: 'https://gst.gov.in', desc: 'GST registration and returns' },
+      { name: 'EPFO Portal', url: 'https://unifiedportal-emp.epfindia.gov.in', desc: 'EPF registration and compliance' },
+      { name: 'ESIC Portal', url: 'https://www.esic.gov.in', desc: 'ESI registration and contributions' },
+      { name: 'Ministry of Labour', url: 'https://labour.gov.in', desc: 'Labour laws and notifications' },
+    ]
+    doc.setFontSize(8)
+    foodRefs.forEach((ref) => {
+      checkPageBreak(12)
+      doc.setTextColor(234, 88, 12)
+      doc.setFont('helvetica', 'bold')
+      doc.text(ref.name, margin, yPos)
+      doc.setTextColor(75, 85, 99)
+      doc.setFont('helvetica', 'normal')
+      doc.text(' - ' + ref.desc, margin + 45, yPos)
+      doc.setTextColor(100, 116, 139)
+      doc.text(ref.url, margin, yPos + 4)
+      yPos += 10
+    })
+    yPos += 10
+
+    drawSectionHeader('Applicable Legislation', [75, 85, 99])
+    const foodLaws = [
+      'Food Safety and Standards Act, 2006',
+      'FSS (Licensing and Registration) Regulations, 2011',
+      'FSS (Packaging and Labeling) Regulations, 2011',
+      'Central Goods and Services Tax Act, 2017',
+      'Employees Provident Funds and Miscellaneous Provisions Act, 1952',
+      'Employees State Insurance Act, 1948',
+      'Payment of Gratuity Act, 1972',
+      'Sexual Harassment of Women at Workplace (POSH) Act, 2013',
+      'State Shops and Establishments Acts',
+      'State Excise Acts (for liquor service)',
+      'National Building Code 2016 (Fire Safety)',
+    ]
+    doc.setFontSize(8)
+    doc.setTextColor(55, 65, 81)
+    foodLaws.forEach((law) => {
+      checkPageBreak(6)
+      doc.text('* ' + law, margin + 3, yPos)
+      yPos += 5
+    })
+    yPos += 10
+
+    // Key Deadlines
+    checkPageBreak(50)
+    drawSectionHeader('Key Compliance Deadlines', [30, 64, 175])
+    const deadlines = [
+      { item: 'FSSAI Annual Return (Form D-1)', date: 'May 31 annually' },
+      { item: 'FSSAI License Renewal', date: '30 days before expiry' },
+      { item: 'EPF/ESI Monthly Deposit', date: '15th of following month' },
+      { item: 'GST Returns (GSTR-1, GSTR-3B)', date: '11th/20th monthly' },
+      { item: 'Fire NOC Renewal', date: 'Annually (state-specific)' },
+      { item: 'Trade License Renewal', date: 'March 31 annually' },
+      { item: 'POSH Annual Report', date: 'January 31' },
+    ]
+    doc.setFontSize(8)
+    deadlines.forEach((d) => {
+      checkPageBreak(6)
+      doc.setTextColor(55, 65, 81)
+      doc.setFont('helvetica', 'bold')
+      doc.text(d.item + ':', margin + 3, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(30, 64, 175)
+      doc.text(d.date, margin + 80, yPos)
+      yPos += 6
+    })
+    yPos += 10
+
+    // Disclaimer
+    checkPageBreak(35)
+    doc.setFillColor(254, 243, 199)
+    doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F')
+    doc.setTextColor(146, 64, 14)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Important Disclaimer', margin + 5, yPos + 8)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    const disclaimer = 'This report is generated based on your self-assessment responses and is intended for informational purposes only. It does not constitute legal advice. Food business compliance requirements vary by state, municipality, and specific business activities (alcohol service, seating capacity, etc.). We strongly recommend consulting with a qualified Food Safety Consultant, Company Secretary, or Chartered Accountant for specific compliance advice. ComplianceCheck assumes no liability for actions taken based on this report.'
+    addText(disclaimer, margin + 5, yPos + 14, contentWidth - 10, 3.5)
+
+    // Footer on all pages
+    const totalPages = doc.getNumberOfPages()
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i)
+      doc.setFontSize(7)
+      doc.setTextColor(156, 163, 175)
+      doc.text('ComplianceCheck | compliancecheck.co.in | Food Business Compliance', margin, pageHeight - 8)
       doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 8, { align: 'right' })
     }
 
@@ -1794,9 +1888,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       }
 
       // Generate PDF client-side based on assessment type
-      // Handle both snake_case (from DB) and camelCase (from localStorage)
-      const dataWithType = data as unknown as { assessmentType?: string }
-      const assessmentType = data.assessment_type || dataWithType.assessmentType || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
+      const assessmentType = data.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH
       
       let blob: Blob
       if (assessmentType === ASSESSMENT_TYPES.DPDP) {
@@ -1805,6 +1897,8 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         blob = generateLabourCodePDF(data)
       } else if (assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE) {
         blob = generateStateWiseCompliancePDF(data)
+      } else if (assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS) {
+        blob = generateFoodBusinessPDF(data)
       } else {
         blob = generatePDF(data)
       }
@@ -1815,6 +1909,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       const reportPrefix = assessmentType === ASSESSMENT_TYPES.DPDP ? 'DPDP-Gap-Assessment' : 
                           assessmentType === ASSESSMENT_TYPES.LABOUR_CODE ? 'Labour-Code-Readiness' : 
                           assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE ? 'State-Wise-Compliance' :
+                          assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS ? 'Food-Business-Compliance' :
                           'ComplianceCheck-Report'
       link.download = reportPrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
       document.body.appendChild(link)
@@ -1937,9 +2032,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       }
 
       // Generate PDF as base64
-      // Handle both snake_case (from DB) and camelCase (from localStorage)
-      const dataWithType = data as unknown as { assessmentType?: string }
-      const assessmentType = data.assessment_type || dataWithType.assessmentType || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
+      const assessmentType = data.assessment_type || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
       
       let blob: Blob
       if (assessmentType === ASSESSMENT_TYPES.DPDP) {
@@ -1948,6 +2041,8 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         blob = generateLabourCodePDF(data)
       } else if (assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE) {
         blob = generateStateWiseCompliancePDF(data)
+      } else if (assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS) {
+        blob = generateFoodBusinessPDF(data)
       } else {
         blob = generatePDF(data)
       }
@@ -1998,8 +2093,6 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
   }, [assessmentId, assessmentData, propAssessmentType])
 
   // Auto-trigger download or email after feedback completion
-  // Note: Functions defined above, safe to reference now
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (autoTrigger && !autoTriggered) {
       setAutoTriggered(true)
@@ -2013,7 +2106,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [autoTrigger, autoTriggered])
+  }, [autoTrigger, autoTriggered, handleDownload, handleEmailReport])
 
   return (
     <div className="space-y-4">

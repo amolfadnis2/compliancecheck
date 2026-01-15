@@ -75,9 +75,11 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
   const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
   const isStateWise = assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE
+  const isFoodBusiness = assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS
 
   // Handle temporary/local IDs (when DB not configured or fallback)
-  if (id.startsWith('temp_') || id.startsWith('local_')) {
+  // Also use LocalStorageResults for Food Business assessments
+  if (id.startsWith('temp_') || id.startsWith('local_') || isFoodBusiness) {
     return <LocalStorageResultsPage id={id} assessmentType={assessmentType} />
   }
 
