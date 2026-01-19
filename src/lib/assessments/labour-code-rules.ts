@@ -758,8 +758,8 @@ export function getRulesByThreshold(employeeCount: number): ComplianceRule[] {
   };
   
   return Object.entries(LABOUR_CODE_RULES)
-    .filter(([id, _]) => (thresholdMap[id] || 0) <= employeeCount)
-    .map(([_, rule]) => rule);
+    .filter(([id]) => (thresholdMap[id] || 0) <= employeeCount)
+    .map(([, rule]) => rule);
 }
 
 export default LABOUR_CODE_RULES;

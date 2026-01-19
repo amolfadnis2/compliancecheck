@@ -787,14 +787,6 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
   // LABOUR CODE PDF GENERATION (Enhanced with Compliance Rules)
   // ==========================================================================
 
-  // Labour Code category labels
-  const LABOUR_CODE_CATEGORY_LABELS: Record<string, string> = {
-    wages: 'Code on Wages',
-    social_security: 'Code on Social Security',
-    osh: 'OSH Code',
-    industrial_relations: 'Industrial Relations Code'
-  }
-
   const generateLabourCodePDF = (data: AssessmentData): Blob => {
     const doc = new jsPDF()
     const pageWidth = doc.internal.pageSize.getWidth()
@@ -971,7 +963,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     if (nonCompliantItems.length > 0) {
       drawSectionHeader('[ACTION REQUIRED] Compliance Gaps', [220, 38, 38])
 
-      nonCompliantItems.forEach(({ questionId, rule }) => {
+      nonCompliantItems.forEach(({ rule }) => {
         // Calculate required space (variable based on action items)
         const actionSteps = rule.actionIfNonCompliant || []
         const estimatedHeight = 55 + (actionSteps.length * 5)
