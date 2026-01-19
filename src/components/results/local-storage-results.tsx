@@ -240,6 +240,209 @@ const QUESTION_SUMMARIES: Record<string, { compliant: string; nonCompliant: stri
     nonCompliant: 'Trade union recognition procedures not established',
     priority: 'low'
   },
+
+  // DPDP GAP ASSESSMENT QUESTIONS
+  // Phase 1: Consent Management
+  consent_1: {
+    compliant: 'Explicit granular consent mechanism in place',
+    nonCompliant: 'Consent mechanism non-compliant - requires explicit, granular, purpose-specific consent',
+    priority: 'high'
+  },
+  consent_2: {
+    compliant: 'Easy consent withdrawal mechanism available',
+    nonCompliant: 'Consent withdrawal not easy - must be as simple as giving consent',
+    priority: 'high'
+  },
+  consent_3: {
+    compliant: 'Privacy notices available in multiple Indian languages',
+    nonCompliant: 'Privacy notices only in English - must be in scheduled language(s)',
+    priority: 'medium'
+  },
+  consent_4: {
+    compliant: 'Data usage limited to consented purposes',
+    nonCompliant: 'Purpose limitation not enforced - using data beyond consent scope',
+    priority: 'high'
+  },
+  consent_5: {
+    compliant: 'Consent records maintained with timestamps',
+    nonCompliant: 'Consent records not maintained - unable to demonstrate lawful processing',
+    priority: 'high'
+  },
+  consent_6: {
+    compliant: 'Re-consent obtained for material policy changes',
+    nonCompliant: 'No re-consent process for policy changes',
+    priority: 'medium'
+  },
+  consent_7: {
+    compliant: 'Granular cookie consent options provided',
+    nonCompliant: 'Cookie consent not granular - users cannot opt-out of specific categories',
+    priority: 'medium'
+  },
+  consent_8: {
+    compliant: 'Separate consent obtained for third-party data sharing',
+    nonCompliant: 'No separate consent for third-party sharing - explicit consent required',
+    priority: 'high'
+  },
+  consent_9: {
+    compliant: 'Consent version history tracked',
+    nonCompliant: 'Consent versioning not implemented',
+    priority: 'medium'
+  },
+
+  // Phase 2: Security Safeguards
+  security_1: {
+    compliant: 'Data encrypted at rest with AES-256',
+    nonCompliant: 'Data not encrypted at rest - reasonable security safeguard required',
+    priority: 'high'
+  },
+  security_2: {
+    compliant: 'Data encrypted in transit with TLS 1.2+',
+    nonCompliant: 'Inadequate transit encryption - TLS 1.2+ mandatory',
+    priority: 'high'
+  },
+  security_3: {
+    compliant: 'Tokenization/pseudonymization implemented',
+    nonCompliant: 'No tokenization - consider implementing data masking',
+    priority: 'medium'
+  },
+  security_4: {
+    compliant: 'Role-based access controls in place',
+    nonCompliant: 'No RBAC - need-to-know access principle not enforced',
+    priority: 'high'
+  },
+  security_5: {
+    compliant: 'Audit logs maintained with 1-year retention',
+    nonCompliant: 'Insufficient audit logging - 1-year retention required',
+    priority: 'high'
+  },
+  security_6: {
+    compliant: 'Intrusion detection systems active',
+    nonCompliant: 'No intrusion detection - security monitoring required',
+    priority: 'medium'
+  },
+  security_7: {
+    compliant: 'Backup and recovery procedures tested',
+    nonCompliant: 'Backup recovery not tested - test quarterly',
+    priority: 'medium'
+  },
+  security_8: {
+    compliant: 'Regular vulnerability assessments conducted',
+    nonCompliant: 'No regular security assessments - implement continuous scanning',
+    priority: 'high'
+  },
+  security_9: {
+    compliant: 'Secure software development practices followed',
+    nonCompliant: 'No SSDLC - implement security-by-design',
+    priority: 'medium'
+  },
+
+  // Phase 3: Data Principal Rights
+  rights_1: {
+    compliant: 'Self-service data access mechanism available',
+    nonCompliant: 'No self-service data access - right to access not fulfilled',
+    priority: 'high'
+  },
+  rights_2: {
+    compliant: 'Users can correct inaccurate data',
+    nonCompliant: 'No data correction mechanism - right to correction required',
+    priority: 'high'
+  },
+  rights_3: {
+    compliant: 'Data deletion (erasure) mechanism available',
+    nonCompliant: 'No deletion mechanism - right to erasure not implemented',
+    priority: 'high'
+  },
+  rights_4: {
+    compliant: 'Grievance redressal mechanism in place',
+    nonCompliant: 'No grievance mechanism - must respond within 30 days',
+    priority: 'high'
+  },
+  rights_5: {
+    compliant: 'Rights requests processed within 7 days',
+    nonCompliant: 'No defined timeline for rights requests',
+    priority: 'medium'
+  },
+  rights_6: {
+    compliant: 'Nomination mechanism available for rights exercise',
+    nonCompliant: 'No nomination mechanism for death/incapacity scenarios',
+    priority: 'low'
+  },
+
+  // Phase 4: Breach Response
+  breach_1: {
+    compliant: 'Documented breach response plan exists',
+    nonCompliant: 'No breach response plan - create incident response procedures',
+    priority: 'high'
+  },
+  breach_2: {
+    compliant: 'Can notify Data Protection Board within 72 hours',
+    nonCompliant: '72-hour breach notification not achievable - process gaps exist',
+    priority: 'high'
+  },
+  breach_3: {
+    compliant: 'Affected individuals notified in case of breach',
+    nonCompliant: 'No affected party notification process',
+    priority: 'high'
+  },
+  breach_4: {
+    compliant: 'Security incident documentation maintained',
+    nonCompliant: 'Incident documentation not maintained',
+    priority: 'high'
+  },
+  breach_5: {
+    compliant: 'Post-incident reviews and remediation tracked',
+    nonCompliant: 'No post-incident review process',
+    priority: 'high'
+  },
+
+  // Phase 5: Children's Data Protection
+  children_1: {
+    compliant: 'Verifiable parental consent obtained for under-18 users',
+    nonCompliant: 'Parental consent mechanism inadequate - needs verification',
+    priority: 'high'
+  },
+  children_2: {
+    compliant: 'Age verification mechanism implemented',
+    nonCompliant: 'No robust age verification - implement ID validation',
+    priority: 'high'
+  },
+  children_3: {
+    compliant: 'Behavioral tracking disabled for minors',
+    nonCompliant: 'Behavioral tracking active for minors - must be disabled',
+    priority: 'high'
+  },
+  children_4: {
+    compliant: 'Parental data deletion requests supported',
+    nonCompliant: 'No parental deletion mechanism for childrens data',
+    priority: 'high'
+  },
+  children_5: {
+    compliant: 'Parents informed about data collection purposes',
+    nonCompliant: 'Parents not adequately informed about data processing',
+    priority: 'high'
+  },
+
+  // Phase 6: Governance & Retention
+  gov_1: {
+    compliant: 'Data Protection Officer designated',
+    nonCompliant: 'No DPO designated - required for significant data fiduciaries',
+    priority: 'high'
+  },
+  gov_2: {
+    compliant: 'Data retention policy documented',
+    nonCompliant: 'No retention policy - must delete within 1 year of last interaction',
+    priority: 'high'
+  },
+  gov_3: {
+    compliant: 'Records of Processing Activities maintained',
+    nonCompliant: 'No RoPA maintained - document all processing activities',
+    priority: 'high'
+  },
+  gov_4: {
+    compliant: 'Employee data protection training conducted',
+    nonCompliant: 'No formal training program - implement annual training',
+    priority: 'high'
+  },
 }
 
 // ============================================================================
@@ -268,6 +471,54 @@ interface LocalStorageResultsPageProps {
 // ============================================================================
 // HELPER FUNCTIONS  
 // ============================================================================
+
+// DPDP compliance answers for multiple_choice questions
+const DPDP_COMPLIANCE_ANSWERS: Record<string, string> = {
+  // Consent Management
+  consent_1: 'Explicit consent with granular purpose-specific options',
+  consent_2: 'Yes, through same mechanism used to give consent (equally easy)',
+  consent_3: 'Yes, in English + regional language(s) of service area',
+  consent_4: 'yes',
+  consent_5: 'yes',
+  consent_6: 'yes',
+  consent_7: 'Yes, users can opt-in/out of each cookie category',
+  consent_8: 'yes',
+  consent_9: 'yes',
+  // Security Safeguards
+  security_1: 'Yes, AES-256 or equivalent encryption for all personal data',
+  security_2: 'Yes, TLS 1.3 for all data transfers',
+  security_3: 'yes',
+  security_4: 'yes',
+  security_5: 'yes',
+  security_6: 'yes',
+  security_7: 'yes',
+  security_8: 'Yes, continuous/automated scanning with quarterly reviews',
+  security_9: 'yes',
+  // Data Principal Rights
+  rights_1: 'Yes, instant download of all data',
+  rights_2: 'yes',
+  rights_3: 'Yes, instant deletion with confirmation',
+  rights_4: 'yes',
+  rights_5: 'Within 48-72 hours',
+  rights_6: 'yes',
+  // Breach Response
+  breach_1: 'yes',
+  breach_2: 'Yes, automated detection and notification process',
+  breach_3: 'yes',
+  breach_4: 'yes',
+  breach_5: 'yes',
+  // Childrens Data
+  children_1: 'Yes, verified via OTP/document upload/digital signature',
+  children_2: 'Yes, verified via government ID/document validation',
+  children_3: 'yes',
+  children_4: 'yes',
+  children_5: 'yes',
+  // Governance
+  gov_1: 'Yes, India-based DPO reporting to Board',
+  gov_2: 'Yes, written policy with specific retention periods by data type',
+  gov_3: 'yes',
+  gov_4: 'Yes, mandatory annual training for all employees',
+}
 
 function getStatusFromScore(score: number, isDPDP: boolean = false) {
   if (isDPDP) {
@@ -304,10 +555,30 @@ function analyseResponses(answers: Record<string, string>): {
     const summary = QUESTION_SUMMARIES[questionId]
     if (!summary) return
 
-    if (answer === 'yes') {
+    // Check if this is a DPDP question with multiple_choice
+    const complianceAnswer = DPDP_COMPLIANCE_ANSWERS[questionId]
+    
+    // Determine if answer is compliant
+    let isCompliant = false
+    
+    if (complianceAnswer) {
+      // DPDP question - check exact match or 'yes' for yes_no
+      isCompliant = answer === complianceAnswer || 
+                   (complianceAnswer === 'yes' && answer === 'yes')
+    } else {
+      // Legacy yes/no questions (Statutory Health, Labour Code)
+      isCompliant = answer === 'yes'
+    }
+
+    if (isCompliant) {
       compliantItems.push({ id: questionId, text: summary.compliant })
-    } else if (answer === 'no') {
-      nonCompliantItems.push({ id: questionId, text: summary.nonCompliant, priority: summary.priority })
+    } else if (answer && answer !== 'n/a' && answer !== 'not_applicable') {
+      // Only add to non-compliant if there's an actual answer (not skipped/N/A)
+      nonCompliantItems.push({ 
+        id: questionId, 
+        text: summary.nonCompliant, 
+        priority: summary.priority 
+      })
     }
   })
 
