@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2, Shield, AlertTriangle, Info } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
-import { useAssessmentTracking } from '@/lib/analytics'
+import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics'
 import { 
   getRelevantQuestions,
   getDPDPQuestionSummary,
@@ -105,7 +105,7 @@ export default function DPDPAssessmentPage() {
     assessmentType: ASSESSMENT_TYPES.DPDP,
     userTier: 'free',
     organizationIndustry: organizationProfile?.industry || undefined,
-    organizationSize: organizationProfile?.employeeCount as any || undefined,
+    organizationSize: organizationProfile?.employeeCount as OrganizationSize | undefined,
     questionCount: totalQuestions || 45, // fallback to approx count
     enableAutoAbandon: true,
   })

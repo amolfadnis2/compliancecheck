@@ -26,7 +26,7 @@ import {
 } from '@/lib/constants';
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
-import { useAssessmentTracking } from '@/lib/analytics';
+import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics';
 import { ArrowLeft, ArrowRight, CheckCircle2, Building2, Loader2, Info, Save } from 'lucide-react';
 
 interface UserDetails {
@@ -119,7 +119,7 @@ export default function LabourCodeAssessmentPage() {
     assessmentType: ASSESSMENT_TYPES.LABOUR_CODE,
     userTier: 'free',
     organizationIndustry: userDetails.industry || undefined,
-    organizationSize: userDetails.employeeCount as any || undefined,
+    organizationSize: userDetails.employeeCount as OrganizationSize | undefined,
     questionCount: totalFilteredQuestions || 30, // fallback to approx count
     enableAutoAbandon: true,
   });
@@ -319,8 +319,9 @@ export default function LabourCodeAssessmentPage() {
     setIsSubmitting(true);
     
     // Track completion before API call
+    // For yes/no questions, "no" typically indicates non-compliance
     const gapCount = filteredQuestions.filter(q => 
-      q.complianceAnswer && responses[q.id] !== q.complianceAnswer
+      q.type === 'yes_no' && responses[q.id] === 'no'
     ).length;
     assessmentTracking.trackComplete(
       Math.round((answeredQuestions / totalFilteredQuestions) * 100),

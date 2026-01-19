@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -207,7 +207,6 @@ export default function StatutoryHealthAssessmentPage() {
     
     // Calculate score and gaps for tracking
     const score = calculateScore()
-    const categoryScores = getCategoryScores()
     const gapCount = STATUTORY_HEALTH_QUESTIONS.filter(q => 
       q.complianceAnswer && responses[q.id] !== q.complianceAnswer
     ).length
