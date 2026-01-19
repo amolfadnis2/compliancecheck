@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -19,6 +19,7 @@ import {
 } from '@/lib/assessments/statutory-health-questions'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
+import { useAssessmentTracking } from '@/lib/analytics'
 
 // Form validation schema
 const userDetailsSchema = z.object({
@@ -61,6 +62,15 @@ export default function StatutoryHealthAssessmentPage() {
 
   const totalQuestions = STATUTORY_HEALTH_QUESTIONS.length
   const currentQuestion = STATUTORY_HEALTH_QUESTIONS[currentQuestionIndex]
+
+  // Initialize assessment tracking
+  const assessmentTracking = useAssessmentTracking({
+    assessmentType: ASSESSMENT_TYPES.STATUTORY_HEALTH,
+    userTier: 'free',
+    questionCount: totalQuestions,
+    enableAutoAbandon: true,
+  })
+
 
   // Load saved progress on mount
   useEffect(() => {
@@ -132,6 +142,8 @@ export default function StatutoryHealthAssessmentPage() {
     setUserDetails(data)
     setStep(2)
     saveProgress()
+    // Track assessment start
+    assessmentTracking.trackStart()
   }
 
   // Handle question answer with 800ms auto-advance delay
@@ -140,6 +152,10 @@ export default function StatutoryHealthAssessmentPage() {
       ...prev,
       [currentQuestion.id]: answer
     }))
+
+    // Track progress
+    const answeredCount = Object.keys(responses).length + 1
+    assessmentTracking.trackProgress(answeredCount, currentQuestion.category, currentQuestion.id)
 
     // Auto-advance after 800ms delay (consistent with other assessments)
     setTimeout(() => {
@@ -188,6 +204,21 @@ export default function StatutoryHealthAssessmentPage() {
   // Handle free submission
   const handleFreeSubmit = async () => {
     setIsSubmitting(true)
+    
+    // Calculate score and gaps for tracking
+    const score = calculateScore()
+    const categoryScores = getCategoryScores()
+    const gapCount = STATUTORY_HEALTH_QUESTIONS.filter(q => 
+      q.complianceAnswer && responses[q.id] !== q.complianceAnswer
+    ).length
+    
+    // Track assessment completion
+    assessmentTracking.trackComplete(
+      score,
+      { high: gapCount, medium: 0, low: 0 },
+      Object.keys(responses).length,
+      totalQuestions - Object.keys(responses).length
+    )
     
     try {
       const response = await fetch('/api/assessment/free-submit', {

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2, Shield, AlertTriangle, Info } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
+import { useAssessmentTracking } from '@/lib/analytics'
 import { 
   getRelevantQuestions,
   getDPDPQuestionSummary,
@@ -99,6 +100,16 @@ export default function DPDPAssessmentPage() {
   const currentPhase = currentQuestion?.phase
   const currentPhaseInfo = currentPhase ? PHASE_INFO[currentPhase] : null
 
+  // Initialize assessment tracking
+  const assessmentTracking = useAssessmentTracking({
+    assessmentType: ASSESSMENT_TYPES.DPDP,
+    userTier: 'free',
+    organizationIndustry: organizationProfile?.industry || undefined,
+    organizationSize: organizationProfile?.employeeCount as any || undefined,
+    questionCount: totalQuestions || 45, // fallback to approx count
+    enableAutoAbandon: true,
+  })
+
   // Load saved progress
   useEffect(() => {
     try {
@@ -155,11 +166,17 @@ export default function DPDPAssessmentPage() {
     const processesChildren = data.processesChildrenData === 'yes'
     const questions = getRelevantQuestions(processesChildren)
     setRelevantQuestions(questions)
+    // Track assessment start
+    assessmentTracking.trackStart()
   }
 
   // Handle question response with auto-advance
   const handleResponse = (questionId: string, value: string) => {
     setResponses(prev => ({ ...prev, [questionId]: value }))
+    
+    // Track progress
+    const answeredCount = Object.keys(responses).length + 1
+    assessmentTracking.trackProgress(answeredCount, currentQuestion?.phase, questionId)
     
     // Auto-advance after 800ms (matching other assessments)
     setTimeout(() => {
@@ -181,6 +198,18 @@ export default function DPDPAssessmentPage() {
     if (!organizationProfile) return
 
     setIsSubmitting(true)
+    
+    // Track completion before API call
+    const answeredCount = Object.keys(responses).length
+    const gapCount = relevantQuestions.filter(q => 
+      q.complianceAnswer && responses[q.id] !== q.complianceAnswer
+    ).length
+    assessmentTracking.trackComplete(
+      Math.round((answeredCount / totalQuestions) * 100),
+      { high: gapCount, medium: 0, low: 0 },
+      answeredCount,
+      totalQuestions - answeredCount
+    )
 
     try {
       const response = await fetch('/api/assessment/dpdp-submit', {

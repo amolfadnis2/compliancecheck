@@ -12,7 +12,7 @@
  * 
  * // Or use React hooks
  * import { useAssessmentTracking } from '@/lib/analytics';
- * const { trackStart, trackProgress, trackComplete } = useAssessmentTracking({ ... });
+ * const { trackStart, trackProgress, trackComplete, trackReportDownloaded } = useAssessmentTracking({ ... });
  */
 
 // Export all tracking functions
@@ -53,7 +53,7 @@ export type {
 export type { UserProperties } from './tracking';
 
 // Export event names constant
-export { ANALYTICS_EVENTS } from './events';
+export { ANALYTICS_EVENTS, ASSESSMENT_TYPES } from './events';
 
 // Export all event property types
 export type {

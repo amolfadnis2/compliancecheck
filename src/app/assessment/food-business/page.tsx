@@ -24,8 +24,7 @@ import {
 } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
-import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
-import posthog from 'posthog-js'
+import { useAssessmentTracking } from '@/lib/analytics'
 
 // Import questions and applicability
 import {
@@ -92,7 +91,6 @@ export default function FoodBusinessAssessmentPage() {
   
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [startTime] = useState(Date.now())
   const [assessmentId, setAssessmentId] = useState<string | null>(null)
   
   // Form
@@ -108,6 +106,14 @@ export default function FoodBusinessAssessmentPage() {
   
   // Estimated question count based on current applicability responses
   const [estimatedQuestionCount, setEstimatedQuestionCount] = useState(TOTAL_POSSIBLE_QUESTIONS)
+  
+  // Initialize assessment tracking
+  const assessmentTracking = useAssessmentTracking({
+    assessmentType: ASSESSMENT_TYPES.FOOD_BUSINESS,
+    userTier: 'free',
+    questionCount: filteredQuestions.length || estimatedQuestionCount,
+    enableAutoAbandon: true,
+  })
   
   // Update estimated question count when applicability responses change
   useEffect(() => {
@@ -152,10 +158,8 @@ export default function FoodBusinessAssessmentPage() {
     setUserDetails(data)
     setCurrentStep('applicability')
     
-    posthog.capture(ANALYTICS_EVENTS.ASSESSMENT_STARTED, {
-      assessment_type: ASSESSMENT_TYPES.FOOD_BUSINESS,
-      user_tier: 'free_beta',
-    })
+    // Track assessment start
+    assessmentTracking.trackStart()
   }
   
   // Applicability answer handler
@@ -182,12 +186,6 @@ export default function FoodBusinessAssessmentPage() {
     const questions = filterQuestionsByApplicability(applicableCodes)
     setFilteredQuestions(questions)
     setCurrentStep('questions')
-    
-    posthog.capture('food_business_applicability_completed', {
-      applicable_areas: applicableCodes,
-      question_count: questions.length,
-      time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
-    })
   }
   
   // Main question answer handler
@@ -195,11 +193,8 @@ export default function FoodBusinessAssessmentPage() {
     setResponses(prev => ({ ...prev, [currentQuestion.id]: answer }))
     
     // Track progress
-    posthog.capture(ANALYTICS_EVENTS.ASSESSMENT_PROGRESS, {
-      assessment_type: ASSESSMENT_TYPES.FOOD_BUSINESS,
-      completion_percentage: Math.round(((currentQuestionIndex + 1) / filteredQuestions.length) * 100),
-      current_category: currentQuestion.category,
-    })
+    const answeredCount = Object.keys(responses).length + 1
+    assessmentTracking.trackProgress(answeredCount, currentQuestion.category, currentQuestion.id)
     
     // Auto-advance after 800ms
     setTimeout(() => {
@@ -219,15 +214,17 @@ export default function FoodBusinessAssessmentPage() {
       const calculatedResults = calculateFoodBusinessScore(filteredQuestions, responses)
       setResults(calculatedResults)
       
-      // Track completion
-      posthog.capture(ANALYTICS_EVENTS.ASSESSMENT_COMPLETED, {
-        assessment_type: ASSESSMENT_TYPES.FOOD_BUSINESS,
-        compliance_score: calculatedResults.overallScore,
-        gap_count: calculatedResults.actionItems.length,
-        high_priority_gaps: calculatedResults.actionItems.filter(a => a.priority === 'high').length,
-        time_to_complete_seconds: Math.floor((Date.now() - startTime) / 1000),
-        questions_answered: Object.keys(responses).length,
-      })
+      // Track completion using the assessment tracking hook
+      assessmentTracking.trackComplete(
+        calculatedResults.overallScore,
+        { 
+          high: calculatedResults.actionItems.filter(a => a.priority === 'high').length, 
+          medium: calculatedResults.actionItems.filter(a => a.priority === 'medium').length, 
+          low: calculatedResults.actionItems.filter(a => a.priority === 'low').length 
+        },
+        Object.keys(responses).length,
+        filteredQuestions.length - Object.keys(responses).length
+      )
       
       // Submit to API
       const response = await fetch('/api/assessment/food-business-submit', {

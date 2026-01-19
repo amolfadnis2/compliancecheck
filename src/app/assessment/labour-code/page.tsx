@@ -26,6 +26,7 @@ import {
 } from '@/lib/constants';
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
+import { useAssessmentTracking } from '@/lib/analytics';
 import { ArrowLeft, ArrowRight, CheckCircle2, Building2, Loader2, Info, Save } from 'lucide-react';
 
 interface UserDetails {
@@ -112,6 +113,16 @@ export default function LabourCodeAssessmentPage() {
   const totalFilteredQuestions = filteredQuestions.length;
   const answeredQuestions = filteredQuestions.filter(q => responses[q.id]).length;
   const progress = currentStep === 0 ? 0 : Math.round((answeredQuestions / totalFilteredQuestions) * 100);
+
+  // Initialize assessment tracking
+  const assessmentTracking = useAssessmentTracking({
+    assessmentType: ASSESSMENT_TYPES.LABOUR_CODE,
+    userTier: 'free',
+    organizationIndustry: userDetails.industry || undefined,
+    organizationSize: userDetails.employeeCount as any || undefined,
+    questionCount: totalFilteredQuestions || 30, // fallback to approx count
+    enableAutoAbandon: true,
+  });
 
   // Get dynamic help text for current question
   const currentHelpText = useMemo(() => {
@@ -245,6 +256,8 @@ export default function LabourCodeAssessmentPage() {
       setCurrentStep(1);
       setCurrentCategoryIndex(firstCategoryWithQuestions);
       setCurrentQuestionIndex(0);
+      // Track assessment start
+      assessmentTracking.trackStart();
     } else {
       if (currentQuestionIndex < categoryQuestions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -286,6 +299,10 @@ export default function LabourCodeAssessmentPage() {
   const handleResponse = (questionId: string, value: string) => {
     setResponses(prev => ({ ...prev, [questionId]: value }));
     
+    // Track progress
+    const answeredCount = Object.keys(responses).length + 1;
+    assessmentTracking.trackProgress(answeredCount, currentCategory?.name, questionId);
+    
     // Auto-advance to next question after 800ms delay
     setTimeout(() => {
       handleNext();
@@ -300,6 +317,18 @@ export default function LabourCodeAssessmentPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    
+    // Track completion before API call
+    const gapCount = filteredQuestions.filter(q => 
+      q.complianceAnswer && responses[q.id] !== q.complianceAnswer
+    ).length;
+    assessmentTracking.trackComplete(
+      Math.round((answeredQuestions / totalFilteredQuestions) * 100),
+      { high: gapCount, medium: 0, low: 0 },
+      answeredQuestions,
+      totalFilteredQuestions - answeredQuestions
+    );
+    
     try {
       const response = await fetch('/api/assessment/labour-code-submit', {
         method: 'POST',

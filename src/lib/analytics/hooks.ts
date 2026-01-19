@@ -20,12 +20,17 @@ interface UseAssessmentTrackingOptions {
   organizationIndustry?: string;
   organizationSize?: OrganizationSize;
   questionCount: number;
+  enableAutoAbandon?: boolean; // Auto-track abandonment on page unload
 }
 
 export function useAssessmentTracking(options: UseAssessmentTrackingOptions) {
   const startTimeRef = useRef<number>(Date.now());
   const hasStartedRef = useRef(false);
+  const isCompletedRef = useRef(false);
   const lastProgressRef = useRef(0);
+  const questionsAnsweredRef = useRef(0);
+  const lastQuestionIdRef = useRef<string | undefined>(undefined);
+  const lastCategoryRef = useRef<string | undefined>(undefined);
 
   // Track assessment start (only once)
   const trackStart = useCallback(() => {
@@ -47,8 +52,13 @@ export function useAssessmentTracking(options: UseAssessmentTrackingOptions) {
   // Track progress milestones
   const trackProgress = useCallback((
     questionsAnswered: number,
-    currentCategory?: string
+    currentCategory?: string,
+    currentQuestionId?: string
   ) => {
+    questionsAnsweredRef.current = questionsAnswered;
+    lastCategoryRef.current = currentCategory;
+    lastQuestionIdRef.current = currentQuestionId;
+
     const percentage = Math.round((questionsAnswered / options.questionCount) * 100);
     const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
     
@@ -75,6 +85,7 @@ export function useAssessmentTracking(options: UseAssessmentTrackingOptions) {
     questionsAnswered: number,
     questionsSkipped: number
   ) => {
+    isCompletedRef.current = true;
     const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
     
     analytics.assessmentCompleted({
@@ -95,13 +106,14 @@ export function useAssessmentTracking(options: UseAssessmentTrackingOptions) {
 
   // Track abandonment (call on unmount or navigation away)
   const trackAbandon = useCallback((
-    questionsAnswered: number,
+    questionsAnswered?: number,
     lastQuestionId?: string,
     lastCategory?: string
   ) => {
-    if (!hasStartedRef.current) return;
+    if (!hasStartedRef.current || isCompletedRef.current) return;
     
-    const percentage = Math.round((questionsAnswered / options.questionCount) * 100);
+    const answered = questionsAnswered ?? questionsAnsweredRef.current;
+    const percentage = Math.round((answered / options.questionCount) * 100);
     const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
     
     // Don't track as abandoned if completed (100%)
@@ -109,19 +121,72 @@ export function useAssessmentTracking(options: UseAssessmentTrackingOptions) {
       analytics.assessmentAbandoned({
         assessment_type: options.assessmentType,
         completion_percentage: percentage,
-        last_question_id: lastQuestionId,
-        last_category: lastCategory,
+        last_question_id: lastQuestionId ?? lastQuestionIdRef.current,
+        last_category: lastCategory ?? lastCategoryRef.current,
         time_spent_seconds: timeSpent,
-        questions_answered: questionsAnswered,
+        questions_answered: answered,
       });
     }
   }, [options]);
+
+  // Track report viewed
+  const trackReportViewed = useCallback((score: number, assessmentId?: string) => {
+    analytics.reportViewed({
+      assessment_type: options.assessmentType,
+      compliance_score: score,
+      assessment_id: assessmentId,
+    });
+  }, [options.assessmentType]);
+
+  // Track report downloaded
+  const trackReportDownloaded = useCallback((score: number, assessmentId?: string) => {
+    analytics.reportDownloaded({
+      assessment_type: options.assessmentType,
+      format: 'pdf',
+      compliance_score: score,
+      assessment_id: assessmentId,
+      user_tier: options.userTier || 'free',
+    });
+  }, [options.assessmentType, options.userTier]);
+
+  // Track report emailed
+  const trackReportEmailed = useCallback((score: number, assessmentId?: string) => {
+    analytics.trackEvent('report_emailed', {
+      assessment_type: options.assessmentType,
+      compliance_score: score,
+      assessment_id: assessmentId,
+      user_tier: options.userTier || 'free',
+    });
+  }, [options.assessmentType, options.userTier]);
+
+  // Auto-track abandonment on page unload
+  useEffect(() => {
+    if (!options.enableAutoAbandon) return;
+
+    const handleBeforeUnload = () => {
+      if (hasStartedRef.current && !isCompletedRef.current) {
+        trackAbandon();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Also track on component unmount if not completed
+      if (hasStartedRef.current && !isCompletedRef.current) {
+        trackAbandon();
+      }
+    };
+  }, [options.enableAutoAbandon, trackAbandon]);
 
   return {
     trackStart,
     trackProgress,
     trackComplete,
     trackAbandon,
+    trackReportViewed,
+    trackReportDownloaded,
+    trackReportEmailed,
     getTimeSpent: () => Math.round((Date.now() - startTimeRef.current) / 1000),
   };
 }

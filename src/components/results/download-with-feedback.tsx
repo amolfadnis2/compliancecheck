@@ -1,35 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import { DownloadButtons as OriginalDownloadButtons } from '@/components/results/download-buttons'
-import { posthog } from '@/components/providers/posthog-provider'
+import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Download, Mail, FileText, CheckCircle } from 'lucide-react'
+import type { AssessmentType } from '@/lib/analytics'
 
 interface DownloadWithFeedbackProps {
   assessmentId?: string
   assessmentType?: string
+  complianceScore?: number // Optional: pass score for better tracking
 }
 
-export function DownloadWithFeedback({ assessmentId, assessmentType = 'statutory_health' }: DownloadWithFeedbackProps) {
+export function DownloadWithFeedback({ 
+  assessmentId, 
+  assessmentType = 'statutory_health',
+  complianceScore 
+}: DownloadWithFeedbackProps) {
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackCompleted, setFeedbackCompleted] = useState(false)
   const [pendingAction, setPendingAction] = useState<'download' | 'email' | null>(null)
+  const [score, setScore] = useState<number>(complianceScore || 0)
 
   // Get ID from URL if not provided
   const id = assessmentId || (typeof window !== 'undefined' ? window.location.pathname.split('/').pop() : '') || ''
 
-  const handleActionClick = (action: 'download' | 'email') => {
-    try {
-      posthog.capture(action === 'download' ? 'download_report_clicked' : 'email_report_clicked', {
-        assessment_type: assessmentType,
-        assessment_id: id,
-        feedback_completed: feedbackCompleted,
-      })
-    } catch (e) {
-      console.log('PostHog not available:', e)
+  // Try to get score from localStorage if not provided
+  useEffect(() => {
+    if (!complianceScore && id) {
+      try {
+        const stored = localStorage.getItem(`assessment_${id}`)
+        if (stored) {
+          const data = JSON.parse(stored)
+          setScore(data.overall_score || data.overallScore || 0)
+        }
+      } catch (e) {
+        console.log('Could not get score from localStorage:', e)
+      }
     }
+  }, [id, complianceScore])
+
+  const handleActionClick = (action: 'download' | 'email') => {
+    // Track the intent to download/email (before feedback)
+    analytics.trackEvent(`${action}_report_intent`, {
+      assessment_type: assessmentType as AssessmentType,
+      assessment_id: id,
+      feedback_completed: feedbackCompleted,
+    })
 
     if (!feedbackCompleted) {
       setPendingAction(action)
@@ -45,14 +64,10 @@ export function DownloadWithFeedback({ assessmentId, assessmentType = 'statutory
   }
 
   const handleSkipFeedback = () => {
-    try {
-      posthog.capture('feedback_skipped', {
-        assessment_type: assessmentType,
-        assessment_id: id,
-      })
-    } catch (e) {
-      console.log('PostHog not available:', e)
-    }
+    analytics.trackEvent('feedback_skipped', {
+      assessment_type: assessmentType as AssessmentType,
+      assessment_id: id,
+    })
     setFeedbackCompleted(true)
     setShowFeedback(false)
   }
@@ -97,7 +112,14 @@ export function DownloadWithFeedback({ assessmentId, assessmentType = 'statutory
 
   // After feedback completed (or skipped), show full download buttons
   if (feedbackCompleted) {
-    return <OriginalDownloadButtons assessmentId={id} assessmentType={assessmentType} autoTrigger={pendingAction} />
+    return (
+      <OriginalDownloadButtons 
+        assessmentId={id} 
+        assessmentType={assessmentType} 
+        autoTrigger={pendingAction}
+        complianceScore={score}
+      />
+    )
   }
 
   // Initial state - show both buttons that trigger feedback first

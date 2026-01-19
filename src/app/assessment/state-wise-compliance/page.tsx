@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -28,14 +28,8 @@ import {
   calculateComplianceScore,
   generateApplicabilitySummary,
 } from '@/lib/assessments/state-wise-compliance-questions';
-
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
+import { useAssessmentTracking } from '@/lib/analytics';
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types';
 
 type AssessmentPhase = 'user_details' | 'phase1' | 'applicability_results' | 'phase2' | 'submitting';
 
@@ -71,9 +65,13 @@ export default function StateWiseComplianceAssessment() {
   const [error, setError] = useState<string | null>(null);
   const [multiSelectValues, setMultiSelectValues] = useState<string[]>([]);
 
-  useEffect(() => {
-    window.posthog?.capture('assessment_page_viewed', { assessment_type: 'state_wise_compliance' });
-  }, []);
+  // Initialize assessment tracking
+  const assessmentTracking = useAssessmentTracking({
+    assessmentType: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
+    userTier: 'free',
+    questionCount: filteredPhase2Questions.length || 39,
+    enableAutoAbandon: true,
+  });
 
   const getProgress = (): number => {
     if (currentPhase === 'user_details') return 0;
@@ -100,10 +98,8 @@ export default function StateWiseComplianceAssessment() {
     }
     setError(null);
     setCurrentPhase('phase1');
-    window.posthog?.capture('assessment_started', { 
-      assessment_type: 'state_wise_compliance', 
-      company_name: userDetails.companyName 
-    });
+    // Track assessment start
+    assessmentTracking.trackStart();
   };
 
   const handlePhase1Answer = (questionId: string, answer: string | string[]) => {
@@ -118,10 +114,12 @@ export default function StateWiseComplianceAssessment() {
         const filtered = getFilteredPhase2Questions(results, newResponses);
         setFilteredPhase2Questions(filtered);
         setCurrentPhase('applicability_results');
-        window.posthog?.capture('phase1_completed', { 
-          assessment_type: 'state_wise_compliance', 
-          applicable_count: results.filter(r => r.applies).length 
-        });
+        // Track progress - phase 1 complete
+        assessmentTracking.trackProgress(
+          PHASE1_QUESTIONS.length, 
+          'Applicability', 
+          'phase1_complete'
+        );
       }
     }, 300);
   };
@@ -143,6 +141,12 @@ export default function StateWiseComplianceAssessment() {
   const handlePhase2Answer = (questionId: string, answer: string) => {
     const newResponses = { ...phase2Responses, [questionId]: answer };
     setPhase2Responses(newResponses);
+    
+    // Track progress
+    const currentQuestion = filteredPhase2Questions[phase2Index];
+    const answeredCount = Object.keys(newResponses).length;
+    assessmentTracking.trackProgress(answeredCount, currentQuestion?.category, questionId);
+    
     setTimeout(() => {
       if (phase2Index < filteredPhase2Questions.length - 1) {
         setPhase2Index(phase2Index + 1);
@@ -184,11 +188,16 @@ export default function StateWiseComplianceAssessment() {
           timestamp: new Date().toISOString(),
         }));
         
-        window.posthog?.capture('assessment_completed', {
-          assessment_type: 'state_wise_compliance',
-          overall_score: scoreResult.overallScore,
-          status: scoreResult.status,
-        });
+        // Track assessment completion
+        const gapCount = filteredPhase2Questions.filter(q => 
+          q.complianceAnswer && phase2Responses[q.id] !== q.complianceAnswer
+        ).length;
+        assessmentTracking.trackComplete(
+          scoreResult.overallScore,
+          { high: gapCount, medium: 0, low: 0 },
+          Object.keys(phase2Responses).length,
+          filteredPhase2Questions.length - Object.keys(phase2Responses).length
+        );
         
         router.push(`/results/${result.assessmentId}?type=state_wise_compliance`);
       } else {

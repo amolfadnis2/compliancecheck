@@ -8,6 +8,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from '@/lib/pdf/dpdp-compliance-rules'
 import { FOOD_COMPLIANCE_RULES, FOOD_CATEGORY_LABELS } from '@/lib/pdf/food-business-compliance-rules'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { analytics, type AssessmentType } from '@/lib/analytics'
 
 // Helper to detect UUID format
 function isValidUUID(id: string): boolean {
@@ -305,6 +306,7 @@ interface DownloadButtonsProps {
   assessmentId?: string
   assessmentType?: string
   autoTrigger?: 'download' | 'email' | null
+  complianceScore?: number
 }
 
 // ============================================================================
@@ -335,7 +337,7 @@ function getStatusColour(score: number): [number, number, number] {
 // MAIN COMPONENT
 // ============================================================================
 
-export function DownloadButtons({ assessmentId, assessmentType: propAssessmentType, autoTrigger }: DownloadButtonsProps) {
+export function DownloadButtons({ assessmentId, assessmentType: propAssessmentType, autoTrigger, complianceScore }: DownloadButtonsProps) {
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadSuccess, setDownloadSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -1917,6 +1919,15 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 
+      // Track successful download
+      analytics.reportDownloaded({
+        assessment_type: assessmentType as AssessmentType,
+        format: 'pdf',
+        compliance_score: data.overall_score || complianceScore || 0,
+        assessment_id: id,
+        user_tier: 'free',
+      })
+
       setDownloadSuccess(true)
       setTimeout(() => setDownloadSuccess(false), 3000)
     } catch (err) {
@@ -1925,7 +1936,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     } finally {
       setIsDownloading(false)
     }
-  }, [assessmentId, assessmentData])
+  }, [assessmentId, assessmentData, complianceScore])
 
   // ==========================================================================
   // EMAIL HANDLER
@@ -2082,6 +2093,14 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         throw new Error(result.error || 'Failed to send email')
       }
 
+      // Track successful email
+      analytics.trackEvent('report_emailed', {
+        assessment_type: assessmentType as AssessmentType,
+        compliance_score: data.overall_score || complianceScore || 0,
+        assessment_id: id,
+        user_tier: 'free',
+      })
+
       setEmailSuccess(true)
       setTimeout(() => setEmailSuccess(false), 5000)
     } catch (err) {
@@ -2090,7 +2109,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     } finally {
       setIsEmailing(false)
     }
-  }, [assessmentId, assessmentData, propAssessmentType])
+  }, [assessmentId, assessmentData, propAssessmentType, complianceScore])
 
   // Auto-trigger download or email after feedback completion
   useEffect(() => {
