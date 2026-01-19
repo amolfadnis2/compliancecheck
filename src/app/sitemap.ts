@@ -30,6 +30,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
 
+    // How It Works - high priority informational page
+    {
+      url: `${BASE_URL}/how-it-works`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+
     // Calculator pages - high traffic targets (from SEO strategy)
     {
       url: `${BASE_URL}/calculator/ctc`,

@@ -33,6 +33,12 @@ export default function LandingPage() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link 
+              href="/how-it-works" 
+              className="text-neutral-600 hover:text-neutral-900 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
+            >
+              How It Works
+            </Link>
+            <Link 
               href="#for-business" 
               className="text-neutral-600 hover:text-neutral-900 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
             >
@@ -87,6 +93,14 @@ export default function LandingPage() {
           aria-orientation="vertical"
         >
           <div className="px-6 pt-4 pb-6 space-y-3 bg-white border-t border-neutral-100">
+            <Link 
+              href="/how-it-works" 
+              className="block text-neutral-600 hover:text-neutral-900 text-base font-medium py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+              role="menuitem"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              How It Works
+            </Link>
             <Link 
               href="#for-business" 
               className="block text-neutral-600 hover:text-neutral-900 text-base font-medium py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
