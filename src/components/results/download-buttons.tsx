@@ -7,6 +7,7 @@ import { jsPDF } from 'jspdf'
 import { createBrowserClient } from '@supabase/ssr'
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from '@/lib/pdf/dpdp-compliance-rules'
 import { FOOD_COMPLIANCE_RULES, FOOD_CATEGORY_LABELS } from '@/lib/pdf/food-business-compliance-rules'
+import { LABOUR_CODE_RULES } from '@/lib/assessments/labour-code-rules'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { analytics, type AssessmentType } from '@/lib/analytics'
 
@@ -783,8 +784,16 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
   }
 
   // ==========================================================================
-  // LABOUR CODE PDF GENERATION
+  // LABOUR CODE PDF GENERATION (Enhanced with Compliance Rules)
   // ==========================================================================
+
+  // Labour Code category labels
+  const LABOUR_CODE_CATEGORY_LABELS: Record<string, string> = {
+    wages: 'Code on Wages',
+    social_security: 'Code on Social Security',
+    osh: 'OSH Code',
+    industrial_relations: 'Industrial Relations Code'
+  }
 
   const generateLabourCodePDF = (data: AssessmentData): Blob => {
     const doc = new jsPDF()
@@ -796,13 +805,30 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     // Get data
     const userDetails = data.userDetails || data.responses?.userDetails || {}
+    const answers = data.responses?.answers || {}
     const overallScore = data.overall_score ?? 50
     const categoryScores = data.category_scores || {}
     const actionItems: ActionItem[] = data.action_items || []
 
+    // Unicode-safe text cleaner for jsPDF
+    const cleanText = (text: string): string => {
+      return text
+        .replace(/₹/g, 'Rs.')
+        .replace(/—/g, '-')
+        .replace(/–/g, '-')
+        .replace(/'/g, "'")
+        .replace(/'/g, "'")
+        .replace(/"/g, '"')
+        .replace(/"/g, '"')
+        .replace(/•/g, '-')
+        .replace(/…/g, '...')
+        .replace(/[^\x00-\x7F]/g, '')
+    }
+
     // Helper functions
     const addText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5): number => {
-      const lines = doc.splitTextToSize(text, maxWidth)
+      const cleanedText = cleanText(text)
+      const lines = doc.splitTextToSize(cleanedText, maxWidth)
       doc.text(lines, x, y)
       return y + (lines.length * lineHeight)
     }
@@ -824,11 +850,11 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
-      doc.text(title, margin + 5, yPos + 7)
+      doc.text(cleanText(title), margin + 5, yPos + 7)
       yPos += 15
     }
 
-    // Header
+    // ========== COVER PAGE ==========
     doc.setFillColor(30, 64, 175)
     doc.rect(0, 0, pageWidth, 45, 'F')
     doc.setTextColor(255, 255, 255)
@@ -852,10 +878,10 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     doc.text('Organisation Details', margin + 5, yPos + 10)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
-    doc.text('Company: ' + (userDetails.companyName || 'N/A'), margin + 5, yPos + 20)
-    doc.text('Industry: ' + (userDetails.industry || 'N/A'), margin + 5, yPos + 28)
-    doc.text('Employees: ' + (userDetails.employeeCount || 'N/A'), pageWidth / 2, yPos + 20)
-    doc.text('State: ' + (userDetails.state || 'N/A'), pageWidth / 2, yPos + 28)
+    doc.text('Company: ' + cleanText(userDetails.companyName || 'N/A'), margin + 5, yPos + 20)
+    doc.text('Industry: ' + cleanText(userDetails.industry || 'N/A'), margin + 5, yPos + 28)
+    doc.text('Employees: ' + cleanText(userDetails.employeeCount || 'N/A'), pageWidth / 2, yPos + 20)
+    doc.text('State: ' + cleanText(userDetails.state || 'N/A'), pageWidth / 2, yPos + 28)
 
     yPos += 50
 
@@ -869,7 +895,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     doc.text('Overall Readiness: ' + Math.round(overallScore) + '%', pageWidth / 2, yPos + 12, { align: 'center' })
     doc.setFontSize(10)
     doc.setFont('helvetica', 'normal')
-    const status = overallScore >= 80 ? 'Ready' : overallScore >= 50 ? 'Needs Attention' : 'At Risk'
+    const status = overallScore >= 80 ? 'Ready for New Labour Codes' : overallScore >= 50 ? 'Needs Attention' : 'At Risk - Immediate Action Required'
     doc.text(status, pageWidth / 2, yPos + 19, { align: 'center' })
 
     yPos += 35
@@ -893,7 +919,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       doc.text(label + ': ' + Math.round(percentage) + '%', margin, yPos)
       doc.setFillColor(229, 231, 235)
       doc.rect(margin, yPos + 2, contentWidth, 4, 'F')
-      const barColor = percentage >= 80 ? [5, 150, 105] : percentage >= 50 ? [217, 119, 6] : [220, 38, 38]
+      const barColor: [number, number, number] = percentage >= 80 ? [5, 150, 105] : percentage >= 50 ? [217, 119, 6] : [220, 38, 38]
       doc.setFillColor(barColor[0], barColor[1], barColor[2])
       doc.rect(margin, yPos + 2, (contentWidth * percentage) / 100, 4, 'F')
       yPos += 10
@@ -901,17 +927,136 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     yPos += 10
 
-    // Action Items
+    // ========== DETAILED COMPLIANCE ANALYSIS ==========
+    // Process answers against LABOUR_CODE_RULES
+    const compliantItems: string[] = []
+    const nonCompliantItems: { questionId: string; rule: typeof LABOUR_CODE_RULES[string] }[] = []
+
+    Object.entries(answers).forEach(([questionId, answer]) => {
+      const rule = LABOUR_CODE_RULES[questionId]
+      if (!rule) return
+      if (answer === 'yes') compliantItems.push(questionId)
+      else if (answer === 'no') nonCompliantItems.push({ questionId, rule })
+    })
+
+    // ========== COMPLIANT ITEMS SECTION ==========
+    if (compliantItems.length > 0) {
+      drawSectionHeader('[COMPLIANT] What You Are Doing Right', [5, 150, 105])
+
+      compliantItems.forEach((questionId) => {
+        const rule = LABOUR_CODE_RULES[questionId]
+        if (!rule) return
+
+        checkPageBreak(25)
+
+        doc.setFillColor(236, 253, 245)
+        doc.roundedRect(margin, yPos, contentWidth, 18, 2, 2, 'F')
+
+        doc.setTextColor(5, 150, 105)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text('[OK] ' + cleanText(rule.requirement), margin + 3, yPos + 6)
+
+        doc.setTextColor(31, 41, 55)
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'normal')
+        const compliantText = cleanText(rule.actionIfCompliant)
+        addText(compliantText, margin + 3, yPos + 11, contentWidth - 6, 3)
+
+        yPos += 22
+      })
+    }
+
+    // ========== NON-COMPLIANT ITEMS SECTION ==========
+    if (nonCompliantItems.length > 0) {
+      drawSectionHeader('[ACTION REQUIRED] Compliance Gaps', [220, 38, 38])
+
+      nonCompliantItems.forEach(({ questionId, rule }) => {
+        // Calculate required space (variable based on action items)
+        const actionSteps = rule.actionIfNonCompliant || []
+        const estimatedHeight = 55 + (actionSteps.length * 5)
+        checkPageBreak(Math.min(estimatedHeight, 120))
+
+        // Red border box for non-compliant item
+        doc.setDrawColor(220, 38, 38)
+        doc.setLineWidth(0.5)
+        doc.setFillColor(254, 242, 242)
+        doc.roundedRect(margin, yPos, contentWidth, 8, 2, 2, 'FD')
+
+        // Requirement title
+        doc.setTextColor(220, 38, 38)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.text('[GAP] ' + cleanText(rule.requirement), margin + 3, yPos + 5.5)
+        yPos += 12
+
+        // Government Reference
+        doc.setTextColor(107, 114, 128)
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'italic')
+        yPos = addText('Legal Reference: ' + cleanText(rule.governmentRef), margin + 3, yPos, contentWidth - 6, 3.5)
+        yPos += 2
+
+        // Deadline & Penalty Row
+        doc.setFillColor(254, 226, 226)
+        doc.roundedRect(margin + 3, yPos, contentWidth - 6, 12, 1, 1, 'F')
+        doc.setTextColor(153, 27, 27)
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Deadline: ' + cleanText(rule.deadline), margin + 5, yPos + 4)
+        doc.text('Penalty: ' + cleanText(rule.penalty), margin + 5, yPos + 9)
+        yPos += 15
+
+        // Official Portal Link
+        if (rule.officialLink) {
+          doc.setTextColor(30, 64, 175)
+          doc.setFontSize(7)
+          doc.setFont('helvetica', 'normal')
+          doc.text('Portal: ' + rule.officialLink, margin + 3, yPos)
+          yPos += 5
+        }
+
+        // Applicability Note (if present)
+        if (rule.applicabilityNote) {
+          doc.setTextColor(146, 64, 14)
+          doc.setFontSize(7)
+          doc.setFont('helvetica', 'italic')
+          yPos = addText('Note: ' + cleanText(rule.applicabilityNote), margin + 3, yPos, contentWidth - 6, 3.5)
+          yPos += 2
+        }
+
+        // Remediation Steps
+        if (actionSteps.length > 0) {
+          doc.setTextColor(31, 41, 55)
+          doc.setFontSize(7)
+          doc.setFont('helvetica', 'bold')
+          doc.text('Remediation Steps:', margin + 3, yPos)
+          yPos += 4
+
+          doc.setFont('helvetica', 'normal')
+          actionSteps.forEach((step, index) => {
+            checkPageBreak(8)
+            const stepText = (index + 1) + '. ' + cleanText(step)
+            yPos = addText(stepText, margin + 5, yPos, contentWidth - 10, 3.5)
+            yPos += 1
+          })
+        }
+
+        yPos += 8
+      })
+    }
+
+    // ========== PRIORITY ACTION ITEMS (from scoring) ==========
     if (actionItems.length > 0) {
-      drawSectionHeader('Priority Action Items', [220, 38, 38])
+      drawSectionHeader('Priority Action Summary', [217, 119, 6])
       const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
       actionItems.sort((a, b) => {
         return (priorityOrder[a.priority] ?? 3) - (priorityOrder[b.priority] ?? 3)
       })
 
-      actionItems.forEach((item) => {
+      actionItems.slice(0, 10).forEach((item) => {
         checkPageBreak(15)
-        const badgeColor = item.priority === 'high' || item.priority === 'critical' 
+        const badgeColor: [number, number, number] = item.priority === 'high' || item.priority === 'critical' 
           ? [220, 38, 38] 
           : item.priority === 'medium' 
             ? [217, 119, 6] 
@@ -927,15 +1072,43 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         doc.setTextColor(31, 41, 55)
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(8)
-        const itemText = item.text || item.title || item.description || ''
+        const itemText = cleanText(item.text || item.title || item.description || '')
         yPos = addText(itemText, margin + badgeWidth + 3, yPos + 3, contentWidth - badgeWidth - 3, 4)
         yPos += 6
       })
     }
 
-    // Disclaimer
+    // ========== KEY THRESHOLDS REFERENCE ==========
     doc.addPage()
     yPos = margin
+    drawSectionHeader('Labour Code Key Thresholds Reference', [107, 114, 128])
+
+    const thresholds = [
+      { employees: '1+', requirements: 'Minimum Wages, Payment of Wages, Equal Remuneration' },
+      { employees: '10+', requirements: 'ESI, Gratuity, OSH Registration, Maternity Benefits' },
+      { employees: '20+', requirements: 'EPF, Bonus, Grievance Redressal Committee' },
+      { employees: '50+', requirements: 'Creche Facility, Contract Labour Registration' },
+      { employees: '100+', requirements: 'Canteen, Works Committee' },
+      { employees: '250+', requirements: 'Welfare Officer (hazardous industries)' },
+      { employees: '300+', requirements: 'Standing Orders, Govt permission for retrenchment' },
+      { employees: '500+', requirements: 'Safety Committee' }
+    ]
+
+    doc.setFontSize(8)
+    thresholds.forEach((t) => {
+      checkPageBreak(10)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(30, 64, 175)
+      doc.text(t.employees, margin + 3, yPos)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(31, 41, 55)
+      doc.text(t.requirements, margin + 25, yPos)
+      yPos += 6
+    })
+
+    yPos += 10
+
+    // ========== DISCLAIMER ==========
     doc.setFillColor(254, 243, 199)
     doc.roundedRect(margin, yPos, contentWidth, 35, 3, 3, 'F')
     doc.setTextColor(146, 64, 14)
@@ -944,16 +1117,16 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     doc.text('Important Disclaimer', margin + 5, yPos + 8)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
-    const disclaimer = 'This report is based on your self-reported responses and is for informational purposes only. It does not constitute legal advice. Compliance requirements vary by state and specific circumstances. Consult a qualified Labour Law Consultant for specific advice. ComplianceCheck assumes no liability for actions taken based on this report.'
+    const disclaimer = 'This report is based on your self-reported responses and is for informational purposes only. It does not constitute legal advice. The new Labour Codes are expected to be enforced from November 2025. Compliance requirements vary by state and specific circumstances. Consult a qualified Labour Law Consultant for specific advice. ComplianceCheck assumes no liability for actions taken based on this report.'
     addText(disclaimer, margin + 5, yPos + 14, contentWidth - 10, 3.5)
 
-    // Footer
+    // Footer on all pages
     const totalPages = doc.getNumberOfPages()
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i)
       doc.setFontSize(7)
       doc.setTextColor(156, 163, 175)
-      doc.text('ComplianceCheck | compliancecheck.in', margin, pageHeight - 8)
+      doc.text('ComplianceCheck | compliancecheck.co.in', margin, pageHeight - 8)
       doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 8, { align: 'right' })
     }
 
