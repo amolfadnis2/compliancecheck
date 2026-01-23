@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Check } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface AssessmentHeaderProps {
   title: string
@@ -35,7 +36,7 @@ export function AssessmentHeader({
   }
 
   return (
-    <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+    <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
@@ -43,13 +44,16 @@ export function AssessmentHeader({
               <Check className="w-6 h-6 text-white" strokeWidth={3} />
             </div>
             <div>
-              <span className="font-semibold text-lg">{title}</span>
-              <div className="text-xs text-gray-600">{subtitle}</div>
+              <span className="font-semibold text-lg text-gray-900 dark:text-white">{title}</span>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{subtitle}</div>
             </div>
           </Link>
-          <Badge variant="secondary" className={getBadgeClasses()}>
-            {badgeText}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className={getBadgeClasses()}>
+              {badgeText}
+            </Badge>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>

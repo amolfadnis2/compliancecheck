@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Structured Data for SEO */}
         <script
@@ -51,10 +52,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
-        <PostHogProvider>
-          {children}
-        </PostHogProvider>
+      <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors`}>
+        <ThemeProvider>
+          <PostHogProvider>
+            {children}
+          </PostHogProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

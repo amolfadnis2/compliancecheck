@@ -15,11 +15,13 @@ const config: Config = {
           DEFAULT: '#1E40AF',
           foreground: '#FFFFFF',
           light: '#3B82F6',
+          dark: '#1E3A8A',
         },
         success: {
           DEFAULT: '#059669',
           foreground: '#FFFFFF',
           light: '#10B981',
+          dark: '#047857',
         },
         destructive: {
           DEFAULT: '#DC2626',
@@ -27,6 +29,7 @@ const config: Config = {
         },
         warning: {
           DEFAULT: '#D97706',
+          light: '#F59E0B',
         },
         neutral: {
           50: '#F9FAFB',
@@ -38,36 +41,36 @@ const config: Config = {
           800: '#1F2937',
           900: '#111827',
         },
-        // shadcn/ui required colors - fixes dropdown transparency
-        background: '#FFFFFF',
-        foreground: '#111827',
+        // shadcn/ui required colors
+        background: 'rgb(var(--background) / <alpha-value>)',
+        foreground: 'rgb(var(--foreground) / <alpha-value>)',
         popover: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#111827',
+          DEFAULT: 'rgb(var(--popover) / <alpha-value>)',
+          foreground: 'rgb(var(--popover-foreground) / <alpha-value>)',
         },
         muted: {
-          DEFAULT: '#F3F4F6',
-          foreground: '#6B7280',
+          DEFAULT: 'rgb(var(--muted) / <alpha-value>)',
+          foreground: 'rgb(var(--muted-foreground) / <alpha-value>)',
         },
         accent: {
-          DEFAULT: '#F3F4F6',
-          foreground: '#111827',
+          DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
+          foreground: 'rgb(var(--accent-foreground) / <alpha-value>)',
         },
-        border: '#E5E7EB',
-        input: '#E5E7EB',
-        ring: '#1E40AF',
+        border: 'rgb(var(--border) / <alpha-value>)',
+        input: 'rgb(var(--input) / <alpha-value>)',
+        ring: 'rgb(var(--ring) / <alpha-value>)',
         card: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#111827',
+          DEFAULT: 'rgb(var(--card) / <alpha-value>)',
+          foreground: 'rgb(var(--card-foreground) / <alpha-value>)',
         },
         secondary: {
-          DEFAULT: '#F3F4F6',
-          foreground: '#111827',
+          DEFAULT: 'rgb(var(--secondary) / <alpha-value>)',
+          foreground: 'rgb(var(--secondary-foreground) / <alpha-value>)',
         },
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
 
 export default config;

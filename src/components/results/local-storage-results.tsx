@@ -13,6 +13,7 @@ import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { DPDP_CATEGORIES } from '@/lib/assessments/dpdp-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 // ============================================================================
 // COMPLIANCE SUMMARY DATA
@@ -723,14 +724,17 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
   const totalCategories = categoryStats.length
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
+          <div className="flex items-center justify-between mb-4 print:hidden">
+            <Link href="/" className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Link>
+            <ThemeToggle />
+          </div>
           <div className="flex items-center gap-2 mb-2">
             <Badge className={isDPDP ? 'bg-purple-100 text-purple-700' : isLabourCode ? 'bg-blue-100 text-blue-700' : isStateWise ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}>
               {isDPDP ? 'DPDP Gap Assessment' : isLabourCode ? 'Labour Code Readiness' : isStateWise ? 'State-Wise Compliance' : 'Statutory Health Check'}
