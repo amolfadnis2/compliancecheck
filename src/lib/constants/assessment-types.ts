@@ -20,6 +20,7 @@ export const ASSESSMENT_TYPES = {
   DPDP: 'dpdp',
   STATE_WISE_COMPLIANCE: 'state_wise_compliance',
   FOOD_BUSINESS: 'food_business',
+  POSH: 'posh',
 } as const;
 
 // Type for assessment type values
@@ -42,6 +43,7 @@ export function getAssessmentDisplayName(type: AssessmentType): string {
     [ASSESSMENT_TYPES.DPDP]: 'DPDP Gap Assessment',
     [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: 'State-Wise Compliance Check',
     [ASSESSMENT_TYPES.FOOD_BUSINESS]: 'Restaurant & Food Business Compliance',
+    [ASSESSMENT_TYPES.POSH]: 'POSH Act 2013 Compliance',
   };
   return displayNames[type] || type;
 }

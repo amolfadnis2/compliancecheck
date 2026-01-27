@@ -293,6 +293,29 @@ export default function LandingPage() {
                 </div>
               </Link>
 
+              {/* POSH Act 2013 Compliance */}
+              <Link 
+                href="/assessment/posh"
+                className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-pink-500 hover:shadow-lg hover:-translate-y-1 transition-all group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
+              >
+                <span className="absolute -top-2 right-4 bg-pink-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full">NEW</span>
+                <div className="mb-4">
+                  <span className="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-2xl" aria-hidden="true">🛡️</span>
+                </div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">POSH Act 2013 Compliance</h3>
+                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
+                  Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">40-50 questions</span>
+                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">ICC audit</span>
+                </div>
+                <div className="text-xs text-neutral-400 dark:text-gray-500 mb-2">Rs.1,999 post-beta</div>
+                <div className="text-sm font-semibold text-pink-600 dark:text-pink-400 group-hover:translate-x-1 transition-transform">
+                  Start assessment →
+                </div>
+              </Link>
+
             </div>
           </div>
         </section>
