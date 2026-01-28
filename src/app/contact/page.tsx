@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Mail, MapPin, Clock, ArrowLeft, Shield } from 'lucide-react'
+import { Mail, MapPin, Clock, ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export const metadata: Metadata = {

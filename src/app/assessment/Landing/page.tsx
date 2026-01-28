@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 
 export default function StatutoryHealthCheckPage() {
   const accentColor = '#059669'
-  const accentLight = '#10B981'
 
   return (
     <div className={styles.page}>
@@ -130,7 +129,7 @@ export default function StatutoryHealthCheckPage() {
       <section className={styles.coverage}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>What's Covered in This Assessment</h2>
+            <h2>What&apos;s Covered in This Assessment</h2>
             <p>Comprehensive check across all major statutory compliance requirements for Indian businesses</p>
           </div>
           <div className={styles.coverageGrid}>
@@ -231,7 +230,7 @@ export default function StatutoryHealthCheckPage() {
               </div>
             </div>
             <div className={styles.sampleFeatures}>
-              <h3>What You'll Get</h3>
+              <h3>What You&apos;ll Get</h3>
               <ul className={styles.featureList}>
                 {[
                   { title: 'Overall Compliance Score', desc: 'Percentage-based score across all 5 areas' },

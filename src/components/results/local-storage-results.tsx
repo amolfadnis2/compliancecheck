@@ -10,6 +10,7 @@ import {
   FileText, Shield, AlertCircle
 } from 'lucide-react'
 import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
+import { LABOUR_CODE_CATEGORIES } from '@/lib/assessments/labour-code-questions'
 import { DPDP_CATEGORIES } from '@/lib/assessments/dpdp-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
@@ -701,6 +702,13 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
         penaltyExposure: dpdpCat?.maxPenalty || 'Variable'
       }
     }
+    if (isLabourCode) {
+      const labourCat = LABOUR_CODE_CATEGORIES.find(c => c.id === catId)
+      return {
+        name: labourCat?.name || catId,
+        penaltyExposure: null
+      }
+    }
     return {
       name: CATEGORY_INFO[catId as keyof typeof CATEGORY_INFO]?.name || catId,
       penaltyExposure: null
@@ -910,7 +918,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
             )}
           </CardHeader>
           <CardContent>
-            <div className={`grid gap-4 ${isDPDP ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 md:grid-cols-5'}`}>
+            <div className={`grid gap-4 ${isDPDP ? 'grid-cols-1 md:grid-cols-2' : isLabourCode ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2 md:grid-cols-5'}`}>
               {categoryStats.map((cat) => (
                 <div 
                   key={cat.category} 
