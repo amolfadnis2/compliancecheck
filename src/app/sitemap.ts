@@ -90,6 +90,44 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
 
+    // Assessment Landing Pages - SEO optimized marketing pages
+    {
+      url: `${BASE_URL}/assessments/landing/statutory-health-check`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/assessments/landing/labour-code-readiness`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/assessments/landing/dpdp-gap-assessment`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/assessments/landing/state-wise-compliance`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/assessments/landing/restaurant-food-business`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/assessments/landing/posh-act-compliance`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+
     // Document templates
     {
       url: `${BASE_URL}/documents/employee-consent`,

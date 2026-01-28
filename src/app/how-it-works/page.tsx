@@ -512,6 +512,210 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
+      {/* Our Compliance Assessments - SEO Section */}
+      <section className="py-16 px-4 bg-gray-50" id="assessments">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Compliance Assessments for Indian Businesses
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Choose the right assessment for your business needs. From statutory compliance to data protection, 
+              we cover all major regulatory requirements for Indian SMEs and startups.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Statutory Health Check */}
+            <Link href="/assessments/landing/statutory-health-check" className="group">
+              <Card className="h-full border-2 border-gray-200 hover:border-green-400 hover:shadow-lg transition-all duration-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                      Free During Beta
+                    </span>
+                    <span className="text-lg font-bold text-gray-900">₹999</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-green-700 transition-colors">
+                    Statutory Health Check
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Quick assessment for EPF, ESI, Professional Tax, Gratuity, and Bonus compliance. 
+                    Perfect for startups and SMEs to verify basic statutory compliance.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">EPF</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">ESI</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Professional Tax</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Gratuity</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Bonus</span>
+                  </div>
+                  <div className="flex items-center text-green-600 text-sm font-medium">
+                    Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Labour Code Readiness */}
+            <Link href="/assessments/landing/labour-code-readiness" className="group">
+              <Card className="h-full border-2 border-gray-200 hover:border-orange-400 hover:shadow-lg transition-all duration-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                      ⏰ Nov 2025 Deadline
+                    </span>
+                    <span className="text-lg font-bold text-gray-900">₹1,999</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
+                    Labour Code Readiness Assessment
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Prepare for India&apos;s 4 new Labour Codes effective November 2025. Get implementation 
+                    cost estimates and a prioritized action plan before the deadline.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Code on Wages</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Social Security</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">OSH Code</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">IR Code</span>
+                  </div>
+                  <div className="flex items-center text-orange-600 text-sm font-medium">
+                    Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* DPDP Gap Assessment */}
+            <Link href="/assessments/landing/dpdp-gap-assessment" className="group">
+              <Card className="h-full border-2 border-gray-200 hover:border-purple-400 hover:shadow-lg transition-all duration-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                      🔒 Data Protection
+                    </span>
+                    <span className="text-lg font-bold text-gray-900">₹2,499</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-700 transition-colors">
+                    DPDP Act 2023 Gap Assessment
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Comprehensive Digital Personal Data Protection Act compliance assessment. 
+                    6-phase evaluation with maturity scoring and remediation roadmap.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Data Inventory</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Consent</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Principal Rights</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Security</span>
+                  </div>
+                  <div className="flex items-center text-purple-600 text-sm font-medium">
+                    Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* State-Wise Compliance */}
+            <Link href="/assessments/landing/state-wise-compliance" className="group">
+              <Card className="h-full border-2 border-gray-200 hover:border-teal-400 hover:shadow-lg transition-all duration-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 bg-teal-100 text-teal-700 text-xs font-semibold rounded-full">
+                      📍 36 States & UTs
+                    </span>
+                    <span className="text-lg font-bold text-gray-900">₹1,499</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-teal-700 transition-colors">
+                    State-Wise Compliance Check
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Find out exactly what compliance requirements apply in your state. Professional Tax slabs, 
+                    Labour Welfare Fund, Shops & Establishments Act, and more.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Professional Tax</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">LWF</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">S&E Act</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Factory Act</span>
+                  </div>
+                  <div className="flex items-center text-teal-600 text-sm font-medium">
+                    Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Restaurant & Food Business */}
+            <Link href="/assessments/landing/restaurant-food-business" className="group">
+              <Card className="h-full border-2 border-gray-200 hover:border-rose-400 hover:shadow-lg transition-all duration-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 bg-rose-100 text-rose-700 text-xs font-semibold rounded-full">
+                      🍽️ Food Business
+                    </span>
+                    <span className="text-lg font-bold text-gray-900">₹999</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-rose-600 transition-colors">
+                    Restaurant & Food Business Compliance
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Complete compliance assessment for restaurants, cloud kitchens, cafes, and food businesses. 
+                    FSSAI, Fire NOC, Liquor License, and more.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">FSSAI</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Fire NOC</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Liquor License</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">GST</span>
+                  </div>
+                  <div className="flex items-center text-rose-600 text-sm font-medium">
+                    Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* POSH Act Compliance */}
+            <Link href="/assessments/landing/posh-act-compliance" className="group">
+              <Card className="h-full border-2 border-gray-200 hover:border-violet-400 hover:shadow-lg transition-all duration-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 bg-violet-100 text-violet-700 text-xs font-semibold rounded-full">
+                      🛡️ Mandatory 10+ Employees
+                    </span>
+                    <span className="text-lg font-bold text-gray-900">₹1,999</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-violet-700 transition-colors">
+                    POSH Act 2013 Compliance
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Comprehensive ICC audit and workplace safety assessment. Check Internal Committee constitution, 
+                    policy coverage, complaint mechanisms, and annual report requirements.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">ICC Audit</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">POSH Policy</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Training</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Annual Report</span>
+                  </div>
+                  <div className="flex items-center text-violet-600 text-sm font-medium">
+                    Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          <div className="text-center mt-10">
+            <p className="text-gray-500 text-sm">
+              All assessments are <strong>free during beta</strong>. Prices shown apply post-beta launch.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-blue-800 to-blue-900">
         <div className="max-w-3xl mx-auto text-center">
