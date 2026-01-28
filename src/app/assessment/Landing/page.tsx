@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import styles from '../assessment-landing.module.css'
+import styles from './assessment-landing.module.css'
 
 export const metadata: Metadata = {
   title: 'Statutory Health Check | PF, ESI, PT, Gratuity & Bonus Compliance | ComplianceCheck',

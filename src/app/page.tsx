@@ -3,6 +3,117 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { 
+  Heart, 
+  Scale, 
+  Shield, 
+  MapPin, 
+  Utensils, 
+  AlertTriangle, 
+  ArrowRight,
+  Calculator,
+  Gift,
+  Menu,
+  X
+} from 'lucide-react';
+
+// Assessment card data
+const assessments = [
+  {
+    id: 'statutory-health-check',
+    title: 'Statutory Health Check',
+    description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance.',
+    questions: 12,
+    price: 'Rs.999 post-beta',
+    href: '/assessment/statutory-health',
+    icon: Heart,
+    gradient: 'from-blue-500 to-blue-600',
+    hoverBorder: 'hover:border-blue-500',
+    badge: null
+  },
+  {
+    id: 'labour-code-readiness',
+    title: 'Labour Code Readiness',
+    description: 'Assessment for all 4 new Labour Codes (Nov 2025). Gap analysis & action items.',
+    questions: 30,
+    price: 'Rs.1,999 post-beta',
+    href: '/assessment/labour-code',
+    icon: Scale,
+    gradient: 'from-teal-500 to-teal-600',
+    hoverBorder: 'hover:border-teal-500',
+    badge: null
+  },
+  {
+    id: 'dpdp-gap-assessment',
+    title: 'DPDP Gap Assessment',
+    description: 'Data protection compliance for DPDP Act 2023 (effective May 2027). Maturity scoring.',
+    questions: 45,
+    price: 'Rs.2,499 post-beta',
+    href: '/assessment/dpdp',
+    icon: Shield,
+    gradient: 'from-blue-600 to-cyan-600',
+    hoverBorder: 'hover:border-blue-600',
+    badge: { text: 'Popular', color: 'bg-blue-500' }
+  },
+  {
+    id: 'which-laws-apply',
+    title: 'Which Laws Apply to My Business?',
+    description: "Find out exactly what's required in your state — Professional Tax slabs, Labour Welfare Fund rates, S&E deadlines, and more.",
+    questions: 10,
+    price: 'Rs.1,499 post-beta',
+    href: '/assessment/state-wise-compliance',
+    icon: MapPin,
+    gradient: 'from-indigo-600 to-purple-600',
+    hoverBorder: 'hover:border-indigo-500',
+    badge: null
+  },
+  {
+    id: 'food-business-compliance',
+    title: 'Restaurant & Food Business',
+    description: 'FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.',
+    questions: 26,
+    price: 'Rs.999 post-beta',
+    href: '/assessment/food-business',
+    icon: Utensils,
+    gradient: 'from-cyan-500 to-teal-600',
+    hoverBorder: 'hover:border-cyan-500',
+    badge: { text: 'NEW', color: 'bg-teal-500' }
+  },
+  {
+    id: 'posh-compliance',
+    title: 'POSH Act 2013 Compliance',
+    description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
+    questions: 40,
+    price: 'Rs.1,999 post-beta',
+    href: '/assessment/posh',
+    icon: AlertTriangle,
+    gradient: 'from-purple-500 to-pink-600',
+    hoverBorder: 'hover:border-purple-500',
+    badge: { text: 'NEW', color: 'bg-purple-500' }
+  }
+];
+
+// Free tools data
+const freeTools = [
+  {
+    id: 'ctc-calculator',
+    title: 'CTC to In-Hand Calculator',
+    description: 'Convert your CTC to actual take-home salary. Understand all deductions including PF, ESI, Professional Tax, and Income Tax.',
+    href: '/calculator/ctc',
+    icon: Calculator,
+    gradient: 'from-emerald-500 to-emerald-600',
+    tags: ['Instant calculation', 'All deductions explained']
+  },
+  {
+    id: 'gratuity-calculator',
+    title: 'Gratuity Calculator',
+    description: 'Estimate your gratuity payout based on years of service and last drawn salary. Covers both Payment of Gratuity Act and new Labour Code formula.',
+    href: '/calculator/gratuity',
+    icon: Gift,
+    gradient: 'from-emerald-500 to-emerald-600',
+    tags: ['5+ years eligibility', 'New Labour Code ready']
+  }
+];
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,519 +123,569 @@ export default function LandingPage() {
       {/* Skip to Main Content - Accessibility */}
       <a 
         href="#main" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none"
       >
         Skip to main content
       </a>
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-neutral-100 dark:border-gray-800 z-50 py-4" aria-label="Main navigation">
-        <div className="container mx-auto px-6 flex justify-between items-center">
+      <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+
+      {/* Main Content */}
+      <main id="main">
+        {/* Assessments Section */}
+        <AssessmentsSection />
+
+        {/* Free Tools Section */}
+        <FreeToolsSection />
+
+        {/* How It Works Section */}
+        <HowItWorksSection />
+
+        {/* FAQ Section */}
+        <FAQSection />
+      </main>
+
+      {/* Footer */}
+      <Footer />
+    </div>
+  );
+}
+
+// Header Component
+function Header({ 
+  mobileMenuOpen, 
+  setMobileMenuOpen 
+}: { 
+  mobileMenuOpen: boolean; 
+  setMobileMenuOpen: (open: boolean) => void;
+}) {
+  const navLinks = [
+    { href: '/how-it-works', label: 'How It Works' },
+    { href: '#assessments', label: 'Assessments' },
+    { href: '#free-tools', label: 'Free Tools' },
+    { href: '#faq', label: 'FAQ' }
+  ];
+
+  return (
+    <header className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 z-50">
+      <nav className="max-w-7xl mx-auto px-6 py-4" aria-label="Main navigation">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 text-xl font-bold text-neutral-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg"
+            className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-lg"
             aria-label="ComplianceCheck - Go to homepage"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center text-white" aria-hidden="true">
-              ✓
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
             </div>
-            ComplianceCheck
+            <span className="text-xl font-bold text-gray-900 dark:text-white">ComplianceCheck</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link 
-              href="/how-it-works" 
-              className="text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
-            >
-              How It Works
-            </Link>
-            <Link 
-              href="#for-business" 
-              className="text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
-            >
-              Assessments
-            </Link>
-            <Link 
-              href="#for-you" 
-              className="text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
-            >
-              Free Tools
-            </Link>
-            <Link 
-              href="#faq" 
-              className="text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
-            >
-              FAQ
-            </Link>
-            <Link 
-              href="mailto:compliancecheck@zohomail.in" 
-              className="bg-neutral-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-neutral-800 dark:hover:bg-gray-100 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              Contact Us
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
             <ThemeToggle />
-          </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            className="md:hidden p-2 rounded-lg text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-menu"
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          >
-            {mobileMenuOpen ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu Dropdown */}
-        <div
-          id="mobile-menu"
-          className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}
-          role="menu"
-          aria-orientation="vertical"
-        >
-          <div className="px-6 pt-4 pb-6 space-y-3 bg-white dark:bg-gray-900 border-t border-neutral-100 dark:border-gray-800">
-            <Link 
-              href="/how-it-works" 
-              className="block text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-base font-medium py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-              role="menuitem"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              How It Works
-            </Link>
-            <Link 
-              href="#for-business" 
-              className="block text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-base font-medium py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-              role="menuitem"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Assessments
-            </Link>
-            <Link 
-              href="#for-you" 
-              className="block text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-base font-medium py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-              role="menuitem"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Free Tools
-            </Link>
-            <Link 
-              href="#faq" 
-              className="block text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white text-base font-medium py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-              role="menuitem"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              FAQ
-            </Link>
-            <Link 
-              href="mailto:compliancecheck@zohomail.in" 
-              className="block bg-neutral-900 dark:bg-white text-white dark:text-gray-900 px-5 py-3 rounded-lg font-medium text-base hover:bg-neutral-800 dark:hover:bg-gray-100 transition-all text-center mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              role="menuitem"
+            {/* Contact CTA */}
+            <Link
+              href="/contact"
+              className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               Contact Us
             </Link>
-            <div className="flex items-center justify-center pt-4 border-t border-neutral-100 dark:border-gray-800 mt-4">
-              <span className="text-sm text-neutral-500 dark:text-gray-400 mr-3">Theme:</span>
-              <ThemeToggle />
-            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              )}
+            </button>
           </div>
         </div>
-      </nav>
 
-      {/* Main Content */}
-      <main id="main">
-        {/* Hero Section */}
-        <section className="pt-36 pb-12 bg-gradient-to-b from-white to-neutral-50 dark:from-gray-900 dark:to-gray-800" aria-labelledby="hero-heading">
-          <div className="container mx-auto px-6 text-center">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-success/10 to-success-light/10 border border-success/20 px-4 py-2 rounded-full text-sm font-medium text-success mb-6">
-              <span aria-hidden="true">🎉</span>
-              Now in Beta - All Features Free
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg">
+            <nav className="max-w-7xl mx-auto px-6 py-4">
+              <ul className="space-y-2">
+                {navLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                <li className="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                  <Link
+                    href="/contact"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        )}
+      </nav>
+    </header>
+  );
+}
+
+
+// Assessments Section
+function AssessmentsSection() {
+  return (
+    <section
+      id="assessments"
+      className="pt-32 pb-24 bg-white dark:bg-gray-900"
+      aria-labelledby="assessments-heading"
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Section Header */}
+        <header className="text-center mb-16">
+          {/* Top Badge */}
+          <span className="inline-block bg-gradient-to-r from-blue-500 to-teal-500 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">
+            📋 For Your Business
+          </span>
+
+          {/* Main Heading */}
+          <h1
+            id="assessments-heading"
+            className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4"
+          >
+            Pay-as-you-go Assessments
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Choose the compliance assessment you need. No subscriptions. Get instant reports with gap analysis.
+          </p>
+
+          {/* Beta Badge */}
+          <div className="mt-6">
+            <span className="inline-block bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 rounded-2xl px-6 py-3 text-blue-700 dark:text-blue-300 font-semibold">
+              🎉 FREE DURING BETA
+            </span>
+          </div>
+        </header>
+
+        {/* Assessment Cards Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {assessments.map((assessment) => (
+            <AssessmentCard key={assessment.id} assessment={assessment} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Assessment Card Component
+function AssessmentCard({ assessment }: { assessment: typeof assessments[number] }) {
+  const IconComponent = assessment.icon;
+
+  return (
+    <Link
+      href={assessment.href}
+      className={`group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-700 ${assessment.hoverBorder} dark:hover:border-opacity-50 overflow-hidden transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
+    >
+      {/* Hover Background Gradient */}
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${assessment.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
+        aria-hidden="true"
+      />
+
+      {/* Badge */}
+      {assessment.badge && (
+        <span
+          className={`absolute top-4 right-4 ${assessment.badge.color} text-white text-xs font-medium px-2.5 py-1 rounded-full`}
+        >
+          {assessment.badge.text}
+        </span>
+      )}
+
+      {/* Icon */}
+      <div
+        className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${assessment.gradient} flex items-center justify-center shadow-md mb-4 group-hover:scale-110 transition-transform duration-300`}
+      >
+        <IconComponent className="w-7 h-7 text-white" aria-hidden="true" />
+      </div>
+
+      {/* Title */}
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+        {assessment.title}
+      </h2>
+
+      {/* Description */}
+      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+        {assessment.description}
+      </p>
+
+      {/* Metadata Row */}
+      <div className="flex items-center gap-4 mb-4 text-sm">
+        <span>
+          <strong className="font-semibold text-gray-700 dark:text-gray-300">{assessment.questions}</strong>
+          <span className="text-gray-500 dark:text-gray-500"> questions</span>
+        </span>
+        <span className="w-px h-4 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
+        <span className="text-xs text-gray-500 dark:text-gray-500">{assessment.price}</span>
+      </div>
+
+      {/* CTA Button */}
+      <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-300">
+        <span className="font-medium">Start Assessment</span>
+        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+      </div>
+
+      {/* Decorative Element */}
+      <div
+        className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-teal-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
+
+// Free Tools Section
+function FreeToolsSection() {
+  return (
+    <section
+      id="free-tools"
+      className="py-24 bg-gray-50 dark:bg-gray-800"
+      aria-labelledby="free-tools-heading"
+    >
+      <div className="max-w-5xl mx-auto px-6">
+        {/* Section Header */}
+        <header className="text-center mb-12">
+          <span className="inline-block bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">
+            👤 For You
+          </span>
+          <h2
+            id="free-tools-heading"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+          >
+            Free Tools
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+            Useful calculators for employees. No signup required. Free forever.
+          </p>
+          <span className="inline-block mt-4 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-4 py-1.5 rounded-full text-sm font-semibold">
+            FREE FOREVER
+          </span>
+        </header>
+
+        {/* Tools Grid */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {freeTools.map((tool) => {
+            const IconComponent = tool.icon;
+            return (
+              <Link
+                key={tool.id}
+                href={tool.href}
+                className="group bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:border-emerald-500 hover:shadow-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center shadow-md`}>
+                    <IconComponent className="w-7 h-7 text-white" aria-hidden="true" />
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-wide bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full">
+                    Free
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  {tool.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {tool.description}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {tool.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-xs bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2.5 py-1 rounded-full text-gray-500 dark:text-gray-400"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                  Calculate now <ArrowRight className="w-4 h-4" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// How It Works Section
+function HowItWorksSection() {
+  const steps = [
+    {
+      number: '1',
+      title: 'Choose Your Assessment',
+      description: 'Select from our compliance assessments based on your business needs.'
+    },
+    {
+      number: '2',
+      title: 'Answer Questions',
+      description: 'Complete the guided questionnaire in 10-15 minutes. Save and resume anytime.'
+    },
+    {
+      number: '3',
+      title: 'Get Your Report',
+      description: 'Receive instant gap analysis, compliance score, and prioritised action items.'
+    }
+  ];
+
+  return (
+    <section
+      id="how-it-works"
+      className="py-24 bg-white dark:bg-gray-900"
+      aria-labelledby="how-it-works-heading"
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <header className="text-center mb-16">
+          <span className="inline-block bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">
+            ⚡ Simple Process
+          </span>
+          <h2
+            id="how-it-works-heading"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+          >
+            How It Works
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+            Get compliance clarity in three simple steps
+          </p>
+        </header>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {steps.map((step, index) => (
+            <div
+              key={step.number}
+              className="relative bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700"
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-xl mb-4">
+                {step.number}
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                {step.title}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {step.description}
+              </p>
+              {index < steps.length - 1 && (
+                <ArrowRight className="hidden md:block absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+              )}
             </div>
-            
-            <h1 id="hero-heading" className="text-4xl md:text-6xl font-bold text-neutral-900 dark:text-white leading-tight mb-6">
-              Compliance Made Simple
-              <br />
-              <span className="bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
-                for Indian Businesses
-              </span>
-            </h1>
-            
-            <p className="text-xl text-neutral-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Instant compliance assessments for employers. Free salary calculators for employees. No subscriptions required.
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// FAQ Section
+function FAQSection() {
+  const faqs = [
+    {
+      question: 'Who is this for?',
+      answer: 'Startup founders, HR managers, and compliance professionals managing Indian businesses with 10-500 employees.'
+    },
+    {
+      question: 'Is this a subscription?',
+      answer: 'No. Pay only when you need an assessment. No recurring charges, no lock-in contracts.'
+    },
+    {
+      question: 'How accurate are the assessments?',
+      answer: 'Our checklists are developed with practising CS and labour law experts. We cite specific government sections and rules.'
+    },
+    {
+      question: 'What do I get in the report?',
+      answer: 'Each report includes a compliance score, gap analysis, risk assessment, and prioritised action items with legal references.'
+    }
+  ];
+
+  return (
+    <section
+      id="faq"
+      className="py-24 bg-gray-50 dark:bg-gray-800"
+      aria-labelledby="faq-heading"
+    >
+      <div className="max-w-4xl mx-auto px-6">
+        <header className="text-center mb-16">
+          <span className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">
+            ❓ FAQ
+          </span>
+          <h2
+            id="faq-heading"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+          >
+            Common Questions
+          </h2>
+        </header>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <details
+              key={index}
+              className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+            >
+              <summary className="flex items-center justify-between p-6 cursor-pointer list-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset">
+                <h3 className="font-semibold text-gray-900 dark:text-white">{faq.question}</h3>
+                <span className="ml-4 flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center group-open:rotate-45 transition-transform font-bold">
+                  +
+                </span>
+              </summary>
+              <div className="px-6 pb-6">
+                <p className="text-gray-600 dark:text-gray-400">{faq.answer}</p>
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Footer Component
+function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-gray-900 text-white py-12" role="contentinfo">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid md:grid-cols-4 gap-8 mb-8">
+          {/* Brand */}
+          <div className="md:col-span-2">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-teal-500 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <span className="text-lg font-bold">ComplianceCheck</span>
+            </Link>
+            <p className="text-gray-400 max-w-sm">
+              Simplifying compliance for Indian businesses. Pay-as-you-go assessments that fit your budget.
             </p>
           </div>
-        </section>
 
-        {/* FOR YOUR BUSINESS Section - Assessments */}
-        <section id="for-business" className="py-16 bg-neutral-50 dark:bg-gray-800" aria-labelledby="business-heading">
-          <div className="container mx-auto px-6">
-            {/* Section Title */}
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-3 mb-3">
-                <span className="text-3xl" aria-hidden="true">🏢</span>
-                <h2 id="business-heading" className="text-3xl font-bold text-neutral-900 dark:text-white">For Your Business</h2>
-              </div>
-              <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold uppercase tracking-wide bg-primary/10 text-primary">
-                Free During Beta
-              </span>
-            </div>
-
-            {/* 4-Column Grid for Assessments */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              
-              {/* Statutory Health Check */}
-              <Link 
-                href="/assessment/statutory-health"
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-primary hover:shadow-lg hover:-translate-y-1 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                <div className="mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl" aria-hidden="true">📋</span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Statutory Health Check</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance.
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">12 questions</span>
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">PDF report</span>
-                </div>
-                <div className="text-xs text-neutral-400 dark:text-gray-500 mb-2">Rs.999 post-beta</div>
-                <div className="text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform">
-                  Start assessment →
-                </div>
-              </Link>
-
-              {/* Labour Code Readiness */}
-              <Link 
-                href="/assessment/labour-code"
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-primary hover:shadow-lg hover:-translate-y-1 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                <div className="mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl" aria-hidden="true">⚖️</span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Labour Code Readiness</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  Assessment for all 4 new Labour Codes (effective Nov 2025). Gap analysis & action items.
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">30 questions</span>
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">Cost estimates</span>
-                </div>
-                <div className="text-xs text-neutral-400 dark:text-gray-500 mb-2">Rs.1,999 post-beta</div>
-                <div className="text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform">
-                  Start assessment →
-                </div>
-              </Link>
-
-              {/* DPDP Gap Assessment */}
-              <Link 
-                href="/assessment/dpdp"
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-primary hover:shadow-lg hover:-translate-y-1 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                <div className="mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl" aria-hidden="true">🔒</span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">DPDP Gap Assessment</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  Data protection compliance for DPDP Act 2023 (deadline May 2027). Maturity scoring.
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">45 questions</span>
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">5-phase model</span>
-                </div>
-                <div className="text-xs text-neutral-400 dark:text-gray-500 mb-2">Rs.2,499 post-beta</div>
-                <div className="text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform">
-                  Start assessment →
-                </div>
-              </Link>
-
-              {/* State-Wise Compliance */}
-              <Link 
-                href="/assessment/state-wise-compliance"
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-violet-500 hover:shadow-lg hover:-translate-y-1 transition-all group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
-              >
-                <div className="mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-2xl" aria-hidden="true">📍</span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Which Laws Apply to My Business?</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  Find out exactly what&apos;s required in your state — Professional Tax slabs, Labour Welfare Fund rates, S&amp;E deadlines, and more.
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  <span className="text-xs bg-violet-100 dark:bg-violet-900/30 px-2 py-0.5 rounded-full text-violet-600 dark:text-violet-400 font-medium">20+ compliance areas checked</span>
-                </div>
-                <div className="text-xs text-neutral-400 dark:text-gray-500 mb-2">Rs.1,499 post-beta</div>
-                <div className="text-sm font-semibold text-violet-600 dark:text-violet-400 group-hover:translate-x-1 transition-transform">
-                  Check my state →
-                </div>
-              </Link>
-
-              {/* Restaurant & Food Business Compliance */}
-              <Link 
-                href="/assessment/food-business"
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-orange-500 hover:shadow-lg hover:-translate-y-1 transition-all group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-              >
-                <span className="absolute -top-2 right-4 bg-orange-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full">NEW</span>
-                <div className="mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-2xl" aria-hidden="true">🍽️</span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Restaurant & Food Business</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">25-67 questions</span>
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">8 compliance areas</span>
-                </div>
-                <div className="text-xs text-neutral-400 dark:text-gray-500 mb-2">Rs.999 post-beta</div>
-                <div className="text-sm font-semibold text-orange-600 dark:text-orange-400 group-hover:translate-x-1 transition-transform">
-                  Start assessment →
-                </div>
-              </Link>
-
-              {/* POSH Act 2013 Compliance */}
-              <Link 
-                href="/assessment/posh"
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-pink-500 hover:shadow-lg hover:-translate-y-1 transition-all group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
-              >
-                <span className="absolute -top-2 right-4 bg-pink-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full">NEW</span>
-                <div className="mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-2xl" aria-hidden="true">🛡️</span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">POSH Act 2013 Compliance</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">40-50 questions</span>
-                  <span className="text-xs bg-neutral-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-neutral-500 dark:text-gray-400">ICC audit</span>
-                </div>
-                <div className="text-xs text-neutral-400 dark:text-gray-500 mb-2">Rs.1,999 post-beta</div>
-                <div className="text-sm font-semibold text-pink-600 dark:text-pink-400 group-hover:translate-x-1 transition-transform">
-                  Start assessment →
-                </div>
-              </Link>
-
-            </div>
+          {/* Quick Links */}
+          <div>
+            <h4 className="font-semibold mb-4">Quick Links</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="#assessments" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  Assessments
+                </Link>
+              </li>
+              <li>
+                <Link href="#free-tools" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  Free Tools
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link href="#faq" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  FAQ
+                </Link>
+              </li>
+            </ul>
           </div>
-        </section>
 
-        {/* Visual Divider */}
-        <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-gray-600 to-transparent h-px max-w-4xl mx-auto" aria-hidden="true" />
-
-        {/* FOR YOU Section - Free Calculators */}
-        <section id="for-you" className="py-16 bg-white dark:bg-gray-900" aria-labelledby="personal-heading">
-          <div className="container mx-auto px-6">
-            {/* Section Title */}
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-3 mb-3">
-                <span className="text-3xl" aria-hidden="true">👤</span>
-                <h2 id="personal-heading" className="text-3xl font-bold text-neutral-900 dark:text-white">For You</h2>
-              </div>
-              <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold uppercase tracking-wide bg-success/10 text-success">
-                Free Forever
-              </span>
-            </div>
-
-            {/* 2-Column Grid for Calculators */}
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              
-              {/* CTC Calculator */}
-              <Link 
-                href="/calculator/ctc"
-                className="bg-neutral-50 dark:bg-gray-800 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-success hover:shadow-lg hover:-translate-y-1 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success focus-visible:ring-offset-2"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-2xl" aria-hidden="true">💰</span>
-                  <span className="text-xs font-semibold uppercase tracking-wide bg-success/10 text-success px-2.5 py-1 rounded-full">Free</span>
-                </div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">CTC to In-Hand Calculator</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  Convert your CTC to actual take-home salary. Understand all deductions including PF, ESI, Professional Tax, and Income Tax.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="text-xs bg-white dark:bg-gray-700 border border-neutral-200 dark:border-gray-600 px-2.5 py-1 rounded-full text-neutral-500 dark:text-gray-400">Instant calculation</span>
-                  <span className="text-xs bg-white dark:bg-gray-700 border border-neutral-200 dark:border-gray-600 px-2.5 py-1 rounded-full text-neutral-500 dark:text-gray-400">All deductions explained</span>
-                </div>
-                <div className="text-sm font-semibold text-success group-hover:translate-x-1 transition-transform">
-                  Calculate now →
-                </div>
-              </Link>
-
-              {/* Gratuity Calculator */}
-              <Link 
-                href="/calculator/gratuity"
-                className="bg-neutral-50 dark:bg-gray-800 rounded-2xl p-6 border border-neutral-200 dark:border-gray-700 hover:border-success hover:shadow-lg hover:-translate-y-1 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success focus-visible:ring-offset-2"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-2xl" aria-hidden="true">🎁</span>
-                  <span className="text-xs font-semibold uppercase tracking-wide bg-success/10 text-success px-2.5 py-1 rounded-full">Free</span>
-                </div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Gratuity Calculator</h3>
-                <p className="text-sm text-neutral-600 dark:text-gray-400 leading-relaxed mb-4">
-                  Estimate your gratuity payout based on years of service and last drawn salary. Covers both Payment of Gratuity Act and new Labour Code formula.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="text-xs bg-white dark:bg-gray-700 border border-neutral-200 dark:border-gray-600 px-2.5 py-1 rounded-full text-neutral-500 dark:text-gray-400">5+ years eligibility</span>
-                  <span className="text-xs bg-white dark:bg-gray-700 border border-neutral-200 dark:border-gray-600 px-2.5 py-1 rounded-full text-neutral-500 dark:text-gray-400">New Labour Code ready</span>
-                </div>
-                <div className="text-sm font-semibold text-success group-hover:translate-x-1 transition-transform">
-                  Calculate now →
-                </div>
-              </Link>
-
-            </div>
-          </div>
-        </section>
-
-        {/* Problem Section */}
-        <section className="py-24 bg-neutral-50 dark:bg-gray-800" aria-labelledby="problem-heading">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <div className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-                THE PROBLEM
-              </div>
-              <h2 id="problem-heading" className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white">
-                Why Indian SMEs struggle with compliance
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl text-center">
-                <div className="text-5xl mb-4" aria-hidden="true">💼</div>
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
-                  Consultants are Expensive
-                </h3>
-                <p className="text-neutral-600 dark:text-gray-400 leading-relaxed">
-                  Full compliance audits cost <span className="font-semibold text-amber-600 dark:text-amber-400">₹1-10 lakh+</span>. Too expensive for early-stage companies.
-                </p>
-              </div>
-
-              <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl text-center">
-                <div className="text-5xl mb-4" aria-hidden="true">📊</div>
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
-                  SaaS is Overkill
-                </h3>
-                <p className="text-neutral-600 dark:text-gray-400 leading-relaxed">
-                  Enterprise tools cost <span className="font-semibold text-amber-600 dark:text-amber-400">₹20K-5L/year</span>. Unnecessary for occasional compliance checks.
-                </p>
-              </div>
-
-              <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl text-center">
-                <div className="text-5xl mb-4" aria-hidden="true">🔍</div>
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
-                  DIY is Risky
-                </h3>
-                <p className="text-neutral-600 dark:text-gray-400 leading-relaxed">
-                  Free Google searches lead to incomplete information and missed requirements.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section id="faq" className="py-24 bg-white dark:bg-gray-900" aria-labelledby="faq-heading">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <div className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-                FAQ
-              </div>
-              <h2 id="faq-heading" className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white">
-                Common questions
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              <div className="bg-neutral-50 dark:bg-gray-800 p-8 rounded-2xl">
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
-                  Who is this for?
-                </h3>
-                <p className="text-neutral-600 dark:text-gray-400 leading-relaxed">
-                  Startup founders, HR managers, and CA/CS professionals managing compliance for companies with 10-500 employees.
-                </p>
-              </div>
-
-              <div className="bg-neutral-50 dark:bg-gray-800 p-8 rounded-2xl">
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
-                  Is there a subscription?
-                </h3>
-                <p className="text-neutral-600 dark:text-gray-400 leading-relaxed">
-                  No subscriptions. Pay only when you need an assessment. Free tools stay free forever.
-                </p>
-              </div>
-
-              <div className="bg-neutral-50 dark:bg-gray-800 p-8 rounded-2xl">
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
-                  How accurate are the assessments?
-                </h3>
-                <p className="text-neutral-600 dark:text-gray-400 leading-relaxed">
-                  Our questions are based on official government sources and verified by compliance experts. We cite specific sections and rules.
-                </p>
-              </div>
-
-              <div className="bg-neutral-50 dark:bg-gray-800 p-8 rounded-2xl">
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
-                  What happens after the assessment?
-                </h3>
-                <p className="text-neutral-600 dark:text-gray-400 leading-relaxed">
-                  You get a detailed PDF report with your compliance score, gap analysis, and prioritized action items with government references.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-12 bg-neutral-50 dark:bg-gray-800 border-t border-neutral-200 dark:border-gray-700" role="contentinfo">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2 text-lg font-bold text-neutral-900 dark:text-white">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center text-white" aria-hidden="true">
-                ✓
-              </div>
-              ComplianceCheck
-            </div>
-            
-            <nav className="flex items-center gap-6 text-sm text-neutral-600 dark:text-gray-400" aria-label="Footer navigation">
-              <Link 
-                href="/privacy" 
-                className="hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-              >
-                Privacy Policy
-              </Link>
-              <Link 
-                href="/terms" 
-                className="hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-              >
-                Terms of Service
-              </Link>
-              <Link 
-                href="mailto:compliancecheck@zohomail.in" 
-                className="hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-              >
-                Contact
-              </Link>
-            </nav>
-            
-            <div className="text-sm text-neutral-500 dark:text-gray-500">
-              Made in India <span aria-label="Indian flag">🇮🇳</span>
-            </div>
+          {/* Legal */}
+          <div>
+            <h4 className="font-semibold mb-4">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
-      </footer>
-    </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-gray-400 text-sm">
+            © {currentYear} ComplianceCheck. Made in India <span aria-label="Indian flag">🇮🇳</span>
+          </p>
+          <p className="text-gray-500 text-sm">
+            Contact: <a href="mailto:compliancecheck@zohomail.in" className="text-gray-400 hover:text-white transition-colors">compliancecheck@zohomail.in</a>
+          </p>
+        </div>
+      </div>
+    </footer>
   );
 }
