@@ -328,7 +328,7 @@ function AssessmentCard({ assessment }: { assessment: typeof assessments[number]
   return (
     <Link
       href={assessment.href}
-      className={`group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-700 ${assessment.hoverBorder} dark:hover:border-opacity-50 overflow-hidden transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
+      className={`group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-700 ${assessment.hoverBorder} dark:hover:border-opacity-50 overflow-hidden transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 flex flex-col h-full`}
     >
       {/* Hover Background Gradient */}
       <div
@@ -362,20 +362,23 @@ function AssessmentCard({ assessment }: { assessment: typeof assessments[number]
         {assessment.description}
       </p>
 
-      {/* Metadata Row */}
-      <div className="flex items-center gap-4 mb-4 text-sm">
-        <span>
-          <strong className="font-semibold text-gray-700 dark:text-gray-300">{assessment.questions}</strong>
-          <span className="text-gray-500 dark:text-gray-500"> questions</span>
-        </span>
-        <span className="w-px h-4 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
-        <span className="text-xs text-gray-500 dark:text-gray-500">{assessment.price}</span>
-      </div>
+      {/* Spacer + Bottom Content - pushed to bottom */}
+      <div className="mt-auto">
+        {/* Metadata Row */}
+        <div className="flex items-center gap-4 mb-4 text-sm">
+          <span>
+            <strong className="font-semibold text-gray-700 dark:text-gray-300">{assessment.questions}</strong>
+            <span className="text-gray-500 dark:text-gray-500"> questions</span>
+          </span>
+          <span className="w-px h-4 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
+          <span className="text-xs text-gray-500 dark:text-gray-500">{assessment.price}</span>
+        </div>
 
-      {/* CTA Button */}
-      <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-300">
-        <span className="font-medium">Start Assessment</span>
-        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        {/* CTA Button */}
+        <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-300">
+          <span className="font-medium">Start Assessment</span>
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </div>
       </div>
 
       {/* Decorative Element */}

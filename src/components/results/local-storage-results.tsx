@@ -12,6 +12,8 @@ import {
 import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { LABOUR_CODE_CATEGORIES } from '@/lib/assessments/labour-code-questions'
 import { DPDP_CATEGORIES } from '@/lib/assessments/dpdp-questions'
+import { POSH_CATEGORIES } from '@/lib/assessments/posh/posh-compliance-questions'
+import { FOOD_BUSINESS_CATEGORIES } from '@/lib/assessments/food-business-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -601,6 +603,8 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
   const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
   const isStateWise = assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE
+  const isPOSH = assessmentType === ASSESSMENT_TYPES.POSH
+  const isFoodBusiness = assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS
 
   useEffect(() => {
     try {
@@ -687,6 +691,29 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
       text: item.text || item.category || 'Action required',
       priority: (item.priority as 'high' | 'medium' | 'low') || 'medium'
     }))
+  } else if (isPOSH || isFoodBusiness) {
+    // For POSH and Food Business, derive compliance from category scores
+    // since we don't have individual question summaries
+    Object.entries(categoryScores).forEach(([catId, data]) => {
+      const percentage = typeof data === 'number' ? data : data.percentage || 0
+      const catName = isPOSH 
+        ? (POSH_CATEGORIES[catId as keyof typeof POSH_CATEGORIES]?.name || catId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+        : (FOOD_BUSINESS_CATEGORIES[catId as keyof typeof FOOD_BUSINESS_CATEGORIES]?.name || catId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+      
+      if (percentage >= 80) {
+        compliantItems.push({
+          id: `cat_${catId}`,
+          text: `${catName}: ${percentage}% compliant`
+        })
+      } else {
+        const priority: 'high' | 'medium' | 'low' = percentage < 50 ? 'high' : percentage < 70 ? 'medium' : 'low'
+        nonCompliantItems.push({
+          id: `cat_${catId}`,
+          text: `${catName}: Needs improvement (${percentage}% compliant)`,
+          priority
+        })
+      }
+    })
   } else {
     const analysisResult = analyseResponses(answers)
     compliantItems = analysisResult.compliantItems
@@ -706,6 +733,20 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
       const labourCat = LABOUR_CODE_CATEGORIES.find(c => c.id === catId)
       return {
         name: labourCat?.name || catId,
+        penaltyExposure: null
+      }
+    }
+    if (isPOSH) {
+      const poshCat = POSH_CATEGORIES[catId as keyof typeof POSH_CATEGORIES]
+      return {
+        name: poshCat?.name || catId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        penaltyExposure: null
+      }
+    }
+    if (isFoodBusiness) {
+      const foodCat = FOOD_BUSINESS_CATEGORIES[catId as keyof typeof FOOD_BUSINESS_CATEGORIES]
+      return {
+        name: foodCat?.name || catId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         penaltyExposure: null
       }
     }
@@ -744,8 +785,20 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
             <ThemeToggle />
           </div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge className={isDPDP ? 'bg-purple-100 text-purple-700' : isLabourCode ? 'bg-blue-100 text-blue-700' : isStateWise ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}>
-              {isDPDP ? 'DPDP Gap Assessment' : isLabourCode ? 'Labour Code Readiness' : isStateWise ? 'State-Wise Compliance' : 'Statutory Health Check'}
+            <Badge className={
+              isDPDP ? 'bg-purple-100 text-purple-700' : 
+              isLabourCode ? 'bg-blue-100 text-blue-700' : 
+              isStateWise ? 'bg-purple-100 text-purple-700' : 
+              isPOSH ? 'bg-pink-100 text-pink-700' :
+              isFoodBusiness ? 'bg-orange-100 text-orange-700' :
+              'bg-green-100 text-green-700'
+            }>
+              {isDPDP ? 'DPDP Gap Assessment' : 
+               isLabourCode ? 'Labour Code Readiness' : 
+               isStateWise ? 'State-Wise Compliance' : 
+               isPOSH ? 'POSH Act 2013 Compliance' :
+               isFoodBusiness ? 'Restaurant & Food Business Compliance' :
+               'Statutory Health Check'}
             </Badge>
             <Badge variant="outline" className="text-gray-500">
               {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -922,7 +975,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
               {categoryStats.map((cat) => (
                 <div 
                   key={cat.category} 
-                  className={`p-4 rounded-lg ${isDPDP ? 'border-l-4' : 'text-center border-2'} ${
+                  className={`p-4 rounded-lg flex flex-col ${isDPDP ? 'border-l-4 min-h-[100px]' : 'text-center border-2 min-h-[120px]'} ${
                     cat.status === 'compliant' ? isDPDP ? 'bg-green-50 border-l-green-500' : 'bg-green-50 border-green-200' :
                     cat.status === 'needs-attention' ? isDPDP ? 'bg-amber-50 border-l-amber-500' : 'bg-amber-50 border-amber-200' : 
                     isDPDP ? 'bg-red-50 border-l-red-500' : 'bg-red-50 border-red-200'
@@ -935,8 +988,8 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
                       {cat.status === 'non-compliant' && <XCircle className="w-6 h-6 text-red-600 mx-auto" />}
                     </div>
                   )}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className={isDPDP ? 'flex-1' : ''}>
+                  <div className={`flex items-center justify-between gap-2 ${!isDPDP ? 'flex-1 flex-col justify-center' : ''}`}>
+                    <div className={isDPDP ? 'flex-1' : 'w-full'}>
                       <div className={`${isDPDP ? 'text-xl' : 'text-2xl'} font-bold ${
                         cat.status === 'compliant' ? 'text-green-600' :
                         cat.status === 'needs-attention' ? 'text-amber-600' : 'text-red-600'
