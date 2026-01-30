@@ -27,7 +27,7 @@ import {
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
 import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics';
-import { ArrowLeft, ArrowRight, CheckCircle2, Building2, Loader2, Info, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Building2, Loader2, Info, Save } from 'lucide-react';
 
 interface UserDetails {
   companyName: string;
@@ -437,31 +437,7 @@ export default function LabourCodeAssessmentPage() {
               <span>{progress}% complete</span>
             </div>
           </div>
-          <Progress value={progress} className="h-2" aria-label="Assessment progress" />
-          
-          {currentStep > 0 && (
-            <div className="flex gap-2 mt-4">
-              {LABOUR_CODE_CATEGORIES.map((cat, idx) => {
-                const catQuestions = getQuestionsByCategory(
-                  cat.id,
-                  userDetails.industry as IndustryType,
-                  userDetails.employeeCount as EmployeeCountRange
-                );
-                if (catQuestions.length === 0) return null;
-                const isComplete = catQuestions.every(q => responses[q.id]);
-                const isCurrent = idx === currentCategoryIndex;
-                return (
-                  <div
-                    key={cat.id}
-                    className={`flex-1 h-1.5 rounded-full ${
-                      isComplete ? 'bg-green-500' : isCurrent ? 'bg-blue-500' : 'bg-slate-200'
-                    }`}
-                    title={`${cat.name}: ${catQuestions.length} questions`}
-                  />
-                );
-              })}
-            </div>
-          )}
+          <Progress value={progress} className="h-3 [&>div]:bg-green-600" aria-label="Assessment progress" />
         </div>
 
         {/* Step 0: User Details */}
@@ -653,7 +629,7 @@ export default function LabourCodeAssessmentPage() {
                       variant={responses[currentQuestion.id] === 'yes' ? 'default' : 'outline'}
                       className={`h-16 text-lg ${
                         responses[currentQuestion.id] === 'yes' 
-                          ? 'bg-green-600 hover:bg-green-700' 
+                          ? 'bg-green-700 hover:bg-green-800 text-white' 
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'yes')}
@@ -665,11 +641,12 @@ export default function LabourCodeAssessmentPage() {
                       variant={responses[currentQuestion.id] === 'no' ? 'default' : 'outline'}
                       className={`h-16 text-lg ${
                         responses[currentQuestion.id] === 'no' 
-                          ? 'bg-red-600 hover:bg-red-700' 
+                          ? 'bg-red-700 hover:bg-red-800 text-white' 
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'no')}
                     >
+                      <XCircle className="w-5 h-5 mr-2" />
                       No
                     </Button>
                   </div>
@@ -683,7 +660,7 @@ export default function LabourCodeAssessmentPage() {
                         variant={responses[currentQuestion.id] === option ? 'default' : 'outline'}
                         className={`w-full h-auto py-4 text-left justify-start whitespace-normal ${
                           responses[currentQuestion.id] === option 
-                            ? 'bg-blue-600 hover:bg-blue-700' 
+                            ? 'bg-blue-700 hover:bg-blue-800 text-white' 
                             : ''
                         }`}
                         onClick={() => handleResponse(currentQuestion.id, option)}
@@ -725,7 +702,7 @@ export default function LabourCodeAssessmentPage() {
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !responses[currentQuestion?.id]}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+              className="flex items-center gap-2 bg-green-700 hover:bg-green-800"
             >
               {isSubmitting ? (
                 <>

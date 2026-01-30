@@ -19,7 +19,6 @@ import {
   Utensils,
   AlertTriangle,
   Info,
-  Clock,
   Shield
 } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
@@ -103,6 +102,24 @@ export default function FoodBusinessAssessmentPage() {
   
   // Current main question
   const currentQuestion = filteredQuestions[currentQuestionIndex]
+
+  // Overall progress calculation (for two-tier progress system)
+  // Details: 0%, Applicability: 5-25%, Summary: 30%, Questions: 35-95%, Results: 100%
+  const overallProgress = (() => {
+    if (currentStep === 'details') return 0
+    if (currentStep === 'applicability') {
+      const applicabilityPercent = (applicabilityIndex / FOOD_BUSINESS_APPLICABILITY_QUESTIONS.length) * 100
+      return Math.round(5 + (applicabilityPercent * 0.20))
+    }
+    if (currentStep === 'summary') return 30
+    if (currentStep === 'questions') {
+      const questionsPercent = filteredQuestions.length > 0 
+        ? (currentQuestionIndex / filteredQuestions.length) * 100 
+        : 0
+      return Math.round(35 + (questionsPercent * 0.60))
+    }
+    return 100 // results
+  })()
   
   // Estimated question count based on current applicability responses
   const [estimatedQuestionCount, setEstimatedQuestionCount] = useState(TOTAL_POSSIBLE_QUESTIONS)
@@ -167,7 +184,7 @@ export default function FoodBusinessAssessmentPage() {
     const questionId = currentApplicabilityQuestion.id
     setApplicabilityResponses(prev => ({ ...prev, [questionId]: answer }))
     
-    // Auto-advance after 600ms
+    // Auto-advance after 800ms
     setTimeout(() => {
       if (applicabilityIndex < FOOD_BUSINESS_APPLICABILITY_QUESTIONS.length - 1) {
         setApplicabilityIndex(prev => prev + 1)
@@ -177,7 +194,7 @@ export default function FoodBusinessAssessmentPage() {
         setApplicabilityResults(results)
         setCurrentStep('summary')
       }
-    }, 600)
+    }, 800)
   }
   
   // Start main assessment from summary
@@ -472,15 +489,6 @@ export default function FoodBusinessAssessmentPage() {
             </div>
           )}
         </CardContent>
-        <CardFooter className="justify-between border-t pt-4">
-          <div className="text-sm text-gray-500">
-            <Clock className="h-4 w-4 inline mr-1" />
-            Est. {Math.ceil(estimatedQuestionCount * 0.5)} min remaining
-          </div>
-          <div className="text-sm text-gray-500">
-            ~{estimatedQuestionCount} questions based on your profile
-          </div>
-        </CardFooter>
       </Card>
     )
   }
@@ -827,6 +835,25 @@ export default function FoodBusinessAssessmentPage() {
         title="Restaurant & Food Business Compliance Check"
         subtitle="FSSAI, GST, Fire Safety, Labour & Liquor Compliance"
       />
+
+      {/* Overall Progress Bar - Two-tier system */}
+      {currentStep !== 'results' && (
+        <div className="bg-white border-b">
+          <div className="container mx-auto px-4 py-3">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <span className="font-medium">Overall Progress</span>
+                <span className="font-semibold">{overallProgress}%</span>
+              </div>
+              <Progress 
+                value={overallProgress} 
+                className="h-3 [&>div]:bg-green-600"
+                aria-label="Overall assessment progress"
+              />
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Content */}
       <main className="container mx-auto px-4 py-8">

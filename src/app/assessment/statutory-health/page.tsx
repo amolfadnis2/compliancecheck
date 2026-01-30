@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Save, Loader2 } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { 
   STATUTORY_HEALTH_QUESTIONS, 
@@ -130,11 +130,12 @@ export default function StatutoryHealthAssessmentPage() {
     localStorage.removeItem(STORAGE_KEY)
   }
 
-  // Calculate progress
+  // Calculate overall progress (for two-tier progress system)
+  // Details: 0-10%, Questions: 10-90%, Summary: 90-100%
   const getProgress = () => {
     if (step === 1) return 5
-    if (step === 2) return 10 + (currentQuestionIndex / totalQuestions) * 70
-    return 90
+    if (step === 2) return Math.round(10 + (currentQuestionIndex / totalQuestions) * 80)
+    return 95
   }
 
   // Handle user details submission
@@ -325,7 +326,7 @@ export default function StatutoryHealthAssessmentPage() {
               <span>{Math.round(getProgress())}%</span>
             </div>
           </div>
-          <Progress value={getProgress()} className="h-2" aria-label="Assessment progress" />
+          <Progress value={getProgress()} className="h-3 [&>div]:bg-green-600" aria-label="Assessment progress" />
         </div>
 
         {/* Restored Progress Notice */}
@@ -465,16 +466,26 @@ export default function StatutoryHealthAssessmentPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     variant={responses[currentQuestion.id] === 'yes' ? 'default' : 'outline'}
-                    className="h-16 text-lg"
+                    className={`h-16 text-lg ${
+                      responses[currentQuestion.id] === 'yes' 
+                        ? 'bg-green-700 hover:bg-green-800 text-white' 
+                        : ''
+                    }`}
                     onClick={() => handleAnswer('yes')}
                   >
+                    <CheckCircle className="mr-2 h-5 w-5" />
                     Yes
                   </Button>
                   <Button
                     variant={responses[currentQuestion.id] === 'no' ? 'default' : 'outline'}
-                    className="h-16 text-lg"
+                    className={`h-16 text-lg ${
+                      responses[currentQuestion.id] === 'no' 
+                        ? 'bg-red-700 hover:bg-red-800 text-white' 
+                        : ''
+                    }`}
                     onClick={() => handleAnswer('no')}
                   >
+                    <XCircle className="mr-2 h-5 w-5" />
                     No
                   </Button>
                 </div>

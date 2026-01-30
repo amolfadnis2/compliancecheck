@@ -255,6 +255,15 @@ export default function POSHAssessmentPage() {
     ? (currentComplianceIndex / filteredQuestions.length) * 100
     : 0
 
+  // Overall progress calculation (for two-tier progress system)
+  // Details: 0%, Applicability: 5-30%, Compliance: 30-90%, Results: 100%
+  const overallProgress = (() => {
+    if (phase === 'details') return 0
+    if (phase === 'applicability') return Math.round(5 + (applicabilityProgress * 0.25))
+    if (phase === 'compliance') return Math.round(30 + (complianceProgress * 0.60))
+    return 100 // results phase
+  })()
+
   // -------------------------------------------------------------------------
   // POSTHOG TRACKING
   // -------------------------------------------------------------------------
@@ -1698,6 +1707,25 @@ export default function POSHAssessmentPage() {
         title="POSH Compliance Assessment"
         subtitle="Sexual Harassment of Women at Workplace Act, 2013"
       />
+
+      {/* Overall Progress Bar - Two-tier system */}
+      {phase !== 'results' && (
+        <div className="bg-white border-b">
+          <div className="container mx-auto px-4 py-3">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <span className="font-medium">Overall Progress</span>
+                <span className="font-semibold">{overallProgress}%</span>
+              </div>
+              <Progress 
+                value={overallProgress} 
+                className="h-3 [&>div]:bg-green-600"
+                aria-label="Overall assessment progress"
+              />
+            </div>
+          </div>
+        </div>
+      )}
       
       <main className="container mx-auto px-4 py-8">
         {/* Back Button */}

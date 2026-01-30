@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, ArrowRight, CheckCircle, Save, Loader2, Shield, AlertTriangle, Info } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, Shield, AlertTriangle, Info } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics'
 import { 
@@ -299,8 +299,8 @@ export default function DPDPAssessmentPage() {
                 Question {currentQuestionIndex + 1} of {totalQuestions}
               </span>
             </div>
-            <Progress value={progressPercentage} className="h-2" aria-label={`Assessment progress: ${progressPercentage}% complete`} />
-            <p className="text-xs text-gray-500 mt-1">{progressPercentage}% complete</p>
+            <Progress value={progressPercentage} className="h-3 [&>div]:bg-green-600" aria-label={`Assessment progress: ${progressPercentage}% complete`} />
+            <p className="text-xs text-gray-500 mt-1">Overall Progress: {progressPercentage}%</p>
           </div>
         )}
 
@@ -619,47 +619,49 @@ export default function DPDPAssessmentPage() {
               {/* Answer Options */}
               <div className="space-y-3">
                 {currentQuestion.type === 'yes_no' ? (
-                  <>
-                    <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                      <input
-                        type="radio"
-                        name={currentQuestion.id}
-                        value="yes"
-                        checked={responses[currentQuestion.id] === 'yes'}
-                        onChange={(e) => handleResponse(currentQuestion.id, e.target.value)}
-                        className="mr-3 h-4 w-4"
-                      />
-                      <span className="text-base">Yes</span>
-                    </label>
-                    <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                      <input
-                        type="radio"
-                        name={currentQuestion.id}
-                        value="no"
-                        checked={responses[currentQuestion.id] === 'no'}
-                        onChange={(e) => handleResponse(currentQuestion.id, e.target.value)}
-                        className="mr-3 h-4 w-4"
-                      />
-                      <span className="text-base">No</span>
-                    </label>
-                  </>
-                ) : (
-                  currentQuestion.options?.map((option) => (
-                    <label 
-                      key={option}
-                      className="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      variant={responses[currentQuestion.id] === 'yes' ? 'default' : 'outline'}
+                      className={`h-16 text-lg ${
+                        responses[currentQuestion.id] === 'yes' 
+                          ? 'bg-green-700 hover:bg-green-800 text-white' 
+                          : ''
+                      }`}
+                      onClick={() => handleResponse(currentQuestion.id, 'yes')}
                     >
-                      <input
-                        type="radio"
-                        name={currentQuestion.id}
-                        value={option}
-                        checked={responses[currentQuestion.id] === option}
-                        onChange={(e) => handleResponse(currentQuestion.id, e.target.value)}
-                        className="mr-3 h-4 w-4 mt-0.5"
-                      />
-                      <span className="text-base">{option}</span>
-                    </label>
-                  ))
+                      <CheckCircle className="mr-2 h-5 w-5" />
+                      Yes
+                    </Button>
+                    <Button
+                      variant={responses[currentQuestion.id] === 'no' ? 'default' : 'outline'}
+                      className={`h-16 text-lg ${
+                        responses[currentQuestion.id] === 'no' 
+                          ? 'bg-red-700 hover:bg-red-800 text-white' 
+                          : ''
+                      }`}
+                      onClick={() => handleResponse(currentQuestion.id, 'no')}
+                    >
+                      <XCircle className="mr-2 h-5 w-5" />
+                      No
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {currentQuestion.options?.map((option) => (
+                      <Button
+                        key={option}
+                        variant={responses[currentQuestion.id] === option ? 'default' : 'outline'}
+                        className={`w-full h-auto min-h-[56px] py-4 text-left justify-start whitespace-normal ${
+                          responses[currentQuestion.id] === option 
+                            ? 'bg-purple-700 hover:bg-purple-800 text-white' 
+                            : ''
+                        }`}
+                        onClick={() => handleResponse(currentQuestion.id, option)}
+                      >
+                        {option}
+                      </Button>
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -680,7 +682,7 @@ export default function DPDPAssessmentPage() {
                     type="button"
                     onClick={handleAssessmentSubmit}
                     disabled={isSubmitting || !responses[currentQuestion.id]}
-                    className="min-w-[140px]"
+                    className="min-w-[140px] bg-green-700 hover:bg-green-800"
                   >
                     {isSubmitting ? (
                       <>
@@ -695,10 +697,7 @@ export default function DPDPAssessmentPage() {
                     )}
                   </Button>
                 ) : (
-                  <div className="text-sm text-gray-500 flex items-center gap-2">
-                    <Save className="h-4 w-4" />
-                    Auto-advancing...
-                  </div>
+                  <span></span>
                 )}
               </div>
 

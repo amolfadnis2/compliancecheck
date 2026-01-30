@@ -121,7 +121,7 @@ export default function StateWiseComplianceAssessment() {
           'phase1_complete'
         );
       }
-    }, 300);
+    }, 800);
   };
 
   const handleMultiSelect = (questionId: string, value: string) => {
@@ -151,7 +151,7 @@ export default function StateWiseComplianceAssessment() {
       if (phase2Index < filteredPhase2Questions.length - 1) {
         setPhase2Index(phase2Index + 1);
       }
-    }, 300);
+    }, 800);
   };
 
   const handleSubmit = async () => {
@@ -607,16 +607,18 @@ export default function StateWiseComplianceAssessment() {
             <div className="grid grid-cols-2 gap-4">
               <Button 
                 variant={phase2Responses[question.id] === 'yes' ? 'default' : 'outline'} 
-                className={phase2Responses[question.id] === 'yes' ? 'bg-green-700 hover:bg-green-800' : ''} 
+                className={`h-16 text-lg ${phase2Responses[question.id] === 'yes' ? 'bg-green-700 hover:bg-green-800 text-white' : ''}`} 
                 onClick={() => handlePhase2Answer(question.id, 'yes')}
               >
+                <CheckCircle2 className="mr-2 h-5 w-5" />
                 Yes
               </Button>
               <Button 
                 variant={phase2Responses[question.id] === 'no' ? 'default' : 'outline'} 
-                className={phase2Responses[question.id] === 'no' ? 'bg-red-700 hover:bg-red-800' : ''} 
+                className={`h-16 text-lg ${phase2Responses[question.id] === 'no' ? 'bg-red-700 hover:bg-red-800 text-white' : ''}`} 
                 onClick={() => handlePhase2Answer(question.id, 'no')}
               >
+                <XCircle className="mr-2 h-5 w-5" />
                 No
               </Button>
             </div>
@@ -700,32 +702,10 @@ export default function StateWiseComplianceAssessment() {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500">Overall Progress</span>
-            <span className="text-sm font-medium">{getProgress()}%</span>
+            <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+            <span className="text-sm font-semibold">{getProgress()}%</span>
           </div>
-          <Progress value={getProgress()} className="h-2" aria-label="Assessment progress" />
-          <div className="flex justify-between mt-3 text-xs">
-            <div className={`flex items-center gap-1 ${currentPhase === 'user_details' ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
-              <div className={`w-2 h-2 rounded-full ${currentPhase === 'user_details' ? 'bg-blue-700' : 'bg-gray-300'}`} />
-              Details
-            </div>
-            <div className={`flex items-center gap-1 ${currentPhase === 'phase1' ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
-              <div className={`w-2 h-2 rounded-full ${currentPhase === 'phase1' ? 'bg-blue-700' : 'bg-gray-300'}`} />
-              Applicability
-            </div>
-            <div className={`flex items-center gap-1 ${currentPhase === 'applicability_results' ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
-              <div className={`w-2 h-2 rounded-full ${currentPhase === 'applicability_results' ? 'bg-green-700' : 'bg-gray-300'}`} />
-              Results
-            </div>
-            <div className={`flex items-center gap-1 ${currentPhase === 'phase2' ? 'text-purple-700 font-medium' : 'text-gray-500'}`}>
-              <div className={`w-2 h-2 rounded-full ${currentPhase === 'phase2' ? 'bg-purple-700' : 'bg-gray-300'}`} />
-              Compliance
-            </div>
-            <div className="flex items-center gap-1 text-gray-500">
-              <div className="w-2 h-2 rounded-full bg-gray-300" />
-              Report
-            </div>
-          </div>
+          <Progress value={getProgress()} className="h-3 [&>div]:bg-green-600" aria-label="Assessment progress" />
         </div>
       </div>
       
