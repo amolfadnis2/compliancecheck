@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import { createBrowserClient } from '@supabase/ssr'
-import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from '@/lib/pdf/dpdp-compliance-rules'
+import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS, DPDP_COMPLIANCE_ANSWERS } from '@/lib/pdf/dpdp-compliance-rules'
 import { FOOD_COMPLIANCE_RULES, FOOD_CATEGORY_LABELS } from '@/lib/pdf/food-business-compliance-rules'
 import { LABOUR_CODE_RULES } from '@/lib/assessments/labour-code-rules'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
@@ -1272,8 +1272,26 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     Object.entries(answers).forEach(([questionId, answer]) => {
       const rule = DPDP_COMPLIANCE_RULES[questionId]
       if (!rule) return
-      if (answer === 'yes') compliantItems.push(questionId)
-      else if (answer === 'no') nonCompliantItems.push({ questionId, rule })
+      
+      // Get the expected compliant answer for this question
+      const expectedCompliantAnswer = DPDP_COMPLIANCE_ANSWERS[questionId]
+      
+      // Determine if this answer is compliant
+      let isCompliant = false
+      if (expectedCompliantAnswer) {
+        // For multiple-choice questions, check exact match or 'yes' for yes_no questions
+        isCompliant = answer === expectedCompliantAnswer || 
+          (expectedCompliantAnswer === 'yes' && answer === 'yes')
+      } else {
+        // Fallback for questions not in DPDP_COMPLIANCE_ANSWERS - treat 'yes' as compliant
+        isCompliant = answer === 'yes'
+      }
+      
+      if (isCompliant) {
+        compliantItems.push(questionId)
+      } else if (answer && answer !== 'n/a' && answer !== 'not_applicable') {
+        nonCompliantItems.push({ questionId, rule })
+      }
     })
 
     // Compliant Items
