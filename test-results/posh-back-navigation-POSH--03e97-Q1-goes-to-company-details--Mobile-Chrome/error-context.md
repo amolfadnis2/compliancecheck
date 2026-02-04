@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link "POSH Compliance Assessment Sexual Harassment of Women at Workplace Act, 2013" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e8]
+          - generic [ref=e10]:
+            - text: POSH Compliance Assessment
+            - generic [ref=e11]: Sexual Harassment of Women at Workplace Act, 2013
+        - generic [ref=e12]:
+          - generic [ref=e13]: FREE Assessment
+          - button "Switch to light mode" [ref=e14] [cursor=pointer]:
+            - img
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: Overall Progress
+        - generic [ref=e20]: 5%
+      - progressbar "Overall assessment progress" [ref=e21]
+    - main [ref=e23]:
+      - link "Back to Assessments" [ref=e25] [cursor=pointer]:
+        - /url: /assessments
+        - img [ref=e26]
+        - text: Back to Assessments
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]: "Phase 1: Applicability Check"
+            - generic [ref=e32]: 1 of 17
+          - progressbar "Applicability check progress" [ref=e33]
+          - generic [ref=e35]: What is your total employee count across all locations?
+          - button "More details" [ref=e37] [cursor=pointer]:
+            - img [ref=e38]
+            - text: More details
+            - img [ref=e41]
+        - generic [ref=e44]:
+          - button "Less than 10 employees" [ref=e45] [cursor=pointer]
+          - button "10-49 employees" [ref=e46] [cursor=pointer]
+          - button "50-199 employees" [ref=e47] [cursor=pointer]
+          - button "200-499 employees" [ref=e48] [cursor=pointer]
+          - button "500 or more employees" [ref=e49] [cursor=pointer]
+  - alert [ref=e50]
+```

@@ -22,7 +22,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { jsPDF } from 'jspdf'
+import { generatePOSHReport, generatePOSHReportBlob } from '@/lib/pdf/posh-report-generator'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,14 +35,11 @@ import {
   Loader2, 
   Download, 
   Mail,
-  FileText,
   AlertTriangle,
   Info,
   ChevronDown,
   ChevronUp,
   Building2,
-  Shield,
-  ClipboardCheck,
   AlertCircle,
   HelpCircle
 } from 'lucide-react'
@@ -150,10 +147,6 @@ type CompanyDetailsForm = z.infer<typeof companyDetailsSchema>
 // HELPER FUNCTIONS
 // ============================================================================
 
-function getCategoryDisplayName(category: POSHCategory): string {
-  return POSH_CATEGORIES[category]?.name || category
-}
-
 function getStatusColor(status: 'compliant' | 'needs_attention' | 'non_compliant'): string {
   const colors = {
     compliant: 'text-green-600',
@@ -161,25 +154,6 @@ function getStatusColor(status: 'compliant' | 'needs_attention' | 'non_compliant
     non_compliant: 'text-red-600',
   }
   return colors[status]
-}
-
-function getStatusBgColor(status: 'compliant' | 'needs_attention' | 'non_compliant'): string {
-  const colors = {
-    compliant: 'bg-green-100',
-    needs_attention: 'bg-amber-100',
-    non_compliant: 'bg-red-100',
-  }
-  return colors[status]
-}
-
-function getRiskLevelColor(level: 'low' | 'medium' | 'high' | 'critical'): string {
-  const colors = {
-    low: 'text-green-600',
-    medium: 'text-amber-500',
-    high: 'text-orange-600',
-    critical: 'text-red-600',
-  }
-  return colors[level]
 }
 
 // ============================================================================
@@ -209,6 +183,9 @@ export default function POSHAssessmentPage() {
   const [complianceResponses, setComplianceResponses] = useState<Record<string, string>>({})
   const [currentComplianceIndex, setCurrentComplianceIndex] = useState(0)
   const [filteredQuestions, setFilteredQuestions] = useState<POSHQuestion[]>([])
+  
+  // Navigation history for back button
+  const [canGoBack, setCanGoBack] = useState(false)
   
   // Results
   const [results, setResults] = useState<AssessmentResults | null>(null)
@@ -307,6 +284,15 @@ export default function POSHAssessmentPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [phase, currentApplicabilityQuestion, currentComplianceQuestion, applicabilityProgress, complianceProgress, startTime, trackEvent])
 
+  // Update canGoBack state based on current phase and question index
+  useEffect(() => {
+    // Always allow back navigation in applicability and compliance phases
+    // Even from Q1, we can go back to previous phase
+    const newCanGoBack = phase === 'applicability' || phase === 'compliance'
+    console.log('[POSH] Back nav state update:', { phase, newCanGoBack, currentApplicabilityIndex, currentComplianceIndex })
+    setCanGoBack(newCanGoBack)
+  }, [phase, currentApplicabilityIndex, currentComplianceIndex])
+
   // -------------------------------------------------------------------------
   // HANDLERS
   // -------------------------------------------------------------------------
@@ -317,6 +303,56 @@ export default function POSHAssessmentPage() {
     setPhase('applicability')
     setPhaseStartTime(Date.now())
     setQuestionStartTime(Date.now())
+  }
+  
+  // Handle back navigation - Applicability Phase
+  const handleApplicabilityBack = () => {
+    if (currentApplicabilityIndex > 0) {
+      // Go to previous applicability question
+      setCurrentApplicabilityIndex(prev => prev - 1)
+      setQuestionStartTime(Date.now())
+      
+      trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+        action: 'back_navigation',
+        phase: 'applicability',
+        from_question: currentApplicabilityIndex,
+        to_question: currentApplicabilityIndex - 1,
+      })
+    } else {
+      // Back from first applicability question goes to company details
+      setPhase('details')
+      
+      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
+        reason: 'back_to_company_details',
+        phase: 'applicability',
+      })
+    }
+  }
+  
+  // Handle back navigation - Compliance Phase
+  const handleComplianceBack = () => {
+    if (currentComplianceIndex > 0) {
+      // Go to previous compliance question
+      setCurrentComplianceIndex(prev => prev - 1)
+      setQuestionStartTime(Date.now())
+      
+      trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+        action: 'back_navigation',
+        phase: 'compliance',
+        from_question: currentComplianceIndex,
+        to_question: currentComplianceIndex - 1,
+        category: currentComplianceQuestion?.category,
+      })
+    } else {
+      // Back from first compliance question goes to applicability
+      setPhase('applicability')
+      setCurrentApplicabilityIndex(visibleApplicabilityQuestions.length - 1)
+      
+      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
+        reason: 'back_to_applicability',
+        phase: 'compliance',
+      })
+    }
   }
   
   // Handle applicability question answer
@@ -730,7 +766,7 @@ export default function POSHAssessmentPage() {
     setExpandedHelpText(prev => prev === questionId ? null : questionId)
   }
 
-  // Download PDF report
+  // Download PDF report - Uses comprehensive PDF generator
   const handleDownloadReport = async () => {
     if (!results || !companyDetails) return
     
@@ -741,130 +777,66 @@ export default function POSHAssessmentPage() {
     })
     
     try {
-      // Generate PDF using jsPDF (client-side)
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      })
-
-      const pageWidth = doc.internal.pageSize.getWidth()
-      const margin = 20
-      const contentWidth = pageWidth - 2 * margin
-      let yPos = margin
-
-      // Helper function for page breaks
-      const checkPageBreak = (requiredSpace: number) => {
-        if (yPos + requiredSpace > 270) {
-          doc.addPage()
-          yPos = margin
-        }
+      // Map results to PDF generator format
+      const poshResult = {
+        overallScore: results.overallScore,
+        riskLevel: RISK_LEVEL_INFO[results.riskLevel]?.label || results.riskLevel,
+        penaltyExposure: RISK_LEVEL_INFO[results.riskLevel]?.penaltyExposure || 'Unknown',
+        categoryScores: results.categoryScores.map(cat => ({
+          category: cat.categoryName,
+          score: cat.percentage,
+          status: cat.status,
+          questionCount: cat.questionCount,
+          compliantCount: cat.compliantCount,
+        })),
+        actionItems: results.actionItems,
+        compliantItems: results.compliantItems,
       }
 
-      // Header
-      doc.setFontSize(24)
-      doc.setTextColor(30, 64, 175)
-      doc.text('POSH Compliance Assessment Report', margin, yPos)
-      yPos += 10
-
-      doc.setFontSize(10)
-      doc.setTextColor(107, 114, 128)
-      doc.text(`Sexual Harassment of Women at Workplace Act, 2013`, margin, yPos)
-      yPos += 15
-
-      // Company details
-      doc.setFontSize(12)
-      doc.setTextColor(17, 24, 39)
-      doc.text(`Company: ${companyDetails.companyName}`, margin, yPos)
-      yPos += 7
-      doc.text(`Assessment Date: ${new Date().toLocaleDateString('en-IN')}`, margin, yPos)
-      yPos += 15
-
-      // Overall Score
-      doc.setFontSize(16)
-      doc.text('Overall Compliance Score', margin, yPos)
-      yPos += 10
-
-      const scoreColor = results.overallScore >= 90 ? [5, 150, 105] : 
-                         results.overallScore >= 60 ? [217, 119, 6] : [220, 38, 38]
-      doc.setFontSize(48)
-      doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2])
-      doc.text(`${results.overallScore}%`, margin, yPos)
-      yPos += 15
-
-      const statusText = results.overallScore >= 90 ? 'Fully Compliant' :
-                         results.overallScore >= 60 ? 'Substantially Compliant' : 'Non-Compliant'
-      doc.setFontSize(14)
-      doc.text(statusText, margin, yPos)
-      yPos += 15
-
-      // Risk Level
-      doc.setFontSize(12)
-      doc.setTextColor(17, 24, 39)
-      doc.text(`Risk Level: ${RISK_LEVEL_INFO[results.riskLevel]?.label}`, margin, yPos)
-      yPos += 6
-      doc.setFontSize(10)
-      doc.setTextColor(107, 114, 128)
-      doc.text(`Penalty Exposure: ${RISK_LEVEL_INFO[results.riskLevel]?.penaltyExposure}`, margin, yPos)
-      yPos += 15
-
-      // Category Scores
-      checkPageBreak(80)
-      doc.setFontSize(14)
-      doc.setTextColor(17, 24, 39)
-      doc.text('Category-wise Compliance', margin, yPos)
-      yPos += 10
-
-      doc.setFontSize(10)
-      results.categoryScores.forEach((cat) => {
-        checkPageBreak(15)
-        const catColor = cat.percentage >= 90 ? [5, 150, 105] : 
-                         cat.percentage >= 60 ? [217, 119, 6] : [220, 38, 38]
-        
-        doc.setTextColor(17, 24, 39)
-        doc.text(`${cat.categoryName}:`, margin, yPos)
-        doc.setTextColor(catColor[0], catColor[1], catColor[2])
-        doc.text(`${cat.percentage}%`, margin + 100, yPos)
-        yPos += 7
-      })
-      yPos += 10
-
-      // Action Items
-      if (results.actionItems.length > 0) {
-        checkPageBreak(50)
-        doc.setFontSize(14)
-        doc.setTextColor(17, 24, 39)
-        doc.text('Priority Action Items', margin, yPos)
-        yPos += 10
-
-        doc.setFontSize(9)
-        results.actionItems.forEach((item, index) => {
-          if (index >= 15) return // Limit to 15 items for PDF space
-          
-          checkPageBreak(20)
-          const priorityColor = item.priority === 'high' ? [220, 38, 38] : 
-                               item.priority === 'medium' ? [217, 119, 6] : [107, 114, 128]
-          
-          doc.setTextColor(priorityColor[0], priorityColor[1], priorityColor[2])
-          doc.text(`${index + 1}. [${item.priority.toUpperCase()}]`, margin, yPos)
-          
-          doc.setTextColor(17, 24, 39)
-          const lines = doc.splitTextToSize(item.description || item.title, contentWidth - 15)
-          doc.text(lines, margin + 15, yPos)
-          yPos += lines.length * 5 + 3
-        })
+      // Map applicability response values to readable labels
+      const employeeCountLabels: Record<string, string> = {
+        'below_10': 'Less than 10 employees',
+        '10_to_49': '10-49 employees',
+        '50_to_199': '50-199 employees',
+        '200_to_499': '200-499 employees',
+        '500_plus': '500+ employees',
+      }
+      
+      const stateLabels: Record<string, string> = {
+        'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
+        'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
+        'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
+        'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
+        'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
+        'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
+        'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
+        'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
+        'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
+        'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
+      }
+      
+      const industryLabels: Record<string, string> = {
+        'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
+        'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
+        'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
+        'education': 'Education', 'media_entertainment': 'Media / Entertainment',
+        'banking_finance': 'Banking / Finance', 'construction': 'Construction',
+        'logistics': 'Logistics', 'professional_services': 'Professional Services',
+        'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
       }
 
-      // Footer
-      yPos = 280
-      doc.setFontSize(8)
-      doc.setTextColor(107, 114, 128)
-      doc.text('Generated by ComplianceCheck.co.in', margin, yPos)
-      doc.text(new Date().toLocaleString('en-IN'), pageWidth - margin - 40, yPos)
+      const userDetails = {
+        fullName: companyDetails.fullName,
+        email: companyDetails.email,
+        phone: companyDetails.phone,
+        companyName: companyDetails.companyName,
+        state: stateLabels[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
+        employeeCount: employeeCountLabels[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
+        industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
+      }
 
-      // Download
-      const filename = `POSH_Compliance_Report_${companyDetails.companyName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
-      doc.save(filename)
+      // Generate comprehensive PDF (8-12 pages)
+      generatePOSHReport(poshResult, userDetails)
       
     } catch (err) {
       console.error('PDF generation error:', err)
@@ -872,7 +844,7 @@ export default function POSHAssessmentPage() {
     }
   }
 
-  // Email PDF report
+  // Email PDF report - Uses comprehensive PDF generator
   const handleEmailReport = async () => {
     if (!results || !companyDetails) return
     
@@ -881,145 +853,77 @@ export default function POSHAssessmentPage() {
     setError(null)
     
     try {
-      // Generate PDF using jsPDF
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      })
-
-      const pageWidth = doc.internal.pageSize.getWidth()
-      const margin = 20
-      const contentWidth = pageWidth - 2 * margin
-      let yPos = margin
-
-      // Helper function for page breaks
-      const checkPageBreak = (requiredSpace: number) => {
-        if (yPos + requiredSpace > 270) {
-          doc.addPage()
-          yPos = margin
-        }
+      // Map results to PDF generator format
+      const poshResult = {
+        overallScore: results.overallScore,
+        riskLevel: RISK_LEVEL_INFO[results.riskLevel]?.label || results.riskLevel,
+        penaltyExposure: RISK_LEVEL_INFO[results.riskLevel]?.penaltyExposure || 'Unknown',
+        categoryScores: results.categoryScores.map(cat => ({
+          category: cat.categoryName,
+          score: cat.percentage,
+          status: cat.status,
+          questionCount: cat.questionCount,
+          compliantCount: cat.compliantCount,
+        })),
+        actionItems: results.actionItems,
+        compliantItems: results.compliantItems,
       }
 
-      // Header
-      doc.setFontSize(24)
-      doc.setTextColor(30, 64, 175)
-      doc.text('POSH Compliance Assessment Report', margin, yPos)
-      yPos += 10
-
-      doc.setFontSize(10)
-      doc.setTextColor(107, 114, 128)
-      doc.text('Sexual Harassment of Women at Workplace Act, 2013', margin, yPos)
-      yPos += 15
-
-      // Company details
-      doc.setFontSize(12)
-      doc.setTextColor(17, 24, 39)
-      doc.text(`Company: ${companyDetails.companyName}`, margin, yPos)
-      yPos += 7
-      doc.text(`Assessment Date: ${new Date().toLocaleDateString('en-IN')}`, margin, yPos)
-      yPos += 15
-
-      // Overall Score
-      doc.setFontSize(16)
-      doc.text('Overall Compliance Score', margin, yPos)
-      yPos += 10
-
-      const scoreColor = results.overallScore >= 90 ? [5, 150, 105] : 
-                         results.overallScore >= 60 ? [217, 119, 6] : [220, 38, 38]
-      doc.setFontSize(48)
-      doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2])
-      doc.text(`${results.overallScore}%`, margin, yPos)
-      yPos += 15
-
-      const statusText = results.overallScore >= 90 ? 'Fully Compliant' :
-                         results.overallScore >= 60 ? 'Substantially Compliant' : 'Non-Compliant'
-      doc.setFontSize(14)
-      doc.text(statusText, margin, yPos)
-      yPos += 15
-
-      // Risk Level
-      doc.setFontSize(12)
-      doc.setTextColor(17, 24, 39)
-      doc.text(`Risk Level: ${RISK_LEVEL_INFO[results.riskLevel]?.label}`, margin, yPos)
-      yPos += 6
-      doc.setFontSize(10)
-      doc.setTextColor(107, 114, 128)
-      doc.text(`Penalty Exposure: ${RISK_LEVEL_INFO[results.riskLevel]?.penaltyExposure}`, margin, yPos)
-      yPos += 15
-
-      // Category Scores
-      checkPageBreak(80)
-      doc.setFontSize(14)
-      doc.setTextColor(17, 24, 39)
-      doc.text('Category-wise Compliance', margin, yPos)
-      yPos += 10
-
-      doc.setFontSize(10)
-      results.categoryScores.forEach((cat) => {
-        checkPageBreak(15)
-        const catColor = cat.percentage >= 90 ? [5, 150, 105] : 
-                         cat.percentage >= 60 ? [217, 119, 6] : [220, 38, 38]
-        
-        doc.setTextColor(17, 24, 39)
-        doc.text(`${cat.categoryName}:`, margin, yPos)
-        doc.setTextColor(catColor[0], catColor[1], catColor[2])
-        doc.text(`${cat.percentage}%`, margin + 100, yPos)
-        yPos += 7
-      })
-      yPos += 10
-
-      // Action Items
-      if (results.actionItems.length > 0) {
-        checkPageBreak(50)
-        doc.setFontSize(14)
-        doc.setTextColor(17, 24, 39)
-        doc.text('Priority Action Items', margin, yPos)
-        yPos += 10
-
-        doc.setFontSize(9)
-        results.actionItems.slice(0, 20).forEach((item, index) => {
-          checkPageBreak(20)
-          const priorityColor = item.priority === 'high' ? [220, 38, 38] : 
-                               item.priority === 'medium' ? [217, 119, 6] : [107, 114, 128]
-          
-          doc.setTextColor(priorityColor[0], priorityColor[1], priorityColor[2])
-          doc.text(`${index + 1}. [${item.priority.toUpperCase()}]`, margin, yPos)
-          
-          doc.setTextColor(17, 24, 39)
-          const lines = doc.splitTextToSize(item.description || item.title, contentWidth - 15)
-          doc.text(lines, margin + 15, yPos)
-          yPos += lines.length * 5 + 3
-        })
+      // Map applicability response values to readable labels
+      const employeeCountLabels: Record<string, string> = {
+        'below_10': 'Less than 10 employees',
+        '10_to_49': '10-49 employees',
+        '50_to_199': '50-199 employees',
+        '200_to_499': '200-499 employees',
+        '500_plus': '500+ employees',
       }
-
-      // Government References
-      checkPageBreak(40)
-      doc.setFontSize(14)
-      doc.setTextColor(17, 24, 39)
-      doc.text('Government References', margin, yPos)
-      yPos += 10
       
-      doc.setFontSize(9)
-      doc.setTextColor(107, 114, 128)
-      doc.text('Ministry of Women & Child Development:', margin, yPos)
-      yPos += 5
-      doc.text('https://wcd.nic.in', margin + 5, yPos)
-      yPos += 8
-      doc.text('State Labour Department Portal:', margin, yPos)
-      yPos += 5
-      doc.text('Contact your State Labour Commissioner office', margin + 5, yPos)
-      yPos += 15
+      const stateLabels: Record<string, string> = {
+        'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
+        'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
+        'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
+        'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
+        'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
+        'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
+        'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
+        'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
+        'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
+        'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
+      }
+      
+      const industryLabels: Record<string, string> = {
+        'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
+        'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
+        'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
+        'education': 'Education', 'media_entertainment': 'Media / Entertainment',
+        'banking_finance': 'Banking / Finance', 'construction': 'Construction',
+        'logistics': 'Logistics', 'professional_services': 'Professional Services',
+        'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
+      }
 
-      // Footer
-      yPos = 280
-      doc.setFontSize(8)
-      doc.setTextColor(107, 114, 128)
-      doc.text('Generated by ComplianceCheck.co.in', margin, yPos)
-      doc.text(new Date().toLocaleString('en-IN'), pageWidth - margin - 40, yPos)
+      const userDetails = {
+        fullName: companyDetails.fullName,
+        email: companyDetails.email,
+        phone: companyDetails.phone,
+        companyName: companyDetails.companyName,
+        state: stateLabels[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
+        employeeCount: employeeCountLabels[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
+        industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
+      }
 
-      // Convert to base64
-      const pdfBase64 = doc.output('datauristring').split(',')[1]
+      // Generate comprehensive PDF as blob
+      const pdfBlob = generatePOSHReportBlob(poshResult, userDetails)
+      
+      // Convert blob to base64
+      const reader = new FileReader()
+      const pdfBase64 = await new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1]
+          resolve(base64)
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(pdfBlob)
+      })
 
       // Send email via API
       const response = await fetch('/api/email/send-report', {
@@ -1039,7 +943,7 @@ export default function POSHAssessmentPage() {
       if (data.success) {
         setEmailSuccess(companyDetails.email)
         
-        trackEvent(POSTHOG_EVENTS.REPORT_DOWNLOADED, {
+        trackEvent(POSTHOG_EVENTS.REPORT_EMAILED, {
           score: results.overallScore,
           risk_level: results.riskLevel,
           format: 'email',
@@ -1155,6 +1059,8 @@ export default function POSHAssessmentPage() {
     const question = currentApplicabilityQuestion
     if (!question) return null
     
+    console.log('[POSH] Rendering applicability question:', { canGoBack, phase, currentApplicabilityIndex })
+    
     return (
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
@@ -1244,6 +1150,26 @@ export default function POSHAssessmentPage() {
             </div>
           )}
         </CardContent>
+        
+        {/* Back Button */}
+        {canGoBack && (
+          <div className="px-6 pb-6">
+            <button
+              onClick={handleApplicabilityBack}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 
+                         transition-colors focus:outline-none focus:ring-2 
+                         focus:ring-blue-500 focus:ring-offset-2 rounded px-3 py-2"
+              aria-label={
+                currentApplicabilityIndex === 0
+                  ? "Go back to company details"
+                  : "Go to previous question"
+              }
+            >
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              <span>Back</span>
+            </button>
+          </div>
+        )}
       </Card>
     )
   }
@@ -1353,13 +1279,37 @@ export default function POSHAssessmentPage() {
             </div>
           )}
         </CardContent>
+        
+        {/* Back Button */}
+        {canGoBack && (
+          <div className="px-6 pb-6">
+            <button
+              onClick={handleComplianceBack}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 
+                         transition-colors focus:outline-none focus:ring-2 
+                         focus:ring-blue-500 focus:ring-offset-2 rounded px-3 py-2"
+              aria-label={
+                currentComplianceIndex === 0
+                  ? "Go back to applicability questions"
+                  : "Go to previous question"
+              }
+            >
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              <span>Back</span>
+            </button>
+          </div>
+        )}
       </Card>
     )
   }
 
   // -------------------------------------------------------------------------
-  // RENDER: RESULTS (Phase: results)
+  // RENDER: RESULTS (Phase: results) - CONDENSED VIEW (P0-002)
+  // Shows summary only; full details in PDF report
   // -------------------------------------------------------------------------
+  
+  const TOP_ITEMS_TO_SHOW = 3
+  const highPriorityCount = results?.actionItems.filter(a => a.priority === 'high').length || 0
   
   const renderResults = () => {
     if (!results) return null
@@ -1370,119 +1320,101 @@ export default function POSHAssessmentPage() {
     }
     
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Score Summary Card */}
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Score Card */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl">POSH Compliance Assessment Results</CardTitle>
-                <CardDescription>{companyDetails?.companyName}</CardDescription>
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-xl">POSH Compliance Assessment Results</CardTitle>
+            <CardDescription>{companyDetails?.companyName}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Overall Score - Prominent Display */}
+            <div className="text-center py-6">
+              <div className={`text-6xl font-bold ${
+                results.overallScore >= 90 ? 'text-green-600' :
+                results.overallScore >= 70 ? 'text-amber-500' : 'text-red-600'
+              }`}>
+                {results.overallScore}%
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleDownloadReport} 
-                  className="bg-blue-700 hover:bg-blue-800"
-                  disabled={isEmailingSaving}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Report
-                </Button>
-                <Button 
-                  onClick={handleEmailReport} 
-                  variant="outline"
-                  className="border-blue-700 text-blue-700 hover:bg-blue-50"
-                  disabled={isEmailingSaving}
-                >
-                  {isEmailingSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="mr-2 h-4 w-4" />
-                      Email Report
-                    </>
-                  )}
-                </Button>
+              <p className="text-gray-500 mt-2">Overall Compliance</p>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <span className={`text-sm font-medium px-3 py-1 rounded-full ${
+                  results.riskLevel === 'low' ? 'bg-green-100 text-green-700' :
+                  results.riskLevel === 'medium' ? 'bg-amber-100 text-amber-700' :
+                  results.riskLevel === 'high' ? 'bg-orange-100 text-orange-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {RISK_LEVEL_INFO[results.riskLevel]?.label || results.riskLevel}
+                </span>
+                <span className="text-sm text-gray-500">
+                  · {RISK_LEVEL_INFO[results.riskLevel]?.penaltyExposure}
+                </span>
               </div>
+            </div>
+            
+            {/* CTA Buttons - Prominent */}
+            <div className="flex gap-3 my-6">
+              <Button 
+                onClick={handleDownloadReport} 
+                className="flex-1 bg-blue-700 hover:bg-blue-800 h-12"
+                disabled={isEmailingSaving}
+              >
+                <Download className="mr-2 h-5 w-5" />
+                Download Full Report
+              </Button>
+              <Button 
+                onClick={handleEmailReport} 
+                variant="outline"
+                className="flex-1 border-blue-700 text-blue-700 hover:bg-blue-50 h-12"
+                disabled={isEmailingSaving}
+              >
+                {isEmailingSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-5 w-5" />
+                    Email Report
+                  </>
+                )}
+              </Button>
             </div>
             
             {/* Success/Error Messages */}
             {emailSuccess && (
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 mb-4">
                 <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
                 <p className="text-sm text-green-700">
-                  Report successfully sent to <strong>{emailSuccess}</strong>
+                  Report sent to <strong>{emailSuccess}</strong>
                 </p>
               </div>
             )}
             
             {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 mb-4">
                 <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Overall Score */}
-              <div className="text-center p-6 bg-gray-50 rounded-lg">
-                <div className={`text-5xl font-bold ${
-                  results.overallScore >= 90 ? 'text-green-600' :
-                  results.overallScore >= 70 ? 'text-amber-500' : 'text-red-600'
-                }`}>
-                  {results.overallScore}%
-                </div>
-                <p className="text-gray-500 mt-2">Overall Compliance Score</p>
-              </div>
-              
-              {/* Risk Level */}
-              <div className="text-center p-6 bg-gray-50 rounded-lg">
-                <div className={`text-2xl font-bold ${getRiskLevelColor(results.riskLevel)}`}>
-                  {RISK_LEVEL_INFO[results.riskLevel]?.label || results.riskLevel}
-                </div>
-                <p className="text-gray-500 mt-2">Risk Level</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  {RISK_LEVEL_INFO[results.riskLevel]?.penaltyExposure}
-                </p>
-              </div>
-              
-              {/* Action Items Count */}
-              <div className="text-center p-6 bg-gray-50 rounded-lg">
-                <div className="text-5xl font-bold text-gray-800">
-                  {results.actionItems.length}
-                </div>
-                <p className="text-gray-500 mt-2">Action Items</p>
-                <p className="text-sm text-red-500 mt-1">
-                  {results.actionItems.filter(a => a.priority === 'high').length} High Priority
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
-        {/* Category Breakdown */}
+        {/* Category Breakdown - Visual Bars Only */}
         <Card>
-          <CardHeader>
-            <CardTitle>Category-wise Compliance</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Category Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {results.categoryScores.map((cat) => (
-                <div key={cat.category} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{cat.categoryName}</span>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-sm px-2 py-1 rounded ${getStatusBgColor(cat.status)} ${getStatusColor(cat.status)}`}>
-                        {cat.percentage}%
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {cat.compliantCount}/{cat.questionCount} compliant
-                      </span>
-                    </div>
+                <div key={cat.category} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium truncate mr-2">{cat.categoryName}</span>
+                    <span className={`font-semibold ${getStatusColor(cat.status)}`}>
+                      {cat.percentage}%
+                    </span>
                   </div>
                   <Progress 
                     value={cat.percentage} 
@@ -1498,132 +1430,82 @@ export default function POSHAssessmentPage() {
           </CardContent>
         </Card>
 
-        {/* Action Items */}
+        {/* Action Items Preview - TOP 3 ONLY (Title + Reference) */}
         {results.actionItems.length > 0 && (
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
-                Action Items ({results.actionItems.length})
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2 text-amber-700">
+                <AlertTriangle className="h-5 w-5" />
+                {highPriorityCount} High Priority Issues Found
               </CardTitle>
-              <CardDescription>Prioritized list of compliance gaps to address</CardDescription>
+              <CardDescription>
+                Preview of top {Math.min(TOP_ITEMS_TO_SHOW, results.actionItems.length)} (full details in PDF):
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {results.actionItems.map((item, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-4 rounded-lg border-l-4 ${
-                      item.priority === 'high' ? 'border-red-500 bg-red-50' :
-                      item.priority === 'medium' ? 'border-amber-500 bg-amber-50' :
-                      'border-blue-500 bg-blue-50'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                            item.priority === 'high' ? 'bg-red-200 text-red-800' :
-                            item.priority === 'medium' ? 'bg-amber-200 text-amber-800' :
-                            'bg-blue-200 text-blue-800'
-                          }`}>
-                            {item.priority.toUpperCase()}
-                          </span>
-                          <span className="text-xs text-gray-500">{getCategoryDisplayName(item.category as POSHCategory)}</span>
-                        </div>
-                        <h4 className="font-medium text-gray-900">{item.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                        
-                        {item.remediation && item.remediation.length > 0 && (
-                          <div className="mt-3">
-                            <p className="text-xs font-semibold text-gray-700 mb-1">Steps to Address:</p>
-                            <ol className="list-decimal list-inside text-sm text-gray-600 space-y-1">
-                              {item.remediation.slice(0, 3).map((step, i) => (
-                                <li key={i}>{step}</li>
-                              ))}
-                            </ol>
-                          </div>
+              <div className="divide-y">
+                {results.actionItems.slice(0, TOP_ITEMS_TO_SHOW).map((item, index) => (
+                  <div key={index} className="py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-start gap-2">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded flex-shrink-0 ${
+                        item.priority === 'high' ? 'bg-red-200 text-red-800' :
+                        item.priority === 'medium' ? 'bg-amber-200 text-amber-800' :
+                        'bg-blue-200 text-blue-800'
+                      }`}>
+                        {index + 1}
+                      </span>
+                      <div>
+                        <p className="font-medium text-gray-900">{item.title}</p>
+                        {item.governmentRef && (
+                          <p className="text-sm text-gray-500 mt-0.5">
+                            → Ref: {item.governmentRef}
+                          </p>
                         )}
-                        
-                        <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
-                          {item.deadline && (
-                            <span>Deadline: {item.deadline}</span>
-                          )}
-                          {item.penalty && (
-                            <span className="text-red-600">Penalty: {item.penalty}</span>
-                          )}
-                          {item.governmentRef && (
-                            <span>Ref: {item.governmentRef}</span>
-                          )}
-                        </div>
                       </div>
                     </div>
+                    {/* NO steps, deadlines, penalties shown here */}
                   </div>
                 ))}
               </div>
+              
+              {results.actionItems.length > TOP_ITEMS_TO_SHOW && (
+                <p className="text-sm text-gray-500 mt-4 pt-3 border-t">
+                  + {results.actionItems.length - TOP_ITEMS_TO_SHOW} more action items in full report
+                </p>
+              )}
+              
+              <Button 
+                onClick={handleDownloadReport} 
+                className="mt-4 w-full bg-blue-700 hover:bg-blue-800"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Full Report for Details
+              </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Compliant Items */}
+        {/* Compliant Areas - COUNT ONLY */}
         {results.compliantItems.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                Compliant Areas ({results.compliantItems.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {results.compliantItems.map((item) => (
-                  <div key={item.questionId} className="flex items-start gap-2 p-2 bg-green-50 rounded">
-                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{item.text}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+            <h3 className="font-semibold text-green-700 flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              {results.compliantItems.length} Areas Already Compliant
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              See full list in PDF report
+            </p>
+          </div>
         )}
 
-        {/* Next Steps */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Next Steps</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <FileText className="h-5 w-5 text-blue-700" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Download Your Report</h4>
-                  <p className="text-sm text-gray-600">Get a detailed PDF report with all findings and remediation steps.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Shield className="h-5 w-5 text-green-700" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Address High Priority Items First</h4>
-                  <p className="text-sm text-gray-600">Focus on high-priority action items to reduce immediate penalty risk.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <ClipboardCheck className="h-5 w-5 text-purple-700" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Re-assess After Remediation</h4>
-                  <p className="text-sm text-gray-600">After addressing gaps, take the assessment again to track improvement.</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Disclaimer */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <p className="text-xs text-amber-800">
+            <strong>Note:</strong> This assessment provides general guidance based on POSH Act 2013 requirements. 
+            For comprehensive compliance, download the full report with detailed remediation steps, 
+            deadlines, and legal references.
+          </p>
+        </div>
       </div>
     )
   }
