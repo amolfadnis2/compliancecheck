@@ -44,6 +44,7 @@ import {
   HelpCircle
 } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
+import { POSHProgressSection } from '@/components/assessment/posh-progress-section'
 import posthog from 'posthog-js'
 
 // Import POSH data files
@@ -66,6 +67,11 @@ import {
 import {
   getRuleByQuestionId,
 } from '@/lib/assessments/posh/posh-compliance-rules'
+
+import {
+  calculateProgressData,
+  type ProgressData
+} from '@/lib/assessments/posh/posh-progress-helpers'
 
 // ============================================================================
 // TYPES
@@ -240,6 +246,11 @@ export default function POSHAssessmentPage() {
     if (phase === 'compliance') return Math.round(30 + (complianceProgress * 0.60))
     return 100 // results phase
   })()
+
+  // Calculate enhanced progress data for compliance phase
+  const progressData: ProgressData | null = phase === 'compliance' && filteredQuestions.length > 0
+    ? calculateProgressData(filteredQuestions, currentComplianceIndex)
+    : null
 
   // -------------------------------------------------------------------------
   // POSTHOG TRACKING
@@ -1062,22 +1073,46 @@ export default function POSHAssessmentPage() {
     console.log('[POSH] Rendering applicability question:', { canGoBack, phase, currentApplicabilityIndex })
     
     return (
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-              Phase 1: Applicability Check
-            </span>
-            <span className="text-sm text-gray-500">
-              {currentApplicabilityIndex + 1} of {visibleApplicabilityQuestions.length}
+      <>
+        {/* Enhanced Progress Section for Applicability */}
+        <div className="bg-white border-b p-4 sticky top-0 z-10 shadow-sm">
+          {/* Overall Progress */}
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-gray-600 font-medium">Applicability Check Progress</span>
+            <span className="text-sm font-semibold text-gray-900">
+              {Math.round(applicabilityProgress)}%
             </span>
           </div>
-          <Progress 
-            value={applicabilityProgress} 
-            aria-label="Applicability check progress"
-            className="h-2 mb-4"
-          />
-          <CardTitle className="text-lg">{question.text}</CardTitle>
+          
+          <div 
+            className="relative h-2 bg-gray-200 rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={Math.round(applicabilityProgress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Applicability check progress: ${Math.round(applicabilityProgress)}%`}
+          >
+            {/* Progress fill */}
+            <div 
+              className="h-full bg-blue-600 transition-all duration-300"
+              style={{ width: `${applicabilityProgress}%` }}
+            />
+          </div>
+          
+          {/* Current Question Indicator */}
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-800">
+              Question {currentApplicabilityIndex + 1} of {visibleApplicabilityQuestions.length}
+            </span>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">
+              Phase 1: Applicability
+            </span>
+          </div>
+        </div>
+        
+        <Card className="max-w-2xl mx-auto mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">{question.text}</CardTitle>
           {question.helpText && (
             <div className="mt-2">
               <button
@@ -1171,6 +1206,7 @@ export default function POSHAssessmentPage() {
           </div>
         )}
       </Card>
+      </>
     )
   }
 
@@ -1185,50 +1221,51 @@ export default function POSHAssessmentPage() {
     const categoryInfo = POSH_CATEGORIES[question.category]
     
     return (
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
-              {categoryInfo?.name || question.category}
-            </span>
-            <span className="text-sm text-gray-500">
-              {currentComplianceIndex + 1} of {filteredQuestions.length}
-            </span>
-          </div>
-          <Progress 
-            value={complianceProgress} 
-            aria-label="Compliance assessment progress"
-            className="h-2 mb-4"
-          />
-          <CardTitle className="text-lg">{question.text}</CardTitle>
-          {question.helpText && (
-            <div className="mt-2">
-              <button
-                onClick={() => toggleHelpText(question.id)}
-                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-                aria-expanded={expandedHelpText === question.id}
-              >
-                <HelpCircle className="h-4 w-4" />
-                {expandedHelpText === question.id ? 'Hide details' : 'More details'}
-                {expandedHelpText === question.id ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </button>
-              {expandedHelpText === question.id && (
-                <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-gray-700">{question.helpText}</p>
-                  {question.governmentRef && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Reference: {question.governmentRef}
-                    </p>
-                  )}
-                </div>
-              )}
+      <>
+        {/* Enhanced Progress Section - Sticky at top */}
+        {progressData && (
+          <POSHProgressSection {...progressData} />
+        )}
+        
+        <Card className="max-w-2xl mx-auto mt-6">
+          <CardHeader>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+                {categoryInfo?.name || question.category}
+              </span>
+              <span className="text-sm text-gray-500">
+                {currentComplianceIndex + 1} of {filteredQuestions.length}
+              </span>
             </div>
-          )}
-        </CardHeader>
+            <CardTitle className="text-lg">{question.text}</CardTitle>
+            {question.helpText && (
+              <div className="mt-2">
+                <button
+                  onClick={() => toggleHelpText(question.id)}
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                  aria-expanded={expandedHelpText === question.id}
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  {expandedHelpText === question.id ? 'Hide details' : 'More details'}
+                  {expandedHelpText === question.id ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+                {expandedHelpText === question.id && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-gray-700">{question.helpText}</p>
+                    {question.governmentRef && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Reference: {question.governmentRef}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardHeader>
         <CardContent>
           {question.type === 'yes_no' && (
             <div className="grid grid-cols-2 gap-4">
@@ -1300,6 +1337,7 @@ export default function POSHAssessmentPage() {
           </div>
         )}
       </Card>
+      </>
     )
   }
 
