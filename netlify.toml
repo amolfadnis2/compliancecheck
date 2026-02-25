@@ -5,6 +5,10 @@
   command = "npm run build"
   publish = ".next"
 
+# Skip deploy preview builds (saves build minutes)
+[context.deploy-preview]
+  ignore = "exit 1"
+
 # Use the Next.js runtime plugin
 [[plugins]]
   package = "@netlify/plugin-nextjs"

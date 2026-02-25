@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
 
     try {
       const supabase = createClient()
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -28,8 +28,18 @@ export default function AdminLoginPage() {
         return
       }
 
-      router.push('/admin')
+      if (!data.user) {
+        setError('Login failed. Please try again.')
+        return
+      }
+
+      // Refresh server state first so middleware picks up the session cookie
       router.refresh()
+
+      // Small delay to ensure cookies are synced before navigation
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      router.push('/admin')
     } catch {
       setError('An unexpected error occurred')
     } finally {
@@ -52,39 +62,25 @@ export default function AdminLoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
+              <label htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email
               </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+              <input id="email" type="email" value={email}
+                onChange={(e) => setEmail(e.target.value)} required
                 autoComplete="email"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
+              <label htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+              <input id="password" type="password" value={password}
+                onChange={(e) => setPassword(e.target.value)} required
                 autoComplete="current-password"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
             {error && (
@@ -93,11 +89,8 @@ export default function AdminLoginPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-md transition-colors"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-md transition-colors">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
