@@ -1,0 +1,814 @@
+import { jsPDF } from 'jspdf';
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const PAGE_WIDTH = 210;
+const PAGE_HEIGHT = 297;
+const MARGIN_LEFT = 15;
+const MARGIN_RIGHT = 15;
+const MARGIN_TOP = 15;
+const MARGIN_BOTTOM = 20;
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
+
+const COLORS = {
+  primary: [30, 64, 175] as [number, number, number],
+  success: [34, 197, 94] as [number, number, number],
+  warning: [245, 158, 11] as [number, number, number],
+  danger: [220, 38, 38] as [number, number, number],
+  text: [31, 41, 55] as [number, number, number],
+  textLight: [107, 114, 128] as [number, number, number],
+  lightGray: [243, 244, 246] as [number, number, number],
+  white: [255, 255, 255] as [number, number, number],
+};
+
+const FONTS = {
+  title: 24,
+  heading: 16,
+  subheading: 14,
+  body: 11,
+  small: 9,
+  tiny: 8,
+};
+
+// ============================================================================
+// INTERFACES
+// ============================================================================
+
+export interface UnifiedUserDetails {
+  fullName: string;
+  email: string;
+  phone?: string;
+  companyName: string;
+  state: string;
+  employeeCount?: string;
+  industry?: string;
+}
+
+export interface UnifiedCategoryScore {
+  category: string;
+  score: number;
+  status: 'compliant' | 'needs_attention' | 'non_compliant';
+  questionCount: number;
+  compliantCount: number;
+}
+
+export interface UnifiedActionItem {
+  priority: 'high' | 'medium' | 'low';
+  category: string;
+  questionId: string;
+  title: string;
+  description: string;
+  remediation: string[];
+  governmentRef?: string;
+  officialLink?: string;
+  penalty?: string;
+  deadline?: string;
+}
+
+export interface UnifiedCompliantItem {
+  questionId: string;
+  category: string;
+  text: string;
+}
+
+export interface ReportConfig {
+  assessmentTitle: string;
+  assessmentSubtitle: string;
+  legislationDescription: string;
+  legislationLine2?: string;
+  resources: { name: string; url: string }[];
+  legislation: string[];
+  deadlines: { item: string; date: string }[];
+  deadlineWarning?: { text: string };
+  filenamePrefix: string;
+}
+
+export interface UnifiedReportData {
+  assessmentId: string;
+  overallScore: number;
+  riskLevel: string;
+  penaltyExposure: string;
+  categoryScores: UnifiedCategoryScore[];
+  actionItems: UnifiedActionItem[];
+  compliantItems: UnifiedCompliantItem[];
+  userDetails: UnifiedUserDetails;
+  config: ReportConfig;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function cleanText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replace(/\u2013/g, '-')
+    .replace(/\u2014/g, '--')
+    .replace(/\u2015/g, '--')
+    .replace(/\u2022/g, '*')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\u00B7/g, '-')
+    .replace(/\u2026/g, '...')
+    .replace(/\u20B9/g, 'Rs.')
+    .replace(/₹/g, 'Rs.')
+    .replace(/\u2713/g, '[Y]')
+    .replace(/\u2714/g, '[Y]')
+    .replace(/\u2717/g, '[X]')
+    .replace(/\u2718/g, '[X]')
+    .replace(/✓/g, '[Y]')
+    .replace(/✗/g, '[X]')
+    .replace(/\u2192/g, '->')
+    .replace(/\u2190/g, '<-')
+    .replace(/→/g, '->')
+    .replace(/[^\x00-\x7F]/g, '');
+}
+
+function getScoreColor(score: number): [number, number, number] {
+  if (score >= 80) return COLORS.success;
+  if (score >= 50) return COLORS.warning;
+  return COLORS.danger;
+}
+
+function getPriorityColor(priority: string): [number, number, number] {
+  switch (priority) {
+    case 'high':
+      return COLORS.danger;
+    case 'medium':
+      return COLORS.warning;
+    case 'low':
+      return COLORS.success;
+    default:
+      return COLORS.textLight;
+  }
+}
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function checkPageBreak(doc: jsPDF, currentY: number, requiredHeight: number): number {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  if (currentY + requiredHeight > pageHeight - MARGIN_BOTTOM) {
+    doc.addPage();
+    return MARGIN_TOP;
+  }
+  return currentY;
+}
+
+function addPageHeader(doc: jsPDF, companyName: string, pageNum: number): void {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setFontSize(FONTS.tiny);
+  doc.setTextColor(...COLORS.textLight);
+  doc.text(cleanText(companyName), MARGIN_LEFT, 10);
+  doc.text(`Page ${pageNum}`, pageWidth - MARGIN_RIGHT, 10, { align: 'right' });
+}
+
+function addPageFooter(doc: jsPDF): void {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  doc.setFontSize(FONTS.tiny);
+  doc.setTextColor(...COLORS.textLight);
+  const footerText = 'Generated by ComplianceCheck.co.in | This report does not constitute legal advice';
+  doc.text(footerText, MARGIN_LEFT, pageHeight - MARGIN_BOTTOM + 5);
+}
+
+function drawLine(
+  doc: jsPDF,
+  x1: number,
+  y: number,
+  x2: number,
+  color: [number, number, number] = COLORS.lightGray
+): void {
+  doc.setDrawColor(...color);
+  doc.setLineWidth(0.5);
+  doc.line(x1, y, x2, y);
+}
+
+// ============================================================================
+// PAGE GENERATORS
+// ============================================================================
+
+function generateCoverPage(doc: jsPDF, data: UnifiedReportData): number {
+  let currentY = 0;
+
+  // Header bar
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, PAGE_WIDTH, 60, 'F');
+
+  // ComplianceCheck branding
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.white);
+  doc.text('ComplianceCheck', PAGE_WIDTH / 2, 35, { align: 'center' });
+
+  doc.setFontSize(FONTS.small);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Pay-as-you-go Compliance Assessments for Indian SMEs', PAGE_WIDTH / 2, 48, {
+    align: 'center',
+  });
+
+  // Assessment title
+  currentY = 90;
+  doc.setFontSize(FONTS.title);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.text);
+  doc.text(cleanText(data.config.assessmentTitle), PAGE_WIDTH / 2, currentY, {
+    align: 'center',
+  });
+
+  currentY += 12;
+  doc.setFontSize(FONTS.title);
+  doc.text(cleanText(data.config.assessmentSubtitle), PAGE_WIDTH / 2, currentY, {
+    align: 'center',
+  });
+
+  currentY += 16;
+  doc.setFontSize(FONTS.body);
+  doc.setTextColor(...COLORS.textLight);
+  doc.setFont('helvetica', 'normal');
+  doc.text(cleanText(data.config.legislationDescription), PAGE_WIDTH / 2, currentY, {
+    align: 'center',
+  });
+
+  if (data.config.legislationLine2) {
+    currentY += 8;
+    doc.text(cleanText(data.config.legislationLine2), PAGE_WIDTH / 2, currentY, {
+      align: 'center',
+    });
+  }
+
+  // Prepared for box
+  currentY = 145;
+  doc.setFillColor(...COLORS.lightGray);
+  doc.rect(MARGIN_LEFT, currentY, CONTENT_WIDTH, 50, 'F');
+
+  currentY += 5;
+  doc.setFontSize(FONTS.small);
+  doc.setTextColor(...COLORS.textLight);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Prepared For', MARGIN_LEFT + 5, currentY);
+
+  currentY += 8;
+  doc.setFontSize(FONTS.subheading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.text);
+  doc.text(cleanText(data.userDetails.companyName), MARGIN_LEFT + 5, currentY);
+
+  currentY += 8;
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.textLight);
+  const companyInfo = [
+    data.userDetails.state,
+    data.userDetails.industry || 'N/A',
+  ]
+    .filter(Boolean)
+    .join(' | ');
+  doc.text(companyInfo, MARGIN_LEFT + 5, currentY);
+
+  if (data.userDetails.employeeCount) {
+    currentY += 6;
+    doc.text(`Employees: ${cleanText(data.userDetails.employeeCount)}`, MARGIN_LEFT + 5, currentY);
+  }
+
+  // Assessment date
+  currentY = 210;
+  doc.setFontSize(FONTS.body);
+  doc.setTextColor(...COLORS.text);
+  doc.text(`Assessment Date: ${formatDate(new Date())}`, MARGIN_LEFT, currentY);
+
+  // Overall score
+  currentY += 20;
+  doc.setFontSize(FONTS.heading);
+  doc.setFont('helvetica', 'bold');
+  const scoreColor = getScoreColor(data.overallScore);
+  doc.setTextColor(...scoreColor);
+  doc.text(`${data.overallScore}%`, MARGIN_LEFT, currentY);
+
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.text);
+  doc.text('Overall Compliance Score', MARGIN_LEFT, currentY + 8);
+
+  // Confidential footer
+  doc.setFontSize(FONTS.small);
+  doc.setTextColor(...COLORS.danger);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CONFIDENTIAL - For Internal Use Only', PAGE_WIDTH / 2, PAGE_HEIGHT - 10, {
+    align: 'center',
+  });
+
+  return 1;
+}
+
+function generateExecutiveSummary(doc: jsPDF, data: UnifiedReportData, pageNum: number): number {
+  doc.addPage();
+  let currentY = MARGIN_TOP;
+  let pageNumber = pageNum + 1;
+
+  // Header
+  addPageHeader(doc, data.userDetails.companyName, pageNumber);
+
+  currentY = 20;
+  doc.setFontSize(FONTS.heading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.primary);
+  doc.text('Executive Summary', MARGIN_LEFT, currentY);
+
+  // Overall score
+  currentY = 50;
+  doc.setFontSize(48);
+  doc.setFont('helvetica', 'bold');
+  const scoreColor = getScoreColor(data.overallScore);
+  doc.setTextColor(...scoreColor);
+  doc.text(`${data.overallScore}%`, PAGE_WIDTH / 2, currentY, { align: 'center' });
+
+  currentY += 15;
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.text);
+  doc.text('Overall Compliance Score', PAGE_WIDTH / 2, currentY, { align: 'center' });
+
+  // Risk and penalty boxes
+  currentY = 85;
+  const boxWidth = (CONTENT_WIDTH - 5) / 2;
+
+  // Risk level box
+  doc.setFillColor(...COLORS.danger);
+  doc.rect(MARGIN_LEFT, currentY, boxWidth, 25, 'F');
+  doc.setFontSize(FONTS.small);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.white);
+  doc.text('Risk Level', MARGIN_LEFT + 3, currentY + 6);
+  doc.setFontSize(FONTS.body);
+  doc.text(cleanText(data.riskLevel), MARGIN_LEFT + 3, currentY + 15);
+
+  // Penalty exposure box
+  doc.setFillColor(...COLORS.warning);
+  doc.rect(MARGIN_LEFT + boxWidth + 5, currentY, boxWidth, 25, 'F');
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(FONTS.small);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Penalty Exposure', MARGIN_LEFT + boxWidth + 8, currentY + 6);
+  doc.setFontSize(FONTS.body);
+  doc.text(cleanText(data.penaltyExposure), MARGIN_LEFT + boxWidth + 8, currentY + 15);
+
+  // Category scores table
+  currentY = 125;
+  doc.setFontSize(FONTS.subheading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.primary);
+  doc.text('Category-wise Compliance', MARGIN_LEFT, currentY);
+
+  currentY += 12;
+  // Table header
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(MARGIN_LEFT, currentY, CONTENT_WIDTH, 7, 'F');
+  doc.setFontSize(FONTS.small);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.white);
+  doc.text('Category', MARGIN_LEFT + 2, currentY + 5);
+  doc.text('Score', MARGIN_LEFT + 90, currentY + 5);
+  doc.text('Compliance', MARGIN_LEFT + 130, currentY + 5);
+
+  currentY += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.text);
+  doc.setFontSize(FONTS.body);
+
+  for (const category of data.categoryScores) {
+    currentY = checkPageBreak(doc, currentY, 8);
+    doc.text(cleanText(category.category), MARGIN_LEFT + 2, currentY);
+    doc.text(`${category.score}%`, MARGIN_LEFT + 90, currentY);
+    doc.text(
+      `${category.compliantCount}/${category.questionCount}`,
+      MARGIN_LEFT + 130,
+      currentY
+    );
+    currentY += 8;
+  }
+
+  currentY += 5;
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.primary);
+  doc.text('Key Findings', MARGIN_LEFT, currentY);
+
+  currentY += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(FONTS.body);
+  doc.setTextColor(...COLORS.text);
+
+  const findings = [
+    `Total Compliance Score: ${data.overallScore}%`,
+    `Risk Level: ${cleanText(data.riskLevel)}`,
+    `Areas Requiring Attention: ${data.actionItems.filter((a) => a.priority === 'high').length} High Priority Items`,
+    `Compliant Areas: ${data.compliantItems.length} areas meet requirements`,
+  ];
+
+  for (const finding of findings) {
+    currentY = checkPageBreak(doc, currentY, 6);
+    doc.text(`* ${finding}`, MARGIN_LEFT + 3, currentY);
+    currentY += 6;
+  }
+
+  // Footer
+  addPageFooter(doc);
+
+  return pageNumber;
+}
+
+function generateActionItemsPages(doc: jsPDF, data: UnifiedReportData, pageNum: number): number {
+  const priorities = ['high', 'medium', 'low'];
+  let currentPageNum = pageNum;
+
+  for (const priority of priorities) {
+    const items = data.actionItems.filter((item) => item.priority === priority);
+    if (items.length === 0) continue;
+
+    doc.addPage();
+    currentPageNum++;
+    let currentY = MARGIN_TOP;
+
+    // Header
+    addPageHeader(doc, data.userDetails.companyName, currentPageNum);
+
+    // Priority heading
+    currentY = 20;
+    const priorityLabel = priority.toUpperCase();
+    const priorityColor = getPriorityColor(priority);
+    doc.setFontSize(FONTS.heading);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...priorityColor);
+    doc.text(`${priorityLabel} Priority Action Items`, MARGIN_LEFT, currentY);
+
+    // Subtitle
+    currentY += 10;
+    doc.setFontSize(FONTS.body);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.textLight);
+    const subtitles: { [key: string]: string } = {
+      high: 'Address immediately to mitigate compliance risks.',
+      medium: 'Address within 30-60 days.',
+      low: 'Address as resources permit.',
+    };
+    doc.text(subtitles[priority], MARGIN_LEFT, currentY);
+
+    currentY += 12;
+
+    // Action items
+    for (const item of items) {
+      currentY = checkPageBreak(doc, currentY, 30);
+
+      // Priority badge
+      const badgeWidth = 18;
+      doc.setFillColor(...priorityColor);
+      doc.rect(MARGIN_LEFT, currentY, badgeWidth, 6, 'F');
+      doc.setFontSize(FONTS.tiny);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.white);
+      doc.text(priorityLabel, MARGIN_LEFT + 2, currentY + 4.5);
+
+      // Category
+      doc.setFontSize(FONTS.small);
+      doc.setTextColor(...COLORS.textLight);
+      doc.setFont('helvetica', 'normal');
+      doc.text(cleanText(item.category), MARGIN_LEFT + badgeWidth + 3, currentY + 4.5);
+
+      currentY += 8;
+
+      // Title
+      doc.setFontSize(FONTS.body);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.text);
+      const titleLines = doc.splitTextToSize(cleanText(item.title), CONTENT_WIDTH - 4);
+      doc.text(titleLines, MARGIN_LEFT + 2, currentY);
+      currentY += titleLines.length * 5 + 2;
+
+      // Description
+      doc.setFontSize(FONTS.small);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(...COLORS.textLight);
+      const descLines = doc.splitTextToSize(`"${cleanText(item.description)}"`, CONTENT_WIDTH - 4);
+      doc.text(descLines, MARGIN_LEFT + 2, currentY);
+      currentY += descLines.length * 4 + 2;
+
+      // Remediation steps
+      doc.setFontSize(FONTS.small);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.text);
+      doc.text('Steps to Address:', MARGIN_LEFT + 2, currentY);
+      currentY += 5;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(FONTS.body);
+      for (let i = 0; i < item.remediation.length; i++) {
+        const step = `${i + 1}. ${cleanText(item.remediation[i])}`;
+        const stepLines = doc.splitTextToSize(step, CONTENT_WIDTH - 8);
+        doc.text(stepLines, MARGIN_LEFT + 4, currentY);
+        currentY += stepLines.length * 4 + 1;
+      }
+
+      // Deadline
+      if (item.deadline) {
+        currentY += 2;
+        doc.setFontSize(FONTS.small);
+        doc.setTextColor(...COLORS.textLight);
+        doc.text(`Deadline: ${cleanText(item.deadline)}`, MARGIN_LEFT + 2, currentY);
+        currentY += 5;
+      }
+
+      // Penalty
+      if (item.penalty) {
+        doc.setFontSize(FONTS.small);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...COLORS.danger);
+        const penaltyText = `Penalty: ${cleanText(item.penalty)}`;
+        doc.text(penaltyText, MARGIN_LEFT + 2, currentY);
+        currentY += 5;
+      }
+
+      // Government ref
+      if (item.governmentRef) {
+        doc.setFontSize(FONTS.tiny);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...COLORS.textLight);
+        doc.text(`Ref: ${cleanText(item.governmentRef)}`, MARGIN_LEFT + 2, currentY);
+        currentY += 4;
+      }
+
+      currentY += 3;
+      drawLine(doc, MARGIN_LEFT, currentY, MARGIN_LEFT + CONTENT_WIDTH);
+      currentY += 4;
+    }
+
+    // Footer
+    addPageFooter(doc);
+  }
+
+  return currentPageNum;
+}
+
+function generateCompliantAreasPage(doc: jsPDF, data: UnifiedReportData, pageNum: number): number {
+  if (data.compliantItems.length === 0) return pageNum;
+
+  doc.addPage();
+  const pageNumber = pageNum + 1;
+  let currentY = MARGIN_TOP;
+
+  // Header
+  addPageHeader(doc, data.userDetails.companyName, pageNumber);
+
+  // Title
+  currentY = 20;
+  doc.setFontSize(FONTS.heading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.success);
+  doc.text(`Compliant Areas (${data.compliantItems.length})`, MARGIN_LEFT, currentY);
+
+  currentY += 10;
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.textLight);
+  const subtitle = `These areas meet ${cleanText(data.config.legislationDescription)} requirements based on your responses`;
+  const subtitleLines = doc.splitTextToSize(subtitle, CONTENT_WIDTH);
+  doc.text(subtitleLines, MARGIN_LEFT, currentY);
+  currentY += subtitleLines.length * 5 + 5;
+
+  // Group by category
+  const byCategory: { [key: string]: typeof data.compliantItems } = {};
+  for (const item of data.compliantItems) {
+    if (!byCategory[item.category]) {
+      byCategory[item.category] = [];
+    }
+    byCategory[item.category].push(item);
+  }
+
+  doc.setFontSize(FONTS.body);
+
+  for (const [category, items] of Object.entries(byCategory)) {
+    currentY = checkPageBreak(doc, currentY, 8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.text);
+    doc.text(cleanText(category), MARGIN_LEFT, currentY);
+    currentY += 7;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.text);
+
+    for (const item of items) {
+      currentY = checkPageBreak(doc, currentY, 5);
+      doc.setTextColor(...COLORS.success);
+      doc.text('[Y]', MARGIN_LEFT + 2, currentY);
+      doc.setTextColor(...COLORS.text);
+      const text = cleanText(item.text);
+      const lines = doc.splitTextToSize(text, CONTENT_WIDTH - 8);
+      doc.text(lines, MARGIN_LEFT + 8, currentY);
+      currentY += lines.length * 4 + 2;
+    }
+
+    currentY += 3;
+  }
+
+  // Footer
+  addPageFooter(doc);
+
+  return pageNumber;
+}
+
+function generateNextStepsPage(doc: jsPDF, data: UnifiedReportData, pageNum: number): number {
+  doc.addPage();
+  const pageNumber = pageNum + 1;
+  let currentY = MARGIN_TOP;
+
+  // Header
+  addPageHeader(doc, data.userDetails.companyName, pageNumber);
+
+  // Title
+  currentY = 20;
+  doc.setFontSize(FONTS.heading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.primary);
+  doc.text('Next Steps & Resources', MARGIN_LEFT, currentY);
+
+  // Recommended timeline table
+  currentY = 35;
+  doc.setFontSize(FONTS.subheading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.text);
+  doc.text('Recommended Timeline', MARGIN_LEFT, currentY);
+
+  currentY += 10;
+  const timeline = [
+    { period: 'Immediate', action: 'Address HIGH priority items' },
+    { period: 'Short-term (30-60 days)', action: 'Complete MEDIUM priority items' },
+    { period: 'Ongoing', action: 'Implement LOW priority improvements' },
+    { period: 'Annual', action: 'Re-assessment and compliance review' },
+  ];
+
+  doc.setFillColor(...COLORS.lightGray);
+  doc.rect(MARGIN_LEFT, currentY, CONTENT_WIDTH, 7, 'F');
+  doc.setFontSize(FONTS.small);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.text);
+  doc.text('Period', MARGIN_LEFT + 2, currentY + 5);
+  doc.text('Action', MARGIN_LEFT + 60, currentY + 5);
+
+  currentY += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(FONTS.body);
+
+  for (const item of timeline) {
+    doc.text(cleanText(item.period), MARGIN_LEFT + 2, currentY);
+    const actionLines = doc.splitTextToSize(item.action, 80);
+    doc.text(actionLines, MARGIN_LEFT + 60, currentY);
+    currentY += actionLines.length * 4 + 2;
+  }
+
+  // Government Resources
+  currentY += 5;
+  doc.setFontSize(FONTS.subheading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.primary);
+  doc.text('Government Resources', MARGIN_LEFT, currentY);
+
+  currentY += 8;
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.text);
+
+  for (const resource of data.config.resources) {
+    currentY = checkPageBreak(doc, currentY, 6);
+    doc.setFont('helvetica', 'bold');
+    doc.text(cleanText(resource.name), MARGIN_LEFT + 5, currentY);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.primary);
+    doc.text(cleanText(resource.url), MARGIN_LEFT + 5, currentY + 5);
+    doc.setTextColor(...COLORS.text);
+    currentY += 12;
+  }
+
+  // Legislation
+  currentY += 3;
+  doc.setFontSize(FONTS.subheading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.primary);
+  doc.text('Applicable Legislation', MARGIN_LEFT, currentY);
+
+  currentY += 8;
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.text);
+
+  for (const leg of data.config.legislation) {
+    currentY = checkPageBreak(doc, currentY, 5);
+    doc.text(`* ${cleanText(leg)}`, MARGIN_LEFT + 2, currentY);
+    currentY += 5;
+  }
+
+  // Key deadlines
+  currentY += 3;
+  doc.setFontSize(FONTS.subheading);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.primary);
+  doc.text('Key Compliance Deadlines', MARGIN_LEFT, currentY);
+
+  currentY += 8;
+  doc.setFontSize(FONTS.body);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.text);
+
+  for (const deadline of data.config.deadlines) {
+    currentY = checkPageBreak(doc, currentY, 5);
+    doc.text(`* ${cleanText(deadline.item)}: ${cleanText(deadline.date)}`, MARGIN_LEFT + 2, currentY);
+    currentY += 5;
+  }
+
+  // Deadline warning
+  if (data.config.deadlineWarning) {
+    currentY += 5;
+    doc.setFillColor(...COLORS.warning);
+    doc.rect(MARGIN_LEFT, currentY, CONTENT_WIDTH, 15, 'F');
+    doc.setFontSize(FONTS.small);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.white);
+    doc.text('WARNING', MARGIN_LEFT + 2, currentY + 4);
+    doc.setFont('helvetica', 'normal');
+    const warningLines = doc.splitTextToSize(
+      cleanText(data.config.deadlineWarning.text),
+      CONTENT_WIDTH - 4
+    );
+    doc.text(warningLines, MARGIN_LEFT + 2, currentY + 8);
+    currentY += 17;
+  }
+
+  // Re-assessment box
+  currentY += 3;
+  doc.setFillColor(...COLORS.lightGray);
+  doc.rect(MARGIN_LEFT, currentY, CONTENT_WIDTH, 20, 'F');
+  doc.setFontSize(FONTS.small);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.text);
+  doc.text('Schedule Your Next Assessment', MARGIN_LEFT + 2, currentY + 4);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(FONTS.body);
+  const reassessText =
+    'We recommend re-assessing your compliance status every 6-12 months. Visit compliancecheck.co.in to schedule your next assessment.';
+  const reassessLines = doc.splitTextToSize(reassessText, CONTENT_WIDTH - 4);
+  doc.text(reassessLines, MARGIN_LEFT + 2, currentY + 9);
+
+  // Disclaimer
+  currentY = PAGE_HEIGHT - 35;
+  doc.setFontSize(FONTS.tiny);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(...COLORS.textLight);
+  const disclaimer =
+    'Disclaimer: This report is generated based on your responses and should not be construed as legal advice. Please consult with a legal professional for specific compliance guidance.';
+  const disclaimerLines = doc.splitTextToSize(disclaimer, CONTENT_WIDTH);
+  doc.text(disclaimerLines, MARGIN_LEFT, currentY);
+
+  // Report metadata
+  currentY += disclaimerLines.length * 4 + 2;
+  doc.setFontSize(FONTS.tiny);
+  doc.setTextColor(...COLORS.textLight);
+  doc.text(`Report Generated: ${formatDate(new Date())}`, MARGIN_LEFT, currentY);
+  doc.text(`Assessment ID: ${cleanText(data.assessmentId)}`, MARGIN_LEFT, currentY + 4);
+
+  // Footer
+  addPageFooter(doc);
+
+  return pageNumber;
+}
+
+// ============================================================================
+// MAIN GENERATOR FUNCTION
+// ============================================================================
+
+export function generateUnifiedReportBlob(data: UnifiedReportData): Blob {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  let pageNum = 0;
+
+  // Generate all pages
+  pageNum = generateCoverPage(doc, data);
+  pageNum = generateExecutiveSummary(doc, data, pageNum);
+  pageNum = generateActionItemsPages(doc, data, pageNum);
+  pageNum = generateCompliantAreasPage(doc, data, pageNum);
+  pageNum = generateNextStepsPage(doc, data, pageNum);
+
+  // Convert to blob
+  const pdfBlob = doc.output('blob');
+  return pdfBlob;
+}
