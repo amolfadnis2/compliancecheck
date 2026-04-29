@@ -4,14 +4,13 @@ import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider } from 'posthog-js/react'
 import { useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 // Initialize PostHog only on client side
 if (typeof window !== 'undefined') {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
-    // Capture pageviews manually for Next.js App Router
     capture_pageview: false,
-    // Enable session recordings
     capture_pageleave: true,
   })
 }
@@ -43,10 +42,40 @@ function PostHogPageView() {
   )
 }
 
+function AuthIdentifier() {
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && posthog.__loaded) {
+        posthog.identify(session.user.id, {
+          email: session.user.email,
+        })
+      }
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!posthog.__loaded) return
+      if (session?.user) {
+        posthog.identify(session.user.id, {
+          email: session.user.email,
+        })
+      } else if (event === 'SIGNED_OUT') {
+        posthog.reset()
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  return null
+}
+
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   return (
     <PHProvider client={posthog}>
       <PostHogPageView />
+      <AuthIdentifier />
       {children}
     </PHProvider>
   )
