@@ -96,6 +96,15 @@ const assessments = [
 // Free tools data
 const freeTools = [
   {
+    id: 'penalty-calculator',
+    title: 'Compliance Penalty Calculator',
+    description: 'See your total statutory penalty exposure across DPDP Act, Labour Codes, EPF/ESI, POSH, GST and more. Two-number framing: typical risk + worst-case ceiling.',
+    href: '/calculators/compliance-penalty-calculator',
+    icon: Shield,
+    gradient: 'from-red-500 to-red-600',
+    tags: ['18+ Indian laws', 'DPDP · EPF · POSH · GST', 'No login required']
+  },
+  {
     id: 'ctc-calculator',
     title: 'CTC to In-Hand Calculator',
     description: 'Convert your CTC to actual take-home salary. Understand all deductions including PF, ESI, Professional Tax, and Income Tax.',
