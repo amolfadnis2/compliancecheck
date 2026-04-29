@@ -28,6 +28,9 @@ import {
   type CTCResult,
 } from '@/lib/calculators/ctc-calculator'
 import { trackEvent } from '@/lib/analytics'
+import { EmailGate } from '@/components/identity/EmailGate'
+import { shouldShowCTCEmailGate } from '@/lib/feature-flags'
+import { logEvent } from '@/lib/identity/log-event'
 
 // Form validation schema
 const userDetailsSchema = z.object({
@@ -57,14 +60,22 @@ export default function CTCCalculatorPage() {
   const [isMetroCity, setIsMetroCity] = useState<string>('')
   const [taxRegime, setTaxRegime] = useState<'new' | 'old'>('new')
   const [gender, setGender] = useState<'male' | 'female'>('male')
-  
+
   // Optional deductions for Old Regime
   const [section80C, setSection80C] = useState<string>('')
   const [section80D, setSection80D] = useState<string>('')
   const [rentPaid, setRentPaid] = useState<string>('')
-  
+
   // Result state
   const [result, setResult] = useState<CTCResult | null>(null)
+
+  // Email gate: evaluate once on mount (stable per session)
+  const [gateRequired, setGateRequired] = useState(false)
+  const [gateCleared, setGateCleared] = useState(false)
+
+  useEffect(() => {
+    setGateRequired(shouldShowCTCEmailGate())
+  }, [])
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<UserDetails>({
     resolver: zodResolver(userDetailsSchema),
@@ -143,9 +154,15 @@ export default function CTCCalculatorPage() {
     const calcResult = calculateCTC(input)
     setResult(calcResult)
     setStep(3)
-    
+
     // Auto-save to database
     saveToDatabase(calcResult, input)
+
+    if (gateRequired) {
+      trackEvent('ctc_calc_gate_shown', { gate_variant: 'on' })
+    }
+
+    logEvent('calculator_completed', { calculator_type: 'ctc', annual_ctc: input.annualCTC })
 
     trackEvent('calculator_completed', {
       calculator_type: 'ctc',
@@ -419,6 +436,24 @@ export default function CTCCalculatorPage() {
 
         {step === 3 && result && (
           <div className="space-y-6">
+            {/* Email gate — shown before results when flag is active */}
+            {gateRequired && !gateCleared && (
+              <EmailGate
+                source="ctc_calc"
+                reason="Email me my CTC breakdown so I can refer back to it"
+                onVerified={() => {
+                  setGateCleared(true)
+                  trackEvent('ctc_calc_gate_completed', { source: 'ctc_calc' })
+                }}
+                showMarketingConsent
+                showDeadlineRemindersConsent={false}
+                ctaLabel="Verify & see results"
+              />
+            )}
+
+            {/* Results — hidden behind gate until cleared */}
+            {(!gateRequired || gateCleared) && (
+            <>
             {/* Summary Card */}
             <Card className="border-2 border-green-600">
               <CardHeader className="bg-green-50">
@@ -629,8 +664,8 @@ export default function CTCCalculatorPage() {
 
             {/* Action Buttons */}
             <div className="flex gap-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1"
                 onClick={() => {
                   setStep(2)
@@ -645,6 +680,8 @@ export default function CTCCalculatorPage() {
                 </Button>
               </Link>
             </div>
+            </>
+            )}
           </div>
         )}
       </div>
