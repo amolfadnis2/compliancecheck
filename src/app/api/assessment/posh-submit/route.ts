@@ -9,10 +9,19 @@ import { createClient } from '@supabase/supabase-js'
  * Saves POSH compliance assessment results to Supabase
  */
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// Lazy-init Supabase — module-level init breaks Netlify build when env vars are absent
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabase: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getSupabase(): any {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return _supabase
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert into Supabase
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('assessments')
       .insert([assessmentData])
       .select('id')
@@ -78,7 +87,7 @@ export async function POST(request: NextRequest) {
       console.error('Supabase insert error:', error)
       
       // If table doesn't exist or schema mismatch, try generic assessment table
-      const { data: fallbackData, error: fallbackError } = await supabase
+      const { data: fallbackData, error: fallbackError } = await getSupabase()
         .from('generic_assessments')
         .insert([{
           id: assessmentId,

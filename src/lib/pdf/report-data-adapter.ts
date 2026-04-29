@@ -13,7 +13,6 @@ import type {
   UnifiedCategoryScore,
   UnifiedActionItem,
   UnifiedCompliantItem,
-  ReportConfig,
 } from './unified-report-generator'
 
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from './dpdp-compliance-rules'
