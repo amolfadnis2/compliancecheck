@@ -312,6 +312,7 @@ interface DownloadButtonsProps {
 // HELPER FUNCTIONS
 // ============================================================================
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CATEGORY_LABELS: Record<string, string> = {
   pf: 'Provident Fund (PF)',
   esi: 'Employee State Insurance (ESI)',
@@ -320,12 +321,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   bonus: 'Statutory Bonus',
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getStatusText(score: number): string {
   if (score >= 80) return 'Compliant'
   if (score >= 50) return 'Needs Attention'
   return 'Non-Compliant'
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getStatusColour(score: number): [number, number, number] {
   if (score >= 80) return [5, 150, 105] // Green
   if (score >= 50) return [217, 119, 6] // Amber

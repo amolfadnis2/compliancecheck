@@ -172,7 +172,6 @@ function addPageHeader(doc: jsPDF, companyName: string, pageNum: number): void {
 }
 
 function addPageFooter(doc: jsPDF): void {
-  const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   doc.setFontSize(FONTS.tiny);
   doc.setTextColor(...COLORS.textLight);
@@ -312,7 +311,7 @@ function generateCoverPage(doc: jsPDF, data: UnifiedReportData): number {
 function generateExecutiveSummary(doc: jsPDF, data: UnifiedReportData, pageNum: number): number {
   doc.addPage();
   let currentY = MARGIN_TOP;
-  let pageNumber = pageNum + 1;
+  const pageNumber = pageNum + 1;
 
   // Header
   addPageHeader(doc, data.userDetails.companyName, pageNumber);
@@ -806,7 +805,7 @@ export function generateUnifiedReportBlob(data: UnifiedReportData): Blob {
   pageNum = generateExecutiveSummary(doc, data, pageNum);
   pageNum = generateActionItemsPages(doc, data, pageNum);
   pageNum = generateCompliantAreasPage(doc, data, pageNum);
-  pageNum = generateNextStepsPage(doc, data, pageNum);
+  void generateNextStepsPage(doc, data, pageNum);
 
   // Convert to blob
   const pdfBlob = doc.output('blob');
