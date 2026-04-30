@@ -26,6 +26,21 @@ export const ASSESSMENT_TYPES = {
 // Type for assessment type values
 export type AssessmentType = typeof ASSESSMENT_TYPES[keyof typeof ASSESSMENT_TYPES];
 
+export type PricingTier = 'free' | 'paid';
+
+export const ASSESSMENT_PRICING: Record<AssessmentType, PricingTier> = {
+  [ASSESSMENT_TYPES.DPDP]: 'free',
+  [ASSESSMENT_TYPES.LABOUR_CODE]: 'free',
+  [ASSESSMENT_TYPES.POSH]: 'paid',
+  [ASSESSMENT_TYPES.STATUTORY_HEALTH]: 'free',
+  [ASSESSMENT_TYPES.FOOD_BUSINESS]: 'free',
+  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: 'free',
+};
+
+export function isPaidAssessment(type: AssessmentType): boolean {
+  return ASSESSMENT_PRICING[type] === 'paid';
+}
+
 /**
  * Helper to validate if a string is a valid assessment type
  */
