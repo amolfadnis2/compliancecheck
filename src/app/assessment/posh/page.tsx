@@ -45,6 +45,9 @@ import {
 } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { POSHProgressSection } from '@/components/assessment/posh-progress-section'
+import { EmailGate } from '@/components/identity/EmailGate'
+import { shouldRequireEmailVerification } from '@/lib/feature-flags'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import posthog from 'posthog-js'
 
 // Import POSH data files
@@ -202,6 +205,10 @@ export default function POSHAssessmentPage() {
   const [error, setError] = useState<string | null>(null)
   const [isEmailingSaving, setIsEmailingSaving] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
+
+  // Email gate: POSH is a paid assessment, always requires verification
+  const gateRequired = shouldRequireEmailVerification(ASSESSMENT_TYPES.POSH)
+  const [gateCleared, setGateCleared] = useState(false)
   
   // Timing
   const [startTime] = useState(Date.now())
@@ -1351,12 +1358,33 @@ export default function POSHAssessmentPage() {
   
   const renderResults = () => {
     if (!results) return null
-    
+
     // Handle LCC redirect case
     if (results.profile?.redirectToLCC) {
       return renderLCCInfo()
     }
-    
+
+    // Show email gate for paid assessment before revealing results
+    if (gateRequired && !gateCleared) {
+      return (
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+            <p className="text-sm font-medium text-blue-800">
+              Assessment complete — verify your email to unlock your full POSH compliance report
+            </p>
+          </div>
+          <EmailGate
+            source="posh_assessment"
+            reason="Email me my POSH compliance report so I can refer back to it"
+            onVerified={() => setGateCleared(true)}
+            showMarketingConsent
+            showDeadlineRemindersConsent
+            ctaLabel="Verify & view results"
+          />
+        </div>
+      )
+    }
+
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Score Card */}
