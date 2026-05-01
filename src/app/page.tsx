@@ -3,18 +3,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { 
-  Heart, 
-  Scale, 
-  Shield, 
-  MapPin, 
-  Utensils, 
-  AlertTriangle, 
+import {
+  Heart,
+  Scale,
+  Shield,
+  MapPin,
+  Utensils,
+  AlertTriangle,
   ArrowRight,
   Calculator,
   Gift,
   Menu,
-  X
+  X,
+  Car,
 } from 'lucide-react';
 
 // Assessment card data
@@ -90,7 +91,19 @@ const assessments = [
     gradient: 'from-purple-500 to-pink-600',
     hoverBorder: 'hover:border-purple-500',
     badge: { text: 'NEW', color: 'bg-purple-500' }
-  }
+  },
+  {
+    id: 'auto-dealer-compliance',
+    title: 'Auto Dealership Compliance',
+    description: '2-Wheeler & 4-Wheeler Dealers — Labour, CMVR, EHS, IRDAI MISP, ELV, GST 2.0, DPDP. 6-phase, up to 100 questions.',
+    questions: 100,
+    price: 'Rs.999–4,999',
+    href: '/assessment/auto-dealer',
+    icon: Car,
+    gradient: 'from-blue-700 to-sky-500',
+    hoverBorder: 'hover:border-sky-500',
+    badge: { text: 'NEW', color: 'bg-sky-600' }
+  },
 ];
 
 // Free tools data
