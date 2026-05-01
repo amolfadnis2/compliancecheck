@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { ChevronDown, ChevronUp, HelpCircle, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import type { AutoDealerQuestion, Responses } from '@/types/auto-dealer'
 import { PHASE_METADATA } from '@/types/auto-dealer'

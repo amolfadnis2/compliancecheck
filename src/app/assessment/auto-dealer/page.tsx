@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -18,7 +18,7 @@ import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { ApplicabilityForm } from '@/components/auto-dealer/ApplicabilityForm'
 
 import { APPLICABILITY_QUESTIONS } from '@/lib/assessments/auto-dealer/applicability-questions'
-import { buildApplicabilityProfileFromResponses } from '@/lib/assessments/auto-dealer/rules-engine'
+
 import type { Responses, LabourRegime } from '@/types/auto-dealer'
 
 // --------------------------------------------------------------------------
@@ -53,9 +53,8 @@ export default function AutoDealerLandingPage() {
   const [labourRegime, setLabourRegime] = useState<LabourRegime>('new')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const startTimeRef = useRef(Date.now())
 
-  const { register, handleSubmit, formState: { errors }, getValues } = useForm<DetailsForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<DetailsForm>({
     resolver: zodResolver(detailsSchema),
   })
 

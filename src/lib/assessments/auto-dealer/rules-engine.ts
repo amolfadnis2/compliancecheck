@@ -110,14 +110,6 @@ function getResponseStr(responses: Responses, id: string): string {
   return String(v)
 }
 
-function scoreQuestion(question: AutoDealerQuestion, responses: Responses): number {
-  const answer = getResponseStr(responses, question.id)
-  if (!answer) return 0
-  if (question.compliantAnswers.includes(answer)) return question.weight
-  if (question.partiallyCompliantAnswers?.includes(answer)) return question.weight * 0.5
-  return 0
-}
-
 export function computePhaseScores(
   profile: ApplicabilityProfile,
   allQuestions: AutoDealerQuestion[],
