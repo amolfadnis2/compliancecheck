@@ -7,6 +7,31 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Progress } from '@/components/ui/progress'
 import type { AutoDealerQuestion, Responses } from '@/types/auto-dealer'
 
+// Returns options filtered by previously-declared total headcount so that
+// sub-questions (women count, contract workers) never exceed the total.
+function getFilteredOptions(
+  question: AutoDealerQuestion,
+  responses: Responses
+): NonNullable<AutoDealerQuestion['options']> {
+  const opts = question.options ?? []
+  const totalBracket = String(responses['AD_APP_003'] ?? '')
+  const maxTotal: Record<string, number> = {
+    lt_10: 9, '10_19': 19, '20_49': 49, '50_99': 99,
+    '100_299': 299, '300_499': 499, gte_500: Infinity,
+  }
+  const max = maxTotal[totalBracket] ?? Infinity
+
+  if (question.id === 'AD_APP_004') {
+    const womenMin: Record<string, number> = { lt_10: 0, '10_29': 10, '30_49': 30, gte_50: 50 }
+    return opts.filter(o => (womenMin[o.value] ?? 0) <= max)
+  }
+  if (question.id === 'AD_APP_020') {
+    const contractMin: Record<string, number> = { no: 0, lt_20: 1, '20_49': 20, gte_50: 50 }
+    return opts.filter(o => (contractMin[o.value] ?? 0) <= max)
+  }
+  return opts
+}
+
 interface ApplicabilityFormProps {
   questions: AutoDealerQuestion[]
   responses: Responses
@@ -134,25 +159,28 @@ export function ApplicabilityForm({
             </div>
           )}
 
-          {question.type === 'single_choice' && question.options && (
-            <div className="space-y-3" role="radiogroup" aria-label={question.text}>
-              {question.options.map(option => (
-                <Button
-                  key={option.value}
-                  onClick={() => onAnswer(question.id, option.value)}
-                  variant={currentResponse === option.value ? 'default' : 'outline'}
-                  className={`w-full h-auto py-4 px-4 text-left justify-start whitespace-normal ${
-                    currentResponse === option.value
-                      ? 'bg-blue-700 hover:bg-blue-800 text-white'
-                      : ''
-                  }`}
-                  aria-pressed={currentResponse === option.value}
-                >
-                  {option.label}
-                </Button>
-              ))}
-            </div>
-          )}
+          {question.type === 'single_choice' && question.options && (() => {
+            const visibleOptions = getFilteredOptions(question, responses)
+            return (
+              <div className="space-y-3" role="radiogroup" aria-label={question.text}>
+                {visibleOptions.map(option => (
+                  <Button
+                    key={option.value}
+                    onClick={() => onAnswer(question.id, option.value)}
+                    variant={currentResponse === option.value ? 'default' : 'outline'}
+                    className={`w-full h-auto py-4 px-4 text-left justify-start whitespace-normal ${
+                      currentResponse === option.value
+                        ? 'bg-blue-700 hover:bg-blue-800 text-white'
+                        : ''
+                    }`}
+                    aria-pressed={currentResponse === option.value}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            )
+          })()}
 
           {question.type === 'multi_choice' && question.options && (
             <div role="group" aria-label={question.text}>
