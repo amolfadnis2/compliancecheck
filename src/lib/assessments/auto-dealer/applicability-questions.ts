@@ -303,7 +303,7 @@ export const APPLICABILITY_QUESTIONS: AutoDealerQuestion[] = [
     phase: 1,
     text: 'Which workshop services do you provide? (Select all that apply)',
     helpText: 'Body-shop / paint booth triggers SPCB Air Consent, HW sludge authorisation, and PESO paint-storage rules. EV repair triggers battery-waste and electrical safety obligations.',
-    type: 'single_choice',
+    type: 'multi_choice',
     options: [
       { value: 'general_service',   label: 'General service / periodic maintenance' },
       { value: 'body_shop_paint',   label: 'Body-shop and spray-painting / paint booth' },

@@ -107,6 +107,7 @@ const PHASE_NAMES: Record<number, string> = {
 function getResponseStr(responses: Responses, id: string): string {
   const v: ResponseValue = responses[id]
   if (v === null || v === undefined) return ''
+  if (Array.isArray(v)) return v.join(',')
   return String(v)
 }
 
@@ -126,6 +127,10 @@ export function computePhaseScores(
 
     for (const q of questions) {
       const answer = getResponseStr(responses, q.id)
+
+      // "not_applicable" answers are excluded from both numerator and denominator (Fix #5)
+      if (answer === 'not_applicable') continue
+
       maxPoints += q.weight
 
       if (q.compliantAnswers.includes(answer)) {
@@ -193,6 +198,7 @@ export function generateGapAnalysis(
   for (const q of applicable) {
     const answer = getResponseStr(responses, q.id)
     if (!answer) continue  // unanswered — not a gap yet
+    if (answer === 'not_applicable') continue  // NA excluded from gap analysis (Fix #5)
 
     const isCompliant = q.compliantAnswers.includes(answer)
     const isPartial = q.partiallyCompliantAnswers?.includes(answer) ?? false
@@ -544,10 +550,6 @@ export function buildApplicabilityProfileFromResponses(
 ): ApplicabilityProfile {
   const r = (id: string): string => String(responses[id] ?? '')
   const b = (id: string): boolean => r(id) === 'yes'
-  const n = (id: string): number => {
-    const v = responses[id]
-    return typeof v === 'number' ? v : parseInt(String(v ?? '0'), 10) || 0
-  }
   const arr = (id: string): string[] => {
     const v = responses[id]
     if (Array.isArray(v)) return v as string[]
@@ -555,19 +557,41 @@ export function buildApplicabilityProfileFromResponses(
     return []
   }
 
-  const workshopServices = arr('AD_APP_012') as ApplicabilityProfile['workshopServices']
+  const workshopServicesRaw = arr('AD_APP_012').filter(v => v !== 'none') as ApplicabilityProfile['workshopServices']
+  const workshopServices = workshopServicesRaw
   const hasWorkshop = b('AD_APP_011') || workshopServices.length > 0
 
+  // AD_APP_017 is a single_choice; derive equipment flags from its value
+  const ad017 = r('AD_APP_017')
+  const hasLiftsOrHoists = ad017 === 'lifts_hoists' || ad017 === 'multiple'
+  const hasPaintBooth = ad017 === 'paint_booth' || ad017 === 'multiple' ||
+    workshopServices.includes('body_shop_paint')
+  const hasCNGDispenser = ad017 === 'cng_dispenser' || ad017 === 'multiple'
+  const hasEVCharger = ad017 === 'ev_charger' || ad017 === 'multiple'
+
+  // AD_APP_020 is a single_choice encoding "no", "lt_20", "20_49", "gte_50"
+  const ad020 = r('AD_APP_020')
+  const hasContractLabour = ad020 !== '' && ad020 !== 'no'
+  const contractWorkerCount = ad020 === 'lt_20' ? 10 : ad020 === '20_49' ? 35 : ad020 === 'gte_50' ? 50 : 0
+
+  // AD_APP_002 is a single_choice: all_yes / partial / no
+  const ad002 = r('AD_APP_002')
+  const regCompliant = ad002 === 'all_yes' || ad002 === 'partial'
+  const legalForm = (r('AD_APP_001') as ApplicabilityProfile['legalForm']) || 'pvt_ltd'
+
   return {
-    legalForm: (r('AD_APP_001') as ApplicabilityProfile['legalForm']) || 'pvt_ltd',
-    hasPAN: b('AD_APP_002a'),
-    hasGSTIN: b('AD_APP_002b'),
-    hasCIN: b('AD_APP_002c'),
+    legalForm,
+    hasPAN: regCompliant,
+    hasGSTIN: regCompliant,
+    hasCIN: regCompliant && ['pvt_ltd', 'public_ltd', 'opc', 'llp'].includes(legalForm),
     employeeCount: (r('AD_APP_003') as ApplicabilityProfile['employeeCount']) || 'lt_10',
     womenEmployeeCount: (r('AD_APP_004') as ApplicabilityProfile['womenEmployeeCount']) || 'lt_10',
     turnoverBracket: (r('AD_APP_005') as ApplicabilityProfile['turnoverBracket']) || 'lt_1cr',
     statesOfOperation: arr('AD_APP_006'),
-    outletCount: n('AD_APP_007'),
+    outletCount: (() => {
+      const v = r('AD_APP_007')
+      return v === '1' ? 1 : v === '2_3' ? 2 : v === '4_10' ? 5 : v === 'gt10' ? 15 : 1
+    })(),
     vehicleType: (r('AD_APP_008') as ApplicabilityProfile['vehicleType']) || '4w_only',
     oems: arr('AD_APP_009'),
     hasTestDrives: b('AD_APP_010'),
@@ -576,20 +600,23 @@ export function buildApplicabilityProfileFromResponses(
     hasPUCCentre: b('AD_APP_013'),
     sellsAccessories: b('AD_APP_014'),
     hasRVSF: b('AD_APP_015'),
-    showroomAreaSqft: n('AD_APP_016a') || null,
-    workshopAreaSqft: n('AD_APP_016b') || null,
-    hasLiftsOrHoists: b('AD_APP_017a'),
-    hasPaintBooth: b('AD_APP_017b'),
-    hasCNGDispenser: b('AD_APP_017c'),
-    hasEVCharger: b('AD_APP_017d'),
-    dieselStorageLitres: n('AD_APP_018'),
+    showroomAreaSqft: null,
+    workshopAreaSqft: null,
+    hasLiftsOrHoists,
+    hasPaintBooth,
+    hasCNGDispenser,
+    hasEVCharger,
+    dieselStorageLitres: (() => {
+      const v = r('AD_APP_018')
+      return v === '0' ? 0 : v === 'lt_2500' ? 1000 : v === '2500_5000' ? 3000 : v === '5000_25000' ? 10000 : v === 'gt_25000' ? 30000 : 0
+    })(),
     premisesOwned: r('AD_APP_019') === 'owned',
-    hasContractLabour: b('AD_APP_020'),
-    contractWorkerCount: n('AD_APP_020b'),
+    hasContractLabour,
+    contractWorkerCount,
     hasApprentices: b('AD_APP_021'),
-    hasHazardousProcessWorkers: b('AD_APP_022'),
-    sellsMotorInsurance: b('AD_APP_023'),
-    misp: r('AD_APP_023') === 'yes_misp' || r('AD_APP_023b') === 'yes',
+    hasHazardousProcessWorkers: b('AD_APP_022') || hasPaintBooth,
+    sellsMotorInsurance: r('AD_APP_023') !== '' && r('AD_APP_023') !== 'no',
+    misp: r('AD_APP_023') === 'yes_misp',
     facilitatesVehicleFinance: b('AD_APP_024'),
     processesPersonalData: true,  // always true for any dealership
     labourRegime: (r('AD_APP_labour_regime') as 'new' | 'legacy') || 'new',

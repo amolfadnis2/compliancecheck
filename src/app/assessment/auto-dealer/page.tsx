@@ -108,39 +108,51 @@ export default function AutoDealerLandingPage() {
     }
   }
 
-  const handleApplicabilityAnswer = useCallback((questionId: string, value: string) => {
+  const advanceApplicability = useCallback(async (newResponses: Responses) => {
+    const nextIndex = currentIndex + 1
+    if (nextIndex < visibleQuestions.length) {
+      setCurrentIndex(nextIndex)
+    } else {
+      // Phase 1 complete — persist to Supabase and navigate to Phase 2
+      setPhase('processing')
+      try {
+        const res = await fetch('/api/assessment/auto-dealer/applicability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assessmentId, responses: newResponses }),
+        })
+        const json = await res.json()
+        if (!json.success) throw new Error('Failed to persist applicability')
+        track('auto_dealer_phase1_complete', {
+          applicable_phases: json.applicablePhases?.join(',') ?? '',
+          question_count: json.totalQuestions ?? 0,
+        })
+        localStorage.setItem(`auto_dealer_profile_${assessmentId}`, JSON.stringify(newResponses))
+        router.push(`/assessment/auto-dealer/phase/2?id=${assessmentId}`)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to process applicability')
+        setPhase('applicability')
+      }
+    }
+  }, [currentIndex, visibleQuestions.length, assessmentId, router, track])
+
+  const handleApplicabilityAnswer = useCallback((questionId: string, value: string | string[]) => {
     const newResponses: Responses = { ...responses, [questionId]: value, AD_APP_labour_regime: labourRegime }
     setResponses(newResponses)
     track('auto_dealer_question_answered', { question_id: questionId, phase: 1 })
 
-    setTimeout(async () => {
-      const nextIndex = currentIndex + 1
-      if (nextIndex < visibleQuestions.length) {
-        setCurrentIndex(nextIndex)
-      } else {
-        // Phase 1 complete — persist to Supabase and navigate to Phase 2
-        setPhase('processing')
-        try {
-          const res = await fetch('/api/assessment/auto-dealer/applicability', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ assessmentId, responses: newResponses }),
-          })
-          const json = await res.json()
-          if (!json.success) throw new Error('Failed to persist applicability')
-          track('auto_dealer_phase1_complete', {
-            applicable_phases: json.applicablePhases?.join(',') ?? '',
-            question_count: json.totalQuestions ?? 0,
-          })
-          localStorage.setItem(`auto_dealer_profile_${assessmentId}`, JSON.stringify(newResponses))
-          router.push(`/assessment/auto-dealer/phase/2?id=${assessmentId}`)
-        } catch (e) {
-          setError(e instanceof Error ? e.message : 'Failed to process applicability')
-          setPhase('applicability')
-        }
-      }
-    }, 600)
-  }, [responses, currentIndex, visibleQuestions.length, assessmentId, router, track, labourRegime])
+    const currentQuestion = visibleQuestions[currentIndex]
+    // Multi-choice questions use a Continue button — don't auto-advance here
+    if (currentQuestion?.type === 'multi_choice') return
+
+    setTimeout(() => { void advanceApplicability(newResponses) }, 600)
+  }, [responses, currentIndex, visibleQuestions, labourRegime, track, advanceApplicability])
+
+  const handleApplicabilityContinue = useCallback(() => {
+    // Called by the Continue button on multi_choice questions
+    const newResponses: Responses = { ...responses, AD_APP_labour_regime: labourRegime }
+    void advanceApplicability(newResponses)
+  }, [responses, labourRegime, advanceApplicability])
 
   const handleApplicabilityBack = useCallback(() => {
     if (currentIndex > 0) {
@@ -331,6 +343,7 @@ export default function AutoDealerLandingPage() {
             responses={responses}
             currentIndex={currentIndex}
             onAnswer={handleApplicabilityAnswer}
+            onContinue={handleApplicabilityContinue}
             onBack={handleApplicabilityBack}
           />
         )}
