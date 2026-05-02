@@ -679,6 +679,13 @@ export default function ResultsPage() {
                 </p>
               </div>
             </div>
+            {/* Self-attested disclaimer */}
+            <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3" role="note">
+              <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-xs text-amber-800">
+                <strong>Self-attested score.</strong> This score is based entirely on your own responses and has not been independently verified by a legal or compliance professional. It is indicative only and should not be relied upon for regulatory filings, investor disclosures, or legal proceedings. We recommend a formal compliance audit by a qualified professional.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
