@@ -301,8 +301,11 @@ export default function AutoDealerLandingPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email *</Label>
-                    <Input id="email" type="email" {...register('email')} placeholder="rajesh@dealership.com" aria-describedby={errors.email ? 'email-err' : undefined} />
-                    {errors.email && <p id="email-err" className="text-sm text-red-500">{errors.email.message}</p>}
+                    <Input id="email" type="email" {...register('email')} placeholder="rajesh@dealership.com" aria-describedby={errors.email ? 'email-err' : 'email-hint'} />
+                    {errors.email
+                      ? <p id="email-err" className="text-sm text-red-500">{errors.email.message}</p>
+                      : <p id="email-hint" className="text-xs text-gray-500">We&apos;ll send a one-time verification code to this address before you can access your full results.</p>
+                    }
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Mobile Number *</Label>
