@@ -113,35 +113,45 @@ export default function PhasePlayerPage() {
     return Math.round(band.start + fraction * (band.end - band.start))
   })()
 
-  const handleAnswer = useCallback((questionId: string, value: string) => {
+  const persistToLocalStorage = useCallback((newResponses: Responses) => {
+    if (!assessmentId || !phase) return
+    const profileStored = localStorage.getItem(`auto_dealer_profile_${assessmentId}`)
+    const profileResponses: Responses = profileStored ? (JSON.parse(profileStored) as Responses) : {}
+    const phaseOnly: Responses = {}
+    for (const q of questions) {
+      if (newResponses[q.id] !== undefined) phaseOnly[q.id] = newResponses[q.id]
+    }
+    localStorage.setItem(`auto_dealer_phase${phase}_${assessmentId}`, JSON.stringify(phaseOnly))
+    localStorage.setItem(`auto_dealer_profile_${assessmentId}`, JSON.stringify({ ...profileResponses, ...newResponses }))
+  }, [assessmentId, phase, questions])
+
+  const advancePhase = useCallback(async (newResponses: Responses) => {
+    const nextIndex = currentIndex + 1
+    if (nextIndex < questions.length) {
+      setCurrentIndex(nextIndex)
+    } else {
+      await persistPhaseAndNavigate(newResponses)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, questions])
+
+  const handleAnswer = useCallback((questionId: string, value: string | string[]) => {
     const newResponses: Responses = { ...responses, [questionId]: value }
     setResponses(newResponses)
     track('auto_dealer_question_answered', { question_id: questionId })
+    persistToLocalStorage(newResponses)
 
-    // Persist phase responses to localStorage
-    if (assessmentId && phase) {
-      const profileStored = localStorage.getItem(`auto_dealer_profile_${assessmentId}`)
-      const profileResponses: Responses = profileStored ? (JSON.parse(profileStored) as Responses) : {}
-      const phaseOnly: Responses = {}
-      for (const q of questions) {
-        if (newResponses[q.id] !== undefined) phaseOnly[q.id] = newResponses[q.id]
-      }
-      localStorage.setItem(`auto_dealer_phase${phase}_${assessmentId}`, JSON.stringify(phaseOnly))
-      // Merge everything back into profile store
-      localStorage.setItem(`auto_dealer_profile_${assessmentId}`, JSON.stringify({ ...profileResponses, ...newResponses }))
-    }
+    const currentQuestion = questions[currentIndex]
+    // Multi-choice questions use a Continue button — don't auto-advance
+    if (currentQuestion?.type === 'multi_choice') return
 
-    setTimeout(async () => {
-      const nextIndex = currentIndex + 1
-      if (nextIndex < questions.length) {
-        setCurrentIndex(nextIndex)
-      } else {
-        // Phase complete — persist to Supabase
-        await persistPhaseAndNavigate(newResponses)
-      }
-    }, 600)
+    setTimeout(() => { void advancePhase(newResponses) }, 600)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [responses, currentIndex, questions, assessmentId, phase, track])
+  }, [responses, currentIndex, questions, persistToLocalStorage, advancePhase, track])
+
+  const handlePhaseContinue = useCallback(() => {
+    void advancePhase(responses)
+  }, [responses, advancePhase])
 
   const persistPhaseAndNavigate = async (finalResponses: Responses) => {
     if (!assessmentId || !phase) return
@@ -270,6 +280,7 @@ export default function PhasePlayerPage() {
             currentIndex={currentIndex}
             overallProgress={overallProgress}
             onAnswer={handleAnswer}
+            onContinue={handlePhaseContinue}
             onBack={handleBack}
           />
         )}

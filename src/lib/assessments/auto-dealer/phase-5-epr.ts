@@ -26,7 +26,7 @@ export const PHASE5_EPR_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '30_days',
       penaltyExposure: 'Environmental Compensation per CPCB schedule; cancellation of registration; EC cumulative for each shortfall quarter',
     },
-    compliantAnswers: ['yes'],
+    compliantAnswers: ['yes', 'not_applicable'],
     appliesWhen: (_p: ApplicabilityProfile) => true,
   },
   {
@@ -77,7 +77,7 @@ export const PHASE5_EPR_QUESTIONS: AutoDealerQuestion[] = [
   {
     id: 'AD_P5_004',
     phase: 5,
-    text: 'Are all dealership demo, test-ride, and retired fleet vehicles — once reaching end-of-life — routed exclusively to CPCB-registered Registered Vehicle Scrapping Facilities (RVSFs)?',
+    text: 'Are all dealership demo, test-drive / test-ride, and retired fleet vehicles — once reaching end-of-life — routed exclusively to CPCB-registered Registered Vehicle Scrapping Facilities (RVSFs)?',
     helpText: 'ELV Rules 2025 (eff. 1 Apr 2025) prohibit dealing in any non-RVSF-scrapped vehicle. Dealer demo fleets and test-drive vehicles are subject to the mandatory RVSF channel on retirement. Selling ELV vehicles to informal scrap yards is illegal from 1 Apr 2025.',
     type: 'yes_no',
     weight: 8,
@@ -95,7 +95,7 @@ export const PHASE5_EPR_QUESTIONS: AutoDealerQuestion[] = [
   {
     id: 'AD_P5_005',
     phase: 5,
-    text: 'If your combined demo / test-ride fleet exceeds 100 vehicles, have you registered as a Bulk Consumer on the CPCB ELV portal?',
+    text: 'If your combined demo / test-drive / test-ride fleet exceeds 100 vehicles, have you registered as a Bulk Consumer on the CPCB ELV portal?',
     helpText: 'ELV Rules 2025 define entities with >100 vehicles as "Bulk Consumers" with enhanced EPR obligations, including annual producer declarations (Form 1) by 30 April and quarterly reports. First declaration due 30 Apr 2026 for FY 2025-26.',
     type: 'yes_no',
     weight: 7,
@@ -107,7 +107,7 @@ export const PHASE5_EPR_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '30_days',
       penaltyExposure: 'Rs.10 lakh to Rs.15 lakh per contravention under ELV Rules 2025',
     },
-    compliantAnswers: ['yes'],
+    compliantAnswers: ['yes', 'not_applicable'],
     appliesWhen: (_p: ApplicabilityProfile) => true,
   },
   {

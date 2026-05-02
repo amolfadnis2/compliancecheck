@@ -58,6 +58,7 @@ export function EmailGate({
   const [otpError, setOtpError] = useState<string | null>(null)
   const [marketingConsent, setMarketingConsent] = useState(false)
   const [deadlineConsent, setDeadlineConsent] = useState(showDeadlineRemindersConsent)
+  const [editCount, setEditCount] = useState(0)
 
   // If already verified on mount, call onVerified immediately
   useEffect(() => {
@@ -135,6 +136,15 @@ export function EmailGate({
     }
   }, [email])
 
+  const handleEditEmail = useCallback(() => {
+    const newCount = editCount + 1
+    setEditCount(newCount)
+    setStep('email_input')
+    setOtpError(null)
+    const domain = email.includes('@') ? email.split('@')[1] : 'unknown'
+    posthog.capture('email_edit_attempted', { source, edit_count: newCount, email_domain: domain })
+  }, [editCount, email, source])
+
   // Don't render while checking existing auth state
   if (isLoading || isVerified) return null
 
@@ -183,13 +193,25 @@ export function EmailGate({
         )}
 
         {(step === 'otp_sent' || step === 'verifying') && (
-          <OTPInput
-            email={email.trim()}
-            onVerify={handleOtpVerify}
-            onResend={handleResend}
-            isVerifying={step === 'verifying'}
-            error={otpError}
-          />
+          <>
+            <OTPInput
+              email={email.trim()}
+              onVerify={handleOtpVerify}
+              onResend={handleResend}
+              isVerifying={step === 'verifying'}
+              error={otpError}
+            />
+            {editCount < 3 && (
+              <button
+                type="button"
+                onClick={handleEditEmail}
+                className="text-xs text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                aria-label="Go back and change your email address"
+              >
+                ← Wrong email? Edit it
+              </button>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

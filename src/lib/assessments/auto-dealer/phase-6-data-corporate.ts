@@ -180,7 +180,7 @@ export const PHASE6_DATA_CORPORATE_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '90_days',
       penaltyExposure: 'Rs.1 lakh to Rs.10 lakh company + Rs.10,000 to Rs.1 lakh per director; unspent amount forfeited to PM Relief Fund',
     },
-    compliantAnswers: ['yes'],
+    compliantAnswers: ['yes', 'not_applicable'],
     appliesWhen: (p: ApplicabilityProfile) =>
       ['pvt_ltd', 'public_ltd'].includes(p.legalForm),
   },

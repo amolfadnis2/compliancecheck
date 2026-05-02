@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { ChevronDown, ChevronUp, HelpCircle, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
+import { ChevronDown, ChevronUp, HelpCircle, ArrowLeft, CheckCircle, XCircle, Square, CheckSquare, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -14,7 +14,9 @@ interface PhaseQuestionnaireProps {
   responses: Responses
   currentIndex: number
   overallProgress: number
-  onAnswer: (questionId: string, value: string) => void
+  totalQuestions?: number
+  onAnswer: (questionId: string, value: string | string[]) => void
+  onContinue?: () => void
   onBack: () => void
 }
 
@@ -24,7 +26,9 @@ export function PhaseQuestionnaire({
   responses,
   currentIndex,
   overallProgress,
+  totalQuestions,
   onAnswer,
+  onContinue,
   onBack,
 }: PhaseQuestionnaireProps) {
   const [expandedHelp, setExpandedHelp] = useState<string | null>(null)
@@ -34,7 +38,12 @@ export function PhaseQuestionnaire({
   const phaseProgress = questions.length > 0
     ? Math.round((currentIndex / questions.length) * 100)
     : 0
-  const currentResponse = question ? String(responses[question.id] ?? '') : ''
+
+  // For multi_choice questions the response is string[]; for others it is string
+  const rawResponse = question ? responses[question.id] : undefined
+  const currentResponse = question?.type === 'multi_choice'
+    ? (Array.isArray(rawResponse) ? rawResponse as string[] : rawResponse ? [rawResponse as string] : [])
+    : (rawResponse !== undefined && rawResponse !== null ? String(rawResponse) : '')
 
   const toggleHelp = useCallback((id: string) => {
     setExpandedHelp(prev => prev === id ? null : id)
@@ -51,27 +60,53 @@ export function PhaseQuestionnaire({
   }
   const colour = PHASE_COLOURS[phase] ?? 'blue'
 
+  const minsRemaining = Math.max(1, Math.round(((totalQuestions ?? questions.length) - currentIndex) * 0.4))
+
   return (
     <>
       {/* Sticky progress bars */}
       <div className="bg-white border-b p-4 sticky top-0 z-10 shadow-sm">
-        {/* Overall progress */}
+        {/* Overall progress — labelled for clarity (Fix #9) */}
         <div className="flex justify-between items-center mb-1">
-          <span className="text-xs text-gray-500">Overall Assessment</span>
-          <span className="text-xs font-medium text-gray-700">{overallProgress}%</span>
+          <span
+            className="text-xs text-gray-500 flex items-center gap-1"
+            title="Your progress through all phases of the assessment."
+          >
+            Overall assessment
+            <Info className="h-3 w-3 text-gray-400" aria-hidden="true" />
+          </span>
+          <span className="text-xs font-medium text-gray-700">
+            {overallProgress}% &middot; ~{minsRemaining} min left
+          </span>
         </div>
-        <Progress value={overallProgress} className="h-1.5 mb-3 [&>div]:bg-green-500" aria-label={`Overall progress: ${overallProgress}%`} />
+        <Progress value={overallProgress} className="h-1.5 mb-3 [&>div]:bg-green-500" aria-label={`Overall assessment progress: ${overallProgress}%`} />
 
-        {/* Phase progress */}
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-sm text-gray-700 font-medium">{phaseInfo?.name ?? `Phase ${phase}`}</span>
-          <span className="text-sm font-semibold text-gray-900">{phaseProgress}%</span>
+        {/* Phase progress — hidden on mobile to reduce clutter */}
+        <div className="hidden sm:block">
+          <div className="flex justify-between items-center mb-1">
+            <span
+              className="text-sm text-gray-700 font-medium flex items-center gap-1"
+              title="Your progress within the current phase only."
+            >
+              Phase {phase} of 6 &mdash; {phaseInfo?.name ?? `Phase ${phase}`}
+              <Info className="h-3 w-3 text-gray-400" aria-hidden="true" />
+            </span>
+            <span className="text-sm font-semibold text-gray-900">{phaseProgress}%</span>
+          </div>
+          <Progress
+            value={phaseProgress}
+            className={`h-2 [&>div]:bg-${colour}-600`}
+            aria-label={`Phase ${phase} progress: ${phaseProgress}%`}
+          />
         </div>
-        <Progress
-          value={phaseProgress}
-          className={`h-2 [&>div]:bg-${colour}-600`}
-          aria-label={`Phase ${phase} progress: ${phaseProgress}%`}
-        />
+
+        {/* Mobile: show phase label instead of second bar */}
+        <div className="sm:hidden mt-1">
+          <span className="text-xs text-gray-500">
+            Phase {phase} of 6 &mdash; {phaseInfo?.name ?? `Phase ${phase}`}
+          </span>
+        </div>
+
         <div className="mt-2 flex items-center justify-between">
           <span className="text-sm font-medium text-gray-800">
             Question {currentIndex + 1} of {questions.length}
@@ -122,39 +157,44 @@ export function PhaseQuestionnaire({
         <CardContent>
           {question.type === 'yes_no' && (
             <div className="grid grid-cols-2 gap-4">
-              {(['yes', 'no'] as const).map(val => (
+              {(['yes', 'no', 'not_applicable'] as const).filter(val =>
+                val !== 'not_applicable' || question.compliantAnswers.includes('not_applicable')
+              ).map(val => (
                 <Button
                   key={val}
                   onClick={() => onAnswer(question.id, val)}
-                  variant={currentResponse === val ? 'default' : 'outline'}
+                  variant={(currentResponse as string) === val ? 'default' : 'outline'}
                   className={`h-16 text-lg ${
-                    currentResponse === val && val === 'yes' ? 'bg-green-700 hover:bg-green-800 text-white' :
-                    currentResponse === val && val === 'no' ? 'bg-red-700 hover:bg-red-800 text-white' : ''
+                    (currentResponse as string) === val && val === 'yes' ? 'bg-green-700 hover:bg-green-800 text-white' :
+                    (currentResponse as string) === val && val === 'no' ? 'bg-red-700 hover:bg-red-800 text-white' :
+                    (currentResponse as string) === val && val === 'not_applicable' ? 'bg-gray-600 hover:bg-gray-700 text-white' : ''
                   }`}
-                  aria-pressed={currentResponse === val}
+                  aria-pressed={(currentResponse as string) === val}
                 >
                   {val === 'yes'
                     ? <><CheckCircle className="mr-2 h-5 w-5" aria-hidden="true" />Yes</>
-                    : <><XCircle className="mr-2 h-5 w-5" aria-hidden="true" />No</>
+                    : val === 'no'
+                    ? <><XCircle className="mr-2 h-5 w-5" aria-hidden="true" />No</>
+                    : <>N/A</>
                   }
                 </Button>
               ))}
             </div>
           )}
 
-          {(question.type === 'single_choice' || question.type === 'multi_choice') && question.options && (
+          {question.type === 'single_choice' && question.options && (
             <div className="space-y-3" role="radiogroup" aria-label={question.text}>
               {question.options.map(option => (
                 <Button
                   key={option.value}
                   onClick={() => onAnswer(question.id, option.value)}
-                  variant={currentResponse === option.value ? 'default' : 'outline'}
+                  variant={(currentResponse as string) === option.value ? 'default' : 'outline'}
                   className={`w-full h-auto py-4 px-4 text-left justify-start whitespace-normal ${
-                    currentResponse === option.value
+                    (currentResponse as string) === option.value
                       ? 'bg-blue-700 hover:bg-blue-800 text-white'
                       : ''
                   }`}
-                  aria-pressed={currentResponse === option.value}
+                  aria-pressed={(currentResponse as string) === option.value}
                 >
                   {option.label}
                 </Button>
@@ -162,8 +202,58 @@ export function PhaseQuestionnaire({
             </div>
           )}
 
+          {question.type === 'multi_choice' && question.options && (() => {
+            const multiSelected = Array.isArray(currentResponse) ? currentResponse as string[] : []
+            const handleMultiToggle = (value: string) => {
+              if (value === 'none') { onAnswer(question.id, ['none']); return }
+              const withoutNone = multiSelected.filter(v => v !== 'none')
+              const idx = withoutNone.indexOf(value)
+              const next = idx >= 0 ? withoutNone.filter(v => v !== value) : [...withoutNone, value]
+              onAnswer(question.id, next)
+            }
+            return (
+              <div role="group" aria-label={question.text}>
+                <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
+                <div className="space-y-3">
+                  {question.options.map(option => {
+                    const checked = multiSelected.includes(option.value)
+                    const isNoneOption = option.value === 'none'
+                    const disabledByNone = multiSelected.includes('none') && !isNoneOption
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => handleMultiToggle(option.value)}
+                        disabled={disabledByNone}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left transition-colors
+                          ${checked ? 'border-blue-600 bg-blue-50 text-blue-900' : 'border-gray-300 bg-white text-gray-800 hover:border-blue-400'}
+                          ${disabledByNone ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                        `}
+                        aria-pressed={checked}
+                      >
+                        {checked
+                          ? <CheckSquare className="h-5 w-5 text-blue-600 flex-shrink-0" aria-hidden="true" />
+                          : <Square className="h-5 w-5 text-gray-400 flex-shrink-0" aria-hidden="true" />
+                        }
+                        <span className="text-sm font-medium">{option.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="mt-5">
+                  <Button
+                    onClick={onContinue}
+                    disabled={multiSelected.length < 1}
+                    className="w-full bg-blue-700 hover:bg-blue-800 h-12 text-base"
+                  >
+                    Continue ({multiSelected.length} selected)
+                  </Button>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Penalty preview for non-compliant indicator */}
-          {currentResponse === 'no' && question.gapTemplate && (
+          {(currentResponse as string) === 'no' && question.gapTemplate && (
             <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-xs font-semibold text-amber-800 mb-1">Penalty exposure if non-compliant:</p>
               <p className="text-xs text-amber-700">{question.gapTemplate.penaltyExposure}</p>
