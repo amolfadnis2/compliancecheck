@@ -255,24 +255,8 @@ export const PHASE3_WORKSHOP_EHS_QUESTIONS: AutoDealerQuestion[] = [
     compliantAnswers: ['yes'],
     appliesWhen: workshopOnly,
   },
-  {
-    id: 'AD_P3_014',
-    phase: 3,
-    text: 'Is used oil channelised ONLY to MoEFCC/CPCB-registered re-refiners, and is Form 4 annual HW return filed by 30 June each year?',
-    helpText: 'Used engine oil is a hazardous waste. Selling to unregistered buyers (roadside mechanics, informal collectors) violates HW Rules. CPCB maintains a list of registered re-refiners at cpcb.nic.in.',
-    type: 'yes_no',
-    weight: 8,
-    complianceArea: 'hazardous_waste',
-    source: 'Research §4.6, HOWM Rules 2016 Rule 9',
-    gapTemplate: {
-      finding: 'Used oil sold to unregistered buyers or Form 4 return not filed.',
-      recommendation: 'List CPCB-registered re-refiners in your state; use Form 10 manifest for each transfer; file Form 4 annual HW return by 30 June.',
-      timeline: '30_days',
-      penaltyExposure: 'EC Rs.1 lakh to Rs.1 crore; EC levied per CPCB schedule; criminal action under EPA',
-    },
-    compliantAnswers: ['yes'],
-    appliesWhen: workshopOnly,
-  },
+  // AD_P3_014 removed — used oil re-refiners covered by AD_P5_006 and
+  // Form 4 annual HW return covered by AD_P5_009 (avoids cross-phase duplicate)
   {
     id: 'AD_P3_015',
     phase: 3,
@@ -294,15 +278,15 @@ export const PHASE3_WORKSHOP_EHS_QUESTIONS: AutoDealerQuestion[] = [
   {
     id: 'AD_P3_016',
     phase: 3,
-    text: 'Is the oil-water separator operational and its effluent quality monitored quarterly through a NABL-accredited laboratory?',
-    helpText: 'Workshops discharge wash-water and floor runoff via drains. SPCB consents require an oil-water separator with effluent standards (oil <=10 mg/L for surface discharge). Quarterly NABL lab reports are a standard SPCB inspection requirement.',
+    text: 'Is the oil-water separator in the workshop installed, operational, and free of silt or blockages — with maintenance records available?',
+    helpText: 'Workshops discharge wash-water and floor runoff via drains. SPCB consents require an oil-water separator with effluent standards (oil <=10 mg/L for surface discharge). Quarterly NABL effluent monitoring is separately covered in AD_P3_024.',
     type: 'yes_no',
     weight: 7,
     complianceArea: 'spcb',
     source: 'Research §4.6, Water Act 1974',
     gapTemplate: {
-      finding: 'Oil-water separator absent or not monitored — effluent standard compliance unverified.',
-      recommendation: 'Install/maintain oil-water separator; engage NABL lab for quarterly effluent test; maintain test certificates; include in CTO compliance report.',
+      finding: 'Oil-water separator absent, non-operational, or maintenance records missing.',
+      recommendation: 'Install/maintain oil-water separator to SPCB standard; keep cleaning and maintenance log; include inspection certificate in CTO compliance file.',
       timeline: '90_days',
       penaltyExposure: 'SPCB Notice; EC Rs.1 lakh to Rs.1 crore; closure for persistent effluent violation',
     },
