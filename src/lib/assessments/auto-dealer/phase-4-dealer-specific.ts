@@ -20,7 +20,7 @@ export const PHASE4_DEALER_SPECIFIC_QUESTIONS: AutoDealerQuestion[] = [
   {
     id: 'AD_P4_001',
     phase: 4,
-    text: 'Do you hold a valid Form 17 Trade Certificate for each class of vehicle (2W, 4W, commercial, EV) you sell and move on public roads?',
+    text: 'Do you hold a valid Form 17 Trade Certificate for each class of vehicle you sell and move on public roads?',
     helpText: 'Trade Certificate under CMVR Rule 33 authorises dealers to use vehicles on public roads without individual registration. A separate certificate is required for each class of vehicle. Moving vehicles without a valid Trade Certificate is a criminal offence under MV Act §177.',
     type: 'yes_no',
     weight: 10,
@@ -170,11 +170,12 @@ export const PHASE4_DEALER_SPECIFIC_QUESTIONS: AutoDealerQuestion[] = [
     appliesWhen: (p: ApplicabilityProfile) =>
       ['4w_only', 'both_2w_4w', 'mixed'].includes(p.vehicleType),
   },
+  // L11: helmet question only for 2W/mixed dealers; 4W dealers get a tyres/seat-belts question
   {
     id: 'AD_P4_009',
     phase: 4,
-    text: 'Do you verify that all helmets (IS 4151), tyres (mandatory QCOs), seat belts, and child restraint systems sold carry a valid BIS mark?',
-    helpText: 'Selling helmets, tyres, or seat belts without a valid BIS/ISI mark is an offence under BIS Act 2016. CMVR also prohibits fitment of non-ISI helmets. BIS conducts surprise inspections at dealerships.',
+    text: 'Do you verify that all helmets (IS 4151), tyres (mandatory QCOs), and accessories sold carry a valid BIS mark?',
+    helpText: 'Selling helmets without a valid BIS/ISI mark (IS 4151) is an offence under BIS Act 2016. CMVR prohibits fitment of non-ISI helmets. BIS conducts surprise inspections at dealerships.',
     type: 'yes_no',
     weight: 7,
     complianceArea: 'bncap_bis',
@@ -186,7 +187,25 @@ export const PHASE4_DEALER_SPECIFIC_QUESTIONS: AutoDealerQuestion[] = [
       penaltyExposure: 'Up to Rs.2 lakh per batch / 2 yr imprisonment under BIS Act §17; product seizure',
     },
     compliantAnswers: ['yes'],
-    appliesWhen: (p: ApplicabilityProfile) => p.sellsAccessories,
+    appliesWhen: (p: ApplicabilityProfile) => p.sellsAccessories && p.vehicleType !== '4w_only',
+  },
+  {
+    id: 'AD_P4_009B',
+    phase: 4,
+    text: 'Do you verify that all tyres (mandatory QCOs), seat belts, and child restraint systems sold carry a valid BIS mark?',
+    helpText: 'Selling tyres or seat belts without a valid BIS/ISI mark is an offence under BIS Act 2016. BIS conducts surprise inspections at dealerships.',
+    type: 'yes_no',
+    weight: 7,
+    complianceArea: 'bncap_bis',
+    source: 'Research §4.1, BIS Act 2016 §17',
+    gapTemplate: {
+      finding: 'BIS-mark verification not done at time of procurement for tyres/seat belts/accessories.',
+      recommendation: 'Check BIS licence number of all tyre/seat-belt suppliers on bis.gov.in; reject non-BIS stock; maintain supplier declarations; train procurement team.',
+      timeline: '30_days',
+      penaltyExposure: 'Up to Rs.2 lakh per batch / 2 yr imprisonment under BIS Act §17; product seizure',
+    },
+    compliantAnswers: ['yes'],
+    appliesWhen: (p: ApplicabilityProfile) => p.sellsAccessories && p.vehicleType === '4w_only',
   },
 
   // --------------------------------------------------------------------------
