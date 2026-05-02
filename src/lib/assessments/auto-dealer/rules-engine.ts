@@ -54,6 +54,7 @@ const TURNOVER_ORDER: Record<string, number> = {
   '10cr_40cr': 25,
   '40cr_100cr': 70,
   gt_100cr: 200,
+  gt_1000cr: 1500,
 }
 
 export function turnoverCrore(profile: ApplicabilityProfile): number {
@@ -273,7 +274,7 @@ const AREA_RULES: AreaRule[] = [
   { area: 'elv',              label: 'ELV Rules 2025',                  phase: 5, triggerFn: _p => true,                     triggerReason: 'All motor vehicle dealers (eff. 1 Apr 2025)' },
   { area: 'dpdp',             label: 'DPDP Act 2023 / Rules 2025',      phase: 6, triggerFn: p => p.processesPersonalData,   triggerReason: 'Processes customer personal data (auto)' },
   { area: 'companies_act',    label: 'Companies Act 2013',              phase: 6, triggerFn: p => ['pvt_ltd','public_ltd','opc'].includes(p.legalForm), triggerReason: 'Incorporated company' },
-  { area: 'csr',              label: 'CSR (Companies Act)',             phase: 6, triggerFn: p => ['pvt_ltd','public_ltd'].includes(p.legalForm) && turnoverGte(p, 100), triggerReason: 'Company with turnover >=Rs.100cr' },
+  { area: 'csr',              label: 'CSR (Companies Act)',             phase: 6, triggerFn: p => ['pvt_ltd','public_ltd'].includes(p.legalForm) && turnoverGte(p, 1000), triggerReason: 'Company with turnover >=Rs.1,000cr (Companies Act §135 threshold)' },
   { area: 'lease',            label: 'Lease Registration',             phase: 6, triggerFn: p => !p.premisesOwned,           triggerReason: 'Leased premises' },
 ]
 
