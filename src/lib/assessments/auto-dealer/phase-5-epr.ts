@@ -26,7 +26,7 @@ export const PHASE5_EPR_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '30_days',
       penaltyExposure: 'Environmental Compensation per CPCB schedule; cancellation of registration; EC cumulative for each shortfall quarter',
     },
-    compliantAnswers: ['yes'],
+    compliantAnswers: ['yes', 'not_applicable'],
     appliesWhen: (_p: ApplicabilityProfile) => true,
   },
   {
@@ -107,7 +107,7 @@ export const PHASE5_EPR_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '30_days',
       penaltyExposure: 'Rs.10 lakh to Rs.15 lakh per contravention under ELV Rules 2025',
     },
-    compliantAnswers: ['yes'],
+    compliantAnswers: ['yes', 'not_applicable'],
     appliesWhen: (_p: ApplicabilityProfile) => true,
   },
   {

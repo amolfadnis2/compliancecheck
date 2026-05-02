@@ -489,7 +489,7 @@ export const PHASE2_STATUTORY_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '90_days',
       penaltyExposure: 'Rs.1.5 lakh penalty for non-audit u/s 271B; Rs.500/day for late SFT u/s 271FA',
     },
-    compliantAnswers: ['yes'],
+    compliantAnswers: ['yes', 'not_applicable'],
     appliesWhen: (p: ApplicabilityProfile) => turnoverGte(p, 1),
   },
   {
