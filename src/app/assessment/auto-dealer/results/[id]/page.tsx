@@ -181,11 +181,26 @@ interface EmailGateProps {
   onVerified: () => void
 }
 
-function EmailGate({ email, assessmentId, onVerified }: EmailGateProps) {
+function EmailGate({ email: initialEmail, assessmentId, onVerified }: EmailGateProps) {
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState<'request' | 'verify'>('request')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [activeEmail, setActiveEmail] = useState(initialEmail)
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [emailDraft, setEmailDraft] = useState(initialEmail)
+
+  const applyEmailChange = () => {
+    const trimmed = emailDraft.trim().toLowerCase()
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError('Please enter a valid email address.')
+      return
+    }
+    setActiveEmail(trimmed)
+    setEmailDraft(trimmed)
+    setIsEditingEmail(false)
+    setError(null)
+  }
 
   const requestOtp = async () => {
     setIsLoading(true)
@@ -194,7 +209,7 @@ function EmailGate({ email, assessmentId, onVerified }: EmailGateProps) {
       const res = await fetch('/api/auth/otp/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, assessmentId }),
+        body: JSON.stringify({ email: activeEmail, assessmentId }),
       })
       const json = await res.json() as { success?: boolean; error?: string }
       if (!json.success) throw new Error(json.error ?? 'Failed to send OTP')
@@ -214,11 +229,11 @@ function EmailGate({ email, assessmentId, onVerified }: EmailGateProps) {
       const res = await fetch('/api/auth/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, assessmentId }),
+        body: JSON.stringify({ email: activeEmail, otp, assessmentId }),
       })
       const json = await res.json() as { success?: boolean; error?: string }
       if (!json.success) throw new Error(json.error ?? 'Invalid or expired OTP')
-      try { posthog.identify(email) } catch { /* non-fatal */ }
+      try { posthog.identify(activeEmail) } catch { /* non-fatal */ }
       onVerified()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Verification failed. Please try again.')
@@ -235,7 +250,7 @@ function EmailGate({ email, assessmentId, onVerified }: EmailGateProps) {
           <CardTitle className="text-base">Verify your email to view results</CardTitle>
         </div>
         <CardDescription>
-          Your full compliance report is ready. Verify {email} to unlock it.
+          Your full compliance report is ready. Verify your email to unlock it.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -248,19 +263,53 @@ function EmailGate({ email, assessmentId, onVerified }: EmailGateProps) {
 
         {step === 'request' && (
           <>
-            <p className="text-sm text-gray-600">
-              We will send a 6-digit verification code to <strong>{email}</strong>.
-            </p>
-            <Button onClick={requestOtp} disabled={isLoading} className="w-full bg-blue-700 hover:bg-blue-800">
-              {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />Sending…</> : 'Send verification code'}
-            </Button>
+            {isEditingEmail ? (
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600 font-medium">Email address</label>
+                <input
+                  type="email"
+                  value={emailDraft}
+                  onChange={e => setEmailDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') applyEmailChange() }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Email address"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <Button onClick={applyEmailChange} className="flex-1 bg-blue-700 hover:bg-blue-800 text-sm h-8">
+                    Confirm
+                  </Button>
+                  <button
+                    onClick={() => { setIsEditingEmail(false); setEmailDraft(activeEmail); setError(null) }}
+                    className="flex-1 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg h-8"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
+                <span className="text-sm text-gray-700 truncate">{activeEmail}</span>
+                <button
+                  onClick={() => { setIsEditingEmail(true); setEmailDraft(activeEmail) }}
+                  className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline shrink-0"
+                >
+                  Change
+                </button>
+              </div>
+            )}
+            {!isEditingEmail && (
+              <Button onClick={requestOtp} disabled={isLoading} className="w-full bg-blue-700 hover:bg-blue-800">
+                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />Sending…</> : 'Send verification code'}
+              </Button>
+            )}
           </>
         )}
 
         {step === 'verify' && (
           <>
             <p className="text-sm text-gray-600">
-              Enter the 6-digit code sent to <strong>{email}</strong>. Valid for 10 minutes.
+              Enter the 6-digit code sent to <strong>{activeEmail}</strong>. Valid for 10 minutes.
             </p>
             <input
               type="text"
@@ -277,10 +326,10 @@ function EmailGate({ email, assessmentId, onVerified }: EmailGateProps) {
               {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />Verifying…</> : 'Verify and view report'}
             </Button>
             <button
-              onClick={() => { setStep('request'); setError(null) }}
+              onClick={() => { setStep('request'); setOtp(''); setError(null) }}
               className="w-full text-sm text-blue-600 hover:text-blue-800 underline"
             >
-              Resend code
+              Resend code or change email
             </button>
           </>
         )}

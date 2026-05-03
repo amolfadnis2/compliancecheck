@@ -82,12 +82,12 @@ export async function POST(request: NextRequest) {
     // Mark OTP as used
     await supabase.from('otp_attempts').update({ used: true }).eq('id', record.id)
 
-    // Mark assessment email_verified = true
+    // Mark assessment email_verified = true and adopt the verified email
+    // (user may have corrected a typo via the "Change email" option)
     const { error: updateErr } = await supabase
       .from('auto_dealer_assessments')
-      .update({ email_verified: true })
+      .update({ email_verified: true, user_email: emailLower })
       .eq('id', assessmentId)
-      .eq('user_email', emailLower)
 
     if (updateErr) {
       console.error('Assessment update error:', updateErr)
