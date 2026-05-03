@@ -65,7 +65,7 @@ export const PHASE2_STATUTORY_QUESTIONS: AutoDealerQuestion[] = [
       penaltyExposure: 'Underdeposit of PF/ESI: 12% interest + 5-25% damages; potential criminal action',
     },
     compliantAnswers: ['yes'],
-    appliesWhen: (p: ApplicabilityProfile) => employeeGte(p, 1),
+    appliesWhen: (p: ApplicabilityProfile) => p.labourRegime === 'new' && employeeGte(p, 1),
   },
   {
     id: 'AD_P2_004',
@@ -592,7 +592,7 @@ export const PHASE2_STATUTORY_QUESTIONS: AutoDealerQuestion[] = [
     },
     compliantAnswers: ['yes'],
     appliesWhen: (p: ApplicabilityProfile) =>
-      p.womenEmployeeCount === '30_49' || p.womenEmployeeCount === 'gte_50',
+      p.womenEmployeeCount === '30_49' || p.womenEmployeeCount === 'gte_50' || employeeGte(p, 50),
   },
 
   // --------------------------------------------------------------------------
