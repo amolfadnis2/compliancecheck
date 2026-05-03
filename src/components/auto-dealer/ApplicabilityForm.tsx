@@ -107,6 +107,7 @@ export function ApplicabilityForm({
             Phase 1: Applicability Profile
           </span>
         </div>
+        <p className="text-xs text-gray-400 mt-1">Step 1 of 6 — complete this to unlock your assessment</p>
       </div>
 
       <Card className="max-w-2xl mx-auto mt-6">

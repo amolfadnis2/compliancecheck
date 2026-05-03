@@ -138,7 +138,7 @@ export function PhaseQuestionnaire({
                 aria-controls={`help-${question.id}`}
               >
                 <HelpCircle className="h-4 w-4" aria-hidden="true" />
-                {expandedHelp === question.id ? 'Hide guidance' : 'Why this matters'}
+                {expandedHelp === question.id ? 'Hide' : 'Why do we ask?'}
                 {expandedHelp === question.id
                   ? <ChevronUp className="h-4 w-4" aria-hidden="true" />
                   : <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -175,7 +175,7 @@ export function PhaseQuestionnaire({
                     ? <><CheckCircle className="mr-2 h-5 w-5" aria-hidden="true" />Yes</>
                     : val === 'no'
                     ? <><XCircle className="mr-2 h-5 w-5" aria-hidden="true" />No</>
-                    : <>N/A</>
+                    : <span className="flex flex-col items-center leading-tight"><span>N/A</span><span className="text-[10px] font-normal opacity-70">not applicable</span></span>
                   }
                 </Button>
               ))}
