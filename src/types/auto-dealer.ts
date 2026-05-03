@@ -54,7 +54,7 @@ export type LabourRegime = 'new' | 'legacy'
 // States that levy Professional Tax
 export type PTState =
   | 'MH' | 'KA' | 'WB' | 'TN' | 'AP' | 'TS' | 'GJ' | 'OD' | 'AS'
-  | 'MG' | 'SK' | 'JH' | 'BR'  // Meghalaya, Sikkim, Jharkhand, Bihar
+  | 'MG' | 'SK' | 'JH' | 'BR' | 'KL'  // Meghalaya, Sikkim, Jharkhand, Bihar, Kerala
 
 export interface ApplicabilityProfile {
   // Entity / scale

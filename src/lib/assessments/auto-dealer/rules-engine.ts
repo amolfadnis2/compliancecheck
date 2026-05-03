@@ -40,7 +40,7 @@ export function employeeGte(profile: ApplicabilityProfile, n: number): boolean {
 }
 
 // States that levy Professional Tax
-const PT_STATES = new Set(['MH', 'KA', 'WB', 'TN', 'AP', 'TS', 'GJ', 'OD', 'AS', 'MG', 'SK', 'JH', 'BR'])
+const PT_STATES = new Set(['MH', 'KA', 'WB', 'TN', 'AP', 'TS', 'GJ', 'OD', 'AS', 'MG', 'SK', 'JH', 'BR', 'KL'])
 
 export function operatesInPTState(profile: ApplicabilityProfile): boolean {
   return profile.statesOfOperation.some(s => PT_STATES.has(s))
