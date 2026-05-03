@@ -58,8 +58,11 @@ export default function AutoDealerLandingPage() {
     resolver: zodResolver(detailsSchema),
   })
 
-  // Visible questions respecting responses
-  const visibleQuestions = APPLICABILITY_QUESTIONS
+  // Visible questions — hide workshop-services question for showroom-only dealers
+  const visibleQuestions = APPLICABILITY_QUESTIONS.filter(q => {
+    if (q.id === 'AD_APP_012' && responses['AD_APP_011'] === 'no') return false
+    return true
+  })
 
   // Overall progress
   const overallProgress = phase === 'details' ? 0

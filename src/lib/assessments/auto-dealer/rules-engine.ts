@@ -40,7 +40,7 @@ export function employeeGte(profile: ApplicabilityProfile, n: number): boolean {
 }
 
 // States that levy Professional Tax
-const PT_STATES = new Set(['MH', 'KA', 'WB', 'TN', 'AP', 'TS', 'GJ', 'OD', 'AS', 'MG', 'SK', 'JH', 'BR'])
+const PT_STATES = new Set(['MH', 'KA', 'WB', 'TN', 'AP', 'TS', 'GJ', 'OD', 'AS', 'MG', 'SK', 'JH', 'BR', 'KL'])
 
 export function operatesInPTState(profile: ApplicabilityProfile): boolean {
   return profile.statesOfOperation.some(s => PT_STATES.has(s))
@@ -562,13 +562,12 @@ export function buildApplicabilityProfileFromResponses(
   const workshopServices = workshopServicesRaw
   const hasWorkshop = b('AD_APP_011') || workshopServices.length > 0
 
-  // AD_APP_017 is a single_choice; derive equipment flags from its value
-  const ad017 = r('AD_APP_017')
-  const hasLiftsOrHoists = ad017 === 'lifts_hoists' || ad017 === 'multiple'
-  const hasPaintBooth = ad017 === 'paint_booth' || ad017 === 'multiple' ||
-    workshopServices.includes('body_shop_paint')
-  const hasCNGDispenser = ad017 === 'cng_dispenser' || ad017 === 'multiple'
-  const hasEVCharger = ad017 === 'ev_charger' || ad017 === 'multiple'
+  // AD_APP_017 is a multi_choice; derive equipment flags from the selected values
+  const ad017 = arr('AD_APP_017')
+  const hasLiftsOrHoists = ad017.includes('lifts_hoists')
+  const hasPaintBooth = ad017.includes('paint_booth') || workshopServices.includes('body_shop_paint')
+  const hasCNGDispenser = ad017.includes('cng_dispenser')
+  const hasEVCharger = ad017.includes('ev_charger')
 
   // AD_APP_020 is a single_choice encoding "no", "lt_20", "20_49", "gte_50"
   const ad020 = r('AD_APP_020')
