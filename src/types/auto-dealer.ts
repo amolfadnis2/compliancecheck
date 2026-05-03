@@ -31,6 +31,7 @@ export type TurnoverBracket =
   | '10cr_40cr'
   | '40cr_100cr'
   | 'gt_100cr'
+  | 'gt_1000cr'
 
 export type VehicleType =
   | '2w_only'

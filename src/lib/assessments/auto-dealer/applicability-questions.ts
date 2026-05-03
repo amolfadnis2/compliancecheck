@@ -417,13 +417,12 @@ export const APPLICABILITY_QUESTIONS: AutoDealerQuestion[] = [
     phase: 1,
     text: 'Which of the following equipment / installations does your dealership have?',
     helpText: 'Lifts and hoists require annual Competent Person inspection under Factories Act. CNG dispensers and paint booths have PESO and ATEX (explosion-proof) requirements. EV chargers need CEIG approval.',
-    type: 'single_choice',
+    type: 'multi_choice',
     options: [
       { value: 'lifts_hoists',  label: 'Vehicle lifts / two-post or four-post hoists' },
       { value: 'paint_booth',   label: 'Spray-painting booth' },
       { value: 'cng_dispenser', label: 'CNG dispenser / LPG storage' },
       { value: 'ev_charger',    label: 'EV charging station (AC/DC fast charger)' },
-      { value: 'multiple',      label: 'Multiple of the above' },
       { value: 'none',          label: 'None of the above' },
     ],
     weight: 6,
@@ -435,7 +434,7 @@ export const APPLICABILITY_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '90_days',
       penaltyExposure: 'Factories Act: up to Rs.5 lakh; PESO: up to Rs.50,000 + closure',
     },
-    compliantAnswers: ['lifts_hoists', 'paint_booth', 'cng_dispenser', 'ev_charger', 'multiple', 'none'],
+    compliantAnswers: ['lifts_hoists', 'paint_booth', 'cng_dispenser', 'ev_charger', 'none'],
     appliesWhen: always,
   },
   {
