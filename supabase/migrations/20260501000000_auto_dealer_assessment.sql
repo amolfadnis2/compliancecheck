@@ -85,14 +85,16 @@ CREATE INDEX IF NOT EXISTS idx_ada_created_at
 -- 2. otp_attempts
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS otp_attempts (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email        TEXT NOT NULL,
-  code_hash    TEXT NOT NULL,           -- bcrypt/sha256 hash — never store plaintext
-  expires_at   TIMESTAMPTZ NOT NULL,
-  attempts     INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
-  ip_address   INET,
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         TEXT NOT NULL,
   assessment_id UUID REFERENCES auto_dealer_assessments(id) ON DELETE SET NULL,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+  otp_hash      TEXT NOT NULL,
+  action        TEXT NOT NULL CHECK (action IN ('request', 'verify')),
+  ip_address    TEXT,
+  expires_at    TIMESTAMPTZ NOT NULL,
+  used          BOOLEAN NOT NULL DEFAULT false,
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_otp_email_created
