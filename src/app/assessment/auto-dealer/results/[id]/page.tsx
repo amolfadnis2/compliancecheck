@@ -574,7 +574,7 @@ export default function ResultsPage() {
             </Link>
           </div>
           {/* Teaser score */}
-          <div className="max-w-md mx-auto mb-8 text-center">
+          <div className="max-w-md mx-auto mb-8 flex flex-col items-center">
             <ScoreGauge score={overallScore.score} status={overallScore.status} />
             <p className="mt-3 text-gray-600 text-sm">
               Your compliance score is ready — verify your email to unlock the full report.
