@@ -43,7 +43,8 @@ export function employeeGte(profile: ApplicabilityProfile, n: number): boolean {
 const PT_STATES = new Set(['MH', 'KA', 'WB', 'TN', 'AP', 'TS', 'GJ', 'OD', 'AS', 'MG', 'SK', 'JH', 'BR', 'KL'])
 
 export function operatesInPTState(profile: ApplicabilityProfile): boolean {
-  return profile.statesOfOperation.some(s => PT_STATES.has(s))
+  // 'other' = unspecified state; conservatively assume PT may apply
+  return profile.statesOfOperation.some(s => PT_STATES.has(s) || s === 'other')
 }
 
 // Turnover helpers
@@ -265,7 +266,7 @@ const AREA_RULES: AreaRule[] = [
   { area: 'peso_fire',        label: 'PESO / Fire NOC',                 phase: 3, triggerFn: p => p.dieselStorageLitres > 0 || p.hasWorkshop, triggerReason: 'Fuel storage or workshop' },
   { area: 'trade_certificate', label: 'Trade Certificate (CMVR)',       phase: 4, triggerFn: _p => true,                     triggerReason: 'All motor vehicle dealers' },
   { area: 'hsrp',             label: 'HSRP',                            phase: 4, triggerFn: _p => true,                     triggerReason: 'All new vehicle dealers' },
-  { area: 'bncap_bis',        label: 'Bharat NCAP / BIS',               phase: 4, triggerFn: p => ['4w_only','both_2w_4w','mixed'].includes(p.vehicleType), triggerReason: '4W dealer' },
+  { area: 'bncap_bis',        label: 'Bharat NCAP / BIS',               phase: 4, triggerFn: p => ['4w_only','both_2w_4w','mixed'].includes(p.vehicleType) || (p.vehicleType === '2w_only' && p.sellsAccessories), triggerReason: '4W dealer or 2W dealer selling accessories' },
   { area: 'misp',             label: 'IRDAI MISP',                      phase: 4, triggerFn: p => p.misp,                    triggerReason: 'Sells motor insurance as MISP' },
   { area: 'dsa',              label: 'RBI DSA Norms',                   phase: 4, triggerFn: p => p.facilitatesVehicleFinance, triggerReason: 'DSA for vehicle finance' },
   { area: 'consumer_protection', label: 'Consumer Protection Act',      phase: 4, triggerFn: _p => true,                     triggerReason: 'All dealers' },
@@ -497,7 +498,7 @@ export function generateComplianceCalendar(
       complianceArea: 'peso_fire',
       phase: 3,
       authority: 'PESO',
-      appliesWhen: p => p.dieselStorageLitres > 5000,
+      appliesWhen: p => p.dieselStorageLitres > 2500,
     },
     {
       id: 'cal_fire_noc',
@@ -600,7 +601,10 @@ export function buildApplicabilityProfileFromResponses(
     hasPUCCentre: b('AD_APP_013'),
     sellsAccessories: b('AD_APP_014'),
     hasRVSF: b('AD_APP_015'),
-    showroomAreaSqft: null,
+    showroomAreaSqft: (() => {
+      const v = r('AD_APP_016')
+      return v === 'lt_500sqft' ? 250 : v === '500_2000sqft' ? 1250 : v === '2000_10000sqft' ? 6000 : v === 'gt_10000sqft' ? 15000 : null
+    })(),
     workshopAreaSqft: null,
     hasLiftsOrHoists,
     hasPaintBooth,

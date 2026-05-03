@@ -239,7 +239,7 @@ export const APPLICABILITY_QUESTIONS: AutoDealerQuestion[] = [
     phase: 1,
     text: 'Which OEM(s) do you represent as an authorised dealer?',
     helpText: 'OEM relationship drives Form 16A authorisation display, OEM trademark use, and recall obligations.',
-    type: 'single_choice',
+    type: 'multi_choice',
     options: [
       { value: 'maruti',   label: 'Maruti Suzuki' },
       { value: 'hyundai',  label: 'Hyundai / Kia' },
@@ -251,8 +251,7 @@ export const APPLICABILITY_QUESTIONS: AutoDealerQuestion[] = [
       { value: 'hero',     label: 'Hero MotoCorp' },
       { value: 'bajaj',    label: 'Bajaj Auto' },
       { value: 'tvs',      label: 'TVS Motor' },
-      { value: 'multiple', label: 'Multiple OEMs' },
-      { value: 'other',    label: 'Other' },
+      { value: 'other',    label: 'Other OEM' },
     ],
     weight: 4,
     complianceArea: 'trade_certificate',
@@ -263,7 +262,7 @@ export const APPLICABILITY_QUESTIONS: AutoDealerQuestion[] = [
       timeline: '30_days',
       penaltyExposure: 'N/A — informational',
     },
-    compliantAnswers: ['maruti','hyundai','tata','mahindra','honda_4w','toyota','honda_2w','hero','bajaj','tvs','multiple','other'],
+    compliantAnswers: ['maruti','hyundai','tata','mahindra','honda_4w','toyota','honda_2w','hero','bajaj','tvs','other'],
     appliesWhen: always,
   },
   {
