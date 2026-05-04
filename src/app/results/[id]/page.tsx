@@ -46,6 +46,8 @@ interface AssessmentData {
   category_scores?: Record<string, number>;
   action_items?: ActionItem[];
   company_details?: CompanyDetails;
+  user_details?: Record<string, string>;
+  maturity_level?: string;
   started_at?: string;
   completed_at?: string;
 }
@@ -701,7 +703,9 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 // DPDP Results Component
 function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
   const responses = assessment.responses?.answers || {}
-  const companyDetails = assessment.company_details || assessment.responses?.userDetails || {}
+  // user_details is the canonical column written by dpdp-submit; fall back to legacy paths
+  const userDetails = assessment.user_details || assessment.company_details || assessment.responses?.userDetails || {}
+  const companyName = userDetails.companyName || userDetails.company_name || ''
   const profile = assessment.responses?.profile
 
   // Use stored scores or calculate fresh
@@ -709,6 +713,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
   const overallScore = assessment.overall_score || scoreResult.overallScore
   const categoryScores = assessment.category_scores || scoreResult.phaseScores
   const actionItems = assessment.action_items || generateDPDPActionItems(responses, profile || {})
+  const maturityLevel = assessment.maturity_level || scoreResult.maturityLevel
   const status = getDPDPComplianceStatus(overallScore)
   const daysUntilDeadline = getDaysUntilDeadline()
 
@@ -728,10 +733,10 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
             </Badge>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Your DPDP Compliance Report</h1>
-          {companyDetails.company_name && (
+          {companyName && (
             <div className="flex items-center gap-2 text-gray-600 mt-1">
               <Building className="w-4 h-4" />
-              <span>{companyDetails.company_name}</span>
+              <span>{companyName}</span>
             </div>
           )}
         </div>
@@ -741,7 +746,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="text-center md:text-left">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">Overall Readiness Score</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">DPDP Compliance Score</h2>
                 <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
                   status.color === 'green' ? 'bg-green-100' :
                   status.color === 'amber' ? 'bg-amber-100' :
@@ -755,17 +760,27 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
                     status.color === 'green' ? 'text-green-600' :
                     status.color === 'amber' ? 'text-amber-600' :
                     status.color === 'orange' ? 'text-orange-600' : 'text-red-600'
-                  }`}>{status.status}</span>
+                  }`}>{status.label}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">{status.description}</p>
+                {maturityLevel && (
+                  <p className="text-sm font-medium text-gray-700 mt-1">
+                    Maturity Level: <span className="text-purple-700">{maturityLevel}</span>
+                  </p>
+                )}
               </div>
               <div className="text-center">
-                <div className={`text-6xl font-bold ${
-                  status.color === 'green' ? 'text-green-600' :
-                  status.color === 'amber' ? 'text-amber-600' :
-                  status.color === 'orange' ? 'text-orange-600' : 'text-red-600'
-                }`}>{overallScore}%</div>
-                <div className="text-gray-500 text-sm">Readiness Score</div>
+                <div
+                  data-testid="compliance-score"
+                  className={`text-6xl font-bold ${
+                    status.color === 'green' ? 'text-green-600' :
+                    status.color === 'amber' ? 'text-amber-600' :
+                    status.color === 'orange' ? 'text-orange-600' : 'text-red-600'
+                  }`}
+                >
+                  {overallScore}%
+                </div>
+                <div className="text-gray-500 text-sm">Compliance Score</div>
               </div>
             </div>
           </CardContent>
@@ -798,11 +813,11 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
           <CardContent className="space-y-4">
             {Object.entries(DPDP_CATEGORIES).map(([catId, cat]) => {
               const catScore = categoryScores[catId]
-              const score = typeof catScore === 'number' 
-                ? catScore 
+              const score = typeof catScore === 'number'
+                ? catScore
                 : (catScore?.percentage || 0)
               const catStatus = score >= 80 ? 'ready' : score >= 60 ? 'attention' : score >= 40 ? 'risk' : 'critical'
-              
+
               return (
                 <div key={catId} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
@@ -824,7 +839,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
                   <p className="text-sm text-gray-500 mb-1">{cat.description}</p>
                   <p className="text-xs text-red-600">Max penalty: {cat.maxPenalty}</p>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
-                    <div 
+                    <div
                       className={`h-full transition-all ${
                         catStatus === 'ready' ? 'bg-green-500' :
                         catStatus === 'attention' ? 'bg-amber-500' :
@@ -850,15 +865,16 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
               {actionItems.slice(0, 10).map((item: ActionItem & { penalty?: string }, index: number) => (
                 <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
                   <div className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
+                    item.priority === 'critical' ? 'bg-red-200 text-red-900' :
                     item.priority === 'high' ? 'bg-red-100 text-red-700' :
                     item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
                     {item.priority.toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-gray-900 text-sm">{item.text}</p>
+                    <p className="text-gray-900 text-sm">{item.title || item.text}</p>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      <span className="text-xs text-gray-500">{item.category}</span>
+                      <span className="text-xs text-gray-500">{item.category || item.phase}</span>
                       {item.penalty && (
                         <span className="text-xs text-red-600">Penalty: {item.penalty}</span>
                       )}

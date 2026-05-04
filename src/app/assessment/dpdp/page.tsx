@@ -175,6 +175,13 @@ export default function DPDPAssessmentPage() {
 
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Clear the timer on unmount to prevent state updates on an unmounted component
+  useEffect(() => {
+    return () => {
+      if (advanceTimer.current) clearTimeout(advanceTimer.current)
+    }
+  }, [])
+
   // Handle question response with auto-advance
   const handleResponse = (questionId: string, value: string) => {
     setResponses(prev => ({ ...prev, [questionId]: value }))
