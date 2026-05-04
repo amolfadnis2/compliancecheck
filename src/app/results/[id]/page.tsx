@@ -704,7 +704,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
   const responses = assessment.responses?.answers || {}
   // user_details is the canonical column written by dpdp-submit; fall back to legacy paths
-  const userDetails = assessment.user_details || assessment.company_details || assessment.responses?.userDetails || {}
+  const userDetails: Record<string, string> = assessment.user_details || (assessment.company_details as Record<string, string>) || assessment.responses?.userDetails || {}
   const companyName = userDetails.companyName || userDetails.company_name || ''
   const profile = assessment.responses?.profile
 
