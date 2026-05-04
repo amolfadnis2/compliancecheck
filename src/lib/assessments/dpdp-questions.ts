@@ -822,21 +822,19 @@ export function calculateDPDPScore(
       
       if (answer) {
         questionsAnswered++;
-        
-        // Check if answer is compliant
-        if (q.complianceAnswer) {
-          if (answer === q.complianceAnswer || 
-              answer.toLowerCase().includes('yes') ||
-              answer.includes('AES-256') ||
-              answer.includes('Explicit consent')) {
+
+        if (q.type === 'yes_no') {
+          if (answer === q.complianceAnswer) {
             phaseScore += q.weight;
-          } else if (answer.toLowerCase().includes('partial') || 
-                     answer.includes('email') ||
-                     answer.includes('Some')) {
-            phaseScore += q.weight * 0.5; // Partial credit
           }
-        } else if (answer === 'yes' || answer.toLowerCase().includes('yes')) {
-          phaseScore += q.weight;
+        } else if (q.type === 'multiple_choice') {
+          if (answer === q.complianceAnswer) {
+            phaseScore += q.weight;
+          } else if (q.options && q.options.indexOf(answer) === 1) {
+            // Second option consistently represents partial compliance across all MC questions
+            phaseScore += q.weight * 0.5;
+          }
+          // Third option or beyond gets 0 — these represent clear non-compliance
         }
       }
     });
@@ -897,22 +895,36 @@ export function generateDPDPActionItems(
 
   relevantQuestions.forEach(q => {
     const answer = responses[q.id];
-    
-    // Check if answer indicates non-compliance
-    const isNonCompliant = !answer || 
-      answer === 'no' || 
-      answer.toLowerCase().includes('no ') ||
-      answer.includes('Pre-checked') ||
-      answer.includes('Terms & Conditions only') ||
-      answer.includes('No mechanism') ||
-      answer.includes('No privacy notice') ||
-      answer.includes('Not encrypted') ||
-      answer.includes('No access controls');
+    const phaseInfo = PHASE_INFO[q.phase as keyof typeof PHASE_INFO];
 
-    if (isNonCompliant) {
-      const phaseInfo = PHASE_INFO[q.phase as keyof typeof PHASE_INFO];
-      const priority = getPriorityFromPhase(q.phase, q.weight);
-      
+    // Unanswered questions are flagged as gaps
+    if (!answer) {
+      actionItems.push({
+        id: q.id,
+        priority: getPriorityFromPhase(q.phase, q.weight),
+        phase: q.phase,
+        title: getActionTitle(q),
+        description: q.helpText || `Address compliance gap in ${phaseInfo?.label || q.phase}`,
+        deadline: 'Before DPDP enforcement',
+        penalty: phaseInfo?.maxPenalty || '₹50 crore'
+      });
+      return;
+    }
+
+    const isFullyCompliant = answer === q.complianceAnswer;
+    // For MC questions, second option (index 1) is partial compliance — still needs an action item
+    const isPartiallyCompliant =
+      q.type === 'multiple_choice' &&
+      q.options != null &&
+      q.options.indexOf(answer) === 1;
+
+    if (!isFullyCompliant) {
+      const basePriority = getPriorityFromPhase(q.phase, q.weight);
+      // Downgrade priority one level for partial compliance (gap still exists, but risk is lower)
+      const priority: 'critical' | 'high' | 'medium' | 'low' = isPartiallyCompliant
+        ? downgradePriority(basePriority)
+        : basePriority;
+
       actionItems.push({
         id: q.id,
         priority,
@@ -929,7 +941,15 @@ export function generateDPDPActionItems(
   const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
   actionItems.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
-  return actionItems.slice(0, 15); // Return top 15 action items
+  return actionItems;
+}
+
+function downgradePriority(
+  priority: 'critical' | 'high' | 'medium' | 'low'
+): 'critical' | 'high' | 'medium' | 'low' {
+  if (priority === 'critical') return 'high';
+  if (priority === 'high') return 'medium';
+  return 'low';
 }
 
 // Helper function to determine priority based on phase and weight
