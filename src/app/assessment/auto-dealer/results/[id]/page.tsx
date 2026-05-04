@@ -349,51 +349,8 @@ interface PaymentGateProps {
   onPaid: () => void
 }
 
-function PaymentGate({ assessmentId, tier, questionCount, onPaid }: PaymentGateProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+function PaymentGate({ tier, questionCount, onPaid }: PaymentGateProps) {
   const tierInfo = PRICE_TIERS.find(t => t.id === tier) ?? PRICE_TIERS[1]
-
-  const initPayment = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/assessment/auto-dealer/pay', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assessmentId }),
-      })
-      const json = await res.json() as { orderId?: string; amount?: number; key?: string; error?: string }
-      if (!json.orderId) throw new Error(json.error ?? 'Failed to create payment order')
-
-      // Load Razorpay dynamically
-      const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      document.body.appendChild(script)
-      script.onload = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Razorpay = (window as any).Razorpay
-        const rzp = new Razorpay({
-          key: json.key,
-          amount: json.amount,
-          currency: 'INR',
-          order_id: json.orderId,
-          name: 'ComplianceCheck.co.in',
-          description: `Auto Dealership Compliance Report — ${tierInfo.label}`,
-          handler: () => {
-            try { posthog.capture('auto_dealer_payment_complete', { tier }) } catch { /* non-fatal */ }
-            onPaid()
-          },
-          modal: { ondismiss: () => setIsLoading(false) },
-          theme: { color: '#1d4ed8' },
-        })
-        rzp.open()
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Payment failed. Please try again.')
-      setIsLoading(false)
-    }
-  }
 
   return (
     <Card className="max-w-md mx-auto">
@@ -404,9 +361,6 @@ function PaymentGate({ assessmentId, tier, questionCount, onPaid }: PaymentGateP
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">{error}</div>
-        )}
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-2xl font-bold text-blue-900">Rs.{tierInfo.priceINR.toLocaleString('en-IN')}</p>
           <p className="text-sm text-blue-700 mt-1">{tierInfo.description}</p>
@@ -417,13 +371,10 @@ function PaymentGate({ assessmentId, tier, questionCount, onPaid }: PaymentGateP
           <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Documentation checklist</li>
           <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Downloadable PDF report</li>
         </ul>
-        <Button onClick={initPayment} disabled={isLoading} className="w-full bg-blue-700 hover:bg-blue-800 h-12">
-          {isLoading
-            ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />Processing…</>
-            : <>Pay Rs.{tierInfo.priceINR.toLocaleString('en-IN')} &amp; Unlock Report</>
-          }
+        <Button onClick={onPaid} className="w-full bg-blue-700 hover:bg-blue-800 h-12">
+          Free in beta — View Report
         </Button>
-        <p className="text-xs text-gray-400 text-center">Secured by Razorpay · UPI / Net Banking / Cards accepted</p>
+        <p className="text-xs text-gray-400 text-center">Payment will be enabled in a future release.</p>
       </CardContent>
     </Card>
   )
