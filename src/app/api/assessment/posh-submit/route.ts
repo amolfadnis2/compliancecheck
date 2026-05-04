@@ -78,41 +78,19 @@ export async function POST(request: NextRequest) {
 
     // Insert into Supabase
     const { data, error } = await getSupabase()
-      .from('assessments')
+      .from('posh_assessments')
       .insert([assessmentData])
       .select('id')
       .single()
 
     if (error) {
       console.error('Supabase insert error:', error)
-      
-      // If table doesn't exist or schema mismatch, try generic assessment table
-      const { data: fallbackData, error: fallbackError } = await getSupabase()
-        .from('generic_assessments')
-        .insert([{
-          id: assessmentId,
-          type: 'posh_compliance',
-          data: assessmentData,
-          created_at: new Date().toISOString(),
-        }])
-        .select('id')
-        .single()
-
-      if (fallbackError) {
-        console.error('Fallback insert error:', fallbackError)
-        // Still return success with ID for localStorage fallback
-        return NextResponse.json({
-          success: true,
-          assessmentId,
-          savedToDb: false,
-          message: 'Results saved locally. Database sync pending.',
-        })
-      }
-
+      // Still return success with ID for localStorage fallback
       return NextResponse.json({
         success: true,
-        assessmentId: fallbackData?.id || assessmentId,
-        savedToDb: true,
+        assessmentId,
+        savedToDb: false,
+        message: 'Results saved locally. Database sync pending.',
       })
     }
 
