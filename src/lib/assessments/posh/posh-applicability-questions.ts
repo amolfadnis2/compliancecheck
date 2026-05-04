@@ -476,22 +476,29 @@ export function determinePOSHApplicability(
   
   // Parse key responses
   const employeeCount = responses['POSH_APP_001'];
+  const entityType = responses['POSH_APP_002'];
   const hasWomenInWorkforce = responses['POSH_APP_003'];
   const locationCount = responses['POSH_APP_004'];
   const locationsWithTenPlus = responses['POSH_APP_005'];
   const primaryState = responses['POSH_APP_006'];
+  const multiState = responses['POSH_APP_007'];
   const industry = responses['POSH_APP_008'];
+  const customerInteraction = responses['POSH_APP_009'];
+  const hasContractWorkers = responses['POSH_APP_011'];
+  const hasInterns = responses['POSH_APP_012'];
   const hasRemoteWorkers = responses['POSH_APP_013'];
+  const hasGigWorkers = responses['POSH_APP_014'];
   const hasNightShifts = responses['POSH_APP_015'];
   const hasICC = responses['POSH_APP_017'];
   const iccTenure = responses['POSH_APP_018'];
   const annualReportFiled = responses['POSH_APP_019'];
-  
+
   // Helper: Check if above 10-employee threshold
   const isAboveThreshold = employeeCount !== 'below_10';
-  
-  // Helper: Check if high-risk industry
-  const isHighRiskIndustry = HIGH_RISK_INDUSTRIES.includes(industry);
+
+  // Helper: Check if high-risk industry (by industry type OR by significant customer/client exposure)
+  const isHighRiskIndustry = HIGH_RISK_INDUSTRIES.includes(industry) ||
+    customerInteraction === 'primary' || customerInteraction === 'significant';
   
   // Helper: Check state-specific registration
   const stateRequiresRegistration = ICC_REGISTRATION_STATES[primaryState]?.required || false;
@@ -551,7 +558,7 @@ export function determinePOSHApplicability(
   // ---------------------------------------------------------------------------
   // RESULT 2: MULTI-LOCATION ICC REQUIREMENT
   // ---------------------------------------------------------------------------
-  if (isAboveThreshold && locationCount !== 'single' && locationsWithTenPlus !== 'none') {
+  if (isAboveThreshold && locationCount !== 'single' && locationsWithTenPlus && locationsWithTenPlus !== 'none') {
     const iccLocationsNeeded = {
       '1_location': 1,
       '2_to_3': 3,
@@ -591,9 +598,24 @@ export function determinePOSHApplicability(
         'Submit ICC composition details',
         'Update registration on reconstitution',
         'Some states require digital annual report submission',
+        ...(multiState === 'multi_state' ? ['You operate in multiple states - verify registration requirements for each state of operation'] : []),
       ],
       penaltyRisk: 'Non-registration may attract state-level penalties and compliance notices',
       timeline: 'Within 30 days of ICC constitution',
+    });
+  } else if (isAboveThreshold && multiState === 'multi_state') {
+    // Primary state doesn't require registration, but other states of operation might
+    results.push({
+      code: 'POSH_STATE_REGISTRATION',
+      name: 'State ICC Registration Requirement',
+      applies: false,
+      reason: 'Your primary state does not mandate ICC registration. However, since you operate in multiple states, verify whether your other states of operation require registration — Maharashtra, Telangana, Haryana, and Delhi NCT have mandatory ICC registration requirements.',
+      threshold: 'State-specific mandate',
+      keyRequirements: [
+        'Check each state of operation for ICC registration mandates',
+        'Maharashtra, Telangana (T-SHe Box), Haryana, Delhi NCT require registration',
+        'Register on state portal if applicable in any state of operation',
+      ],
     });
   }
   
@@ -616,7 +638,9 @@ export function determinePOSHApplicability(
         'Include: complaints received, disposed, pending beyond 90 days',
         'Include: awareness programs conducted',
         'NIL reports mandatory if no complaints received',
-        'Companies: Include POSH disclosure in Board\'s Directors\' Report',
+        ...(['pvt_ltd', 'public_ltd', 'opc'].includes(entityType)
+          ? ['Include POSH compliance statement in Board\'s Directors\' Report (Companies Act requirement)']
+          : []),
         'Retain filing acknowledgment/receipt',
       ],
       penaltyRisk: 'Rs.50,000+ penalty for non-filing',
@@ -672,6 +696,31 @@ export function determinePOSHApplicability(
       ],
       penaltyRisk: 'Conducted training without records = no compliance evidence',
       timeline: 'At least annually',
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // RESULT 12: EXTENDED WORKFORCE POSH COVERAGE (contract / interns / gig)
+  // ---------------------------------------------------------------------------
+  if (isAboveThreshold && (hasContractWorkers === 'yes' || hasInterns === 'yes' || hasGigWorkers === 'yes')) {
+    results.push({
+      code: 'POSH_CONTRACT_WORKERS',
+      name: 'Extended Workforce POSH Coverage',
+      applies: true,
+      reason: [
+        hasContractWorkers === 'yes' ? 'Contract workers and consultants' : '',
+        hasInterns === 'yes' ? 'Interns, trainees, and apprentices' : '',
+        hasGigWorkers === 'yes' ? 'Gig/platform workers' : '',
+      ].filter(Boolean).join(', ') + ' are covered under POSH Act Section 2(f) and must be included in training and policy communications.',
+      threshold: 'Any extended workforce engagement',
+      keyRequirements: [
+        ...(hasContractWorkers === 'yes' ? ['Include contract workers and consultants in all POSH training programs'] : []),
+        ...(hasInterns === 'yes' ? ['Provide POSH orientation to interns, trainees, and apprentices at onboarding (Section 2(f) covers even unpaid interns)'] : []),
+        ...(hasGigWorkers === 'yes' ? ['Establish grievance mechanism for gig/platform workers - Karnataka HC (Ms. X v. Ola, 2024) held platform workers may qualify as employees'] : []),
+        'Ensure POSH policy explicitly covers non-regular workforce',
+        'Count all extended workforce in the 10-employee threshold calculation',
+      ],
+      penaltyRisk: 'Exclusion of contract workers or interns from POSH programs is a Section 19 violation',
     });
   }
   
@@ -742,18 +791,24 @@ export function determinePOSHApplicability(
       ],
     };
     
+    const triggeredByInteraction = !HIGH_RISK_INDUSTRIES.includes(industry) &&
+      (customerInteraction === 'primary' || customerInteraction === 'significant');
+
     results.push({
       code: 'POSH_HIGH_RISK_INDUSTRY',
       name: 'High-Risk Industry Additional Requirements',
       applies: true,
-      reason: `${industry.replace('_', ' ')} is classified as a high-risk industry requiring additional POSH safeguards.`,
-      threshold: 'Industry-specific',
+      reason: triggeredByInteraction
+        ? `Your organization has ${customerInteraction} customer/client interactions, creating third-party harassment exposure under Section 19(a) regardless of industry classification.`
+        : `${industry.replace(/_/g, ' ')} is classified as a high-risk industry requiring additional POSH safeguards.`,
+      threshold: 'Industry-specific or significant customer interaction',
       keyRequirements: industrySpecificReqs[industry] || [
+        'Third-party (customer/client/vendor) harassment protocol',
         'Industry-specific risk assessment',
-        'Enhanced awareness training',
-        'Third-party harassment protocols',
+        'Enhanced awareness training covering external interactions',
+        'Clear escalation path for complaints involving non-employees',
       ],
-      penaltyRisk: 'Higher scrutiny during compliance audits',
+      penaltyRisk: 'Higher scrutiny during compliance audits; employer liable for third-party harassment under Section 19(a)',
     });
   }
   
@@ -847,6 +902,7 @@ export function generatePOSHAssessmentProfile(
   const locationsWithTenPlus = responses['POSH_APP_005'];
   const primaryState = responses['POSH_APP_006'];
   const industry = responses['POSH_APP_008'];
+  const customerInteraction = responses['POSH_APP_009'];
   const hasNightShifts = responses['POSH_APP_015'];
   const hasICC = responses['POSH_APP_017'];
   const annualReportFiled = responses['POSH_APP_019'];
@@ -870,16 +926,18 @@ export function generatePOSHAssessmentProfile(
     riskLevel = 'critical';
   } else if (hasICC === 'yes_partial' || annualReportFiled === 'not_sure') {
     riskLevel = 'high';
-  } else if (HIGH_RISK_INDUSTRIES.includes(industry) || hasNightShifts === 'regular') {
+  } else if (HIGH_RISK_INDUSTRIES.includes(industry) || hasNightShifts === 'regular' ||
+             customerInteraction === 'primary' || customerInteraction === 'significant') {
     riskLevel = 'high';
   }
-  
+
   // Determine question set type
   let questionSetType: POSHAssessmentProfile['questionSetType'] = 'core_compliance';
   let estimatedQuestionCount = 25;
-  
-  const isHighRisk = HIGH_RISK_INDUSTRIES.includes(industry);
-  const isMultiLocation = locationCount !== 'single' && locationsWithTenPlus !== 'none';
+
+  const isHighRisk = HIGH_RISK_INDUSTRIES.includes(industry) ||
+    customerInteraction === 'primary' || customerInteraction === 'significant';
+  const isMultiLocation = locationCount !== 'single' && locationsWithTenPlus && locationsWithTenPlus !== 'none';
   const hasNightOps = hasNightShifts === 'occasional' || hasNightShifts === 'regular';
   const isLargeOrg = employeeCount === '200_to_499' || employeeCount === '500_plus';
   
@@ -1007,6 +1065,7 @@ export function estimatePOSHQuestionCount(results: ApplicabilityResult[]): numbe
     POSH_NIGHT_SHIFT: 6,
     POSH_VIRTUAL_WORKPLACE: 4,
     POSH_COMPLAINT_HANDLING: 5,
+    POSH_CONTRACT_WORKERS: 1,
   };
   
   applicableCodes.forEach((code) => {

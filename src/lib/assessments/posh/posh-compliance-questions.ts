@@ -521,7 +521,7 @@ const TRAINING_AWARENESS_QUESTIONS: POSHQuestion[] = [
       { value: 'no', label: 'No - training focuses only on physical workplace' },
       { value: 'no_remote', label: 'Not applicable - no remote workers' },
     ],
-    compliantAnswers: ['yes', 'no_remote'],
+    compliantAnswers: ['yes'],
     helpText: 'Training content should be updated to cover modern workplace scenarios including harassment through digital communications, inappropriate behavior during video calls, etc.',
     governmentRef: 'Sanjeev Mishra v. Bank of Baroda (Rajasthan HC, 2021)',
     applicabilityCode: 'POSH_VIRTUAL_WORKPLACE',
@@ -542,7 +542,7 @@ const TRAINING_AWARENESS_QUESTIONS: POSHQuestion[] = [
     partiallyCompliantAnswers: ['partial'],
     helpText: 'Section 2(f) includes contract workers, interns, trainees, and apprentices in the definition of "employee". They must receive POSH awareness.',
     governmentRef: 'POSH Act 2013, Section 2(f)',
-    applicabilityCode: 'POSH_TRAINING',
+    applicabilityCode: 'POSH_CONTRACT_WORKERS',
   },
   {
     id: 'POSH_TRN_007',
@@ -718,6 +718,10 @@ const REPORTING_MONITORING_QUESTIONS: POSHQuestion[] = [
     helpText: 'Companies (Accounts) Rules 2014 require companies to include a statement on POSH compliance in the Board\'s Directors\' Report, including cases pending beyond 90 days.',
     governmentRef: 'Companies (Accounts) Rules 2014; POSH Act Section 22',
     applicabilityCode: 'POSH_ANNUAL_REPORT',
+    conditionalOn: {
+      questionId: 'POSH_APP_002',
+      values: ['pvt_ltd', 'public_ltd', 'opc'],
+    },
   },
   {
     id: 'POSH_RPT_004',
@@ -1057,7 +1061,7 @@ export function calculatePOSHScore(
   Object.keys(categoryScores).forEach((cat) => {
     const cs = categoryScores[cat as POSHCategory];
     cs.percentage = cs.maxScore > 0 ? Math.round((cs.score / cs.maxScore) * 100) : 0;
-    cs.status = cs.percentage >= 90 ? 'compliant' : cs.percentage >= 60 ? 'needs_attention' : 'non_compliant';
+    cs.status = cs.percentage >= 90 ? 'compliant' : cs.percentage >= 70 ? 'needs_attention' : 'non_compliant';
   });
   
   // Calculate overall
@@ -1304,6 +1308,7 @@ export function estimatePOSHQuestionCount(applicabilityCodes: string[]): number 
   if (applicabilityCodes.includes('POSH_STATE_REGISTRATION')) count += 1; // State registration
   if (applicabilityCodes.includes('POSH_VIRTUAL_WORKPLACE')) count += 2; // Virtual workplace
   if (applicabilityCodes.includes('POSH_HIGH_RISK_INDUSTRY')) count += 1; // Industry-specific
+  if (applicabilityCodes.includes('POSH_CONTRACT_WORKERS')) count += 1; // Contract workers / interns
   
   return Math.max(count, 25); // Minimum 25 questions
 }
