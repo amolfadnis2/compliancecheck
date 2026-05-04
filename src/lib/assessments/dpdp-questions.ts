@@ -598,14 +598,14 @@ export const PHASE_INFO = {
   },
   children: {
     label: 'Children\'s Data Protection',
-    weight: 0.15,
+    weight: 0.20,
     description: 'Parental consent, behavioral tracking prohibition',
     maxPenalty: '₹200 crore',
     icon: '👶'
   },
   governance: {
     label: 'Governance & Retention',
-    weight: 0.10,
+    weight: 0.15,
     description: 'DPO, retention policy, training',
     maxPenalty: '₹150 crore',
     icon: '📋'
@@ -743,7 +743,7 @@ export function calculateRiskMultipliers(profile: {
 export const DPDP_CATEGORIES = PHASE_INFO;
 
 // DPDP compliance deadline
-const DPDP_DEADLINE = new Date('2025-08-31'); // Expected enforcement date
+const DPDP_DEADLINE = new Date('2027-05-13'); // DPDP Rules 2025 enforcement date
 
 // Calculate days until DPDP deadline
 export function getDaysUntilDeadline(): number {
