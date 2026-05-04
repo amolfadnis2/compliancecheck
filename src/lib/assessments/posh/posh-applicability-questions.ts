@@ -843,7 +843,6 @@ export function generatePOSHAssessmentProfile(
   responses: Record<string, string>
 ): POSHAssessmentProfile {
   const employeeCount = responses['POSH_APP_001'];
-  const hasWomenInWorkforce = responses['POSH_APP_003'];
   const locationCount = responses['POSH_APP_004'];
   const locationsWithTenPlus = responses['POSH_APP_005'];
   const primaryState = responses['POSH_APP_006'];
@@ -865,8 +864,6 @@ export function generatePOSHAssessmentProfile(
   }
 
   // Determine risk level
-  // Note: even with no women employees, POSH applies to women visitors/clients (Section 2(a)),
-  // so ICC is still required - hasWomenInWorkforce === 'no' does not reduce the mandatory requirement.
   let riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'medium';
 
   if (hasICC === 'no' || annualReportFiled === 'not_filed') {
