@@ -414,7 +414,7 @@ export const BREACH_RESPONSE_QUESTIONS: DPDPQuestion[] = [
   }
 ];
 
-// Phase 5: Children's Data (5 questions, 15% weight) - CONDITIONAL
+// Phase 5: Children's Data (5 questions, 20% weight) - CONDITIONAL
 export const CHILDREN_DATA_QUESTIONS: DPDPQuestion[] = [
   {
     id: 'children_1',
@@ -490,7 +490,7 @@ export const CHILDREN_DATA_QUESTIONS: DPDPQuestion[] = [
   }
 ];
 
-// Phase 6: Governance & Retention (4 questions, 10% weight)
+// Phase 6: Governance & Retention (4 questions, 15% weight)
 export const GOVERNANCE_QUESTIONS: DPDPQuestion[] = [
   {
     id: 'gov_1',
@@ -646,7 +646,7 @@ export const REVENUE_OPTIONS = [
 // Get questions based on organization profile
 export function getRelevantQuestions(processesChildrenData: boolean): DPDPQuestion[] {
   if (processesChildrenData) {
-    return ALL_DPDP_QUESTIONS; // All 45 questions including children's data
+    return ALL_DPDP_QUESTIONS; // All 38 questions including children's data
   } else {
     // Filter out conditional children's data questions
     return ALL_DPDP_QUESTIONS.filter(q => !q.isConditional);
@@ -771,7 +771,7 @@ export function getDPDPComplianceStatus(score: number): {
     return {
       status: 'partial',
       label: 'Partial Compliance',
-      color: 'yellow',
+      color: 'amber',
       description: 'Significant gaps exist. Prioritize high-risk areas before enforcement.'
     };
   } else {

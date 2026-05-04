@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { CATEGORY_INFO } from '@/lib/assessments/statutory-health-questions'
 import { LABOUR_CODE_CATEGORIES } from '@/lib/assessments/labour-code-questions'
-import { DPDP_CATEGORIES } from '@/lib/assessments/dpdp-questions'
+import { DPDP_CATEGORIES, getDaysUntilDeadline } from '@/lib/assessments/dpdp-questions'
 import { POSH_CATEGORIES } from '@/lib/assessments/posh/posh-compliance-questions'
 import { FOOD_BUSINESS_CATEGORIES } from '@/lib/assessments/food-business-questions'
 import { DownloadButtons } from '@/components/results/download-buttons'
@@ -826,7 +826,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
                 <div className="flex-1">
                   <h3 className="font-bold text-amber-900 mb-1">COMPLIANCE DEADLINE: 13 May 2027</h3>
                   <p className="text-sm text-amber-800 mb-2">
-                    All DPDP Act 2023 substantive obligations become enforceable in 527 days. 
+                    All DPDP Act 2023 substantive obligations become enforceable in {getDaysUntilDeadline()} days.
                     Penalties up to <strong>₹250 crore</strong> apply for non-compliance.
                   </p>
                   <p className="text-xs text-amber-700">
