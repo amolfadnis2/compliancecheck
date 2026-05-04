@@ -476,6 +476,7 @@ export function determinePOSHApplicability(
   
   // Parse key responses
   const employeeCount = responses['POSH_APP_001'];
+  const hasWomenInWorkforce = responses['POSH_APP_003'];
   const locationCount = responses['POSH_APP_004'];
   const locationsWithTenPlus = responses['POSH_APP_005'];
   const primaryState = responses['POSH_APP_006'];
@@ -502,18 +503,24 @@ export function determinePOSHApplicability(
   if (isAboveThreshold) {
     const iccMissing = hasICC === 'no' || hasICC === 'not_sure';
     const iccExpired = iccTenure === 'over_3_years' || iccTenure === 'unknown';
-    
+    const noWomenCurrently = hasWomenInWorkforce === 'no';
+
     results.push({
       code: 'POSH_ICC_CONSTITUTION',
       name: 'Internal Complaints Committee (ICC) Constitution',
       applies: true,
-      reason: iccMissing 
+      reason: noWomenCurrently
+        ? 'POSH Act protects "any woman of any age, whether employed or not" (Section 2(a)) - this includes clients, visitors, and vendors at your workplace. ICC is still required under Section 4(1). Since you currently have no women employees, women members for ICC must be nominated from another office of the same employer.'
+        : iccMissing
         ? 'You have 10+ employees - ICC constitution is MANDATORY under Section 4(1).'
         : iccExpired
         ? 'Your ICC tenure has exceeded 3 years - reconstitution is required under Section 4(3).'
         : 'ICC constitution requirement applies to your organization.',
       threshold: '10+ employees',
       keyRequirements: [
+        ...(noWomenCurrently ? [
+          'IMPORTANT: No women currently in workforce - nominate Presiding Officer and women members from another office/branch of the same employer (permitted under Section 4(2)(a))',
+        ] : []),
         'Presiding Officer: Senior-level woman employee',
         'Minimum 2 employee members (preferably with social work/legal background)',
         'External member from NGO or 5+ years women\'s empowerment experience',
@@ -521,7 +528,7 @@ export function determinePOSHApplicability(
         'Maximum tenure: 3 years (reconstitution required)',
         'Separate ICC required at each location with 10+ employees',
       ],
-      penaltyRisk: iccMissing 
+      penaltyRisk: iccMissing
         ? 'Rs.50,000 (first offense), Rs.1,00,000 (repeat), License cancellation (continued non-compliance)'
         : 'Inquiry proceedings may be invalidated if ICC composition is improper',
       timeline: iccMissing ? 'Immediate - constitute within 30 days' : 'Before current tenure expires',
@@ -843,7 +850,7 @@ export function generatePOSHAssessmentProfile(
   const hasNightShifts = responses['POSH_APP_015'];
   const hasICC = responses['POSH_APP_017'];
   const annualReportFiled = responses['POSH_APP_019'];
-  
+
   // Below threshold - redirect to LCC info
   if (employeeCount === 'below_10') {
     return {
@@ -855,10 +862,10 @@ export function generatePOSHAssessmentProfile(
       stateRegistrationRequired: false,
     };
   }
-  
+
   // Determine risk level
   let riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'medium';
-  
+
   if (hasICC === 'no' || annualReportFiled === 'not_filed') {
     riskLevel = 'critical';
   } else if (hasICC === 'yes_partial' || annualReportFiled === 'not_sure') {
