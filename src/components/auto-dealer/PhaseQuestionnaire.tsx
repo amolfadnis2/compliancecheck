@@ -66,7 +66,7 @@ export function PhaseQuestionnaire({
     <>
       {/* Sticky progress bars */}
       <div className="bg-white border-b p-4 sticky top-0 z-10 shadow-sm">
-        {/* Overall progress — labelled for clarity (Fix #9) */}
+        {/* Overall progress */}
         <div className="flex justify-between items-center mb-1">
           <span
             className="text-xs text-gray-500 flex items-center gap-1"
@@ -75,9 +75,7 @@ export function PhaseQuestionnaire({
             Overall assessment
             <Info className="h-3 w-3 text-gray-400" aria-hidden="true" />
           </span>
-          <span className="text-xs font-medium text-gray-700">
-            {overallProgress}% &middot; ~{minsRemaining} min left
-          </span>
+          <span className="text-xs font-medium text-gray-700">{overallProgress}%</span>
         </div>
         <Progress value={overallProgress} className="h-1.5 mb-3 [&>div]:bg-green-500" aria-label={`Overall assessment progress: ${overallProgress}%`} />
 
@@ -91,7 +89,9 @@ export function PhaseQuestionnaire({
               Phase {phase} of 6 &mdash; {phaseInfo?.name ?? `Phase ${phase}`}
               <Info className="h-3 w-3 text-gray-400" aria-hidden="true" />
             </span>
-            <span className="text-sm font-semibold text-gray-900">{phaseProgress}%</span>
+            <span className="text-sm font-semibold text-gray-900">
+              {phaseProgress}% &middot; ~{minsRemaining} min left
+            </span>
           </div>
           <Progress
             value={phaseProgress}
