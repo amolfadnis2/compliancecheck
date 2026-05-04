@@ -373,12 +373,30 @@ export default function POSHAssessmentPage() {
     }
   }
   
+  // Remove saved responses for conditional questions whose parent condition is no longer satisfied.
+  // Must be called whenever an applicability answer changes, to avoid stale data reaching
+  // determinePOSHApplicability() when the user navigates back and changes a parent answer.
+  const cleanConditionalResponses = (responses: Record<string, string>): Record<string, string> => {
+    const cleaned = { ...responses }
+    POSH_APPLICABILITY_QUESTIONS.forEach(q => {
+      if (q.conditionalOn) {
+        const { questionId: condId, values } = q.conditionalOn
+        if (!values.includes(cleaned[condId])) {
+          delete cleaned[q.id]
+        }
+      }
+    })
+    return cleaned
+  }
+
   // Handle applicability question answer
   const handleApplicabilityAnswer = (questionId: string, value: string) => {
     const timeOnQuestion = Math.floor((Date.now() - questionStartTime) / 1000)
-    
-    setApplicabilityResponses(prev => ({ ...prev, [questionId]: value }))
-    
+
+    // Build updated responses and strip any now-hidden conditional answers
+    const cleanedResponses = cleanConditionalResponses({ ...applicabilityResponses, [questionId]: value })
+    setApplicabilityResponses(cleanedResponses)
+
     // Track question answered
     trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
       question_id: questionId,
@@ -386,25 +404,24 @@ export default function POSHAssessmentPage() {
       category: currentApplicabilityQuestion?.category,
       time_on_question_seconds: timeOnQuestion,
     })
-    
+
     // Auto-advance after 800ms
     setTimeout(() => {
-      // Recalculate visible questions after response
+      // Recalculate visible questions using the cleaned responses
       const newVisibleQuestions = POSH_APPLICABILITY_QUESTIONS.filter(q => {
         if (!q.conditionalOn) return true
         const { questionId: condId, values } = q.conditionalOn
-        const responses = { ...applicabilityResponses, [questionId]: value }
-        return values.includes(responses[condId])
+        return values.includes(cleanedResponses[condId])
       })
-      
+
       const currentIdx = newVisibleQuestions.findIndex(q => q.id === questionId)
-      
+
       if (currentIdx < newVisibleQuestions.length - 1) {
         setCurrentApplicabilityIndex(currentIdx + 1)
         setQuestionStartTime(Date.now())
       } else {
-        // Complete applicability phase
-        completeApplicabilityPhase({ ...applicabilityResponses, [questionId]: value })
+        // Complete applicability phase with clean, consistent responses
+        completeApplicabilityPhase(cleanedResponses)
       }
     }, 800)
   }
