@@ -250,12 +250,12 @@ export async function GET(
       labour_regime: string; created_at: string;
     }
 
-    // Rebuild scores from stored responses if not cached
+    // Always recompute scores from stored responses to avoid stale cached values
     const responses: Responses = (a.responses as Responses) ?? {}
-    const profile = a.applicability_profile ?? buildApplicabilityProfileFromResponses(responses)
-    const phaseScores: PhaseScore[] = (a.phase_scores as PhaseScore[] | null) ?? computePhaseScores(profile, ALL_QUESTIONS, responses)
+    const profile = buildApplicabilityProfileFromResponses(responses)
+    const phaseScores: PhaseScore[] = computePhaseScores(profile, ALL_QUESTIONS, responses)
     const overallScore: OverallScore = computeOverallScore(phaseScores)
-    const gapAnalysis: GapItem[] = (a.gap_analysis as GapItem[] | null) ?? generateGapAnalysis(profile, ALL_QUESTIONS, responses)
+    const gapAnalysis: GapItem[] = generateGapAnalysis(profile, ALL_QUESTIONS, responses)
     const applicabilityChecks: ApplicabilityCheckResult[] = generateApplicabilityChecks(profile)
     const tier = (a.price_tier ?? computePriceTier(profile, ALL_QUESTIONS)) as 'basic' | 'standard' | 'premium'
     const totalQuestions = ALL_QUESTIONS.filter(q => q.phase !== 1 && q.appliesWhen(profile)).length
