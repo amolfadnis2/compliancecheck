@@ -451,11 +451,31 @@ export default function ResultsPage() {
           emailVerified: boolean; paymentStatus: string;
           priceTier: 'basic' | 'standard' | 'premium'; totalQuestions: number;
         }
-        const calendar = generateComplianceCalendar(json.profile)
-        setData({ ...json, calendarEntries: calendar })
+
+        // Merge localStorage responses if they have more data than what the API returned
+        // (can happen if a mid-assessment DB save failed but client continued locally)
+        let finalResponses = json.responses
+        let { phaseScores, overallScore, gapAnalysis, profile, applicabilityChecks } = json
+        try {
+          const stored = localStorage.getItem(`auto_dealer_profile_${assessmentId}`)
+          if (stored) {
+            const localResponses = JSON.parse(stored) as Responses
+            if (Object.keys(localResponses).length > Object.keys(finalResponses).length) {
+              finalResponses = { ...finalResponses, ...localResponses }
+              profile = buildApplicabilityProfileFromResponses(finalResponses)
+              phaseScores = computePhaseScores(profile, ALL_QUESTIONS, finalResponses)
+              overallScore = computeOverallScore(phaseScores)
+              gapAnalysis = generateGapAnalysis(profile, ALL_QUESTIONS, finalResponses)
+              applicabilityChecks = generateApplicabilityChecks(profile)
+            }
+          }
+        } catch { /* non-fatal */ }
+
+        const calendar = generateComplianceCalendar(profile)
+        setData({ ...json, responses: finalResponses, phaseScores, overallScore, gapAnalysis, profile, applicabilityChecks, calendarEntries: calendar })
         setEmailVerified(json.emailVerified)
-        setPaid(json.paymentStatus === 'paid')
-        track('auto_dealer_results_view', { score: json.overallScore.score })
+        setPaid(prev => prev || json.paymentStatus === 'paid')
+        track('auto_dealer_results_view', { score: overallScore.score })
         setIsLoading(false)
         return
       }
@@ -625,7 +645,7 @@ export default function ResultsPage() {
             assessmentId={assessmentId}
             tier={data.priceTier}
             questionCount={data.totalQuestions}
-            onPaid={() => { setPaid(true); loadResults() }}
+            onPaid={() => { setPaid(true) }}
           />
         </main>
       </div>
