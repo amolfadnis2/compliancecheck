@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -173,19 +173,24 @@ export default function DPDPAssessmentPage() {
     assessmentTracking.trackStart()
   }
 
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Handle question response with auto-advance
   const handleResponse = (questionId: string, value: string) => {
     setResponses(prev => ({ ...prev, [questionId]: value }))
-    
+
     // Track progress
     const answeredCount = Object.keys(responses).length + 1
     assessmentTracking.trackProgress(answeredCount, currentQuestion?.phase, questionId)
-    
-    // Auto-advance after 800ms (matching other assessments)
-    setTimeout(() => {
-      if (currentQuestionIndex < totalQuestions - 1) {
-        setCurrentQuestionIndex(prev => prev + 1)
-      }
+
+    // Cancel any pending advance before scheduling a new one (prevents double-advance
+    // when a user changes their answer before the timer fires)
+    if (advanceTimer.current) clearTimeout(advanceTimer.current)
+    advanceTimer.current = setTimeout(() => {
+      setCurrentQuestionIndex(prev => {
+        if (prev < totalQuestions - 1) return prev + 1
+        return prev
+      })
     }, 800)
   }
 
@@ -634,7 +639,7 @@ export default function DPDPAssessmentPage() {
                   Phase {currentQuestion.phaseNumber}: {currentQuestion.phaseLabel}
                 </Badge>
                 <Badge variant="secondary">
-                  Weight: {currentPhaseInfo?.weight ? `${(currentPhaseInfo.weight * 100).toFixed(0)}%` : ''}
+                  Question weight: {currentQuestion.weight}
                 </Badge>
               </div>
               <CardTitle>{currentQuestion.text}</CardTitle>
