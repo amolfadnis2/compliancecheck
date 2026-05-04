@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       responses?: Responses
       durationSeconds?: number
     }
-    const { assessmentId, phase, responses, durationSeconds } = body
+    const { assessmentId, phase, responses } = body
 
     if (!assessmentId || !responses) {
       return NextResponse.json({ success: false, error: 'assessmentId and responses are required' }, { status: 400 })
@@ -82,15 +82,6 @@ export async function POST(request: NextRequest) {
       labour_regime: profile.labourRegime,
     }
 
-    // If all phases submitted (phase 6 is the last), mark as final
-    if (phase === 6) {
-      updatePayload.submitted_at = new Date().toISOString()
-    }
-
-    if (durationSeconds !== undefined) {
-      updatePayload[`phase_${phase}_duration_seconds`] = durationSeconds
-    }
-
     const { error: updateError } = await supabase
       .from('auto_dealer_assessments')
       .update(updatePayload)
@@ -98,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error('Submit update error:', updateError)
-      // Non-fatal — return success so client can navigate
+      return NextResponse.json({ success: false, error: 'Failed to save answers' }, { status: 500 })
     }
 
     return NextResponse.json({

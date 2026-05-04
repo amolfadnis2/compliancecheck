@@ -299,12 +299,9 @@ export async function GET(
       })
     }
 
-    // PDF response — require email_verified + paid
+    // PDF response — require email_verified (payment check deferred: free in beta)
     if (!a.email_verified) {
       return NextResponse.json({ error: 'Email verification required' }, { status: 403 })
-    }
-    if (a.payment_status !== 'paid') {
-      return NextResponse.json({ error: 'Payment required to download PDF' }, { status: 402 })
     }
 
     const pdfData = generatePdf({
