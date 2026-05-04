@@ -598,14 +598,14 @@ export const PHASE_INFO = {
   },
   children: {
     label: 'Children\'s Data Protection',
-    weight: 0.15,
+    weight: 0.20,
     description: 'Parental consent, behavioral tracking prohibition',
     maxPenalty: '₹200 crore',
     icon: '👶'
   },
   governance: {
     label: 'Governance & Retention',
-    weight: 0.10,
+    weight: 0.15,
     description: 'DPO, retention policy, training',
     maxPenalty: '₹150 crore',
     icon: '📋'
@@ -743,7 +743,7 @@ export function calculateRiskMultipliers(profile: {
 export const DPDP_CATEGORIES = PHASE_INFO;
 
 // DPDP compliance deadline
-const DPDP_DEADLINE = new Date('2025-08-31'); // Expected enforcement date
+const DPDP_DEADLINE = new Date('2027-05-13'); // DPDP Rules 2025 enforcement date
 
 // Calculate days until DPDP deadline
 export function getDaysUntilDeadline(): number {
@@ -822,21 +822,19 @@ export function calculateDPDPScore(
       
       if (answer) {
         questionsAnswered++;
-        
-        // Check if answer is compliant
-        if (q.complianceAnswer) {
-          if (answer === q.complianceAnswer || 
-              answer.toLowerCase().includes('yes') ||
-              answer.includes('AES-256') ||
-              answer.includes('Explicit consent')) {
+
+        if (q.type === 'yes_no') {
+          if (answer === q.complianceAnswer) {
             phaseScore += q.weight;
-          } else if (answer.toLowerCase().includes('partial') || 
-                     answer.includes('email') ||
-                     answer.includes('Some')) {
-            phaseScore += q.weight * 0.5; // Partial credit
           }
-        } else if (answer === 'yes' || answer.toLowerCase().includes('yes')) {
-          phaseScore += q.weight;
+        } else if (q.type === 'multiple_choice') {
+          if (answer === q.complianceAnswer) {
+            phaseScore += q.weight;
+          } else if (q.options && q.options.indexOf(answer) === 1) {
+            // Second option consistently represents partial compliance across all MC questions
+            phaseScore += q.weight * 0.5;
+          }
+          // Third option or beyond gets 0 — these represent clear non-compliance
         }
       }
     });
@@ -897,22 +895,36 @@ export function generateDPDPActionItems(
 
   relevantQuestions.forEach(q => {
     const answer = responses[q.id];
-    
-    // Check if answer indicates non-compliance
-    const isNonCompliant = !answer || 
-      answer === 'no' || 
-      answer.toLowerCase().includes('no ') ||
-      answer.includes('Pre-checked') ||
-      answer.includes('Terms & Conditions only') ||
-      answer.includes('No mechanism') ||
-      answer.includes('No privacy notice') ||
-      answer.includes('Not encrypted') ||
-      answer.includes('No access controls');
+    const phaseInfo = PHASE_INFO[q.phase as keyof typeof PHASE_INFO];
 
-    if (isNonCompliant) {
-      const phaseInfo = PHASE_INFO[q.phase as keyof typeof PHASE_INFO];
-      const priority = getPriorityFromPhase(q.phase, q.weight);
-      
+    // Unanswered questions are flagged as gaps
+    if (!answer) {
+      actionItems.push({
+        id: q.id,
+        priority: getPriorityFromPhase(q.phase, q.weight),
+        phase: q.phase,
+        title: getActionTitle(q),
+        description: q.helpText || `Address compliance gap in ${phaseInfo?.label || q.phase}`,
+        deadline: 'Before DPDP enforcement',
+        penalty: phaseInfo?.maxPenalty || '₹50 crore'
+      });
+      return;
+    }
+
+    const isFullyCompliant = answer === q.complianceAnswer;
+    // For MC questions, second option (index 1) is partial compliance — still needs an action item
+    const isPartiallyCompliant =
+      q.type === 'multiple_choice' &&
+      q.options != null &&
+      q.options.indexOf(answer) === 1;
+
+    if (!isFullyCompliant) {
+      const basePriority = getPriorityFromPhase(q.phase, q.weight);
+      // Downgrade priority one level for partial compliance (gap still exists, but risk is lower)
+      const priority: 'critical' | 'high' | 'medium' | 'low' = isPartiallyCompliant
+        ? downgradePriority(basePriority)
+        : basePriority;
+
       actionItems.push({
         id: q.id,
         priority,
@@ -929,7 +941,15 @@ export function generateDPDPActionItems(
   const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
   actionItems.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
-  return actionItems.slice(0, 15); // Return top 15 action items
+  return actionItems;
+}
+
+function downgradePriority(
+  priority: 'critical' | 'high' | 'medium' | 'low'
+): 'critical' | 'high' | 'medium' | 'low' {
+  if (priority === 'critical') return 'high';
+  if (priority === 'high') return 'medium';
+  return 'low';
 }
 
 // Helper function to determine priority based on phase and weight
@@ -951,19 +971,39 @@ function getActionTitle(question: DPDPQuestion): string {
     consent_3: 'Provide multilingual privacy notices',
     consent_4: 'Enforce purpose limitation controls',
     consent_5: 'Establish consent record management',
+    consent_6: 'Re-obtain consent for policy changes',
+    consent_7: 'Implement granular cookie consent',
+    consent_8: 'Obtain separate third-party sharing consent',
+    consent_9: 'Track consent version history',
     security_1: 'Implement data encryption at rest',
     security_2: 'Deploy encryption in transit',
-    security_3: 'Set up role-based access controls',
-    security_4: 'Implement security monitoring',
-    breach_1: 'Create breach notification procedures',
-    breach_2: 'Establish 72-hour reporting process',
+    security_3: 'Implement tokenization and data masking',
+    security_4: 'Set up role-based access controls',
+    security_5: 'Enable audit logging with 1-year retention',
+    security_6: 'Deploy intrusion detection systems',
+    security_7: 'Test backups and document recovery procedures',
+    security_8: 'Conduct regular vulnerability assessments',
+    security_9: 'Adopt secure software development lifecycle',
     rights_1: 'Build data access request portal',
     rights_2: 'Enable data correction mechanisms',
     rights_3: 'Implement right to erasure',
+    rights_4: 'Establish grievance redressal mechanism',
+    rights_5: 'Define response timelines for rights requests',
+    rights_6: 'Enable nomination of representative',
+    breach_1: 'Create breach notification procedures',
+    breach_2: 'Establish 72-hour DPB reporting process',
+    breach_3: 'Implement affected party notification',
+    breach_4: 'Document security incidents and breaches',
+    breach_5: 'Conduct post-incident reviews',
     children_1: 'Obtain verifiable parental consent',
-    children_2: 'Disable behavioral tracking for minors',
-    governance_1: 'Appoint Data Protection Officer',
-    governance_2: 'Define data retention policies',
+    children_2: 'Implement robust age verification',
+    children_3: 'Disable behavioral tracking for minors',
+    children_4: 'Enable deletion of children\'s data on request',
+    children_5: 'Provide transparent communication with parents',
+    gov_1: 'Appoint Data Protection Officer',
+    gov_2: 'Define data retention policies',
+    gov_3: 'Maintain Records of Processing Activities',
+    gov_4: 'Launch employee data protection training program',
   };
 
   return titleMap[question.id] || `Address: ${question.text.substring(0, 50)}...`;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -21,9 +21,11 @@ import {
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, Shield, AlertTriangle, Info } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics'
-import { 
+import {
   getRelevantQuestions,
   getDPDPQuestionSummary,
+  calculateDPDPScore,
+  generateDPDPActionItems,
   PHASE_INFO,
   REVENUE_OPTIONS,
   type DPDPQuestion
@@ -43,7 +45,8 @@ const organizationProfileSchema = z.object({
   revenue: z.string().min(1, 'Please select annual revenue'),
   processesChildrenData: z.enum(['yes', 'no']),
   processesHealthData: z.enum(['yes', 'no']),
-  processesSensitiveData: z.enum(['yes', 'no'])
+  processesSensitiveData: z.enum(['yes', 'no']),
+  crossBorderTransfers: z.enum(['yes', 'no'])
 })
 
 type OrganizationProfile = z.infer<typeof organizationProfileSchema>
@@ -170,19 +173,24 @@ export default function DPDPAssessmentPage() {
     assessmentTracking.trackStart()
   }
 
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Handle question response with auto-advance
   const handleResponse = (questionId: string, value: string) => {
     setResponses(prev => ({ ...prev, [questionId]: value }))
-    
+
     // Track progress
     const answeredCount = Object.keys(responses).length + 1
     assessmentTracking.trackProgress(answeredCount, currentQuestion?.phase, questionId)
-    
-    // Auto-advance after 800ms (matching other assessments)
-    setTimeout(() => {
-      if (currentQuestionIndex < totalQuestions - 1) {
-        setCurrentQuestionIndex(prev => prev + 1)
-      }
+
+    // Cancel any pending advance before scheduling a new one (prevents double-advance
+    // when a user changes their answer before the timer fires)
+    if (advanceTimer.current) clearTimeout(advanceTimer.current)
+    advanceTimer.current = setTimeout(() => {
+      setCurrentQuestionIndex(prev => {
+        if (prev < totalQuestions - 1) return prev + 1
+        return prev
+      })
     }, 800)
   }
 
@@ -223,55 +231,54 @@ export default function DPDPAssessmentPage() {
 
       if (response.ok) {
         const data = await response.json()
-        // Clear saved progress
         localStorage.removeItem(STORAGE_KEY)
-        
-        // Save to localStorage for results page (in case DB fetch fails)
-        const storageKey = getLocalStorageKey(data.assessmentId)
-        const assessmentLocalData = {
+        localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify({
           id: data.assessmentId,
           assessment_type: ASSESSMENT_TYPES.DPDP,
           organizationProfile,
-          userDetails: organizationProfile, // Also save as userDetails for consistency
+          userDetails: organizationProfile,
           responses: { answers: responses },
           overall_score: data.overallScore,
           category_scores: data.categoryScores,
           action_items: data.actionItems,
           created_at: new Date().toISOString()
-        }
-        console.log('[DPDP] Saving to localStorage:', storageKey, assessmentLocalData.id)
-        localStorage.setItem(storageKey, JSON.stringify(assessmentLocalData))
-        console.log('[DPDP] Saved. Navigating to:', `/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.DPDP}`)
-        
-        // Navigate to results
+        }))
         router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.DPDP}`)
       } else {
-        // Fallback: save to localStorage and navigate
+        // API failed — compute scores client-side so results page has full data
         const localId = `local_${Date.now()}`
-        const assessmentData = {
+        const scoreResults = calculateDPDPScore(responses, organizationProfile)
+        const actionItems = generateDPDPActionItems(responses, organizationProfile)
+        localStorage.setItem(getLocalStorageKey(localId), JSON.stringify({
           id: localId,
           assessment_type: ASSESSMENT_TYPES.DPDP,
           organizationProfile,
-          userDetails: organizationProfile, // Also save as userDetails for consistency
+          userDetails: organizationProfile,
           responses: { answers: responses },
-          timestamp: new Date().toISOString()
-        }
-        localStorage.setItem(getLocalStorageKey(localId), JSON.stringify(assessmentData))
+          overall_score: scoreResults.overallScore,
+          category_scores: scoreResults.phaseScores,
+          action_items: actionItems,
+          created_at: new Date().toISOString()
+        }))
         router.push(`/results/${localId}?type=${ASSESSMENT_TYPES.DPDP}`)
       }
     } catch (error) {
       console.error('Submission error:', error)
-      // Fallback to localStorage
+      // Network error — compute scores client-side so results page has full data
       const localId = `local_${Date.now()}`
-      const assessmentData = {
+      const scoreResults = calculateDPDPScore(responses, organizationProfile)
+      const actionItems = generateDPDPActionItems(responses, organizationProfile)
+      localStorage.setItem(getLocalStorageKey(localId), JSON.stringify({
         id: localId,
         assessment_type: ASSESSMENT_TYPES.DPDP,
         organizationProfile,
-        userDetails: organizationProfile, // Also save as userDetails for consistency
+        userDetails: organizationProfile,
         responses: { answers: responses },
-        timestamp: new Date().toISOString()
-      }
-      localStorage.setItem(getLocalStorageKey(localId), JSON.stringify(assessmentData))
+        overall_score: scoreResults.overallScore,
+        category_scores: scoreResults.phaseScores,
+        action_items: actionItems,
+        created_at: new Date().toISOString()
+      }))
       router.push(`/results/${localId}?type=${ASSESSMENT_TYPES.DPDP}`)
     } finally {
       setIsSubmitting(false)
@@ -549,6 +556,34 @@ export default function DPDPAssessmentPage() {
                       <p className="text-sm text-red-600 mt-1">{errors.processesSensitiveData.message}</p>
                     )}
                   </div>
+
+                  {/* Cross-Border Data Transfers */}
+                  <div>
+                    <Label>Do you transfer personal data outside India?</Label>
+                    <div className="flex gap-4 mt-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          {...register('crossBorderTransfers')}
+                          value="yes"
+                          className="mr-2"
+                        />
+                        Yes
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          {...register('crossBorderTransfers')}
+                          value="no"
+                          className="mr-2"
+                        />
+                        No
+                      </label>
+                    </div>
+                    {errors.crossBorderTransfers && (
+                      <p className="text-sm text-red-600 mt-1">{errors.crossBorderTransfers.message}</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Question Summary Preview Widget */}
@@ -604,7 +639,7 @@ export default function DPDPAssessmentPage() {
                   Phase {currentQuestion.phaseNumber}: {currentQuestion.phaseLabel}
                 </Badge>
                 <Badge variant="secondary">
-                  Weight: {currentPhaseInfo?.weight ? `${(currentPhaseInfo.weight * 100).toFixed(0)}%` : ''}
+                  Question weight: {currentQuestion.weight}
                 </Badge>
               </div>
               <CardTitle>{currentQuestion.text}</CardTitle>

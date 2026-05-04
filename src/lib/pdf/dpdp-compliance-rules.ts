@@ -1,9 +1,9 @@
 /**
  * DPDP Compliance Rules for PDF Report Generation
  * Digital Personal Data Protection Act 2023 & DPDP Rules 2025
- * 
- * IMPORTANT: Question IDs MUST match those in dpdp-questions.ts exactly
  */
+
+import { ALL_DPDP_QUESTIONS } from '../assessments/dpdp-questions';
 
 export interface DPDPComplianceRule {
   questionId: string;
@@ -710,50 +710,10 @@ export const DPDP_CATEGORY_PENALTIES: Record<string, string> = {
 };
 
 
-// Compliance answers for determining if response is compliant (multiple-choice questions)
-export const DPDP_COMPLIANCE_ANSWERS: Record<string, string> = {
-  // Consent Management
-  consent_1: 'Explicit consent with granular purpose-specific options',
-  consent_2: 'Yes, through same mechanism used to give consent (equally easy)',
-  consent_3: 'Yes, in English + regional language(s) of service area',
-  consent_4: 'yes',
-  consent_5: 'yes',
-  consent_6: 'yes',
-  consent_7: 'Yes, users can opt-in/out of each cookie category',
-  consent_8: 'yes',
-  consent_9: 'yes',
-  // Security Safeguards
-  security_1: 'Yes, AES-256 or equivalent encryption for all personal data',
-  security_2: 'Yes, TLS 1.3 for all data transfers',
-  security_3: 'yes',
-  security_4: 'yes',
-  security_5: 'yes',
-  security_6: 'yes',
-  security_7: 'yes',
-  security_8: 'Yes, continuous/automated scanning with quarterly reviews',
-  security_9: 'yes',
-  // Data Principal Rights
-  rights_1: 'Yes, instant download of all data',
-  rights_2: 'yes',
-  rights_3: 'Yes, instant deletion with confirmation',
-  rights_4: 'yes',
-  rights_5: 'Within 48-72 hours',
-  rights_6: 'yes',
-  // Breach Response
-  breach_1: 'yes',
-  breach_2: 'Yes, automated detection and notification process',
-  breach_3: 'yes',
-  breach_4: 'yes',
-  breach_5: 'yes',
-  // Children's Data Protection
-  children_1: 'Yes, verified via OTP/document upload/digital signature',
-  children_2: 'Yes, verified via government ID/document validation',
-  children_3: 'yes',
-  children_4: 'yes',
-  children_5: 'yes',
-  // Governance & Retention
-  gov_1: 'Yes, India-based DPO reporting to Board',
-  gov_2: 'Yes, written policy with specific retention periods by data type',
-  gov_3: 'yes',
-  gov_4: 'Yes, mandatory annual training for all employees',
-};
+// Derived from the single source of truth in dpdp-questions.ts
+// so the two files can never diverge.
+export const DPDP_COMPLIANCE_ANSWERS: Record<string, string> = Object.fromEntries(
+  ALL_DPDP_QUESTIONS
+    .filter(q => q.complianceAnswer != null)
+    .map(q => [q.id, q.complianceAnswer as string])
+);

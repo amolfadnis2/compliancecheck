@@ -20,6 +20,7 @@ interface OrganizationProfile {
   processesChildrenData: string;
   processesHealthData: string;
   processesSensitiveData: string;
+  crossBorderTransfers: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -47,6 +48,8 @@ export async function POST(req: NextRequest) {
     const riskMultipliers = calculateRiskMultipliers({
       processesChildrenData: organizationProfile.processesChildrenData === 'yes',
       processesHealthData: organizationProfile.processesHealthData === 'yes',
+      processesFinancialData: organizationProfile.processesSensitiveData === 'yes',
+      crossBorderTransfers: organizationProfile.crossBorderTransfers === 'yes',
       revenue: organizationProfile.revenue
     })
 
@@ -70,7 +73,8 @@ export async function POST(req: NextRequest) {
             revenue: organizationProfile.revenue,
             processesChildrenData: organizationProfile.processesChildrenData === 'yes',
             processesHealthData: organizationProfile.processesHealthData === 'yes',
-            processesSensitiveData: organizationProfile.processesSensitiveData === 'yes'
+            processesSensitiveData: organizationProfile.processesSensitiveData === 'yes',
+            crossBorderTransfers: organizationProfile.crossBorderTransfers === 'yes'
           },
           assessment_type: ASSESSMENT_TYPES.DPDP,
           responses,
