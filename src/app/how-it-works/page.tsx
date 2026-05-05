@@ -691,7 +691,7 @@ export default function HowItWorksPage() {
                     POSH Act 2013 Compliance
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">
-                    Comprehensive ICC audit and workplace safety assessment. Check Internal Committee constitution, 
+                    Comprehensive ICC audit and workplace safety assessment. Check Internal Committee constitution,
                     policy coverage, complaint mechanisms, and annual report requirements.
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -701,6 +701,35 @@ export default function HowItWorksPage() {
                     <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Annual Report</span>
                   </div>
                   <div className="flex items-center text-violet-600 text-sm font-medium">
+                    Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Auto Dealer Compliance */}
+            <Link href="/assessments/landing/auto-dealer-compliance" className="group">
+              <Card className="h-full border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all duration-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                      🚗 Auto Dealers
+                    </span>
+                    <span className="text-lg font-bold text-gray-900">₹1,499</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
+                    Auto Dealer Compliance Assessment
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Complete compliance check for new car, used car, two-wheeler, and EV dealers. Covers dealer licensing, GST, labour laws, environmental norms, and consumer protection.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Dealer License</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">GST</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Environment</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Consumer Protection</span>
+                  </div>
+                  <div className="flex items-center text-blue-600 text-sm font-medium">
                     Learn more <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </CardContent>
