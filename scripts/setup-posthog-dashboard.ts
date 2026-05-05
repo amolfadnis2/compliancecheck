@@ -9,6 +9,9 @@
  *   - Revenue & conversion
  *   - NPS / feedback
  *
+ * Uses the new PostHog query-based insight format (TrendsQuery, FunnelsQuery, etc.)
+ * instead of the deprecated legacy filters format.
+ *
  * Usage:
  *   POSTHOG_API_KEY=phx_... POSTHOG_PROJECT_ID=12345 npx tsx scripts/setup-posthog-dashboard.ts
  *
@@ -51,7 +54,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 // ---------------------------------------------------------------------------
-// Type aliases (just the fields we use)
+// Types
 // ---------------------------------------------------------------------------
 
 interface Dashboard {
@@ -64,6 +67,12 @@ interface Insight {
   short_id: string;
   name: string;
 }
+
+type InsightDef = {
+  name: string;
+  description?: string;
+  query: Record<string, unknown>;
+};
 
 // ---------------------------------------------------------------------------
 // Create dashboard
@@ -81,20 +90,14 @@ async function createDashboard(name: string, description: string): Promise<Dashb
 }
 
 // ---------------------------------------------------------------------------
-// Insight builders
+// Create insight
 // ---------------------------------------------------------------------------
-
-type InsightDef = {
-  name: string;
-  description?: string;
-  filters: Record<string, unknown>;
-};
 
 async function createInsight(def: InsightDef, dashboardId: number): Promise<Insight> {
   const insight = await post<Insight>("/insights/", {
     name: def.name,
     description: def.description ?? "",
-    filters: def.filters,
+    query: def.query,
     dashboards: [dashboardId],
     saved: true,
   });
@@ -103,17 +106,30 @@ async function createInsight(def: InsightDef, dashboardId: number): Promise<Insi
 }
 
 // ---------------------------------------------------------------------------
-// Insight definitions
+// Query builders — new PostHog query format
 // ---------------------------------------------------------------------------
+
+type MathType = "total" | "dau" | "sum" | "avg" | "min" | "max";
+type DisplayType =
+  | "ActionsLineGraph"
+  | "ActionsBar"
+  | "ActionsAreaGraph"
+  | "ActionsBarValue"
+  | "ActionsPie"
+  | "BoldNumber";
+
+function eventsNode(event: string, math: MathType = "total"): Record<string, unknown> {
+  return { kind: "EventsNode", event, name: event, math };
+}
 
 function trendInsight(
   name: string,
-  eventIds: string[],
+  events: Array<{ event: string; math?: MathType; label?: string }>,
   opts: {
-    display?: string;
+    display?: DisplayType;
     breakdown?: string;
-    breakdownType?: string;
-    interval?: string;
+    breakdownType?: "event" | "person" | "session";
+    interval?: "hour" | "day" | "week" | "month";
     dateFrom?: string;
     description?: string;
   } = {}
@@ -121,99 +137,116 @@ function trendInsight(
   return {
     name,
     description: opts.description,
-    filters: {
-      insight: "TRENDS",
-      display: opts.display ?? "ActionsLineGraph",
+    query: {
+      kind: "TrendsQuery",
+      series: events.map((e) => ({
+        kind: "EventsNode",
+        event: e.event,
+        name: e.label ?? e.event,
+        math: e.math ?? "total",
+      })),
+      dateRange: { date_from: opts.dateFrom ?? "-30d" },
       interval: opts.interval ?? "day",
-      date_from: opts.dateFrom ?? "-30d",
-      events: eventIds.map((id) => ({ id, name: id, type: "events", math: "total" })),
+      trendsFilter: { display: opts.display ?? "ActionsLineGraph" },
       ...(opts.breakdown
         ? {
-            breakdown: opts.breakdown,
-            breakdown_type: opts.breakdownType ?? "event",
+            breakdownFilter: {
+              breakdown: opts.breakdown,
+              breakdown_type: opts.breakdownType ?? "event",
+            },
           }
         : {}),
     },
   };
 }
 
-function funnelInsight(name: string, steps: string[], opts: { dateFrom?: string; description?: string } = {}): InsightDef {
+function funnelInsight(
+  name: string,
+  steps: string[],
+  opts: { dateFrom?: string; description?: string } = {}
+): InsightDef {
   return {
     name,
     description: opts.description,
-    filters: {
-      insight: "FUNNELS",
-      funnel_viz_type: "steps",
-      date_from: opts.dateFrom ?? "-30d",
-      events: steps.map((id) => ({ id, name: id, type: "events" })),
+    query: {
+      kind: "FunnelsQuery",
+      series: steps.map((e) => ({ kind: "EventsNode", event: e, name: e })),
+      dateRange: { date_from: opts.dateFrom ?? "-30d" },
+      funnelsFilter: { funnel_viz_type: "steps" },
     },
   };
 }
 
-function retentionInsight(name: string, eventId: string, opts: { description?: string } = {}): InsightDef {
+function retentionInsight(
+  name: string,
+  targetEvent: string,
+  opts: { description?: string } = {}
+): InsightDef {
   return {
     name,
     description: opts.description,
-    filters: {
-      insight: "RETENTION",
-      date_from: "-8w",
-      period: "Week",
-      retention_type: "retention_recurring",
-      target_entity: { id: eventId, name: eventId, type: "events" },
-      returning_entity: { id: eventId, name: eventId, type: "events" },
+    query: {
+      kind: "RetentionQuery",
+      dateRange: { date_from: "-8w" },
+      retentionFilter: {
+        retention_type: "retention_recurring",
+        period: "Week",
+        target_entity: { id: targetEvent, name: targetEvent, type: "events" },
+        returning_entity: { id: targetEvent, name: targetEvent, type: "events" },
+      },
     },
   };
 }
 
-function hogqlInsight(name: string, query: string, opts: { description?: string } = {}): InsightDef {
+function hogqlInsight(
+  name: string,
+  query: string,
+  opts: { description?: string } = {}
+): InsightDef {
   return {
     name,
     description: opts.description,
-    filters: {
-      insight: "SQL",
-      query,
+    query: {
+      kind: "DataTableNode",
+      source: {
+        kind: "HogQLQuery",
+        query,
+      },
     },
   };
 }
 
 // ---------------------------------------------------------------------------
-// All insights grouped by section
+// Insight definitions
 // ---------------------------------------------------------------------------
 
 function buildInsightDefs(): InsightDef[] {
   return [
     // ── 1. User Acquisition ─────────────────────────────────────────────────
 
-    trendInsight("Daily Signups", ["user_signed_up"], {
+    trendInsight("Daily Signups", [{ event: "user_signed_up" }], {
       description: "New user registrations per day (last 30 days)",
     }),
 
-    trendInsight("Signup Method Breakdown", ["user_signed_up"], {
+    trendInsight("Signup Method Breakdown", [{ event: "user_signed_up" }], {
       display: "ActionsBar",
       breakdown: "method",
       description: "Signups split by auth method: email, google, magic_link",
     }),
 
-    trendInsight("UTM Source Breakdown", ["user_signed_up"], {
+    trendInsight("UTM Source Breakdown", [{ event: "user_signed_up" }], {
       display: "ActionsBar",
       breakdown: "utm_source",
-      breakdownType: "event",
       description: "Which marketing channels are driving signups",
     }),
 
-    {
-      name: "Daily Active Users (DAU)",
-      description: "Unique daily active users based on page views",
-      filters: {
-        insight: "TRENDS",
-        display: "ActionsLineGraph",
-        interval: "day",
-        date_from: "-30d",
-        events: [{ id: "$pageview", name: "$pageview", type: "events", math: "dau" }],
-      },
-    },
+    trendInsight(
+      "Daily Active Users (DAU)",
+      [{ event: "$pageview", math: "dau", label: "DAU" }],
+      { description: "Unique daily active users based on page views" }
+    ),
 
-    trendInsight("Organizations Created", ["organization_created"], {
+    trendInsight("Organizations Created", [{ event: "organization_created" }], {
       description: "New company profiles created per day",
     }),
 
@@ -222,30 +255,38 @@ function buildInsightDefs(): InsightDef[] {
     funnelInsight(
       "Assessment Completion Funnel",
       ["assessment_started", "assessment_completed"],
+      { description: "How many users who start an assessment actually finish it" }
+    ),
+
+    trendInsight(
+      "Assessments Started by Type",
+      [{ event: "assessment_started" }],
       {
+        display: "ActionsBar",
+        breakdown: "assessment_type",
         description:
-          "Core funnel: how many users who start an assessment actually finish it",
+          "Which compliance modules are most popular (statutory_health, labour_code, dpdp, posh, food_business, auto_dealer)",
       }
     ),
 
-    trendInsight("Assessments Started by Type", ["assessment_started"], {
-      display: "ActionsBar",
-      breakdown: "assessment_type",
-      description:
-        "Which compliance modules are most popular (statutory_health, labour_code, dpdp, posh, food_business, auto_dealer)",
-    }),
+    trendInsight(
+      "Assessments Completed by Type",
+      [{ event: "assessment_completed" }],
+      {
+        display: "ActionsBar",
+        breakdown: "assessment_type",
+        description: "Completions per assessment module",
+      }
+    ),
 
-    trendInsight("Assessments Completed by Type", ["assessment_completed"], {
-      display: "ActionsBar",
-      breakdown: "assessment_type",
-      description: "Completions per assessment module",
-    }),
-
-    trendInsight("Assessment Abandonment Rate", ["assessment_abandoned"], {
-      breakdown: "assessment_type",
-      description:
-        "Users who left mid-assessment — broken down by module to find friction points",
-    }),
+    trendInsight(
+      "Assessment Abandonment Rate",
+      [{ event: "assessment_abandoned" }],
+      {
+        breakdown: "assessment_type",
+        description: "Users who left mid-assessment — broken down by module to find friction points",
+      }
+    ),
 
     hogqlInsight(
       "Avg Compliance Score by Assessment Type",
@@ -278,12 +319,16 @@ function buildInsightDefs(): InsightDef[] {
       { description: "Average number of high-priority compliance gaps found per assessment type" }
     ),
 
-    trendInsight("Assessment Progress Milestones", ["assessment_progress"], {
-      display: "ActionsLineGraph",
-      breakdown: "completion_percentage",
-      description:
-        "How many users reach 25%, 50%, 75% progress — identifies where drop-off occurs",
-    }),
+    trendInsight(
+      "Assessment Progress Milestones",
+      [{ event: "assessment_progress" }],
+      {
+        display: "ActionsLineGraph",
+        breakdown: "completion_percentage",
+        description:
+          "How many users reach 25%, 50%, 75% progress — identifies where drop-off occurs",
+      }
+    ),
 
     hogqlInsight(
       "Avg Time to Complete Assessment (minutes)",
@@ -300,21 +345,15 @@ function buildInsightDefs(): InsightDef[] {
 
     // ── 3. Report Engagement ─────────────────────────────────────────────────
 
-    {
-      name: "Report Actions (viewed / downloaded / emailed)",
-      description: "Volume of each report action over the last 30 days",
-      filters: {
-        insight: "TRENDS",
-        display: "ActionsLineGraph",
-        interval: "day",
-        date_from: "-30d",
-        events: [
-          { id: "report_viewed", name: "Report Viewed", type: "events", math: "total" },
-          { id: "report_downloaded", name: "Report Downloaded", type: "events", math: "total" },
-          { id: "report_emailed", name: "Report Emailed", type: "events", math: "total" },
-        ],
-      },
-    },
+    trendInsight(
+      "Report Actions (viewed / downloaded / emailed)",
+      [
+        { event: "report_viewed", label: "Report Viewed" },
+        { event: "report_downloaded", label: "Report Downloaded" },
+        { event: "report_emailed", label: "Report Emailed" },
+      ],
+      { description: "Volume of each report action over the last 30 days" }
+    ),
 
     funnelInsight(
       "Report Engagement Funnel",
@@ -325,7 +364,7 @@ function buildInsightDefs(): InsightDef[] {
       }
     ),
 
-    trendInsight("Documents Generated", ["document_generated"], {
+    trendInsight("Documents Generated", [{ event: "document_generated" }], {
       display: "ActionsBar",
       breakdown: "document_type",
       description:
@@ -343,12 +382,12 @@ function buildInsightDefs(): InsightDef[] {
       }
     ),
 
-    trendInsight("Checkout Started", ["checkout_started"], {
+    trendInsight("Checkout Started", [{ event: "checkout_started" }], {
       breakdown: "plan",
       description: "Checkout attempts broken down by plan (pro / enterprise)",
     }),
 
-    trendInsight("Subscriptions Upgraded", ["subscription_upgraded"], {
+    trendInsight("Subscriptions Upgraded", [{ event: "subscription_upgraded" }], {
       description: "New paid subscriptions over time",
     }),
 
@@ -365,14 +404,14 @@ function buildInsightDefs(): InsightDef[] {
       { description: "Total subscription revenue (INR) per day" }
     ),
 
-    trendInsight("Feature Gate Hits", ["feature_gate_hit"], {
+    trendInsight("Feature Gate Hits", [{ event: "feature_gate_hit" }], {
       display: "ActionsBar",
       breakdown: "feature",
       description:
-        "Which paywalled features (pdf_export, assessment_limit, templates…) users are hitting most — conversion intent signals",
+        "Which paywalled features users are hitting most — conversion intent signals",
     }),
 
-    trendInsight("Pricing Page Source", ["pricing_page_viewed"], {
+    trendInsight("Pricing Page Source", [{ event: "pricing_page_viewed" }], {
       display: "ActionsBar",
       breakdown: "source",
       description:
@@ -382,8 +421,7 @@ function buildInsightDefs(): InsightDef[] {
     // ── 5. User Retention ────────────────────────────────────────────────────
 
     retentionInsight("Weekly User Retention", "user_logged_in", {
-      description:
-        "8-week retention cohort — what share of users return to log in each week",
+      description: "8-week retention cohort — what share of users return to log in each week",
     }),
 
     // ── 6. NPS & Feedback ────────────────────────────────────────────────────
@@ -403,7 +441,7 @@ function buildInsightDefs(): InsightDef[] {
       { description: "NPS score and promoter count per assessment type (last 90 days)" }
     ),
 
-    trendInsight("Feedback Submissions", ["feedback_submitted"], {
+    trendInsight("Feedback Submissions", [{ event: "feedback_submitted" }], {
       description: "Volume of post-assessment feedback submissions over time",
     }),
   ];
