@@ -46,9 +46,11 @@ import {
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { POSHProgressSection } from '@/components/assessment/posh-progress-section'
 import { EmailGate } from '@/components/identity/EmailGate'
+import { PaymentGate } from '@/components/results/payment-gate'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import posthog from 'posthog-js'
+import { analytics } from '@/lib/analytics/tracking'
 
 // Import POSH data files
 import {
@@ -209,6 +211,7 @@ export default function POSHAssessmentPage() {
   // Email gate: POSH is a paid assessment, always requires verification
   const gateRequired = shouldRequireEmailVerification(ASSESSMENT_TYPES.POSH)
   const [gateCleared, setGateCleared] = useState(false)
+  const [paymentCleared, setPaymentCleared] = useState(false)
   
   // Timing
   const [startTime] = useState(Date.now())
@@ -810,7 +813,13 @@ export default function POSHAssessmentPage() {
       risk_level: results.riskLevel,
       format: 'pdf',
     })
-    
+    analytics.reportDownloaded({
+      assessment_type: 'posh',
+      format: 'pdf',
+      compliance_score: results.overallScore,
+      user_tier: 'free',
+    })
+
     try {
       // Map results to PDF generator format
       const poshResult = {
@@ -983,6 +992,11 @@ export default function POSHAssessmentPage() {
           risk_level: results.riskLevel,
           format: 'email',
           email_sent: true,
+        })
+        analytics.reportEmailed({
+          assessment_type: 'posh',
+          compliance_score: results.overallScore,
+          user_tier: 'free',
         })
       } else {
         throw new Error(data.error || 'Failed to send email')
@@ -1397,6 +1411,27 @@ export default function POSHAssessmentPage() {
             showMarketingConsent
             showDeadlineRemindersConsent
             ctaLabel="Verify & view results"
+          />
+        </div>
+      )
+    }
+
+    // Show payment gate after OTP is verified (beta bypass enabled)
+    if (!paymentCleared) {
+      return (
+        <div className="max-w-2xl mx-auto space-y-6">
+          <PaymentGate
+            title="Unlock your full POSH compliance report"
+            description="POSH Act 2013 compliance assessment"
+            priceINR={999}
+            features={[
+              'Full gap analysis with remediation plan',
+              'Priority-ranked action items',
+              'POSH policy templates',
+              'Downloadable PDF report',
+              'Email report to your inbox',
+            ]}
+            onPaid={() => setPaymentCleared(true)}
           />
         </div>
       )

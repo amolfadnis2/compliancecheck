@@ -10,7 +10,7 @@ import { ASSESSMENT_TYPES, type AssessmentType as BaseAssessmentType } from '@/l
 // =============================================================================
 
 // Use the canonical types from constants file
-export type AssessmentType = BaseAssessmentType | 'code_on_wages' | 'social_security' | 'osh_code' | 'industrial_relations';
+export type AssessmentType = BaseAssessmentType | 'auto_dealer' | 'code_on_wages' | 'social_security' | 'osh_code' | 'industrial_relations';
 
 // Re-export for convenience
 export { ASSESSMENT_TYPES };
@@ -92,6 +92,13 @@ export interface ReportViewedProps {
 export interface ReportDownloadedProps {
   assessment_type: AssessmentType;
   format: 'pdf';
+  compliance_score: number;
+  assessment_id?: string;
+  user_tier: UserTier;
+}
+
+export interface ReportEmailedProps {
+  assessment_type: AssessmentType;
   compliance_score: number;
   assessment_id?: string;
   user_tier: UserTier;
@@ -202,6 +209,7 @@ export const ANALYTICS_EVENTS = {
   // Reports & documents
   REPORT_VIEWED: 'report_viewed',
   REPORT_DOWNLOADED: 'report_downloaded',
+  REPORT_EMAILED: 'report_emailed',
   DOCUMENT_GENERATED: 'document_generated',
   
   // Conversion funnel

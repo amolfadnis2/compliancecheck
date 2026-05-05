@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import posthog from 'posthog-js'
+import { analytics } from '@/lib/analytics/tracking'
 import {
   ArrowLeft, Loader2, AlertCircle, CheckCircle2, AlertTriangle, XCircle,
   Download, Lock, ChevronDown, ChevronUp, ExternalLink,
@@ -545,6 +546,13 @@ export default function ResultsPage() {
       a.click()
       URL.revokeObjectURL(url)
       track('auto_dealer_pdf_downloaded')
+      analytics.reportDownloaded({
+        assessment_type: 'auto_dealer',
+        format: 'pdf',
+        compliance_score: data.overallScore.score,
+        assessment_id: assessmentId as string,
+        user_tier: 'free',
+      })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'PDF download failed.')
     } finally {
