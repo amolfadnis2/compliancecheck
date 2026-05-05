@@ -169,5 +169,89 @@ export const CATEGORY_INFO = {
   bonus: { name: 'Bonus', description: 'Payment of Bonus Act 1965', maxScore: 16 },
 }
 
+// ============================================================================
+// SCORING
+// ============================================================================
+
+export function calculateStatutoryHealthScore(responses: Record<string, string>) {
+  const categoryScores: Record<string, { score: number; max: number; percentage: number }> = {}
+  let totalScore = 0
+  let maxScore = 0
+  let questionsAnswered = 0
+
+  Object.keys(CATEGORY_INFO).forEach(cat => {
+    const catQuestions = STATUTORY_HEALTH_QUESTIONS.filter(q => q.category === cat)
+    let catScore = 0
+    let catMax = 0
+
+    catQuestions.forEach(q => {
+      catMax += q.weight
+      const answer = responses[q.id]
+      if (answer !== undefined) questionsAnswered++
+
+      if (q.complianceAnswer) {
+        if (answer === q.complianceAnswer) catScore += q.weight
+      } else {
+        // Informational question — no wrong answer, full points
+        catScore += q.weight
+      }
+    })
+
+    const percentage = catMax > 0 ? Math.round((catScore / catMax) * 100) : 0
+    categoryScores[cat] = { score: catScore, max: catMax, percentage }
+    totalScore += catScore
+    maxScore += catMax
+  })
+
+  const overallScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0
+
+  return {
+    overallScore,
+    categoryScores,
+    questionsAnswered,
+    totalQuestions: STATUTORY_HEALTH_QUESTIONS.length,
+  }
+}
+
+// ============================================================================
+// ACTION ITEMS
+// ============================================================================
+
+const ACTION_DESCRIPTIONS: Record<string, string> = {
+  pf_1: 'Register with EPFO immediately if your establishment has 20+ employees',
+  pf_2: 'Set up automated PF payment by 15th of each month to avoid penalties',
+  esi_1: 'Register with ESIC if you have 10+ employees with wages up to Rs.21,000/month',
+  esi_2: 'Ensure ESI contributions are deposited by 15th of each month',
+  pt_2: 'Obtain Professional Tax Registration Certificate (PTRC) from your state',
+  pt_3: 'Implement monthly PT deduction and deposit process',
+  gratuity_1: 'Start maintaining gratuity liability records for all employees with 4+ years service',
+  gratuity_2: 'Consider LIC group gratuity scheme or create book reserves for gratuity',
+  bonus_1: 'Calculate and pay statutory bonus (min 8.33%) to eligible employees',
+  bonus_2: 'Maintain bonus registers and pay bonus by November 30th each year',
+}
+
+export function generateStatutoryHealthActionItems(responses: Record<string, string>) {
+  const items: { priority: 'high' | 'medium' | 'low'; text: string; category: string }[] = []
+
+  STATUTORY_HEALTH_QUESTIONS.forEach(q => {
+    const answer = responses[q.id]
+    if (q.complianceAnswer && answer !== q.complianceAnswer) {
+      const priority: 'high' | 'medium' | 'low' =
+        q.weight >= 10 ? 'high' : q.weight >= 6 ? 'medium' : 'low'
+      items.push({
+        priority,
+        text: ACTION_DESCRIPTIONS[q.id] ||
+          `Review compliance for: ${CATEGORY_INFO[q.category as keyof typeof CATEGORY_INFO].name}`,
+        category: CATEGORY_INFO[q.category as keyof typeof CATEGORY_INFO].name,
+      })
+    }
+  })
+
+  return items.sort((a, b) => {
+    const order: Record<string, number> = { high: 0, medium: 1, low: 2 }
+    return order[a.priority] - order[b.priority]
+  })
+}
+
 // Re-export shared constants for backward compatibility
 export { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
