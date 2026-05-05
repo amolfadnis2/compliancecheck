@@ -27,6 +27,7 @@ import {
   DPDP_CONFIG,
   STATE_WISE_CONFIG,
   FOOD_BUSINESS_CONFIG,
+  POSH_CONFIG,
 } from './report-configs'
 
 // ============================================================================
@@ -459,4 +460,82 @@ function assignPrioritiesFromCategoryScores(
       else item.priority = 'low'
     }
   })
+}
+
+// ============================================================================
+// POSH COMPLIANCE (from computed in-memory result)
+// ============================================================================
+
+const POSH_CATEGORY_LABELS: Record<string, string> = {
+  icc_constitution: 'ICC Constitution',
+  policy_documentation: 'Policy & Documentation',
+  training_awareness: 'Training & Awareness',
+  display_communication: 'Display & Communication',
+  reporting_monitoring: 'Reporting & Monitoring',
+  complaint_handling: 'Complaint Handling',
+}
+
+export interface POSHResultInput {
+  overallScore: number
+  riskLevel: string
+  penaltyExposure: string
+  categoryScores: Array<{
+    category: string
+    score: number
+    status: 'compliant' | 'needs_attention' | 'non_compliant'
+    questionCount: number
+    compliantCount: number
+  }>
+  actionItems: UnifiedActionItem[]
+  compliantItems: UnifiedCompliantItem[]
+}
+
+export interface POSHUserInput {
+  fullName: string
+  email: string
+  phone?: string
+  companyName: string
+  state?: string
+  employeeCount?: string
+  industry?: string
+}
+
+/**
+ * Adapts already-computed POSH result objects to UnifiedReportData.
+ * Unlike the DB-based adapters, this takes in-memory computed objects directly
+ * since POSH results are inline (not fetched from DB at PDF generation time).
+ */
+export function adaptPOSHResult(
+  result: POSHResultInput,
+  user: POSHUserInput,
+  assessmentId?: string
+): UnifiedReportData {
+  return {
+    assessmentId: assessmentId || 'N/A',
+    overallScore: result.overallScore,
+    riskLevel: result.riskLevel,
+    penaltyExposure: result.penaltyExposure,
+    categoryScores: result.categoryScores.map((cat) => ({
+      ...cat,
+      category: POSH_CATEGORY_LABELS[cat.category] || cat.category,
+    })),
+    actionItems: result.actionItems.map((item) => ({
+      ...item,
+      category: POSH_CATEGORY_LABELS[item.category] || item.category,
+    })),
+    compliantItems: result.compliantItems.map((item) => ({
+      ...item,
+      category: POSH_CATEGORY_LABELS[item.category] || item.category,
+    })),
+    userDetails: {
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      companyName: user.companyName,
+      state: user.state || 'India',
+      employeeCount: user.employeeCount,
+      industry: user.industry,
+    },
+    config: POSH_CONFIG,
+  }
 }

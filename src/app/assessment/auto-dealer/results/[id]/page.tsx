@@ -7,7 +7,7 @@ import posthog from 'posthog-js'
 import { analytics } from '@/lib/analytics/tracking'
 import {
   ArrowLeft, Loader2, AlertCircle, CheckCircle2, AlertTriangle, XCircle,
-  Download, Lock, ChevronDown, ChevronUp, ExternalLink,
+  Download, Mail, Lock, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -417,6 +417,8 @@ export default function ResultsPage() {
   const [emailVerified, setEmailVerified] = useState(false)
   const [paid, setPaid] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [isEmailing, setIsEmailing] = useState(false)
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>('gaps')
 
   const track = useCallback((event: string, props: Record<string, string | number | boolean> = {}) => {
@@ -560,6 +562,48 @@ export default function ResultsPage() {
     }
   }
 
+  const emailReport = async () => {
+    if (!data) return
+    setIsEmailing(true)
+    setEmailSuccess(null)
+    try {
+      const res = await fetch(`/api/assessment/auto-dealer/${assessmentId}/report.pdf`)
+      if (!res.ok) throw new Error('Failed to generate PDF')
+      const blob = await res.blob()
+      const pdfBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1])
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      })
+      const emailRes = await fetch('/api/email/send-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          pdfBase64,
+          companyName: data.companyName,
+          score: data.overallScore.score,
+          assessmentType: 'auto_dealer',
+        }),
+      })
+      const json = await emailRes.json()
+      if (!json.success) throw new Error(json.error || 'Failed to send email')
+      setEmailSuccess(data.email)
+      track('auto_dealer_email_sent', { score: data.overallScore.score })
+      analytics.reportEmailed({
+        assessment_type: 'auto_dealer',
+        compliance_score: data.overallScore.score,
+        assessment_id: assessmentId as string,
+        user_tier: 'free',
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Email failed. Please try again.')
+    } finally {
+      setIsEmailing(false)
+    }
+  }
+
   // --------------------------------------------------------------------------
   // Render
   // --------------------------------------------------------------------------
@@ -680,10 +724,25 @@ export default function ResultsPage() {
               : <><Download className="mr-2 h-4 w-4" aria-hidden="true" />Download PDF</>
             }
           </Button>
+          <Button
+            onClick={emailReport}
+            disabled={isEmailing}
+            variant="outline"
+          >
+            {isEmailing
+              ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />Sending…</>
+              : <><Mail className="mr-2 h-4 w-4" aria-hidden="true" />Email Report</>
+            }
+          </Button>
         </div>
 
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>
+        )}
+        {emailSuccess && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
+            Report sent to <strong>{emailSuccess}</strong>
+          </div>
         )}
 
         {/* Header card */}
@@ -908,6 +967,21 @@ export default function ResultsPage() {
               : <><Download className="mr-2 h-5 w-5" aria-hidden="true" />Download Full PDF Report</>
             }
           </Button>
+          <Button
+            onClick={emailReport}
+            disabled={isEmailing}
+            variant="outline"
+            size="lg"
+            className="mt-3"
+          >
+            {isEmailing
+              ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />Sending…</>
+              : <><Mail className="mr-2 h-5 w-5" aria-hidden="true" />Email Report to {data.email}</>
+            }
+          </Button>
+          {emailSuccess && (
+            <p className="text-sm text-green-700 mt-2">Report sent to <strong>{emailSuccess}</strong></p>
+          )}
           <p className="text-xs text-gray-400 mt-2">ASCII-safe report · <ExternalLink className="inline h-3 w-3" aria-hidden="true" /> No Unicode characters</p>
         </div>
       </main>

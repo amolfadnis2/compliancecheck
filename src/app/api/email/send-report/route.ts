@@ -416,6 +416,7 @@ export async function POST(request: NextRequest) {
       'state_wise_compliance': 'State-Wise Compliance Check',
       'food_business': 'Restaurant & Food Business Compliance',
       'posh': 'POSH Act 2013 Compliance Assessment',
+      'auto_dealer': 'Auto Dealership Compliance Assessment',
     }
     const reportLabel = reportTypeLabels[assessmentType] || 'Compliance Assessment'
     
@@ -426,6 +427,7 @@ export async function POST(request: NextRequest) {
       'state_wise_compliance': 'State-Wise-Compliance',
       'food_business': 'Food-Business-Compliance',
       'posh': 'POSH-Compliance-Assessment',
+      'auto_dealer': 'Auto-Dealer-Compliance',
     }
     const filenamePrefix = filenamePrefixes[assessmentType] || 'ComplianceCheck-Report'
 

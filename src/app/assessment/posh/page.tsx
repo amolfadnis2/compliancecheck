@@ -22,7 +22,8 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { generatePOSHReport, generatePOSHReportBlob } from '@/lib/pdf/posh-report-generator'
+import { generateUnifiedReportBlob } from '@/lib/pdf/unified-report-generator'
+import { adaptPOSHResult } from '@/lib/pdf/report-data-adapter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -879,9 +880,14 @@ export default function POSHAssessmentPage() {
         industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
-      // Generate comprehensive PDF (8-12 pages)
-      generatePOSHReport(poshResult, userDetails)
-      
+      const blob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'POSH-Compliance-Report.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+
     } catch (err) {
       console.error('PDF generation error:', err)
       setError('Failed to generate report. Please try again.')
@@ -955,8 +961,7 @@ export default function POSHAssessmentPage() {
         industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
-      // Generate comprehensive PDF as blob
-      const pdfBlob = generatePOSHReportBlob(poshResult, userDetails)
+      const pdfBlob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
       
       // Convert blob to base64
       const reader = new FileReader()
