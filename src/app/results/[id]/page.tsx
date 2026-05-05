@@ -9,6 +9,7 @@ import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeAct
 import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPComplianceStatus, getDaysUntilDeadline } from '@/lib/assessments/dpdp-questions'
 import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
+import { GatedResults, getGateConfig } from '@/components/results/gated-results'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Type definitions
@@ -82,7 +83,12 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   // Handle temporary/local IDs (when DB not configured or fallback)
   // Also use LocalStorageResults for Food Business assessments
   if (id.startsWith('temp_') || id.startsWith('local_') || isFoodBusiness) {
-    return <LocalStorageResultsPage id={id} assessmentType={assessmentType} />
+    const { source, reason } = getGateConfig(assessmentType)
+    return (
+      <GatedResults source={source} reason={reason}>
+        <LocalStorageResultsPage id={id} assessmentType={assessmentType} />
+      </GatedResults>
+    )
   }
 
   // Try to fetch from Supabase
@@ -102,15 +108,33 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
     return <TempResultsPage assessmentType={assessmentType} />
   }
 
-  // Render based on assessment type
+  // Render based on assessment type — all behind the shared OTP gate
+  const { source, reason } = getGateConfig(assessmentType)
+
   if (isDPDP) {
-    return <DPDPResultsView assessment={assessment} />
+    return (
+      <GatedResults source={source} reason={reason}>
+        <DPDPResultsView assessment={assessment} />
+      </GatedResults>
+    )
   } else if (isLabourCode) {
-    return <LabourCodeResultsView assessment={assessment} />
+    return (
+      <GatedResults source={source} reason={reason}>
+        <LabourCodeResultsView assessment={assessment} />
+      </GatedResults>
+    )
   } else if (isStateWise) {
-    return <StateWiseResultsView assessment={assessment} />
+    return (
+      <GatedResults source={source} reason={reason}>
+        <StateWiseResultsView assessment={assessment} />
+      </GatedResults>
+    )
   } else {
-    return <StatutoryHealthResultsView assessment={assessment} />
+    return (
+      <GatedResults source={source} reason={reason}>
+        <StatutoryHealthResultsView assessment={assessment} />
+      </GatedResults>
+    )
   }
 }
 

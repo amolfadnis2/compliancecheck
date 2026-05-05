@@ -205,30 +205,25 @@ export default function StatutoryHealthAssessmentPage() {
   // Handle free submission
   const handleFreeSubmit = async () => {
     setIsSubmitting(true)
-    
-    // Calculate score and gaps for tracking
+
+    // Calculate score for PostHog tracking (client-side preview only)
     const score = calculateScore()
-    const gapCount = STATUTORY_HEALTH_QUESTIONS.filter(q => 
+    const gapCount = STATUTORY_HEALTH_QUESTIONS.filter(q =>
       q.complianceAnswer && responses[q.id] !== q.complianceAnswer
     ).length
-    
-    // Track assessment completion
+
     assessmentTracking.trackComplete(
       score,
       { high: gapCount, medium: 0, low: 0 },
       Object.keys(responses).length,
       totalQuestions - Object.keys(responses).length
     )
-    
+
     try {
-      const response = await fetch('/api/assessment/free-submit', {
+      const response = await fetch('/api/assessment/statutory-health-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userDetails,
-          responses,
-          assessmentType: ASSESSMENT_TYPES.STATUTORY_HEALTH,
-        }),
+        body: JSON.stringify({ userDetails, responses }),
       })
 
       const data = await response.json()
@@ -237,23 +232,17 @@ export default function StatutoryHealthAssessmentPage() {
         throw new Error(data.error || 'Failed to save assessment')
       }
 
-      // If using local storage (database not available), save the assessment data locally
+      // Fallback: DB unavailable — persist computed scores to localStorage so
+      // LocalStorageResultsPage can render them from the temp_ ID.
       if (data.storageType === 'local' && data.assessmentData) {
-        // Store assessment data in localStorage for results page to read
-        localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify({
-          ...data.assessmentData,
-          overall_score: calculateScore(),
-          category_scores: getCategoryScores(),
-          userDetails,
-        }))
+        localStorage.setItem(
+          getLocalStorageKey(data.assessmentId),
+          JSON.stringify(data.assessmentData)
+        )
       }
 
-      // Clear saved progress on successful submission
       clearProgress()
-
-      // Redirect to results page with type for consistency
       router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.STATUTORY_HEALTH}`)
-
     } catch (error) {
       console.error('Submit error:', error)
       alert('Something went wrong. Please try again.')

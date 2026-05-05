@@ -147,6 +147,37 @@ export const STATE_WISE_CONFIG: ReportConfig = {
 }
 
 // ============================================================================
+// POSH ACT COMPLIANCE
+// ============================================================================
+
+export const POSH_CONFIG: ReportConfig = {
+  assessmentTitle: 'POSH Act 2013 Compliance',
+  assessmentSubtitle: 'Assessment Report',
+  legislationDescription: 'Sexual Harassment of Women at Workplace Act, 2013',
+  legislationLine2: 'Prevention, Prohibition and Redressal',
+  filenamePrefix: 'POSH-Compliance-Report',
+  resources: [
+    { name: 'WCD Ministry (POSH)', url: 'https://wcd.nic.in' },
+    { name: 'SHe-Box Portal', url: 'https://shebox.nic.in' },
+    { name: 'State Labour Dept Portals', url: 'Check your state government website' },
+    { name: 'National Commission for Women', url: 'https://ncw.nic.in' },
+  ],
+  legislation: [
+    'Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013',
+    'POSH Rules, 2013',
+    'IPC Section 354A (Sexual Harassment)',
+    'Companies Act, 2013 (Annual Report Disclosure)',
+  ],
+  deadlines: [
+    { item: 'ICC Annual Report to District Officer', date: 'January 31 annually' },
+    { item: 'ICC Board/Company Annual Report', date: 'Before Annual General Meeting' },
+    { item: 'ICC Inquiry Completion', date: 'Within 90 days of complaint receipt' },
+    { item: 'Action on ICC Recommendations', date: 'Within 60 days of report receipt' },
+    { item: 'ICC Member Tenure', date: '3 years (reappointment required)' },
+  ],
+}
+
+// ============================================================================
 // FOOD BUSINESS COMPLIANCE
 // ============================================================================
 

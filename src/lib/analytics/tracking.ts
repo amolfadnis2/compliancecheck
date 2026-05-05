@@ -12,6 +12,7 @@ import {
   AssessmentCompletedProps,
   ReportViewedProps,
   ReportDownloadedProps,
+  ReportEmailedProps,
   DocumentGeneratedProps,
   FeatureGateHitProps,
   PricingPageViewedProps,
@@ -116,6 +117,10 @@ export const trackReportDownloaded = (props: ReportDownloadedProps) => {
   safeCapture(ANALYTICS_EVENTS.REPORT_DOWNLOADED, props);
 };
 
+export const trackReportEmailed = (props: ReportEmailedProps) => {
+  safeCapture(ANALYTICS_EVENTS.REPORT_EMAILED, props);
+};
+
 export const trackDocumentGenerated = (props: DocumentGeneratedProps) => {
   safeCapture(ANALYTICS_EVENTS.DOCUMENT_GENERATED, props);
 };
@@ -205,6 +210,7 @@ export const analytics = {
   // Reports
   reportViewed: trackReportViewed,
   reportDownloaded: trackReportDownloaded,
+  reportEmailed: trackReportEmailed,
   documentGenerated: trackDocumentGenerated,
   
   // Conversion

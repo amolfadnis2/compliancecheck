@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
       if (existingUser) {
         userId = existingUser.id;
         await supabase.from('users').update({
-          full_name: userDetails.fullName, phone: userDetails.phoneNumber, company_name: userDetails.companyName, updated_at: new Date().toISOString(),
+          full_name: userDetails.fullName, phone: userDetails.phone || userDetails.phoneNumber || null, company_name: userDetails.companyName, updated_at: new Date().toISOString(),
         }).eq('id', userId);
       } else {
         const { data: newUser } = await supabase.from('users').insert({
-          email: userDetails.email, full_name: userDetails.fullName, phone: userDetails.phoneNumber, company_name: userDetails.companyName,
+          email: userDetails.email, full_name: userDetails.fullName, phone: userDetails.phone || userDetails.phoneNumber || null, company_name: userDetails.companyName,
           consent_timestamp: new Date().toISOString(), consent_version: '1.0',
         }).select('id').single();
         userId = newUser?.id || null;
