@@ -216,6 +216,7 @@ export default function POSHAssessmentPage() {
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
   const lastCategoryRef = useRef<string | null>(null)
   const categoryScoresRef = useRef<Record<string, { earned: number; max: number }>>({})
+  const isCompletingRef = useRef(false)
   
   // Form
   const { register, handleSubmit, formState: { errors } } = useForm<CompanyDetailsForm>({
@@ -238,11 +239,11 @@ export default function POSHAssessmentPage() {
   
   // Progress calculation
   const applicabilityProgress = visibleApplicabilityQuestions.length > 0
-    ? (currentApplicabilityIndex / visibleApplicabilityQuestions.length) * 100
+    ? ((currentApplicabilityIndex + 1) / visibleApplicabilityQuestions.length) * 100
     : 0
-    
+
   const complianceProgress = filteredQuestions.length > 0
-    ? (currentComplianceIndex / filteredQuestions.length) * 100
+    ? ((currentComplianceIndex + 1) / filteredQuestions.length) * 100
     : 0
 
   // Overall progress calculation (for two-tier progress system)
@@ -427,7 +428,7 @@ export default function POSHAssessmentPage() {
   }
   
   // Complete applicability phase and transition to compliance
-  const completeApplicabilityPhase = (responses: Record<string, string>) => {
+  const completeApplicabilityPhase = async (responses: Record<string, string>) => {
     const timeSpent = Math.floor((Date.now() - phaseStartTime) / 1000)
     
     // Determine applicability
@@ -450,18 +451,31 @@ export default function POSHAssessmentPage() {
     
     // Check if assessment is required
     if (profile.redirectToLCC) {
-      // Show LCC info instead of full assessment
-      setPhase('results')
-      setResults({
+      const lccResults = {
         overallScore: 100,
-        riskLevel: 'low',
+        riskLevel: 'low' as const,
         categoryScores: [],
         actionItems: [],
         compliantItems: [],
         nonCompliantItems: [],
         applicabilityResults: results,
         profile,
-      })
+      }
+      setResults(lccResults)
+      setPhase('results')
+      // Save LCC assessment — fire-and-forget, pass cleaned responses directly
+      // to avoid stale closure on applicabilityResponses state
+      fetch('/api/assessment/posh-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyDetails,
+          applicabilityResponses: responses,
+          complianceResponses: {},
+          results: lccResults,
+          assessmentType: 'posh_compliance',
+        }),
+      }).catch(err => console.error('LCC assessment save error:', err))
       return
     }
     
@@ -580,6 +594,8 @@ export default function POSHAssessmentPage() {
   
   // Complete assessment and calculate results
   const completeAssessment = async () => {
+    if (isCompletingRef.current) return
+    isCompletingRef.current = true
     setIsSubmitting(true)
     const totalTime = Math.floor((Date.now() - startTime) / 1000)
     
@@ -1295,10 +1311,11 @@ export default function POSHAssessmentPage() {
             <div className="grid grid-cols-2 gap-4">
               <Button
                 onClick={() => handleComplianceAnswer(question.id, 'yes')}
+                disabled={isSubmitting}
                 variant={complianceResponses[question.id] === 'yes' ? 'default' : 'outline'}
                 className={`h-16 text-lg ${
-                  complianceResponses[question.id] === 'yes' 
-                    ? 'bg-green-700 hover:bg-green-800 text-white' 
+                  complianceResponses[question.id] === 'yes'
+                    ? 'bg-green-700 hover:bg-green-800 text-white'
                     : ''
                 }`}
               >
@@ -1307,10 +1324,11 @@ export default function POSHAssessmentPage() {
               </Button>
               <Button
                 onClick={() => handleComplianceAnswer(question.id, 'no')}
+                disabled={isSubmitting}
                 variant={complianceResponses[question.id] === 'no' ? 'default' : 'outline'}
                 className={`h-16 text-lg ${
-                  complianceResponses[question.id] === 'no' 
-                    ? 'bg-red-700 hover:bg-red-800 text-white' 
+                  complianceResponses[question.id] === 'no'
+                    ? 'bg-red-700 hover:bg-red-800 text-white'
                     : ''
                 }`}
               >
@@ -1320,17 +1338,18 @@ export default function POSHAssessmentPage() {
             </div>
           )}
 
-          
+
           {question.type === 'single_choice' && question.options && (
             <div className="space-y-3">
               {question.options.map((option) => (
                 <Button
                   key={option.value}
                   onClick={() => handleComplianceAnswer(question.id, option.value)}
+                  disabled={isSubmitting}
                   variant={complianceResponses[question.id] === option.value ? 'default' : 'outline'}
                   className={`w-full h-auto py-4 px-4 text-left justify-start whitespace-normal ${
-                    complianceResponses[question.id] === option.value 
-                      ? 'bg-blue-700 hover:bg-blue-800 text-white' 
+                    complianceResponses[question.id] === option.value
+                      ? 'bg-blue-700 hover:bg-blue-800 text-white'
                       : ''
                   }`}
                 >
@@ -1376,12 +1395,7 @@ export default function POSHAssessmentPage() {
   const renderResults = () => {
     if (!results) return null
 
-    // Handle LCC redirect case
-    if (results.profile?.redirectToLCC) {
-      return renderLCCInfo()
-    }
-
-    // Show email gate for paid assessment before revealing results
+    // Show email gate for paid assessment before revealing any results (including LCC)
     if (gateRequired && !gateCleared) {
       return (
         <div className="max-w-2xl mx-auto space-y-6">
@@ -1400,6 +1414,11 @@ export default function POSHAssessmentPage() {
           />
         </div>
       )
+    }
+
+    // Handle LCC redirect case (gate already cleared above if required)
+    if (results.profile?.redirectToLCC) {
+      return renderLCCInfo()
     }
 
     return (
