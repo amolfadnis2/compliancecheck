@@ -1,4 +1,3 @@
-#!/usr/bin/env npx tsx
 /**
  * PostHog Dashboard Setup for ComplianceCheck
  *
