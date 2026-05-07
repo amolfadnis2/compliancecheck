@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, Calculator, CheckCircle, AlertTriangle, Info, TrendingUp, DollarSign } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
-import { RUPEE, INDIAN_STATES } from '@/lib/constants'
+import { RUPEE, INDIAN_STATES } from '@/lib/constants/india'
 import {
   calculateCTC,
   formatCurrency,

@@ -254,4 +254,4 @@ export function generateStatutoryHealthActionItems(responses: Record<string, str
 }
 
 // Re-export shared constants for backward compatibility
-export { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
+export { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/india'

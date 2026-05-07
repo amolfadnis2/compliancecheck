@@ -30,7 +30,7 @@ import {
   REVENUE_OPTIONS,
   type DPDPQuestion
 } from '@/lib/assessments/dpdp-questions'
-import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
+import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/india'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 
 // Form validation schema for organization profile

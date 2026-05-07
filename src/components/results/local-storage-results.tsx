@@ -670,7 +670,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
     // Standard data extraction for other assessment types
     userDetails = assessment.userDetails || assessment.responses?.userDetails || {}
     answers = assessment.responses?.answers || {}
-    overallScore = assessment.overall_score || 50
+    overallScore = assessment.overall_score ?? 0
     categoryScores = assessment.category_scores || {}
   }
   

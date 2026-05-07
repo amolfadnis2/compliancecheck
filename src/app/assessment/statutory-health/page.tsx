@@ -3,36 +3,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, Save, Loader2 } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
-import { 
-  STATUTORY_HEALTH_QUESTIONS, 
+import { CompanyDetailsForm, type CompanyDetails } from '@/components/assessment/company-details-form'
+import {
+  STATUTORY_HEALTH_QUESTIONS,
   CATEGORY_INFO,
 } from '@/lib/assessments/statutory-health-questions'
-import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { useAssessmentTracking } from '@/lib/analytics'
 
-// Form validation schema
-const userDetailsSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile number'),
-  companyName: z.string().min(2, 'Company name is required'),
-  state: z.string().min(1, 'Please select your state'),
-  employeeCount: z.string().min(1, 'Please select employee count'),
-  industry: z.string().min(1, 'Please select your industry'),
-})
-
-type UserDetails = z.infer<typeof userDetailsSchema>
 type AssessmentResponse = Record<string, string>
 
 // Local storage keys
@@ -42,7 +25,7 @@ interface SavedProgress {
   step: number
   currentQuestionIndex: number
   responses: AssessmentResponse
-  userDetails: UserDetails | null
+  userDetails: CompanyDetails | null
   savedAt: string
 }
 
@@ -51,14 +34,11 @@ export default function StatutoryHealthAssessmentPage() {
   const [step, setStep] = useState(1)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [responses, setResponses] = useState<AssessmentResponse>({})
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
+  const [userDetails, setUserDetails] = useState<CompanyDetails | null>(null)
+  const [savedDetails, setSavedDetails] = useState<Partial<CompanyDetails> | undefined>(undefined)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false)
-
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<UserDetails>({
-    resolver: zodResolver(userDetailsSchema),
-  })
 
   const totalQuestions = STATUTORY_HEALTH_QUESTIONS.length
   const currentQuestion = STATUTORY_HEALTH_QUESTIONS[currentQuestionIndex]
@@ -87,7 +67,7 @@ export default function StatutoryHealthAssessmentPage() {
           setResponses(progress.responses)
           if (progress.userDetails) {
             setUserDetails(progress.userDetails)
-            reset(progress.userDetails)
+            setSavedDetails(progress.userDetails)
           }
           setHasRestoredProgress(true)
         }
@@ -95,7 +75,7 @@ export default function StatutoryHealthAssessmentPage() {
     } catch (e) {
       console.error('Error loading saved progress:', e)
     }
-  }, [reset])
+  }, [])
 
   // Auto-save progress
   const saveProgress = useCallback(() => {
@@ -138,12 +118,10 @@ export default function StatutoryHealthAssessmentPage() {
     return 95
   }
 
-  // Handle user details submission
-  const onUserDetailsSubmit = (data: UserDetails) => {
+  const onUserDetailsSubmit = (data: CompanyDetails) => {
     setUserDetails(data)
     setStep(2)
     saveProgress()
-    // Track assessment start
     assessmentTracking.trackStart()
   }
 
@@ -348,91 +326,15 @@ export default function StatutoryHealthAssessmentPage() {
                 </div>
               </div>
               <CardTitle className="text-2xl">Statutory Health Check</CardTitle>
-              <CardDescription>Quick 10-minute assessment for PF, ESI, PT, Gratuity & Bonus compliance</CardDescription>
+              <CardDescription>Quick 10-minute assessment for PF, ESI, PT, Gratuity &amp; Bonus compliance</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit(onUserDetailsSubmit)} className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
-                    <Input id="fullName" {...register('fullName')} placeholder="John Doe" />
-                    {errors.fullName && <p className="text-sm text-red-600">{errors.fullName.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" type="email" {...register('email')} placeholder="john@company.com" />
-                    {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <div className="flex">
-                      <span className="inline-flex items-center px-3 text-gray-600 bg-gray-100 border border-r-0 rounded-l-md">
-                        +91
-                      </span>
-                      <Input id="phone" {...register('phone')} placeholder="9876543210" className="rounded-l-none" />
-                    </div>
-                    {errors.phone && <p className="text-sm text-red-600">{errors.phone.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName">Company Name *</Label>
-                    <Input id="companyName" {...register('companyName')} placeholder="Acme Pvt Ltd" />
-                    {errors.companyName && <p className="text-sm text-red-600">{errors.companyName.message}</p>}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State *</Label>
-                    <select
-                      id="state"
-                      {...register('state')}
-                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                    >
-                      <option value="">Select state</option>
-                      {INDIAN_STATES.map(state => (
-                        <option key={state} value={state}>{state}</option>
-                      ))}
-                    </select>
-                    {errors.state && <p className="text-sm text-red-600">{errors.state.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="employeeCount">Employee Count *</Label>
-                    <select
-                      id="employeeCount"
-                      {...register('employeeCount')}
-                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                    >
-                      <option value="">Select range</option>
-                      {EMPLOYEE_COUNT_OPTIONS.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                    {errors.employeeCount && <p className="text-sm text-red-600">{errors.employeeCount.message}</p>}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Industry *</Label>
-                  <select
-                    id="industry"
-                    {...register('industry')}
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                  >
-                    <option value="">Select industry</option>
-                    {INDUSTRY_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  {errors.industry && <p className="text-sm text-red-600">{errors.industry.message}</p>}
-                </div>
-
-                <Button type="submit" className="w-full">
-                  Continue to Assessment <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
+              <CompanyDetailsForm
+                key={hasRestoredProgress ? 'restored' : 'fresh'}
+                onSubmit={onUserDetailsSubmit}
+                defaultValues={savedDetails}
+                isLoading={isSubmitting}
+              />
             </CardContent>
           </Card>
         )}

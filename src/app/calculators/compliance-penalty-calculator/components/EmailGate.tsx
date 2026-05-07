@@ -41,7 +41,17 @@ export function EmailGate({ input, result }: Props) {
       const res = await fetch('/api/calculators/penalty-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, pdfBase64: base64 }),
+        body: JSON.stringify({
+          email,
+          pdfBase64: base64,
+          input,
+          summary: {
+            totalMaxExposure: result.totalMaxExposure,
+            totalTypicalRisk: result.totalTypicalRisk,
+            hasCriminalRisk: result.hasCriminalRisk,
+            lawCount: result.lawExposures.length,
+          },
+        }),
       })
 
       if (!res.ok) {

@@ -60,6 +60,7 @@ export interface UserProperties {
   subscription_tier?: UserTier;
   state?: string;
   created_at?: string;
+  [key: string]: unknown;
 }
 
 export const identifyUser = (userId: string, properties?: UserProperties) => {

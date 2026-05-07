@@ -144,7 +144,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
   const companyDetails = assessment.company_details || assessment.responses?.userDetails || {}
   
   // Use stored scores or calculate fresh
-  const overallScore = assessment.overall_score || calculateLabourCodeScore(responses).overallScore
+  const overallScore = assessment.overall_score ?? calculateLabourCodeScore(responses).overallScore
   const categoryScores = assessment.category_scores || calculateLabourCodeScore(responses).categoryScores
   const actionItems = assessment.action_items || generateLabourCodeActionItems(responses)
   const status = getComplianceStatus(overallScore)
@@ -734,7 +734,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
 
   // Use stored scores or calculate fresh
   const scoreResult = calculateDPDPScore(responses, profile || {})
-  const overallScore = assessment.overall_score || scoreResult.overallScore
+  const overallScore = assessment.overall_score ?? scoreResult.overallScore
   const categoryScores = assessment.category_scores || scoreResult.phaseScores
   const actionItems = assessment.action_items || generateDPDPActionItems(responses, profile || {})
   const maturityLevel = assessment.maturity_level || scoreResult.maturityLevel

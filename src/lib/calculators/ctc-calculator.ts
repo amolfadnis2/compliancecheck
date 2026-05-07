@@ -10,7 +10,7 @@
  * 5. ESI for gross ≤ ₹21,000
  */
 
-import { RUPEE } from '@/lib/constants'
+import { RUPEE } from '@/lib/constants/india'
 
 // ============================================
 // TYPES & INTERFACES

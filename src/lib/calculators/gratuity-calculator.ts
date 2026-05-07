@@ -9,7 +9,7 @@
  * 5. Payment deadline: Within 30 days of becoming due
  */
 
-import { RUPEE } from '@/lib/constants'
+import { RUPEE } from '@/lib/constants/india'
 
 // Employment types with different eligibility rules
 export const EMPLOYMENT_TYPES = [

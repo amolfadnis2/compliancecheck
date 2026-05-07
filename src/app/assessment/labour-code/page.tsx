@@ -19,11 +19,11 @@ import {
   type IndustryType,
   type EmployeeCountRange,
 } from '@/lib/assessments/labour-code-questions';
-import { 
-  INDIAN_STATES, 
-  EMPLOYEE_COUNT_OPTIONS, 
-  INDUSTRY_OPTIONS 
-} from '@/lib/constants';
+import {
+  INDIAN_STATES,
+  EMPLOYEE_COUNT_OPTIONS,
+  INDUSTRY_OPTIONS
+} from '@/lib/constants/india';
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
 import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics';

@@ -3,6 +3,16 @@
  * Used across all assessment types for consistency
  */
 
+// Rupee symbol - Unicode escape ensures correct encoding in all contexts
+export const RUPEE = '₹'
+
+export function formatPrice(amount: number, showDecimal = false): string {
+  const formatted = showDecimal
+    ? amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : amount.toLocaleString('en-IN')
+  return `${RUPEE}${formatted}`
+}
+
 // All Indian states and union territories
 export const INDIAN_STATES = [
   'Andhra Pradesh',

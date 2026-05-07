@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { createClient } from '@supabase/supabase-js'
 
 let resend: Resend | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabase: any = null
 
 function getResendClient(): Resend {
   if (!resend) {
     resend = new Resend(process.env.RESEND_API_KEY)
   }
-  return resend
+  return resend as Resend
+}
+
+function getSupabase() {
+  if (!_supabase) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (url && key) _supabase = createClient(url, key)
+  }
+  return _supabase
 }
 
 function generateEmailHtml(): string {
@@ -119,7 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, pdfBase64 } = body
+    const { email, pdfBase64, input, summary } = body
 
     if (!email || !pdfBase64) {
       return NextResponse.json(
@@ -156,6 +168,25 @@ export async function POST(request: NextRequest) {
         { success: false, error: error.message || 'Failed to send email' },
         { status: 500 }
       )
+    }
+
+    // Persist to Supabase for admin visibility — non-blocking, best-effort
+    const supabase = getSupabase()
+    if (supabase && input) {
+      supabase
+        .from('assessments')
+        .insert({
+          assessment_type: 'penalty_exposure',
+          email,
+          industry: input.industry ?? null,
+          state: input.state ?? null,
+          employee_count: input.employeeCount != null ? String(input.employeeCount) : null,
+          responses: { input, summary: summary ?? null },
+          overall_score: summary?.totalTypicalRisk != null ? Math.round(summary.totalTypicalRisk) : null,
+        })
+        .then(({ error: dbErr }: { error: { message: string } | null }) => {
+          if (dbErr) console.warn('Penalty calculator DB write failed (non-fatal):', dbErr.message)
+        })
     }
 
     return NextResponse.json({
