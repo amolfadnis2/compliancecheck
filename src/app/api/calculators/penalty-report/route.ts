@@ -3,13 +3,14 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 
 let resend: Resend | null = null
-let _supabase: ReturnType<typeof createClient> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabase: any = null
 
 function getResendClient(): Resend {
   if (!resend) {
     resend = new Resend(process.env.RESEND_API_KEY)
   }
-  return resend
+  return resend as Resend
 }
 
 function getSupabase() {
