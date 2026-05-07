@@ -5,6 +5,7 @@ import { PostHogProvider as PHProvider } from 'posthog-js/react'
 import { useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { identifyUser, resetUser } from '@/lib/analytics/tracking'
 
 // Initialize PostHog only on client side
 if (typeof window !== 'undefined') {
@@ -47,21 +48,16 @@ function AuthIdentifier() {
     const supabase = createClient()
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user && posthog.__loaded) {
-        posthog.identify(session.user.id, {
-          email: session.user.email,
-        })
+      if (session?.user) {
+        identifyUser(session.user.id, { email: session.user.email })
       }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!posthog.__loaded) return
       if (session?.user) {
-        posthog.identify(session.user.id, {
-          email: session.user.email,
-        })
+        identifyUser(session.user.id, { email: session.user.email })
       } else if (event === 'SIGNED_OUT') {
-        posthog.reset()
+        resetUser()
       }
     })
 

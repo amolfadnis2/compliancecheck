@@ -13,6 +13,7 @@ import { appendSource } from '@/lib/identity/update-profile'
 import { updateProfile } from '@/lib/identity/update-profile'
 import { logEvent } from '@/lib/identity/log-event'
 import posthog from 'posthog-js'
+import { analytics } from '@/lib/analytics/tracking'
 import type { User } from '@/lib/identity/types'
 
 type GateStep =
@@ -142,7 +143,7 @@ export function EmailGate({
     setStep('email_input')
     setOtpError(null)
     const domain = email.includes('@') ? email.split('@')[1] : 'unknown'
-    posthog.capture('email_edit_attempted', { source, edit_count: newCount, email_domain: domain })
+    analytics.trackEvent('email_edit_attempted', { source, edit_count: newCount, email_domain: domain })
   }, [editCount, email, source])
 
   // Don't render while checking existing auth state

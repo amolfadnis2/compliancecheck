@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { posthog } from '@/components/providers/posthog-provider'
+import { analytics } from '@/lib/analytics/tracking'
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 
 interface FeedbackFormProps {
   assessmentType: string
@@ -23,8 +24,7 @@ export function FeedbackForm({
   const handleSubmit = async () => {
     setIsSubmitting(true)
     
-    // Track feedback in PostHog
-    posthog.capture('feedback_submitted', {
+    analytics.trackEvent(ANALYTICS_EVENTS.FEEDBACK_SUBMITTED, {
       assessment_type: assessmentType,
       assessment_id: assessmentId,
       nps_score: npsScore,

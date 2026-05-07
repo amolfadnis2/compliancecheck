@@ -50,7 +50,6 @@ import { EmailGate } from '@/components/identity/EmailGate'
 import { PaymentGate } from '@/components/results/payment-gate'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
-import posthog from 'posthog-js'
 import { analytics } from '@/lib/analytics/tracking'
 
 // Import POSH data files
@@ -269,14 +268,7 @@ export default function POSHAssessmentPage() {
   // -------------------------------------------------------------------------
   
   const trackEvent = useCallback((event: string, properties: Record<string, string | number | boolean | undefined> = {}) => {
-    try {
-      posthog.capture(event, {
-        assessment_type: 'posh_compliance',
-        ...properties,
-      })
-    } catch (err) {
-      console.error('PostHog tracking error:', err)
-    }
+    analytics.trackEvent(event, { assessment_type: 'posh_compliance', ...properties })
   }, [])
 
   // Track assessment start
@@ -624,14 +616,10 @@ export default function POSHAssessmentPage() {
       
       // Set user properties
       if (companyDetails?.email) {
-        posthog.identify(companyDetails.email, {
-          $set: {
-            last_posh_score: assessmentResults.overallScore,
-            last_posh_risk_level: assessmentResults.riskLevel,
-          },
-          $set_once: {
-            first_posh_assessment_date: new Date().toISOString(),
-          },
+        analytics.identify(companyDetails.email, {
+          last_posh_score: assessmentResults.overallScore,
+          last_posh_risk_level: assessmentResults.riskLevel,
+          first_posh_assessment_date: new Date().toISOString(),
         })
       }
       
