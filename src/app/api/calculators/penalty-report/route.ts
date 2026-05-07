@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
           responses: { input, summary: summary ?? null },
           overall_score: summary?.totalTypicalRisk != null ? Math.round(summary.totalTypicalRisk) : null,
         })
-        .then(({ error: dbErr }) => {
+        .then(({ error: dbErr }: { error: { message: string } | null }) => {
           if (dbErr) console.warn('Penalty calculator DB write failed (non-fatal):', dbErr.message)
         })
     }
