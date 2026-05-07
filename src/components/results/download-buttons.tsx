@@ -512,7 +512,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       analytics.reportDownloaded({
         assessment_type: assessmentType as AssessmentType,
         format: 'pdf',
-        compliance_score: data.overall_score || complianceScore || 0,
+        compliance_score: data.overall_score ?? complianceScore ?? 0,
         assessment_id: id,
         user_tier: 'free',
       })
@@ -675,7 +675,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
           assessmentId: id,
           pdfBase64,
           companyName: userDetails.companyName || 'Your Company',
-          score: data.overall_score || 0,
+          score: data.overall_score ?? 0,
           assessmentType,
         }),
       })
@@ -689,7 +689,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       // Track successful email
       analytics.trackEvent('report_emailed', {
         assessment_type: assessmentType as AssessmentType,
-        compliance_score: data.overall_score || complianceScore || 0,
+        compliance_score: data.overall_score ?? complianceScore ?? 0,
         assessment_id: id,
         user_tier: 'free',
       })

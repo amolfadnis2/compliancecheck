@@ -34,7 +34,7 @@ export function DownloadWithFeedback({
         const stored = localStorage.getItem(`assessment_${id}`)
         if (stored) {
           const data = JSON.parse(stored)
-          setScore(data.overall_score || data.overallScore || 0)
+          setScore(data.overall_score ?? data.overallScore ?? 0)
         }
       } catch (e) {
         console.log('Could not get score from localStorage:', e)
