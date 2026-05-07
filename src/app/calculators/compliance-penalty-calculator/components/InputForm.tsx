@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Calculator, Loader2 } from 'lucide-react'
-import { INDIAN_STATES } from '@/lib/constants'
+import { INDIAN_STATES } from '@/lib/constants/india'
 import {
   EMPLOYEE_SNAP_POINTS,
   INDUSTRY_OPTIONS,

@@ -9,8 +9,10 @@ import { ASSESSMENT_TYPES, type AssessmentType as BaseAssessmentType } from '@/l
 // ASSESSMENT TYPES - Re-export from single source of truth
 // =============================================================================
 
-// Use the canonical types from constants file
-export type AssessmentType = BaseAssessmentType | 'auto_dealer' | 'code_on_wages' | 'social_security' | 'osh_code' | 'industrial_relations';
+// Use the canonical types from constants file — auto_dealer now in ASSESSMENT_TYPES
+// code_on_wages / social_security / osh_code / industrial_relations removed:
+// these are internal Labour Code sub-categories, not live assessment types
+export type AssessmentType = BaseAssessmentType;
 
 // Re-export for convenience
 export { ASSESSMENT_TYPES };

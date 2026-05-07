@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, ArrowRight, Calculator, Save, Loader2, CheckCircle, AlertTriangle, Info, Calendar } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
-import { RUPEE } from '@/lib/constants'
+import { RUPEE } from '@/lib/constants/india'
 import {
   EMPLOYMENT_TYPES,
   GRATUITY_CONSTANTS,

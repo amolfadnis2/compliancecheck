@@ -21,6 +21,7 @@ export const ASSESSMENT_TYPES = {
   STATE_WISE_COMPLIANCE: 'state_wise_compliance',
   FOOD_BUSINESS: 'food_business',
   POSH: 'posh',
+  AUTO_DEALER: 'auto_dealer',
 } as const;
 
 // Type for assessment type values
@@ -35,6 +36,7 @@ export const ASSESSMENT_PRICING: Record<AssessmentType, PricingTier> = {
   [ASSESSMENT_TYPES.STATUTORY_HEALTH]: 'free',
   [ASSESSMENT_TYPES.FOOD_BUSINESS]: 'free',
   [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: 'free',
+  [ASSESSMENT_TYPES.AUTO_DEALER]: 'paid',
 };
 
 export function isPaidAssessment(type: AssessmentType): boolean {
@@ -59,6 +61,7 @@ export function getAssessmentDisplayName(type: AssessmentType): string {
     [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: 'State-Wise Compliance Check',
     [ASSESSMENT_TYPES.FOOD_BUSINESS]: 'Restaurant & Food Business Compliance',
     [ASSESSMENT_TYPES.POSH]: 'POSH Act 2013 Compliance',
+    [ASSESSMENT_TYPES.AUTO_DEALER]: 'Auto Dealer Compliance Assessment',
   };
   return displayNames[type] || type;
 }

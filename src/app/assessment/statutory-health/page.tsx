@@ -17,7 +17,7 @@ import {
   STATUTORY_HEALTH_QUESTIONS, 
   CATEGORY_INFO,
 } from '@/lib/assessments/statutory-health-questions'
-import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants'
+import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/india'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { useAssessmentTracking } from '@/lib/analytics'
 
