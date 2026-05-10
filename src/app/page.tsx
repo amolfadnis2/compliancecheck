@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 // Trust strip data
-const trustSignals = [
+const TRUST_SIGNALS = [
   { stat: '500+', label: 'assessments run' },
   { stat: '7', label: 'compliance domains covered' },
   { stat: '18+', label: 'Indian laws referenced' },
@@ -248,12 +248,12 @@ function Header({
             <ThemeToggle />
 
             {/* Primary nav CTA — drives toward assessments, not away to contact */}
-            <a
+            <Link
               href="#assessments"
               className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               Get Started Free
-            </a>
+            </Link>
 
             {/* Mobile Menu Button */}
             <button
@@ -288,13 +288,13 @@ function Header({
                   </li>
                 ))}
                 <li className="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
-                  <a
+                  <Link
                     href="#assessments"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
                   >
                     Get Started Free
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <Link
@@ -366,7 +366,7 @@ function HeroSection() {
           className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-gray-200 dark:border-gray-700 pt-8"
           aria-label="Trust indicators"
         >
-          {trustSignals.map((s) => (
+          {TRUST_SIGNALS.map((s) => (
             <div key={s.label} className="text-center">
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{s.stat}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
