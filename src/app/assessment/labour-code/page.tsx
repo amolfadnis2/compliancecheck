@@ -454,7 +454,7 @@ export default function LabourCodeAssessmentPage() {
               </div>
               <CardTitle className="text-2xl">Labour Code Readiness</CardTitle>
               <CardDescription>
-                Comprehensive assessment for all 4 new Labour Codes — approximately 15–20 minutes
+                Comprehensive assessment covering all 4 new Labour Codes — approximately 15–20 minutes
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

@@ -268,7 +268,7 @@ export default function POSHAssessmentPage() {
   // -------------------------------------------------------------------------
   
   const trackEvent = useCallback((event: string, properties: Record<string, string | number | boolean | undefined> = {}) => {
-    analytics.trackEvent(event, { assessment_type: 'posh_compliance', ...properties })
+    analytics.trackEvent(event, { assessment_type: ASSESSMENT_TYPES.POSH, ...properties })
   }, [])
 
   // Track assessment start

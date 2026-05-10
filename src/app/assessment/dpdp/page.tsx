@@ -756,16 +756,16 @@ export default function DPDPAssessmentPage() {
           </Card>
         )}
 
-        {/* Risk Warning */}
+        {/* Preparation prompt */}
         {step === 0 && (
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="font-semibold text-amber-900 mb-1">DPDP Compliance Deadline</h4>
-                <p className="text-sm text-amber-800">
-                  Full enforcement begins <strong>May 13, 2027</strong>. Penalties up to ₹250 crore per violation. 
-                  This assessment helps identify gaps before the deadline.
+                <h4 className="font-semibold text-blue-900 mb-1">Start your DPDP gap analysis now</h4>
+                <p className="text-sm text-blue-800">
+                  Full enforcement begins <strong>May 13, 2027</strong>. Early assessment gives you time to
+                  remediate gaps — avoiding last-minute pressure and compliance risk.
                 </p>
               </div>
             </div>

@@ -693,12 +693,6 @@ export default function StateWiseComplianceAssessment() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Beta Banner */}
-      <div className="bg-amber-700 text-white text-center py-2 text-sm font-medium">
-        This site is under development. All assessments FREE during beta!
-      </div>
-      
-      {/* Use consistent AssessmentHeader like other assessments */}
       <AssessmentHeader
         title="State-Wise Compliance"
         subtitle="ComplianceCheck"
