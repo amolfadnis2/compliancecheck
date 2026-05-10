@@ -185,7 +185,7 @@ export default function AutoDealerLandingPage() {
                 <span className="font-medium">Overall Progress</span>
                 <span className="font-semibold">{overallProgress}%</span>
               </div>
-              <Progress value={overallProgress} className="h-3 [&>div]:bg-blue-600" aria-label="Overall assessment progress" />
+              <Progress value={overallProgress} className="h-3 [&>div]:bg-blue-600" aria-label={`Overall assessment progress: ${overallProgress}% complete`} />
             </div>
           </div>
         </div>

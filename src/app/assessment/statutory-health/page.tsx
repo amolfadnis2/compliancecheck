@@ -293,7 +293,7 @@ export default function StatutoryHealthAssessmentPage() {
               <span>{Math.round(getProgress())}%</span>
             </div>
           </div>
-          <Progress value={getProgress()} className="h-3 [&>div]:bg-green-600" aria-label="Assessment progress" />
+          <Progress value={getProgress()} className="h-3 [&>div]:bg-green-600" aria-label={`Assessment progress: ${Math.round(getProgress())}% complete`} />
         </div>
 
         {/* Restored Progress Notice */}
@@ -357,9 +357,10 @@ export default function StatutoryHealthAssessmentPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     variant={responses[currentQuestion.id] === 'yes' ? 'default' : 'outline'}
+                    aria-pressed={responses[currentQuestion.id] === 'yes'}
                     className={`h-16 text-lg ${
-                      responses[currentQuestion.id] === 'yes' 
-                        ? 'bg-green-700 hover:bg-green-800 text-white' 
+                      responses[currentQuestion.id] === 'yes'
+                        ? 'bg-green-700 hover:bg-green-800 text-white'
                         : ''
                     }`}
                     onClick={() => handleAnswer('yes')}
@@ -369,9 +370,10 @@ export default function StatutoryHealthAssessmentPage() {
                   </Button>
                   <Button
                     variant={responses[currentQuestion.id] === 'no' ? 'default' : 'outline'}
+                    aria-pressed={responses[currentQuestion.id] === 'no'}
                     className={`h-16 text-lg ${
-                      responses[currentQuestion.id] === 'no' 
-                        ? 'bg-red-700 hover:bg-red-800 text-white' 
+                      responses[currentQuestion.id] === 'no'
+                        ? 'bg-red-700 hover:bg-red-800 text-white'
                         : ''
                     }`}
                     onClick={() => handleAnswer('no')}

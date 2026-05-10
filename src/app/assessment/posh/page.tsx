@@ -1192,9 +1192,10 @@ export default function POSHAssessmentPage() {
               <Button
                 onClick={() => handleApplicabilityAnswer(question.id, 'yes')}
                 variant={applicabilityResponses[question.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={applicabilityResponses[question.id] === 'yes'}
                 className={`h-16 text-lg ${
-                  applicabilityResponses[question.id] === 'yes' 
-                    ? 'bg-green-700 hover:bg-green-800 text-white' 
+                  applicabilityResponses[question.id] === 'yes'
+                    ? 'bg-green-700 hover:bg-green-800 text-white'
                     : ''
                 }`}
               >
@@ -1204,9 +1205,10 @@ export default function POSHAssessmentPage() {
               <Button
                 onClick={() => handleApplicabilityAnswer(question.id, 'no')}
                 variant={applicabilityResponses[question.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={applicabilityResponses[question.id] === 'no'}
                 className={`h-16 text-lg ${
-                  applicabilityResponses[question.id] === 'no' 
-                    ? 'bg-red-700 hover:bg-red-800 text-white' 
+                  applicabilityResponses[question.id] === 'no'
+                    ? 'bg-red-700 hover:bg-red-800 text-white'
                     : ''
                 }`}
               >
@@ -1323,6 +1325,7 @@ export default function POSHAssessmentPage() {
                 onClick={() => handleComplianceAnswer(question.id, 'yes')}
                 disabled={isSubmitting}
                 variant={complianceResponses[question.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={complianceResponses[question.id] === 'yes'}
                 className={`h-16 text-lg ${
                   complianceResponses[question.id] === 'yes'
                     ? 'bg-green-700 hover:bg-green-800 text-white'
@@ -1336,6 +1339,7 @@ export default function POSHAssessmentPage() {
                 onClick={() => handleComplianceAnswer(question.id, 'no')}
                 disabled={isSubmitting}
                 variant={complianceResponses[question.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={complianceResponses[question.id] === 'no'}
                 className={`h-16 text-lg ${
                   complianceResponses[question.id] === 'no'
                     ? 'bg-red-700 hover:bg-red-800 text-white'
@@ -1740,7 +1744,7 @@ export default function POSHAssessmentPage() {
               <Progress 
                 value={overallProgress} 
                 className="h-3 [&>div]:bg-green-600"
-                aria-label="Overall assessment progress"
+                aria-label={`Overall assessment progress: ${overallProgress}% complete`}
               />
             </div>
           </div>

@@ -327,7 +327,7 @@ export default function DPDPAssessmentPage() {
                 Organization Profile
               </CardTitle>
               <CardDescription>
-                Tell us about your organization to personalize the assessment (7 questions)
+                Tell us about your organization to personalize the assessment (7 questions) — approximately 20 minutes total
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -664,9 +664,10 @@ export default function DPDPAssessmentPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       variant={responses[currentQuestion.id] === 'yes' ? 'default' : 'outline'}
+                      aria-pressed={responses[currentQuestion.id] === 'yes'}
                       className={`h-16 text-lg ${
-                        responses[currentQuestion.id] === 'yes' 
-                          ? 'bg-green-700 hover:bg-green-800 text-white' 
+                        responses[currentQuestion.id] === 'yes'
+                          ? 'bg-green-700 hover:bg-green-800 text-white'
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'yes')}
@@ -676,9 +677,10 @@ export default function DPDPAssessmentPage() {
                     </Button>
                     <Button
                       variant={responses[currentQuestion.id] === 'no' ? 'default' : 'outline'}
+                      aria-pressed={responses[currentQuestion.id] === 'no'}
                       className={`h-16 text-lg ${
-                        responses[currentQuestion.id] === 'no' 
-                          ? 'bg-red-700 hover:bg-red-800 text-white' 
+                        responses[currentQuestion.id] === 'no'
+                          ? 'bg-red-700 hover:bg-red-800 text-white'
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'no')}
