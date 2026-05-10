@@ -317,14 +317,17 @@ export default function LabourCodeAssessmentPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
-    // Track completion before API call
-    // For yes/no questions, "no" typically indicates non-compliance
-    const gapCount = filteredQuestions.filter(q => 
-      q.type === 'yes_no' && responses[q.id] === 'no'
-    ).length;
+
+    // Compliance score: yes-answers ÷ applicable yes/no questions (not attendance %)
+    // A score of 0 (all "no") must not be coerced to a default — use ?? not ||
+    const yesNoQuestions = filteredQuestions.filter(q => q.type === 'yes_no');
+    const compliantCount = yesNoQuestions.filter(q => responses[q.id] === 'yes').length;
+    const gapCount = yesNoQuestions.length - compliantCount;
+    const complianceScore = yesNoQuestions.length > 0
+      ? Math.round((compliantCount / yesNoQuestions.length) * 100)
+      : 100;
     assessmentTracking.trackComplete(
-      Math.round((answeredQuestions / totalFilteredQuestions) * 100),
+      complianceScore,
       { high: gapCount, medium: 0, low: 0 },
       answeredQuestions,
       totalFilteredQuestions - answeredQuestions

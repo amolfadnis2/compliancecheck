@@ -29,7 +29,7 @@ import {
   generateApplicabilitySummary,
 } from '@/lib/assessments/state-wise-compliance-questions';
 import { useAssessmentTracking } from '@/lib/analytics';
-import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types';
+import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 
 type AssessmentPhase = 'user_details' | 'phase1' | 'applicability_results' | 'phase2' | 'submitting';
 
@@ -169,7 +169,7 @@ export default function StateWiseComplianceAssessment() {
         applicabilityResults,
         applicabilitySummary,
         scoreResult,
-        assessmentType: 'state_wise_compliance',
+        assessmentType: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
       };
       
       const response = await fetch('/api/assessment/state-wise-submit', {
@@ -182,7 +182,7 @@ export default function StateWiseComplianceAssessment() {
       
       if (result.success) {
         // Store complete data in localStorage for the results page
-        localStorage.setItem(`assessment_${result.assessmentId}`, JSON.stringify({
+        localStorage.setItem(getLocalStorageKey(result.assessmentId), JSON.stringify({
           ...submissionData,
           assessmentId: result.assessmentId,
           timestamp: new Date().toISOString(),
@@ -199,7 +199,7 @@ export default function StateWiseComplianceAssessment() {
           filteredPhase2Questions.length - Object.keys(phase2Responses).length
         );
         
-        router.push(`/results/${result.assessmentId}?type=state_wise_compliance`);
+        router.push(`/results/${result.assessmentId}?type=${ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}`);
       } else {
         throw new Error(result.error || 'Submission failed');
       }
@@ -210,19 +210,19 @@ export default function StateWiseComplianceAssessment() {
       const scoreResult = calculateComplianceScore(phase2Responses, filteredPhase2Questions);
       const applicabilitySummary = generateApplicabilitySummary(applicabilityResults);
       
-      localStorage.setItem(`assessment_${localId}`, JSON.stringify({
+      localStorage.setItem(getLocalStorageKey(localId), JSON.stringify({
         userDetails,
         phase1Responses,
         phase2Responses,
         applicabilityResults,
         applicabilitySummary,
         scoreResult,
-        assessmentType: 'state_wise_compliance',
+        assessmentType: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
         assessmentId: localId,
         timestamp: new Date().toISOString(),
       }));
       
-      router.push(`/results/${localId}?type=state_wise_compliance`);
+      router.push(`/results/${localId}?type=${ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}`);
     }
   };
 
