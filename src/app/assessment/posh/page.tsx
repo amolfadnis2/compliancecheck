@@ -268,7 +268,7 @@ export default function POSHAssessmentPage() {
   // -------------------------------------------------------------------------
   
   const trackEvent = useCallback((event: string, properties: Record<string, string | number | boolean | undefined> = {}) => {
-    analytics.trackEvent(event, { assessment_type: 'posh_compliance', ...properties })
+    analytics.trackEvent(event, { assessment_type: ASSESSMENT_TYPES.POSH, ...properties })
   }, [])
 
   // Track assessment start
@@ -426,14 +426,14 @@ export default function POSHAssessmentPage() {
   // Complete applicability phase and transition to compliance
   const completeApplicabilityPhase = async (responses: Record<string, string>) => {
     const timeSpent = Math.floor((Date.now() - phaseStartTime) / 1000)
-    
+
     // Determine applicability
     const results = determinePOSHApplicability(responses)
     const profile = generatePOSHAssessmentProfile(responses)
-    
+
     setApplicabilityResults(results)
     setAssessmentProfile(profile)
-    
+
     // Track applicability completed
     trackEvent(POSTHOG_EVENTS.APPLICABILITY_COMPLETED, {
       employee_count: responses['POSH_APP_001'],
@@ -444,7 +444,7 @@ export default function POSHAssessmentPage() {
       requires_full_assessment: profile.requiresFullAssessment,
       redirect_to_lcc: profile.redirectToLCC,
     })
-    
+
     // Check if assessment is required
     if (profile.redirectToLCC) {
       const lccResults = {
@@ -459,19 +459,22 @@ export default function POSHAssessmentPage() {
       }
       setResults(lccResults)
       setPhase('results')
-      // Save LCC assessment — fire-and-forget, pass cleaned responses directly
-      // to avoid stale closure on applicabilityResponses state
-      fetch('/api/assessment/posh-submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyDetails,
-          applicabilityResponses: responses,
-          complianceResponses: {},
-          results: lccResults,
-          assessmentType: 'posh_compliance',
-        }),
-      }).catch(err => console.error('LCC assessment save error:', err))
+      // Save LCC assessment — awaited so errors surface in console
+      try {
+        await fetch('/api/assessment/posh-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyDetails,
+            applicabilityResponses: responses,
+            complianceResponses: {},
+            results: lccResults,
+            assessmentType: ASSESSMENT_TYPES.POSH,
+          }),
+        })
+      } catch (err) {
+        console.error('LCC assessment save error:', err)
+      }
       return
     }
     
@@ -1189,9 +1192,10 @@ export default function POSHAssessmentPage() {
               <Button
                 onClick={() => handleApplicabilityAnswer(question.id, 'yes')}
                 variant={applicabilityResponses[question.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={applicabilityResponses[question.id] === 'yes'}
                 className={`h-16 text-lg ${
-                  applicabilityResponses[question.id] === 'yes' 
-                    ? 'bg-green-700 hover:bg-green-800 text-white' 
+                  applicabilityResponses[question.id] === 'yes'
+                    ? 'bg-green-700 hover:bg-green-800 text-white'
                     : ''
                 }`}
               >
@@ -1201,9 +1205,10 @@ export default function POSHAssessmentPage() {
               <Button
                 onClick={() => handleApplicabilityAnswer(question.id, 'no')}
                 variant={applicabilityResponses[question.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={applicabilityResponses[question.id] === 'no'}
                 className={`h-16 text-lg ${
-                  applicabilityResponses[question.id] === 'no' 
-                    ? 'bg-red-700 hover:bg-red-800 text-white' 
+                  applicabilityResponses[question.id] === 'no'
+                    ? 'bg-red-700 hover:bg-red-800 text-white'
                     : ''
                 }`}
               >
@@ -1320,6 +1325,7 @@ export default function POSHAssessmentPage() {
                 onClick={() => handleComplianceAnswer(question.id, 'yes')}
                 disabled={isSubmitting}
                 variant={complianceResponses[question.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={complianceResponses[question.id] === 'yes'}
                 className={`h-16 text-lg ${
                   complianceResponses[question.id] === 'yes'
                     ? 'bg-green-700 hover:bg-green-800 text-white'
@@ -1333,6 +1339,7 @@ export default function POSHAssessmentPage() {
                 onClick={() => handleComplianceAnswer(question.id, 'no')}
                 disabled={isSubmitting}
                 variant={complianceResponses[question.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={complianceResponses[question.id] === 'no'}
                 className={`h-16 text-lg ${
                   complianceResponses[question.id] === 'no'
                     ? 'bg-red-700 hover:bg-red-800 text-white'
@@ -1402,63 +1409,112 @@ export default function POSHAssessmentPage() {
   const renderResults = () => {
     if (!results) return null
 
-    // Show email gate for paid assessment before revealing any results (including LCC)
-    if (gateRequired && !gateCleared) {
-      return (
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-            <p className="text-sm font-medium text-blue-800">
-              Assessment complete — verify your email to unlock your full POSH compliance report
-            </p>
-          </div>
-          <EmailGate
-            source="posh_assessment"
-            reason="Email me my POSH compliance report so I can refer back to it"
-            onVerified={() => setGateCleared(true)}
-            showMarketingConsent
-            showDeadlineRemindersConsent
-            ctaLabel="Verify & view results"
-          />
-        </div>
-      )
-    }
-
-    // Handle LCC redirect case (gate already cleared above if required)
+    // LCC redirect — no email/payment gate needed for "not applicable" result
     if (results.profile?.redirectToLCC) {
       return renderLCCInfo()
     }
 
-    // Show payment gate after OTP is verified (beta bypass enabled)
-    if (!paymentCleared) {
+    // Determine what the report CTA section should render.
+    // Score, breakdown, and top-3 preview are ALWAYS shown so the user
+    // sees value from the 20+ minutes they just invested before being asked
+    // to verify email or pay.
+    const renderReportCTA = () => {
+      if (gateRequired && !gateCleared) {
+        return (
+          <div className="mt-4 space-y-4">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              Verify your email to download the full report with detailed remediation steps, deadlines, and legal references.
+            </div>
+            <EmailGate
+              source="posh_assessment"
+              reason="Email me my POSH compliance report so I can refer back to it"
+              onVerified={() => setGateCleared(true)}
+              showMarketingConsent
+              showDeadlineRemindersConsent
+              ctaLabel="Verify email &amp; get full report"
+            />
+          </div>
+        )
+      }
+
+      if (!paymentCleared) {
+        return (
+          <div className="mt-4">
+            <PaymentGate
+              title="Download your full POSH compliance report"
+              description="POSH Act 2013 compliance assessment"
+              priceINR={999}
+              features={[
+                'Full gap analysis with remediation plan',
+                'Priority-ranked action items',
+                'POSH policy templates',
+                'Downloadable PDF report',
+                'Email report to your inbox',
+              ]}
+              onPaid={() => setPaymentCleared(true)}
+            />
+          </div>
+        )
+      }
+
       return (
-        <div className="max-w-2xl mx-auto space-y-6">
-          <PaymentGate
-            title="Unlock your full POSH compliance report"
-            description="POSH Act 2013 compliance assessment"
-            priceINR={999}
-            features={[
-              'Full gap analysis with remediation plan',
-              'Priority-ranked action items',
-              'POSH policy templates',
-              'Downloadable PDF report',
-              'Email report to your inbox',
-            ]}
-            onPaid={() => setPaymentCleared(true)}
-          />
-        </div>
+        <>
+          <div className="flex gap-3 mt-6">
+            <Button
+              onClick={handleDownloadReport}
+              className="flex-1 bg-blue-700 hover:bg-blue-800 h-12"
+              disabled={isEmailingSaving}
+            >
+              <Download className="mr-2 h-5 w-5" />
+              Download Full Report
+            </Button>
+            <Button
+              onClick={handleEmailReport}
+              variant="outline"
+              className="flex-1 border-blue-700 text-blue-700 hover:bg-blue-50 h-12"
+              disabled={isEmailingSaving}
+            >
+              {isEmailingSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-5 w-5" />
+                  Email Report
+                </>
+              )}
+            </Button>
+          </div>
+          {emailSuccess && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 mt-4">
+              <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <p className="text-sm text-green-700">
+                Report sent to <strong>{emailSuccess}</strong>
+              </p>
+            </div>
+          )}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 mt-4">
+              <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+        </>
       )
     }
 
     return (
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Score Card */}
+        {/* Score Card — always visible */}
         <Card>
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-xl">POSH Compliance Assessment Results</CardTitle>
             <CardDescription>{companyDetails?.companyName}</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Overall Score - Prominent Display */}
+            {/* Overall Score */}
             <div className="text-center py-6">
               <div className={`text-6xl font-bold ${
                 results.overallScore >= 90 ? 'text-green-600' :
@@ -1481,53 +1537,9 @@ export default function POSHAssessmentPage() {
                 </span>
               </div>
             </div>
-            
-            {/* CTA Buttons - Prominent */}
-            <div className="flex gap-3 my-6">
-              <Button 
-                onClick={handleDownloadReport} 
-                className="flex-1 bg-blue-700 hover:bg-blue-800 h-12"
-                disabled={isEmailingSaving}
-              >
-                <Download className="mr-2 h-5 w-5" />
-                Download Full Report
-              </Button>
-              <Button 
-                onClick={handleEmailReport} 
-                variant="outline"
-                className="flex-1 border-blue-700 text-blue-700 hover:bg-blue-50 h-12"
-                disabled={isEmailingSaving}
-              >
-                {isEmailingSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="mr-2 h-5 w-5" />
-                    Email Report
-                  </>
-                )}
-              </Button>
-            </div>
-            
-            {/* Success/Error Messages */}
-            {emailSuccess && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 mb-4">
-                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <p className="text-sm text-green-700">
-                  Report sent to <strong>{emailSuccess}</strong>
-                </p>
-              </div>
-            )}
-            
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 mb-4">
-                <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
+
+            {/* Report CTA — email gate → payment gate → download buttons */}
+            {renderReportCTA()}
           </CardContent>
         </Card>
 
@@ -1687,7 +1699,7 @@ export default function POSHAssessmentPage() {
           </div>
           
           <Button 
-            onClick={() => router.push('/assessments')} 
+            onClick={() => router.push('/')}
             className="w-full bg-blue-700 hover:bg-blue-800"
           >
             Explore Other Assessments
@@ -1732,7 +1744,7 @@ export default function POSHAssessmentPage() {
               <Progress 
                 value={overallProgress} 
                 className="h-3 [&>div]:bg-green-600"
-                aria-label="Overall assessment progress"
+                aria-label={`Overall assessment progress: ${overallProgress}% complete`}
               />
             </div>
           </div>
@@ -1742,7 +1754,7 @@ export default function POSHAssessmentPage() {
       <main className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <div className="mb-6">
-          <Link href="/assessments" className="inline-flex items-center text-blue-700 hover:text-blue-800">
+          <Link href="/" className="inline-flex items-center text-blue-700 hover:text-blue-800">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Assessments
           </Link>

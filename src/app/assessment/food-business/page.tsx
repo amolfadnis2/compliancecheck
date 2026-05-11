@@ -417,7 +417,11 @@ export default function FoodBusinessAssessmentPage() {
     }
     
     if (shouldSkip()) {
-      return <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-orange-600" /></div>
+      return (
+        <div className="flex justify-center py-8 text-sm text-gray-500">
+          Skipping — not applicable to your business profile
+        </div>
+      )
     }
     
     return (
@@ -431,7 +435,7 @@ export default function FoodBusinessAssessmentPage() {
               {applicabilityIndex + 1} of {FOOD_BUSINESS_APPLICABILITY_QUESTIONS.length}
             </span>
           </div>
-          <Progress value={progress} aria-label="Applicability progress" className="h-2 mb-4" />
+          <Progress value={progress} aria-label={`Applicability progress: ${Math.round(progress)}% complete`} className="h-2 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">
@@ -446,9 +450,10 @@ export default function FoodBusinessAssessmentPage() {
               <Button
                 onClick={() => handleApplicabilityAnswer('yes')}
                 variant={applicabilityResponses[q.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={applicabilityResponses[q.id] === 'yes'}
                 className={`h-16 text-lg ${
-                  applicabilityResponses[q.id] === 'yes' 
-                    ? 'bg-green-700 hover:bg-green-800 text-white' 
+                  applicabilityResponses[q.id] === 'yes'
+                    ? 'bg-green-700 hover:bg-green-800 text-white'
                     : ''
                 }`}
               >
@@ -458,9 +463,10 @@ export default function FoodBusinessAssessmentPage() {
               <Button
                 onClick={() => handleApplicabilityAnswer('no')}
                 variant={applicabilityResponses[q.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={applicabilityResponses[q.id] === 'no'}
                 className={`h-16 text-lg ${
-                  applicabilityResponses[q.id] === 'no' 
-                    ? 'bg-red-700 hover:bg-red-800 text-white' 
+                  applicabilityResponses[q.id] === 'no'
+                    ? 'bg-red-700 hover:bg-red-800 text-white'
                     : ''
                 }`}
               >
@@ -621,7 +627,7 @@ export default function FoodBusinessAssessmentPage() {
               {currentQuestionIndex + 1} of {filteredQuestions.length}
             </span>
           </div>
-          <Progress value={progress} aria-label="Assessment progress" className="h-2 mb-4" />
+          <Progress value={progress} aria-label={`Assessment progress: ${Math.round(progress)}% complete`} className="h-2 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">
@@ -636,9 +642,10 @@ export default function FoodBusinessAssessmentPage() {
               <Button
                 onClick={() => handleAnswer('yes')}
                 variant={responses[q.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={responses[q.id] === 'yes'}
                 className={`h-16 text-lg ${
-                  responses[q.id] === 'yes' 
-                    ? 'bg-green-700 hover:bg-green-800 text-white' 
+                  responses[q.id] === 'yes'
+                    ? 'bg-green-700 hover:bg-green-800 text-white'
                     : ''
                 }`}
               >
@@ -648,9 +655,10 @@ export default function FoodBusinessAssessmentPage() {
               <Button
                 onClick={() => handleAnswer('no')}
                 variant={responses[q.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={responses[q.id] === 'no'}
                 className={`h-16 text-lg ${
-                  responses[q.id] === 'no' 
-                    ? 'bg-red-700 hover:bg-red-800 text-white' 
+                  responses[q.id] === 'no'
+                    ? 'bg-red-700 hover:bg-red-800 text-white'
                     : ''
                 }`}
               >
@@ -845,10 +853,10 @@ export default function FoodBusinessAssessmentPage() {
                 <span className="font-medium">Overall Progress</span>
                 <span className="font-semibold">{overallProgress}%</span>
               </div>
-              <Progress 
-                value={overallProgress} 
+              <Progress
+                value={overallProgress}
                 className="h-3 [&>div]:bg-green-600"
-                aria-label="Overall assessment progress"
+                aria-label={`Overall assessment progress: ${overallProgress}% complete`}
               />
             </div>
           </div>

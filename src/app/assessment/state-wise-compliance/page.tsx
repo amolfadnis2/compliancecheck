@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
 import { 
-  CheckCircle2, 
+  CheckCircle, 
   XCircle, 
   AlertCircle, 
   ArrowLeft, 
@@ -29,7 +29,7 @@ import {
   generateApplicabilitySummary,
 } from '@/lib/assessments/state-wise-compliance-questions';
 import { useAssessmentTracking } from '@/lib/analytics';
-import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types';
+import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 
 type AssessmentPhase = 'user_details' | 'phase1' | 'applicability_results' | 'phase2' | 'submitting';
 
@@ -169,7 +169,7 @@ export default function StateWiseComplianceAssessment() {
         applicabilityResults,
         applicabilitySummary,
         scoreResult,
-        assessmentType: 'state_wise_compliance',
+        assessmentType: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
       };
       
       const response = await fetch('/api/assessment/state-wise-submit', {
@@ -182,7 +182,7 @@ export default function StateWiseComplianceAssessment() {
       
       if (result.success) {
         // Store complete data in localStorage for the results page
-        localStorage.setItem(`assessment_${result.assessmentId}`, JSON.stringify({
+        localStorage.setItem(getLocalStorageKey(result.assessmentId), JSON.stringify({
           ...submissionData,
           assessmentId: result.assessmentId,
           timestamp: new Date().toISOString(),
@@ -199,7 +199,7 @@ export default function StateWiseComplianceAssessment() {
           filteredPhase2Questions.length - Object.keys(phase2Responses).length
         );
         
-        router.push(`/results/${result.assessmentId}?type=state_wise_compliance`);
+        router.push(`/results/${result.assessmentId}?type=${ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}`);
       } else {
         throw new Error(result.error || 'Submission failed');
       }
@@ -210,19 +210,19 @@ export default function StateWiseComplianceAssessment() {
       const scoreResult = calculateComplianceScore(phase2Responses, filteredPhase2Questions);
       const applicabilitySummary = generateApplicabilitySummary(applicabilityResults);
       
-      localStorage.setItem(`assessment_${localId}`, JSON.stringify({
+      localStorage.setItem(getLocalStorageKey(localId), JSON.stringify({
         userDetails,
         phase1Responses,
         phase2Responses,
         applicabilityResults,
         applicabilitySummary,
         scoreResult,
-        assessmentType: 'state_wise_compliance',
+        assessmentType: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
         assessmentId: localId,
         timestamp: new Date().toISOString(),
       }));
       
-      router.push(`/results/${localId}?type=state_wise_compliance`);
+      router.push(`/results/${localId}?type=${ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}`);
     }
   };
 
@@ -307,19 +307,19 @@ export default function StateWiseComplianceAssessment() {
           <h4 className="font-medium mb-2">This assessment covers:</h4>
           <ul className="text-sm text-gray-600 space-y-1">
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-green-600" />
               Central Labour Laws (EPF, ESI, Gratuity, POSH, Maternity)
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-green-600" />
               State-Specific (Professional Tax, LWF, Shops & Establishments)
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-green-600" />
               Tax & Business (GST, MSME, DPDP)
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-green-600" />
               Industry-Specific (FSSAI, Fintech, Factory, Pollution)
             </li>
           </ul>
@@ -332,10 +332,14 @@ export default function StateWiseComplianceAssessment() {
     const question = PHASE1_QUESTIONS[phase1Index];
     // Skip conditional questions if condition not met
     if (question.id === 'APP_08' && phase1Responses['APP_07'] !== 'yes') {
-      setTimeout(() => { 
-        if (phase1Index < PHASE1_QUESTIONS.length - 1) setPhase1Index(phase1Index + 1); 
+      setTimeout(() => {
+        if (phase1Index < PHASE1_QUESTIONS.length - 1) setPhase1Index(phase1Index + 1);
       }, 0);
-      return null;
+      return (
+        <div className="max-w-2xl mx-auto flex justify-center py-8 text-sm text-gray-500">
+          Skipping — not applicable to your business profile
+        </div>
+      );
     }
     
     return (
@@ -360,16 +364,18 @@ export default function StateWiseComplianceAssessment() {
         <CardContent className="space-y-4">
           {question.type === 'yes_no' && (
             <div className="grid grid-cols-2 gap-4">
-              <Button 
-                variant={phase1Responses[question.id] === 'yes' ? 'default' : 'outline'} 
-                className={phase1Responses[question.id] === 'yes' ? 'bg-green-700 hover:bg-green-800' : ''} 
+              <Button
+                variant={phase1Responses[question.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={phase1Responses[question.id] === 'yes'}
+                className={phase1Responses[question.id] === 'yes' ? 'bg-green-700 hover:bg-green-800' : ''}
                 onClick={() => handlePhase1Answer(question.id, 'yes')}
               >
                 Yes
               </Button>
-              <Button 
-                variant={phase1Responses[question.id] === 'no' ? 'default' : 'outline'} 
-                className={phase1Responses[question.id] === 'no' ? 'bg-red-700 hover:bg-red-800' : ''} 
+              <Button
+                variant={phase1Responses[question.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={phase1Responses[question.id] === 'no'}
+                className={phase1Responses[question.id] === 'no' ? 'bg-red-700 hover:bg-red-800' : ''}
                 onClick={() => handlePhase1Answer(question.id, 'no')}
               >
                 No
@@ -499,7 +505,7 @@ export default function StateWiseComplianceAssessment() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-green-600" />
               Applicable to Your Business ({applicable.length})
             </CardTitle>
           </CardHeader>
@@ -605,17 +611,19 @@ export default function StateWiseComplianceAssessment() {
         <CardContent className="space-y-4">
           {question.type === 'yes_no' && (
             <div className="grid grid-cols-2 gap-4">
-              <Button 
-                variant={phase2Responses[question.id] === 'yes' ? 'default' : 'outline'} 
-                className={`h-16 text-lg ${phase2Responses[question.id] === 'yes' ? 'bg-green-700 hover:bg-green-800 text-white' : ''}`} 
+              <Button
+                variant={phase2Responses[question.id] === 'yes' ? 'default' : 'outline'}
+                aria-pressed={phase2Responses[question.id] === 'yes'}
+                className={`h-16 text-lg ${phase2Responses[question.id] === 'yes' ? 'bg-green-700 hover:bg-green-800 text-white' : ''}`}
                 onClick={() => handlePhase2Answer(question.id, 'yes')}
               >
-                <CheckCircle2 className="mr-2 h-5 w-5" />
+                <CheckCircle className="mr-2 h-5 w-5" />
                 Yes
               </Button>
-              <Button 
-                variant={phase2Responses[question.id] === 'no' ? 'default' : 'outline'} 
-                className={`h-16 text-lg ${phase2Responses[question.id] === 'no' ? 'bg-red-700 hover:bg-red-800 text-white' : ''}`} 
+              <Button
+                variant={phase2Responses[question.id] === 'no' ? 'default' : 'outline'}
+                aria-pressed={phase2Responses[question.id] === 'no'}
+                className={`h-16 text-lg ${phase2Responses[question.id] === 'no' ? 'bg-red-700 hover:bg-red-800 text-white' : ''}`}
                 onClick={() => handlePhase2Answer(question.id, 'no')}
               >
                 <XCircle className="mr-2 h-5 w-5" />
@@ -661,7 +669,7 @@ export default function StateWiseComplianceAssessment() {
                 ) : (
                   <>
                     Submit Assessment
-                    <CheckCircle2 className="ml-2 h-4 w-4" />
+                    <CheckCircle className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
@@ -685,12 +693,6 @@ export default function StateWiseComplianceAssessment() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Beta Banner */}
-      <div className="bg-amber-700 text-white text-center py-2 text-sm font-medium">
-        This site is under development. All assessments FREE during beta!
-      </div>
-      
-      {/* Use consistent AssessmentHeader like other assessments */}
       <AssessmentHeader
         title="State-Wise Compliance"
         subtitle="ComplianceCheck"
@@ -705,7 +707,7 @@ export default function StateWiseComplianceAssessment() {
             <span className="text-sm font-medium text-gray-700">Overall Progress</span>
             <span className="text-sm font-semibold">{getProgress()}%</span>
           </div>
-          <Progress value={getProgress()} className="h-3 [&>div]:bg-green-600" aria-label="Assessment progress" />
+          <Progress value={getProgress()} className="h-3 [&>div]:bg-green-600" aria-label={`Assessment progress: ${getProgress()}% complete`} />
         </div>
       </div>
       
@@ -718,18 +720,6 @@ export default function StateWiseComplianceAssessment() {
         {currentPhase === 'submitting' && renderSubmitting()}
       </main>
       
-      {/* Footer */}
-      <footer className="bg-white border-t mt-auto py-4">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
-          <p>ComplianceCheck - Simplifying compliance for Indian businesses</p>
-          <p className="mt-1">
-            Questions? Contact us at{' '}
-            <a href="mailto:compliancecheck@zohomail.in" className="text-blue-600 hover:underline">
-              compliancecheck@zohomail.in
-            </a>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

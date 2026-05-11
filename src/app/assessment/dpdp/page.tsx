@@ -327,7 +327,7 @@ export default function DPDPAssessmentPage() {
                 Organization Profile
               </CardTitle>
               <CardDescription>
-                Tell us about your organization to personalize the assessment (7 questions)
+                Tell us about your organization to personalize the assessment (7 questions) — approximately 20 minutes total
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -664,9 +664,10 @@ export default function DPDPAssessmentPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       variant={responses[currentQuestion.id] === 'yes' ? 'default' : 'outline'}
+                      aria-pressed={responses[currentQuestion.id] === 'yes'}
                       className={`h-16 text-lg ${
-                        responses[currentQuestion.id] === 'yes' 
-                          ? 'bg-green-700 hover:bg-green-800 text-white' 
+                        responses[currentQuestion.id] === 'yes'
+                          ? 'bg-green-700 hover:bg-green-800 text-white'
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'yes')}
@@ -676,9 +677,10 @@ export default function DPDPAssessmentPage() {
                     </Button>
                     <Button
                       variant={responses[currentQuestion.id] === 'no' ? 'default' : 'outline'}
+                      aria-pressed={responses[currentQuestion.id] === 'no'}
                       className={`h-16 text-lg ${
-                        responses[currentQuestion.id] === 'no' 
-                          ? 'bg-red-700 hover:bg-red-800 text-white' 
+                        responses[currentQuestion.id] === 'no'
+                          ? 'bg-red-700 hover:bg-red-800 text-white'
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'no')}
@@ -754,16 +756,16 @@ export default function DPDPAssessmentPage() {
           </Card>
         )}
 
-        {/* Risk Warning */}
+        {/* Preparation prompt */}
         {step === 0 && (
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="font-semibold text-amber-900 mb-1">DPDP Compliance Deadline</h4>
-                <p className="text-sm text-amber-800">
-                  Full enforcement begins <strong>May 13, 2027</strong>. Penalties up to ₹250 crore per violation. 
-                  This assessment helps identify gaps before the deadline.
+                <h4 className="font-semibold text-blue-900 mb-1">Start your DPDP gap analysis now</h4>
+                <p className="text-sm text-blue-800">
+                  Full enforcement begins <strong>May 13, 2027</strong>. Early assessment gives you time to
+                  remediate gaps — avoiding last-minute pressure and compliance risk.
                 </p>
               </div>
             </div>

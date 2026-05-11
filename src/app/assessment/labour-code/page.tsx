@@ -27,7 +27,7 @@ import {
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
 import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Building2, Loader2, Info, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Building2, Loader2, Info, Save } from 'lucide-react';
 
 interface UserDetails {
   companyName: string;
@@ -317,14 +317,17 @@ export default function LabourCodeAssessmentPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
-    // Track completion before API call
-    // For yes/no questions, "no" typically indicates non-compliance
-    const gapCount = filteredQuestions.filter(q => 
-      q.type === 'yes_no' && responses[q.id] === 'no'
-    ).length;
+
+    // Compliance score: yes-answers ÷ applicable yes/no questions (not attendance %)
+    // A score of 0 (all "no") must not be coerced to a default — use ?? not ||
+    const yesNoQuestions = filteredQuestions.filter(q => q.type === 'yes_no');
+    const compliantCount = yesNoQuestions.filter(q => responses[q.id] === 'yes').length;
+    const gapCount = yesNoQuestions.length - compliantCount;
+    const complianceScore = yesNoQuestions.length > 0
+      ? Math.round((compliantCount / yesNoQuestions.length) * 100)
+      : 100;
     assessmentTracking.trackComplete(
-      Math.round((answeredQuestions / totalFilteredQuestions) * 100),
+      complianceScore,
       { high: gapCount, medium: 0, low: 0 },
       answeredQuestions,
       totalFilteredQuestions - answeredQuestions
@@ -437,7 +440,7 @@ export default function LabourCodeAssessmentPage() {
               <span>{progress}% complete</span>
             </div>
           </div>
-          <Progress value={progress} className="h-3 [&>div]:bg-green-600" aria-label="Assessment progress" />
+          <Progress value={progress} className="h-3 [&>div]:bg-green-600" aria-label={`Assessment progress: ${progress}% complete`} />
         </div>
 
         {/* Step 0: User Details */}
@@ -451,7 +454,7 @@ export default function LabourCodeAssessmentPage() {
               </div>
               <CardTitle className="text-2xl">Labour Code Readiness</CardTitle>
               <CardDescription>
-                Comprehensive assessment for all 4 new Labour Codes (effective November 2025)
+                Comprehensive assessment covering all 4 new Labour Codes — approximately 15–20 minutes
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -627,21 +630,23 @@ export default function LabourCodeAssessmentPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       variant={responses[currentQuestion.id] === 'yes' ? 'default' : 'outline'}
+                      aria-pressed={responses[currentQuestion.id] === 'yes'}
                       className={`h-16 text-lg ${
-                        responses[currentQuestion.id] === 'yes' 
-                          ? 'bg-green-700 hover:bg-green-800 text-white' 
+                        responses[currentQuestion.id] === 'yes'
+                          ? 'bg-green-700 hover:bg-green-800 text-white'
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'yes')}
                     >
-                      <CheckCircle2 className="w-5 h-5 mr-2" />
+                      <CheckCircle className="w-5 h-5 mr-2" />
                       Yes
                     </Button>
                     <Button
                       variant={responses[currentQuestion.id] === 'no' ? 'default' : 'outline'}
+                      aria-pressed={responses[currentQuestion.id] === 'no'}
                       className={`h-16 text-lg ${
-                        responses[currentQuestion.id] === 'no' 
-                          ? 'bg-red-700 hover:bg-red-800 text-white' 
+                        responses[currentQuestion.id] === 'no'
+                          ? 'bg-red-700 hover:bg-red-800 text-white'
                           : ''
                       }`}
                       onClick={() => handleResponse(currentQuestion.id, 'no')}
@@ -711,7 +716,7 @@ export default function LabourCodeAssessmentPage() {
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle className="w-4 h-4" />
                   Get Free Report
                 </>
               )}

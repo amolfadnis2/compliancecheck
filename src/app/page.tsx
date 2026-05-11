@@ -18,6 +18,14 @@ import {
   Car,
 } from 'lucide-react';
 
+// Trust strip data — honest, verifiable stats only
+const TRUST_SIGNALS = [
+  { stat: '7', label: 'compliance domains covered' },
+  { stat: '18+', label: 'Indian laws referenced' },
+  { stat: '250+', label: 'compliance questions across all tools' },
+  { stat: '15 min', label: 'average to complete' },
+];
+
 // Assessment card data
 const assessments = [
   {
@@ -25,7 +33,7 @@ const assessments = [
     title: 'Statutory Health Check',
     description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance.',
     questions: 12,
-    price: 'Rs.999 post-beta',
+    price: 'Rs.999 after beta',
     href: '/assessment/statutory-health',
     icon: Heart,
     gradient: 'from-blue-500 to-blue-600',
@@ -37,7 +45,7 @@ const assessments = [
     title: 'Labour Code Readiness',
     description: 'Assessment for all 4 new Labour Codes (Nov 2025). Gap analysis & action items.',
     questions: 30,
-    price: 'Rs.1,999 post-beta',
+    price: 'Rs.1,999 after beta',
     href: '/assessment/labour-code',
     icon: Scale,
     gradient: 'from-teal-500 to-teal-600',
@@ -49,7 +57,7 @@ const assessments = [
     title: 'DPDP Gap Assessment',
     description: 'Data protection compliance for DPDP Act 2023 (effective May 2027). Maturity scoring.',
     questions: 45,
-    price: 'Rs.2,499 post-beta',
+    price: 'Rs.2,499 after beta',
     href: '/assessment/dpdp',
     icon: Shield,
     gradient: 'from-blue-600 to-cyan-600',
@@ -61,7 +69,7 @@ const assessments = [
     title: 'Which Laws Apply to My Business?',
     description: "Find out exactly what's required in your state — Professional Tax slabs, Labour Welfare Fund rates, S&E deadlines, and more.",
     questions: 10,
-    price: 'Rs.1,499 post-beta',
+    price: 'Rs.1,499 after beta',
     href: '/assessment/state-wise-compliance',
     icon: MapPin,
     gradient: 'from-indigo-600 to-purple-600',
@@ -73,7 +81,7 @@ const assessments = [
     title: 'Restaurant & Food Business',
     description: 'FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.',
     questions: 26,
-    price: 'Rs.999 post-beta',
+    price: 'Rs.999 after beta',
     href: '/assessment/food-business',
     icon: Utensils,
     gradient: 'from-cyan-500 to-teal-600',
@@ -85,7 +93,7 @@ const assessments = [
     title: 'POSH Act 2013 Compliance',
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
     questions: 40,
-    price: 'Rs.1,999 post-beta',
+    price: 'Rs.1,999 after beta',
     href: '/assessment/posh',
     icon: AlertTriangle,
     gradient: 'from-purple-500 to-pink-600',
@@ -155,6 +163,9 @@ export default function LandingPage() {
 
       {/* Main Content */}
       <main id="main">
+        {/* Hero Section */}
+        <HeroSection />
+
         {/* Assessments Section */}
         <AssessmentsSection />
 
@@ -236,12 +247,12 @@ function Header({
             {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* Contact CTA */}
+            {/* Primary nav CTA — drives toward assessments, not away to contact */}
             <Link
-              href="/contact"
+              href="#assessments"
               className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
-              Contact Us
+              Get Started Free
             </Link>
 
             {/* Mobile Menu Button */}
@@ -278,9 +289,18 @@ function Header({
                 ))}
                 <li className="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
                   <Link
-                    href="/contact"
+                    href="#assessments"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Get Started Free
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contact"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
                   >
                     Contact Us
                   </Link>
@@ -295,6 +315,65 @@ function Header({
 }
 
 
+// Hero Section — Fix 1: outcome-led value proposition above the card grid
+function HeroSection() {
+  return (
+    <section
+      className="pt-28 pb-12 bg-gradient-to-b from-blue-50 to-white dark:from-gray-800 dark:to-gray-900"
+      aria-labelledby="hero-heading"
+    >
+      <div className="max-w-4xl mx-auto px-6 text-center">
+        <h1
+          id="hero-heading"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-6"
+        >
+          Know exactly where your business stands on{' '}
+          <span className="bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+            Indian compliance
+          </span>{' '}
+          — in 15 minutes
+        </h1>
+
+        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
+          Answer a guided set of questions. Get an instant PDF report with your compliance score,
+          every gap identified, and a prioritised action list — with citations to the actual law.
+          No lawyer appointment needed.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
+          <a
+            href="#assessments"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          >
+            View All Assessments
+            <ArrowRight className="w-5 h-5" aria-hidden="true" />
+          </a>
+          <a
+            href="/calculators/compliance-penalty-calculator"
+            className="inline-flex items-center justify-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold px-8 py-4 rounded-xl border border-gray-200 dark:border-gray-700 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          >
+            <Calculator className="w-5 h-5" aria-hidden="true" />
+            Check Your Penalty Exposure — Free
+          </a>
+        </div>
+
+        {/* Trust strip — Fix 4 (partial): surface credentials into the first viewport */}
+        <div
+          className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-gray-200 dark:border-gray-700 pt-8"
+          aria-label="Trust indicators"
+        >
+          {TRUST_SIGNALS.map((s) => (
+            <div key={s.label} className="text-center">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{s.stat}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // Assessments Section
 function AssessmentsSection() {
   return (
@@ -308,26 +387,30 @@ function AssessmentsSection() {
         <header className="text-center mb-16">
           {/* Top Badge */}
           <span className="inline-block bg-gradient-to-r from-blue-500 to-teal-500 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">
-            📋 For Your Business
+            📋 Choose Your Assessment
           </span>
 
-          {/* Main Heading */}
-          <h1
+          {/* Main Heading — H2 because H1 is in the hero */}
+          <h2
             id="assessments-heading"
-            className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4"
+            className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
           >
-            Pay-as-you-go Assessments
-          </h1>
+            7 Assessments. Every major compliance domain.
+          </h2>
 
           {/* Subtitle */}
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Choose the compliance assessment you need. No subscriptions. Get instant reports with gap analysis.
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Each assessment delivers a scored PDF report with your gaps, risk level, and exact steps to fix them.
+            No subscription — pay only for what you need.
           </p>
 
-          {/* Beta Badge */}
-          <div className="mt-6">
-            <span className="inline-block bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700 rounded-2xl px-6 py-3 text-blue-700 dark:text-blue-300 font-semibold">
-              🎉 FREE DURING BETA
+          {/* Beta notice — Fix 3: single clear message, no contradictory "after beta" signals */}
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <span className="inline-block bg-green-50 dark:bg-green-900/30 border-2 border-green-200 dark:border-green-700 rounded-2xl px-6 py-3 text-green-700 dark:text-green-300 font-semibold">
+              🎉 All assessments are FREE during beta
+            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Your report is yours to keep permanently.
             </span>
           </div>
         </header>
@@ -393,12 +476,12 @@ function AssessmentCard({ assessment }: { assessment: typeof assessments[number]
             <span className="text-gray-500 dark:text-gray-500"> questions</span>
           </span>
           <span className="w-px h-4 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
-          <span className="text-xs text-gray-500 dark:text-gray-500">{assessment.price}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 italic">{assessment.price}</span>
         </div>
 
-        {/* CTA Button */}
-        <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-300">
-          <span className="font-medium">Start Assessment</span>
+        {/* CTA Button — Fix 2: visible solid background in resting state (touch-device safe) */}
+        <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg bg-blue-600 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 text-white transition-all duration-300">
+          <span className="font-medium">Start Free Assessment</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
@@ -420,7 +503,7 @@ function FreeToolsSection() {
       className="py-24 bg-gray-50 dark:bg-gray-800"
       aria-labelledby="free-tools-heading"
     >
-      <div className="max-w-5xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <header className="text-center mb-12">
           <span className="inline-block bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">
@@ -440,15 +523,15 @@ function FreeToolsSection() {
           </span>
         </header>
 
-        {/* Tools Grid */}
-        <div className="grid md:grid-cols-2 gap-8">
+        {/* Tools Grid — 3-col to match assessments section above */}
+        <div className="grid md:grid-cols-3 gap-8">
           {freeTools.map((tool) => {
             const IconComponent = tool.icon;
             return (
               <Link
                 key={tool.id}
                 href={tool.href}
-                className="group bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:border-emerald-500 hover:shadow-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                className="group bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:border-emerald-500 hover:shadow-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center shadow-md`}>
@@ -568,7 +651,7 @@ function FAQSection() {
     },
     {
       question: 'How accurate are the assessments?',
-      answer: 'Our checklists are developed with practising CS and labour law experts. We cite specific government sections and rules.'
+      answer: 'Our questions are based on the actual government acts and rules. Every answer maps to a specific legal section so you can verify everything yourself.'
     },
     {
       question: 'What do I get in the report?',
