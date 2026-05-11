@@ -15,6 +15,7 @@ import {
 } from '@/lib/assessments/statutory-health-questions'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { useAssessmentTracking } from '@/lib/analytics'
+import { toast } from 'sonner'
 
 type AssessmentResponse = Record<string, string>
 
@@ -223,7 +224,7 @@ export default function StatutoryHealthAssessmentPage() {
       router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.STATUTORY_HEALTH}`)
     } catch (error) {
       console.error('Submit error:', error)
-      alert('Something went wrong. Please try again.')
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setIsSubmitting(false)
     }

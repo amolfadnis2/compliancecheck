@@ -720,18 +720,6 @@ export default function StateWiseComplianceAssessment() {
         {currentPhase === 'submitting' && renderSubmitting()}
       </main>
       
-      {/* Footer */}
-      <footer className="bg-white border-t mt-auto py-4">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
-          <p>ComplianceCheck - Simplifying compliance for Indian businesses</p>
-          <p className="mt-1">
-            Questions? Contact us at{' '}
-            <a href="mailto:compliancecheck@zohomail.in" className="text-blue-600 hover:underline">
-              compliancecheck@zohomail.in
-            </a>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

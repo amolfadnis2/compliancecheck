@@ -469,7 +469,7 @@ export default function POSHAssessmentPage() {
             applicabilityResponses: responses,
             complianceResponses: {},
             results: lccResults,
-            assessmentType: 'posh_compliance',
+            assessmentType: ASSESSMENT_TYPES.POSH,
           }),
         })
       } catch (err) {
@@ -1699,7 +1699,7 @@ export default function POSHAssessmentPage() {
           </div>
           
           <Button 
-            onClick={() => router.push('/assessments')} 
+            onClick={() => router.push('/')}
             className="w-full bg-blue-700 hover:bg-blue-800"
           >
             Explore Other Assessments
@@ -1754,7 +1754,7 @@ export default function POSHAssessmentPage() {
       <main className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <div className="mb-6">
-          <Link href="/assessments" className="inline-flex items-center text-blue-700 hover:text-blue-800">
+          <Link href="/" className="inline-flex items-center text-blue-700 hover:text-blue-800">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Assessments
           </Link>
