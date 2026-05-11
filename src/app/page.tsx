@@ -18,12 +18,12 @@ import {
   Car,
 } from 'lucide-react';
 
-// Trust strip data
+// Trust strip data — honest, verifiable stats only
 const TRUST_SIGNALS = [
-  { stat: '500+', label: 'assessments run' },
   { stat: '7', label: 'compliance domains covered' },
   { stat: '18+', label: 'Indian laws referenced' },
-  { stat: 'CS & HR', label: 'lawyers reviewed every question' },
+  { stat: '250+', label: 'compliance questions across all tools' },
+  { stat: '15 min', label: 'average to complete' },
 ];
 
 // Assessment card data
@@ -323,10 +323,6 @@ function HeroSection() {
       aria-labelledby="hero-heading"
     >
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <span className="inline-block bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-          Built with practising CS &amp; HR lawyers
-        </span>
-
         <h1
           id="hero-heading"
           className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-6"
@@ -507,7 +503,7 @@ function FreeToolsSection() {
       className="py-24 bg-gray-50 dark:bg-gray-800"
       aria-labelledby="free-tools-heading"
     >
-      <div className="max-w-5xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <header className="text-center mb-12">
           <span className="inline-block bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">
@@ -527,15 +523,15 @@ function FreeToolsSection() {
           </span>
         </header>
 
-        {/* Tools Grid */}
-        <div className="grid md:grid-cols-2 gap-8">
+        {/* Tools Grid — 3-col to match assessments section above */}
+        <div className="grid md:grid-cols-3 gap-8">
           {freeTools.map((tool) => {
             const IconComponent = tool.icon;
             return (
               <Link
                 key={tool.id}
                 href={tool.href}
-                className="group bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:border-emerald-500 hover:shadow-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                className="group bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:border-emerald-500 hover:shadow-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center shadow-md`}>
@@ -655,7 +651,7 @@ function FAQSection() {
     },
     {
       question: 'How accurate are the assessments?',
-      answer: 'Our checklists are developed with practising CS and labour law experts. We cite specific government sections and rules.'
+      answer: 'Our questions are based on the actual government acts and rules. Every answer maps to a specific legal section so you can verify everything yourself.'
     },
     {
       question: 'What do I get in the report?',
