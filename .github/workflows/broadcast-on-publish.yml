@@ -1,0 +1,54 @@
+name: Broadcast newsletter on new blog post
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'content/blog/**.mdx'
+
+jobs:
+  broadcast:
+    name: Send newsletter broadcast
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect newly added MDX files
+        id: detect
+        run: |
+          NEW_FILES=$(git diff --diff-filter=A --name-only HEAD~1 HEAD -- 'content/blog/*.mdx')
+          echo "new_files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$NEW_FILES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Broadcast for each new post
+        if: steps.detect.outputs.new_files != ''
+        env:
+          NEWSLETTER_BROADCAST_SECRET: ${{ secrets.NEWSLETTER_BROADCAST_SECRET }}
+        run: |
+          echo "${{ steps.detect.outputs.new_files }}" | while IFS= read -r filepath; do
+            [ -z "$filepath" ] && continue
+            # Extract slug: strip directory prefix and .mdx extension
+            SLUG=$(basename "$filepath" .mdx)
+            echo "Broadcasting for slug: $SLUG"
+            HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+              -X POST https://compliancecheck.co.in/api/newsletter/broadcast \
+              -H "Content-Type: application/json" \
+              -H "x-broadcast-secret: ${NEWSLETTER_BROADCAST_SECRET}" \
+              -d "{\"slug\": \"${SLUG}\"}")
+            echo "Response (HTTP $HTTP_STATUS):"
+            cat /tmp/response.json
+            if [ "$HTTP_STATUS" -ge 400 ]; then
+              echo "Broadcast failed for $SLUG with HTTP $HTTP_STATUS" >&2
+              exit 1
+            fi
+          done
+
+      - name: Skip — no new posts detected
+        if: steps.detect.outputs.new_files == ''
+        run: echo "No new MDX files in this push. Skipping broadcast."
