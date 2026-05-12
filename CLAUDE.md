@@ -1,6 +1,37 @@
-# CLAUDE.md — ComplianceCheck Development Constitution
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
+# ComplianceCheck Development Constitution
 
 > **Read this first in every session.** These rules are non-negotiable and encode lessons learned from production incidents. Violating any of them will cause build failures, data loss, or incorrect UI.
+
+---
+
+## 0. Commands
+
+```bash
+npm run dev      # Start Next.js dev server on localhost:3000
+npm run build    # Production build (type-check + compile)
+npm run lint     # ESLint — must be zero errors before committing
+npx vitest       # Run unit tests (vitest — no npm test script defined)
+npx vitest run src/path/to/file.test.ts  # Run a single test file
+```
+
+Required environment variables (create `.env.local`):
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=
+RESEND_API_KEY=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+NEXT_PUBLIC_RAZORPAY_KEY_ID=
+```
 
 ---
 
@@ -270,16 +301,40 @@ Writes nothing to Supabase by design (email-only flow via Resend). If DB persist
 
 ---
 
-## 16. Project Structure Quick Reference
+## 16. Supabase Client Selection
+
+Three distinct clients in `src/lib/supabase/` — pick the right one:
+
+| Client | File | Use When |
+|--------|------|----------|
+| Browser | `client.ts` | Client components (uses anon key) |
+| Server | `server.ts` | Server Components, reads cookies for auth session |
+| Admin | `admin.ts` | API routes that need to bypass RLS (service role key) |
+
+`createAdminClient()` throws if env vars are missing — never call it from client components.
+
+---
+
+## 17. Admin Dashboard
+
+Protected route at `/admin` — uses a separate auth flow in `src/app/admin/(auth)/login`. The dashboard at `/admin/(dashboard)/assessments` reads from all assessment tables via `src/app/api/admin/stats/`. TypeScript types for admin data live in `src/types/` (not in lib).
+
+---
+
+## 18. Project Structure Quick Reference
 
 ```
 src/
 ├── app/
+│   ├── (auth)/                  # User auth routes (login, register, forgot-password)
+│   ├── admin/                   # Admin dashboard (separate auth at admin/(auth)/login)
 │   ├── api/assessment/          # Submit endpoints (one per assessment type)
 │   │   └── auto-dealer/         # Multi-phase endpoints (keep separate)
 │   ├── assessment/              # Assessment page routes
+│   ├── assessments/landing/     # SEO landing pages per assessment type
 │   ├── calculator/              # CTC, Gratuity calculators
-│   └── calculators/             # Penalty Exposure calculator
+│   ├── calculators/             # Penalty Exposure calculator
+│   └── results/[id]/            # Shared results page (reads from Supabase by ID)
 ├── components/
 │   ├── assessment/              # Shared assessment components (AssessmentHeader, etc.)
 │   ├── identity/                # EmailGate, OTPInput, ConsentCheckboxes
@@ -287,9 +342,12 @@ src/
 │   └── feedback/                # FeedbackForm (NPS)
 ├── lib/
 │   ├── analytics/               # PostHog events, tracking, hooks
-│   ├── assessments/             # Question definitions and scoring logic
+│   ├── assessments/             # Question definitions and scoring logic per type
 │   ├── constants/               # assessment-types.ts, india.ts (single sources of truth)
-│   └── pdf/                     # unified-report-generator.ts + report-data-adapter.ts
+│   ├── feature-flags/           # Env-var-backed flags (no runtime dependency)
+│   ├── pdf/                     # unified-report-generator.ts + report-data-adapter.ts
+│   └── supabase/                # browser.ts, server.ts, admin.ts clients
+├── types/                       # Admin dashboard TypeScript types
 └── supabase/migrations/         # All schema changes — never edit live DB directly
 ```
 
