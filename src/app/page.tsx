@@ -197,7 +197,8 @@ function Header({
     { href: '/how-it-works', label: 'How It Works' },
     { href: '#assessments', label: 'Assessments' },
     { href: '#free-tools', label: 'Free Tools' },
-    { href: '#faq', label: 'FAQ' }
+    { href: '#faq', label: 'FAQ' },
+    { href: '/blog', label: 'Blog' },
   ];
 
   return (
