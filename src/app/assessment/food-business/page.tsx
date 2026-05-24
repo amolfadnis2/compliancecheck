@@ -15,15 +15,17 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  Download,
   Utensils,
   AlertTriangle,
   Info,
   Shield
 } from 'lucide-react'
+import { Controller } from 'react-hook-form'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
-import { useAssessmentTracking } from '@/lib/analytics'
+import { useAssessmentTracking, analytics } from '@/lib/analytics'
+import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS } from '@/lib/constants/india'
 
 // Import questions and applicability
 import {
@@ -51,11 +53,13 @@ const userDetailsSchema = z.object({
   email: z.string().email('Invalid email address'),
   phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile number'),
   companyName: z.string().min(2, 'Business name is required').max(200),
+  state: z.string().min(1, 'Please select your state'),
+  employeeCount: z.string().min(1, 'Please select employee count'),
 })
 
 type UserDetails = z.infer<typeof userDetailsSchema>
 
-type Step = 'details' | 'applicability' | 'summary' | 'questions' | 'results'
+type Step = 'details' | 'applicability' | 'summary' | 'questions'
 
 // ============================================================================
 // COMPONENT
@@ -80,20 +84,11 @@ export default function FoodBusinessAssessmentPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [responses, setResponses] = useState<Record<string, string>>({})
   
-  // Results
-  const [results, setResults] = useState<{
-    overallScore: number
-    categoryScores: Record<string, { score: number; maxScore: number; percentage: number }>
-    complianceStatus: 'compliant' | 'needs_attention' | 'non_compliant'
-    actionItems: Array<{ questionId: string; category: string; text: string; priority: 'high' | 'medium' | 'low' }>
-  } | null>(null)
-  
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [assessmentId, setAssessmentId] = useState<string | null>(null)
   
   // Form
-  const { register, handleSubmit, formState: { errors } } = useForm<UserDetails>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<UserDetails>({
     resolver: zodResolver(userDetailsSchema),
   })
 
@@ -138,7 +133,7 @@ export default function FoodBusinessAssessmentPage() {
       const tempResults = calculateApplicability(applicabilityResponses)
       const applicable = tempResults.filter(r => r.applies)
       const count = applicable.reduce((sum, r) => sum + r.questionCount, 0)
-      setEstimatedQuestionCount(count || TOTAL_POSSIBLE_QUESTIONS)
+      setEstimatedQuestionCount(count ?? TOTAL_POSSIBLE_QUESTIONS)
     }
   }, [applicabilityResponses])
 
@@ -154,6 +149,10 @@ export default function FoodBusinessAssessmentPage() {
     }
     if (q.id === 'women_count') {
       shouldSkip = applicabilityResponses.employs_women !== 'yes'
+    }
+    // Skip questions pre-populated from Step 0 (state, employee count)
+    if ((q.id === 'primary_state' || q.id === 'employee_count') && applicabilityResponses[q.id]) {
+      shouldSkip = true
     }
     
     if (shouldSkip) {
@@ -173,8 +172,24 @@ export default function FoodBusinessAssessmentPage() {
   // Step 0: User Details Submit
   const onUserDetailsSubmit = (data: UserDetails) => {
     setUserDetails(data)
+
+    // Pre-populate state and employee count so applicability skips those questions
+    setApplicabilityResponses(prev => ({
+      ...prev,
+      primary_state: data.state,
+      employee_count: data.employeeCount,
+    }))
+
+    // Identify user in PostHog now that we have their email
+    analytics.identify(data.email, {
+      name: data.fullName,
+      company_name: data.companyName,
+      state: data.state,
+      employee_count: data.employeeCount,
+    })
+
     setCurrentStep('applicability')
-    
+
     // Track assessment start
     assessmentTracking.trackStart()
   }
@@ -229,82 +244,20 @@ export default function FoodBusinessAssessmentPage() {
     
     try {
       const calculatedResults = calculateFoodBusinessScore(filteredQuestions, responses)
-      setResults(calculatedResults)
-      
-      // Track completion using the assessment tracking hook
+
+      // Track completion before the API call
       assessmentTracking.trackComplete(
         calculatedResults.overallScore,
-        { 
-          high: calculatedResults.actionItems.filter(a => a.priority === 'high').length, 
-          medium: calculatedResults.actionItems.filter(a => a.priority === 'medium').length, 
-          low: calculatedResults.actionItems.filter(a => a.priority === 'low').length 
+        {
+          high: calculatedResults.actionItems.filter(a => a.priority === 'high').length,
+          medium: calculatedResults.actionItems.filter(a => a.priority === 'medium').length,
+          low: calculatedResults.actionItems.filter(a => a.priority === 'low').length,
         },
         Object.keys(responses).length,
         filteredQuestions.length - Object.keys(responses).length
       )
-      
-      // Submit to API
-      const response = await fetch('/api/assessment/food-business-submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userDetails,
-          applicabilityResponses,
-          applicabilityResults,
-          responses,
-          score: calculatedResults.overallScore,
-          categoryScores: calculatedResults.categoryScores,
-          actionItems: calculatedResults.actionItems,
-          assessmentType: ASSESSMENT_TYPES.FOOD_BUSINESS,
-        }),
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        setAssessmentId(data.assessmentId)
-        
-        // Store in localStorage for results page
-        localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify({
-          userDetails,
-          applicabilityResponses,
-          applicabilityResults,
-          responses,
-          score: calculatedResults.overallScore,
-          categoryScores: calculatedResults.categoryScores,
-          actionItems: calculatedResults.actionItems,
-          completedAt: new Date().toISOString(),
-          assessmentType: ASSESSMENT_TYPES.FOOD_BUSINESS,
-        }))
-        
-        // Redirect directly to results page instead of showing inline results
-        router.push(`/results/${data.assessmentId}?type=${ASSESSMENT_TYPES.FOOD_BUSINESS}`)
-      } else {
-        // Fallback to localStorage only
-        const fallbackId = 'local_' + crypto.randomUUID()
-        setAssessmentId(fallbackId)
-        localStorage.setItem(getLocalStorageKey(fallbackId), JSON.stringify({
-          userDetails,
-          applicabilityResponses,
-          applicabilityResults,
-          responses,
-          score: calculatedResults.overallScore,
-          categoryScores: calculatedResults.categoryScores,
-          actionItems: calculatedResults.actionItems,
-          completedAt: new Date().toISOString(),
-          assessmentType: ASSESSMENT_TYPES.FOOD_BUSINESS,
-        }))
-        // Redirect directly to results page
-        router.push(`/results/${fallbackId}?type=${ASSESSMENT_TYPES.FOOD_BUSINESS}`)
-      }
-    } catch (error) {
-      console.error('Submission error:', error)
-      // Fallback to localStorage
-      const calculatedResults = calculateFoodBusinessScore(filteredQuestions, responses)
-      setResults(calculatedResults)
-      const fallbackId = 'local_' + crypto.randomUUID()
-      setAssessmentId(fallbackId)
-      localStorage.setItem(getLocalStorageKey(fallbackId), JSON.stringify({
+
+      const localPayload = {
         userDetails,
         applicabilityResponses,
         applicabilityResults,
@@ -314,8 +267,32 @@ export default function FoodBusinessAssessmentPage() {
         actionItems: calculatedResults.actionItems,
         completedAt: new Date().toISOString(),
         assessmentType: ASSESSMENT_TYPES.FOOD_BUSINESS,
-      }))
-      // Redirect directly to results page
+      }
+
+      // Submit to API
+      let assessmentId: string
+      try {
+        const apiResponse = await fetch('/api/assessment/food-business-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...localPayload,
+            score: calculatedResults.overallScore,
+          }),
+        })
+        const apiData = await apiResponse.json()
+        assessmentId = apiData.assessmentId ?? `local_${Date.now()}`
+      } catch {
+        assessmentId = `local_${Date.now()}`
+      }
+
+      // Always persist to localStorage so results page can read it
+      localStorage.setItem(getLocalStorageKey(assessmentId), JSON.stringify(localPayload))
+
+      router.push(`/results/${assessmentId}?type=${ASSESSMENT_TYPES.FOOD_BUSINESS}`)
+    } catch {
+      // Hard fallback — still redirect so user sees something
+      const fallbackId = `local_${Date.now()}`
       router.push(`/results/${fallbackId}?type=${ASSESSMENT_TYPES.FOOD_BUSINESS}`)
     } finally {
       setIsSubmitting(false)
@@ -369,6 +346,50 @@ export default function FoodBusinessAssessmentPage() {
             {errors.companyName && <p className="text-sm text-red-500">{errors.companyName.message}</p>}
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="state">Registered State *</Label>
+              <Controller
+                name="state"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="state">
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDIAN_STATES.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.state && <p className="text-sm text-red-500">{errors.state.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="employeeCount">Employee Count *</Label>
+              <Controller
+                name="employeeCount"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="employeeCount">
+                      <SelectValue placeholder="Select range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EMPLOYEE_COUNT_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.employeeCount && <p className="text-sm text-red-500">{errors.employeeCount.message}</p>}
+            </div>
+          </div>
+
           <div className="bg-blue-50 p-4 rounded-lg mt-6">
             <div className="flex items-start gap-3">
               <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -376,7 +397,7 @@ export default function FoodBusinessAssessmentPage() {
                 <p className="font-medium mb-1">What to expect:</p>
                 <ul className="list-disc list-inside space-y-1 text-blue-700">
                   <li>First, we will ask about your business to determine applicable regulations</li>
-                  <li>Then, you will answer {TOTAL_POSSIBLE_QUESTIONS} compliance questions (filtered to your profile)</li>
+                  <li>Then, up to {TOTAL_POSSIBLE_QUESTIONS} compliance questions (filtered to your profile)</li>
                   <li>Get instant compliance score with detailed gap analysis</li>
                   <li>Download PDF report with remediation steps</li>
                 </ul>
@@ -385,7 +406,7 @@ export default function FoodBusinessAssessmentPage() {
           </div>
 
           <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 h-12 text-lg">
-            Start Assessment
+            Start Assessment (up to {TOTAL_POSSIBLE_QUESTIONS} questions)
           </Button>
         </form>
       </CardContent>
@@ -435,7 +456,7 @@ export default function FoodBusinessAssessmentPage() {
               {applicabilityIndex + 1} of {FOOD_BUSINESS_APPLICABILITY_QUESTIONS.length}
             </span>
           </div>
-          <Progress value={progress} aria-label={`Applicability progress: ${Math.round(progress)}% complete`} className="h-2 mb-4" />
+          <Progress value={progress} aria-label={`Applicability progress: ${Math.round(progress)}% complete`} className="h-3 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">
@@ -627,7 +648,7 @@ export default function FoodBusinessAssessmentPage() {
               {currentQuestionIndex + 1} of {filteredQuestions.length}
             </span>
           </div>
-          <Progress value={progress} aria-label={`Assessment progress: ${Math.round(progress)}% complete`} className="h-2 mb-4" />
+          <Progress value={progress} aria-label={`Assessment progress: ${Math.round(progress)}% complete`} className="h-3 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">
@@ -691,161 +712,20 @@ export default function FoodBusinessAssessmentPage() {
     )
   }
   
-  // Step 4: Results
-  const renderResults = () => {
-    if (!results) return null
-    
-    const getScoreColor = (score: number) => {
-      if (score >= 80) return 'text-green-600'
-      if (score >= 60) return 'text-amber-500'
-      return 'text-red-600'
-    }
-    
-    const getScoreBg = (score: number) => {
-      if (score >= 80) return 'bg-green-100'
-      if (score >= 60) return 'bg-amber-100'
-      return 'bg-red-100'
-    }
-    
-    const getStatusText = (status: string) => {
-      switch (status) {
-        case 'compliant': return 'Compliant'
-        case 'needs_attention': return 'Needs Attention'
-        case 'non_compliant': return 'Non-Compliant'
-        default: return status
-      }
-    }
-    
-    return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Score Card */}
-        <Card>
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl">Assessment Complete!</CardTitle>
-            <CardDescription>
-              Restaurant & Food Business Compliance Check for {userDetails?.companyName}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full ${getScoreBg(results.overallScore)} mb-4`}>
-              <span className={`text-5xl font-bold ${getScoreColor(results.overallScore)}`}>
-                {results.overallScore}%
-              </span>
-            </div>
-            <p className={`text-xl font-semibold ${getScoreColor(results.overallScore)}`}>
-              {getStatusText(results.complianceStatus)}
-            </p>
-          </CardContent>
-        </Card>
-        
-        {/* Category Scores */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Category-wise Compliance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(results.categoryScores).map(([category, scores]) => {
-                const categoryInfo = FOOD_BUSINESS_CATEGORIES[category]
-                return (
-                  <div key={category}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-medium">{categoryInfo?.name || category}</span>
-                      <span className={getScoreColor(scores.percentage)}>{scores.percentage}%</span>
-                    </div>
-                    <Progress 
-                      value={scores.percentage} 
-                      className="h-2"
-                      aria-label={`${category} compliance`}
-                    />
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Action Items */}
-        {results.actionItems.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
-                Priority Action Items ({results.actionItems.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {results.actionItems.slice(0, 10).map((item) => (
-                  <div 
-                    key={item.questionId}
-                    className={`p-3 rounded-lg border-l-4 ${
-                      item.priority === 'high' 
-                        ? 'border-red-500 bg-red-50' 
-                        : item.priority === 'medium'
-                        ? 'border-amber-500 bg-amber-50'
-                        : 'border-blue-500 bg-blue-50'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                        item.priority === 'high' 
-                          ? 'bg-red-100 text-red-700' 
-                          : item.priority === 'medium'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {item.priority.toUpperCase()}
-                      </span>
-                      <span className="text-xs text-gray-500">{FOOD_BUSINESS_CATEGORIES[item.category]?.name}</span>
-                    </div>
-                    <p className="mt-1 text-sm">{item.text}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        
-        {/* Actions */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                onClick={() => assessmentId && router.push(`/results/${assessmentId}`)}
-                className="flex-1 bg-orange-600 hover:bg-orange-700"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                View Full Report & Download PDF
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => router.push('/')}
-                className="flex-1"
-              >
-                Back to Home
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   // ============================================================================
   // MAIN RENDER
   // ============================================================================
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <AssessmentHeader 
+      <AssessmentHeader
         title="Restaurant & Food Business Compliance Check"
         subtitle="FSSAI, GST, Fire Safety, Labour & Liquor Compliance"
       />
 
-      {/* Overall Progress Bar - Two-tier system */}
-      {currentStep !== 'results' && (
+      {/* Overall Progress Bar */}
+      {currentStep !== 'details' && (
         <div className="bg-white border-b">
           <div className="container mx-auto px-4 py-3">
             <div className="max-w-2xl mx-auto">
@@ -881,7 +761,6 @@ export default function FoodBusinessAssessmentPage() {
         {currentStep === 'applicability' && renderApplicabilityQuestion()}
         {currentStep === 'summary' && renderSummary()}
         {currentStep === 'questions' && renderQuestion()}
-        {currentStep === 'results' && renderResults()}
       </main>
     </div>
   )

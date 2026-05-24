@@ -984,9 +984,9 @@ export function calculateFoodBusinessScore(
   
   const overallScore = totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
   
-  const complianceStatus: 'compliant' | 'needs_attention' | 'non_compliant' = 
-    overallScore >= 80 ? 'compliant' :
-    overallScore >= 60 ? 'needs_attention' : 'non_compliant';
+  const complianceStatus: 'compliant' | 'needs_attention' | 'non_compliant' =
+    overallScore >= 90 ? 'compliant' :
+    overallScore >= 70 ? 'needs_attention' : 'non_compliant';
   
   // Sort action items by priority
   actionItems.sort((a, b) => {
