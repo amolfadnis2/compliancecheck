@@ -14,7 +14,7 @@ import { LABOUR_CODE_CATEGORIES } from '@/lib/assessments/labour-code-questions'
 import { DPDP_CATEGORIES, getDaysUntilDeadline } from '@/lib/assessments/dpdp-questions'
 import { POSH_CATEGORIES } from '@/lib/assessments/posh/posh-compliance-questions'
 import { FOOD_BUSINESS_CATEGORIES } from '@/lib/assessments/food-business-questions'
-import { DownloadButtons } from '@/components/results/download-buttons'
+import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
@@ -1073,7 +1073,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
                 </ul>
               </div>
               <div className="w-full md:w-auto">
-                <DownloadButtons assessmentId={id} assessmentType={assessmentType} />
+                <DownloadWithFeedback assessmentId={id} assessmentType={assessmentType} />
               </div>
             </div>
           </CardContent>
