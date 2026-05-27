@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://compliancecheck.co.in'),
   title: "ComplianceCheck - Pay-as-you-go Compliance Assessments for Indian SMEs",
-  description: "Get instant compliance reports for Rs.999-2,499. Assessments for Labour Codes 2025, DPDP Act 2023, POSH Act, Food Business & more. No subscriptions. Free during beta.",
+  description: "Instant compliance reports for Indian SMEs. Labour Codes 2025, DPDP Act 2023, POSH Act, Food Business & more. Pay-as-you-go. Free during beta.",
   keywords: [
     "compliance assessment India",
     "labour code compliance",

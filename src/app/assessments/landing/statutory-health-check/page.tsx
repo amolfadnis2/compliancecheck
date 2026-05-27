@@ -5,10 +5,15 @@ import styles from '../assessment-landing.module.css'
 export const metadata: Metadata = {
   title: 'Statutory Health Check | PF, ESI, PT, Gratuity & Bonus Compliance | ComplianceCheck',
   description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance. Get instant compliance score and action items. ₹999 post-beta.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/assessments/landing/statutory-health-check',
+  },
   openGraph: {
     title: 'Statutory Health Check | ComplianceCheck',
     description: 'Quick 10-minute compliance assessment for Indian SMEs. Check PF, ESI, PT, Gratuity & Bonus status instantly.',
     type: 'website',
+    url: 'https://compliancecheck.co.in/assessments/landing/statutory-health-check',
+    siteName: 'ComplianceCheck',
   },
 }
 
@@ -26,7 +31,7 @@ export default function StatutoryHealthCheckPage() {
               ComplianceCheck
             </Link>
             <Link 
-              href="/assessments/statutory" 
+              href="/assessment/statutory-health" 
               className={styles.navCta}
               style={{ background: accentColor }}
             >
@@ -75,7 +80,7 @@ export default function StatutoryHealthCheckPage() {
                 ))}
               </ul>
               <Link 
-                href="/assessments/statutory" 
+                href="/assessment/statutory-health" 
                 className={styles.btnPrimary}
                 style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}
               >
@@ -216,7 +221,7 @@ export default function StatutoryHealthCheckPage() {
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
-            <Link href="/assessments/statutory" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
+            <Link href="/assessment/statutory-health" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
               Start Free Assessment →
             </Link>
           </div>
@@ -228,7 +233,7 @@ export default function StatutoryHealthCheckPage() {
         <div className={styles.container}>
           <h2>Ready to Check Your Compliance Status?</h2>
           <p>Takes only 10 minutes. No credit card required during beta.</p>
-          <Link href="/assessments/statutory" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/statutory-health" className={styles.btnWhite}>Start Free Assessment →</Link>
         </div>
       </section>
 
@@ -238,7 +243,7 @@ export default function StatutoryHealthCheckPage() {
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}>
               <Link href="/">Home</Link>
-              <Link href="/assessments">All Assessments</Link>
+              <Link href="/">All Assessments</Link>
               <Link href="/contact">Contact</Link>
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Service</Link>

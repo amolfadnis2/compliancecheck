@@ -6,6 +6,16 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 export const metadata: Metadata = {
   title: 'Contact Us - ComplianceCheck',
   description: 'Get in touch with ComplianceCheck for questions about compliance assessments, partnerships, or support.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/contact',
+  },
+  openGraph: {
+    title: 'Contact Us | ComplianceCheck',
+    description: 'Get in touch with ComplianceCheck for questions about compliance assessments, partnerships, or support.',
+    type: 'website',
+    url: 'https://compliancecheck.co.in/contact',
+    siteName: 'ComplianceCheck',
+  },
   robots: {
     index: true,
     follow: true

@@ -5,10 +5,15 @@ import styles from '../assessment-landing.module.css'
 export const metadata: Metadata = {
   title: 'POSH Act 2013 Compliance | ICC Audit & Workplace Safety | ComplianceCheck',
   description: 'Complete POSH Act compliance assessment. ICC constitution audit, policy review, complaint mechanism check, and annual report requirements. ₹1,999 post-beta.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/assessments/landing/posh-act-compliance',
+  },
   openGraph: {
     title: 'POSH Act 2013 Compliance | ComplianceCheck',
     description: 'Prevention of Sexual Harassment compliance assessment. ICC audit, policy review, and compliance roadmap.',
     type: 'website',
+    url: 'https://compliancecheck.co.in/assessments/landing/posh-act-compliance',
+    siteName: 'ComplianceCheck',
   },
 }
 
@@ -22,7 +27,7 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessments/posh" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/posh" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
           </div>
         </div>
       </nav>
@@ -43,7 +48,7 @@ export default function POSHActCompliancePage() {
                   <li key={i}><span className={styles.featureCheck} style={{ background: `${accentColor}15`, color: accentColor }}>✓</span>{feature}</li>
                 ))}
               </ul>
-              <Link href="/assessments/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
+              <Link href="/assessment/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Start Free Assessment →
               </Link>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
@@ -199,7 +204,7 @@ export default function POSHActCompliancePage() {
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
-            <Link href="/assessments/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
+            <Link href="/assessment/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
               Start Free Assessment →
             </Link>
           </div>
@@ -210,14 +215,14 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <h2>Is Your Workplace POSH Compliant?</h2>
           <p>Don&apos;t wait for a complaint to discover gaps. Assess your compliance proactively.</p>
-          <Link href="/assessments/posh" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/posh" className={styles.btnWhite}>Start Free Assessment →</Link>
         </div>
       </section>
 
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerContent}>
-            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/assessments">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
+            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
             <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
           </div>
         </div>

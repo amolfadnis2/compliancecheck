@@ -5,10 +5,15 @@ import styles from '../assessment-landing.module.css'
 export const metadata: Metadata = {
   title: 'State-Wise Compliance Check | Professional Tax, LWF, S&E Act | ComplianceCheck',
   description: 'Find out exactly what compliance requirements apply in your state. Professional Tax, Labour Welfare Fund, Shops & Establishments Act, and more. ₹1,499 post-beta.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/assessments/landing/state-wise-compliance',
+  },
   openGraph: {
     title: 'State-Wise Compliance Check | ComplianceCheck',
     description: 'State-specific compliance requirements for Indian businesses. 36 states & UTs, 20+ compliance areas.',
     type: 'website',
+    url: 'https://compliancecheck.co.in/assessments/landing/state-wise-compliance',
+    siteName: 'ComplianceCheck',
   },
 }
 
@@ -22,7 +27,7 @@ export default function StateWiseCompliancePage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessments/state-wise" className={styles.navCta} style={{ background: accentColor }}>Check My State</Link>
+            <Link href="/assessment/state-wise-compliance" className={styles.navCta} style={{ background: accentColor }}>Check My State</Link>
           </div>
         </div>
       </nav>
@@ -43,7 +48,7 @@ export default function StateWiseCompliancePage() {
                   <li key={i}><span className={styles.featureCheck} style={{ background: `${accentColor}15`, color: accentColor }}>✓</span>{feature}</li>
                 ))}
               </ul>
-              <Link href="/assessments/state-wise" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
+              <Link href="/assessment/state-wise-compliance" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Check My State →
               </Link>
             </div>
@@ -168,7 +173,7 @@ export default function StateWiseCompliancePage() {
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
-            <Link href="/assessments/state-wise" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
+            <Link href="/assessment/state-wise-compliance" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
               Check My State →
             </Link>
           </div>
@@ -179,14 +184,14 @@ export default function StateWiseCompliancePage() {
         <div className={styles.container}>
           <h2>Know Exactly What Your State Requires</h2>
           <p>Stop guessing. Get a clear compliance roadmap for your state today.</p>
-          <Link href="/assessments/state-wise" className={styles.btnWhite}>Check My State →</Link>
+          <Link href="/assessment/state-wise-compliance" className={styles.btnWhite}>Check My State →</Link>
         </div>
       </section>
 
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerContent}>
-            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/assessments">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
+            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
             <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
           </div>
         </div>

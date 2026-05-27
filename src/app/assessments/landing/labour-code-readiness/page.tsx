@@ -5,10 +5,15 @@ import styles from '../assessment-landing.module.css'
 export const metadata: Metadata = {
   title: 'Labour Code Readiness Assessment | Nov 2025 Deadline | ComplianceCheck',
   description: "Prepare for India's 4 new Labour Codes effective November 2025. Get implementation cost estimates, gap analysis, and action plan. ₹1,999 post-beta.",
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/assessments/landing/labour-code-readiness',
+  },
   openGraph: {
     title: 'Labour Code Readiness Assessment | ComplianceCheck',
     description: 'Are you ready for the 4 new Labour Codes? Assessment with cost estimates and implementation roadmap.',
     type: 'website',
+    url: 'https://compliancecheck.co.in/assessments/landing/labour-code-readiness',
+    siteName: 'ComplianceCheck',
   },
 }
 
@@ -23,7 +28,7 @@ export default function LabourCodeReadinessPage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessments/labour-code" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/labour-code" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
           </div>
         </div>
       </nav>
@@ -45,7 +50,7 @@ export default function LabourCodeReadinessPage() {
                   <li key={i}><span className={styles.featureCheck} style={{ background: `${accentColor}15`, color: accentColor }}>✓</span>{feature}</li>
                 ))}
               </ul>
-              <Link href="/assessments/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
+              <Link href="/assessment/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Start Free Assessment →
               </Link>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
@@ -174,7 +179,7 @@ export default function LabourCodeReadinessPage() {
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
-            <Link href="/assessments/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
+            <Link href="/assessment/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
               Start Free Assessment →
             </Link>
           </div>
@@ -186,7 +191,7 @@ export default function LabourCodeReadinessPage() {
         <div className={styles.container}>
           <h2>November 2025 is Closer Than You Think</h2>
           <p>Don&apos;t wait until the last minute. Assess your readiness today and plan your transition.</p>
-          <Link href="/assessments/labour-code" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/labour-code" className={styles.btnWhite}>Start Free Assessment →</Link>
         </div>
       </section>
 
@@ -195,7 +200,7 @@ export default function LabourCodeReadinessPage() {
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}>
-              <Link href="/">Home</Link><Link href="/assessments">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link>
+              <Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link>
             </div>
             <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
           </div>

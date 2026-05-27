@@ -26,7 +26,7 @@ export default function StatutoryHealthCheckPage() {
               ComplianceCheck
             </Link>
             <Link 
-              href="/assessments/statutory-health-check/start" 
+              href="/assessment/statutory-health" 
               className={styles.navCta}
               style={{ background: accentColor }}
             >
@@ -75,7 +75,7 @@ export default function StatutoryHealthCheckPage() {
                 ))}
               </ul>
               <Link 
-                href="/assessments/statutory-health-check/start" 
+                href="/assessment/statutory-health" 
                 className={styles.btnPrimary}
                 style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}
               >
@@ -281,7 +281,7 @@ export default function StatutoryHealthCheckPage() {
               ))}
             </ul>
             <Link 
-              href="/assessments/statutory-health-check/start" 
+              href="/assessment/statutory-health" 
               className={styles.btnPrimary}
               style={{ 
                 background: accentColor, 
@@ -301,7 +301,7 @@ export default function StatutoryHealthCheckPage() {
         <div className={styles.container}>
           <h2>Ready to Check Your Compliance Status?</h2>
           <p>Takes only 10 minutes. No credit card required during beta.</p>
-          <Link href="/assessments/statutory-health-check/start" className={styles.btnWhite}>
+          <Link href="/assessment/statutory-health" className={styles.btnWhite}>
             Start Free Assessment →
           </Link>
         </div>
@@ -313,7 +313,7 @@ export default function StatutoryHealthCheckPage() {
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}>
               <Link href="/">Home</Link>
-              <Link href="/assessments">All Assessments</Link>
+              <Link href="/">All Assessments</Link>
               <Link href="/contact">Contact</Link>
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Service</Link>

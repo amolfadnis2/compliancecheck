@@ -9,6 +9,16 @@ const nextConfig = {
     config.resolve.alias['@'] = path.resolve(__dirname, 'src');
     return config;
   },
+  async redirects() {
+    return [
+      // Redirect orphan/duplicate landing page to canonical SEO landing page
+      {
+        source: '/assessment/Landing',
+        destination: '/assessments/landing/statutory-health-check',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       // Security headers for admin routes

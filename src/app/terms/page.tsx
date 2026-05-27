@@ -6,6 +6,16 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 export const metadata: Metadata = {
   title: 'Terms of Service - ComplianceCheck',
   description: 'Terms of Service for ComplianceCheck compliance assessment platform. Read our usage terms, disclaimers, and policies.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/terms',
+  },
+  openGraph: {
+    title: 'Terms of Service | ComplianceCheck',
+    description: 'Terms of Service for ComplianceCheck compliance assessment platform. Read our usage terms, disclaimers, and policies.',
+    type: 'website',
+    url: 'https://compliancecheck.co.in/terms',
+    siteName: 'ComplianceCheck',
+  },
   robots: {
     index: true,
     follow: true
