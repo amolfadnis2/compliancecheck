@@ -5,10 +5,15 @@ import styles from '../assessment-landing.module.css'
 export const metadata: Metadata = {
   title: 'Restaurant & Food Business Compliance | FSSAI, Fire NOC, Liquor License | ComplianceCheck',
   description: 'Complete compliance assessment for restaurants, cloud kitchens, and food businesses. FSSAI, Fire NOC, Liquor License, GST, and Labour compliance. ₹999 post-beta.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/assessments/landing/restaurant-food-business',
+  },
   openGraph: {
     title: 'Restaurant & Food Business Compliance | ComplianceCheck',
     description: 'FSSAI, Fire NOC, Liquor License, and 8 compliance areas for food businesses. Assessment with gap analysis.',
     type: 'website',
+    url: 'https://compliancecheck.co.in/assessments/landing/restaurant-food-business',
+    siteName: 'ComplianceCheck',
   },
 }
 
@@ -22,7 +27,7 @@ export default function RestaurantFoodBusinessPage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessments/food-business" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/food-business" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
           </div>
         </div>
       </nav>
@@ -43,7 +48,7 @@ export default function RestaurantFoodBusinessPage() {
                   <li key={i}><span className={styles.featureCheck} style={{ background: `${accentColor}15`, color: accentColor }}>✓</span>{feature}</li>
                 ))}
               </ul>
-              <Link href="/assessments/food-business" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
+              <Link href="/assessment/food-business" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Start Free Assessment →
               </Link>
             </div>
@@ -183,7 +188,7 @@ export default function RestaurantFoodBusinessPage() {
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
-            <Link href="/assessments/food-business" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
+            <Link href="/assessment/food-business" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
               Start Free Assessment →
             </Link>
           </div>
@@ -194,14 +199,14 @@ export default function RestaurantFoodBusinessPage() {
         <div className={styles.container}>
           <h2>Is Your Food Business Fully Compliant?</h2>
           <p>Avoid raids and penalties. Get a complete compliance check today.</p>
-          <Link href="/assessments/food-business" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/food-business" className={styles.btnWhite}>Start Free Assessment →</Link>
         </div>
       </section>
 
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerContent}>
-            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/assessments">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
+            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
             <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
           </div>
         </div>

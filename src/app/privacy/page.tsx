@@ -6,6 +6,16 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 export const metadata: Metadata = {
   title: 'Privacy Policy - ComplianceCheck',
   description: 'Privacy Policy for ComplianceCheck. Learn how we collect, use, and protect your data in compliance with DPDP Act 2023.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/privacy',
+  },
+  openGraph: {
+    title: 'Privacy Policy | ComplianceCheck',
+    description: 'Privacy Policy for ComplianceCheck. Learn how we collect, use, and protect your data in compliance with DPDP Act 2023.',
+    type: 'website',
+    url: 'https://compliancecheck.co.in/privacy',
+    siteName: 'ComplianceCheck',
+  },
   robots: {
     index: true,
     follow: true

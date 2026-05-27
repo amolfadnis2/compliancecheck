@@ -5,10 +5,15 @@ import styles from '../assessment-landing.module.css'
 export const metadata: Metadata = {
   title: 'Auto Dealer Compliance Assessment | Dealer License, GST, Labour, Environment | ComplianceCheck',
   description: 'Complete compliance assessment for automobile dealers in India. Dealer license, GST, labour laws, environmental norms, consumer protection, and service center compliance. ₹1,499 post-beta.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/assessments/landing/auto-dealer-compliance',
+  },
   openGraph: {
     title: 'Auto Dealer Compliance Assessment | ComplianceCheck',
     description: 'Dealer license, GST, labour, environmental norms, and 8 compliance areas for automobile dealers. Gap analysis with action plan.',
     type: 'website',
+    url: 'https://compliancecheck.co.in/assessments/landing/auto-dealer-compliance',
+    siteName: 'ComplianceCheck',
   },
 }
 
@@ -22,7 +27,7 @@ export default function AutoDealerCompliancePage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessments/auto-dealer" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/auto-dealer" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
           </div>
         </div>
       </nav>
@@ -50,7 +55,7 @@ export default function AutoDealerCompliancePage() {
                   <li key={i}><span className={styles.featureCheck} style={{ background: `${accentColor}15`, color: accentColor }}>✓</span>{feature}</li>
                 ))}
               </ul>
-              <Link href="/assessments/auto-dealer" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
+              <Link href="/assessment/auto-dealer" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Start Free Assessment →
               </Link>
             </div>
@@ -247,7 +252,7 @@ export default function AutoDealerCompliancePage() {
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
-            <Link href="/assessments/auto-dealer" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
+            <Link href="/assessment/auto-dealer" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
               Start Free Assessment →
             </Link>
           </div>
@@ -258,7 +263,7 @@ export default function AutoDealerCompliancePage() {
         <div className={styles.container}>
           <h2>Is Your Dealership Fully Compliant?</h2>
           <p>Avoid RTO actions, GST notices, and labour inspections. Get a complete compliance check today.</p>
-          <Link href="/assessments/auto-dealer" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/auto-dealer" className={styles.btnWhite}>Start Free Assessment →</Link>
         </div>
       </section>
 
@@ -267,7 +272,7 @@ export default function AutoDealerCompliancePage() {
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}>
               <Link href="/">Home</Link>
-              <Link href="/assessments">All Assessments</Link>
+              <Link href="/">All Assessments</Link>
               <Link href="/contact">Contact</Link>
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Service</Link>

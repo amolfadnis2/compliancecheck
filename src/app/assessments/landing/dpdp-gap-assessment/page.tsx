@@ -5,10 +5,15 @@ import styles from '../assessment-landing.module.css'
 export const metadata: Metadata = {
   title: 'DPDP Act 2023 Gap Assessment | Data Protection Compliance | ComplianceCheck',
   description: 'Comprehensive DPDP Act 2023 compliance assessment. 6-phase evaluation with maturity scoring, gap analysis, and remediation roadmap. ₹2,499 post-beta.',
+  alternates: {
+    canonical: 'https://compliancecheck.co.in/assessments/landing/dpdp-gap-assessment',
+  },
   openGraph: {
     title: 'DPDP Gap Assessment | ComplianceCheck',
     description: "India's first data protection law. Assess your readiness with our 45-question gap analysis.",
     type: 'website',
+    url: 'https://compliancecheck.co.in/assessments/landing/dpdp-gap-assessment',
+    siteName: 'ComplianceCheck',
   },
 }
 
@@ -22,7 +27,7 @@ export default function DPDPGapAssessmentPage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessments/dpdp" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/dpdp" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
           </div>
         </div>
       </nav>
@@ -43,7 +48,7 @@ export default function DPDPGapAssessmentPage() {
                   <li key={i}><span className={styles.featureCheck} style={{ background: `${accentColor}15`, color: accentColor }}>✓</span>{feature}</li>
                 ))}
               </ul>
-              <Link href="/assessments/dpdp" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
+              <Link href="/assessment/dpdp" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Start Free Assessment →
               </Link>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
@@ -190,7 +195,7 @@ export default function DPDPGapAssessmentPage() {
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
-            <Link href="/assessments/dpdp" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
+            <Link href="/assessment/dpdp" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
               Start Free Assessment →
             </Link>
           </div>
@@ -201,14 +206,14 @@ export default function DPDPGapAssessmentPage() {
         <div className={styles.container}>
           <h2>Is Your Business DPDP Ready?</h2>
           <p>Don&apos;t risk ₹250 Crore penalties. Assess your data protection compliance today.</p>
-          <Link href="/assessments/dpdp" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/dpdp" className={styles.btnWhite}>Start Free Assessment →</Link>
         </div>
       </section>
 
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerContent}>
-            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/assessments">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
+            <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
             <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
