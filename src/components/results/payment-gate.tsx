@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
 import { CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { analytics } from '@/lib/analytics/tracking'
 
 interface PaymentGateProps {
   title?: string
@@ -24,6 +26,16 @@ export function PaymentGate({
   ],
   onPaid,
 }: PaymentGateProps) {
+  useEffect(() => {
+    analytics.pricingPageViewed({ source: 'assessment_complete', current_tier: 'free' })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleClick = () => {
+    analytics.checkoutStarted({ plan: 'pro', billing_cycle: 'monthly', source: 'payment_gate', current_tier: 'free' })
+    onPaid()
+  }
+
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader>
@@ -45,7 +57,7 @@ export function PaymentGate({
             </li>
           ))}
         </ul>
-        <Button onClick={onPaid} className="w-full bg-blue-700 hover:bg-blue-800 h-12">
+        <Button onClick={handleClick} className="w-full bg-blue-700 hover:bg-blue-800 h-12">
           Free in beta — View Report
         </Button>
         <p className="text-xs text-gray-400 text-center">Payment will be enabled in a future release.</p>
