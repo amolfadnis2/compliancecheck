@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { 
-  calculateDPDPScore, 
+import { createClient } from '@supabase/supabase-js'
+import {
+  calculateDPDPScore,
   generateDPDPActionItems,
-  calculateRiskMultipliers 
+  calculateRiskMultipliers
 } from '@/lib/assessments/dpdp-questions'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+
+// Lazy-init admin client — module-level init breaks Netlify build when env vars are absent
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabase: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getSupabase(): any {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+  }
+  return _supabase
+}
 
 // Type definition for organization profile
 interface OrganizationProfile {
@@ -55,13 +70,36 @@ export async function POST(req: NextRequest) {
 
     // Try to save to database
     let assessmentId = `local_${Date.now()}`
-    
+
     try {
-      const supabase = await createClient()
-      
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Supabase not configured')
+      }
+
+      const supabase = getSupabase()
+
+      // Upsert user by email so the email is queryable as a direct column
+      const { data: user } = await supabase
+        .from('users')
+        .upsert(
+          {
+            email: organizationProfile.email,
+            full_name: organizationProfile.fullName,
+            phone: organizationProfile.phone || null,
+            company_name: organizationProfile.companyName,
+            employee_count: organizationProfile.employeeCount,
+            registered_state: organizationProfile.state,
+            industry_type: organizationProfile.industry,
+          },
+          { onConflict: 'email' }
+        )
+        .select('id')
+        .single()
+
       const { data, error } = await supabase
         .from('assessments')
         .insert({
+          user_id: user?.id ?? null,
           user_details: {
             fullName: organizationProfile.fullName,
             email: organizationProfile.email,
