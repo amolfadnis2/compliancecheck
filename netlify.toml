@@ -4,6 +4,7 @@
 [build]
   command = "npm run build"
   publish = ".next"
+  functions = "netlify/functions"
 
 # Skip deploy preview builds (saves build minutes)
 [context.deploy-preview]
