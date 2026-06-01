@@ -81,6 +81,19 @@ export function EmailGate({
     }
   }, [isLoading, user, isVerified, step])
 
+  // Fire feature_gate_hit once the gate becomes visible
+  useEffect(() => {
+    if (step === 'email_input') {
+      analytics.trackEvent('feature_gate_hit', {
+        feature: 'pdf_export',
+        current_tier: 'free',
+        attempted_action: 'view_results',
+        source,
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step === 'email_input'])
+
   const handleEmailSubmit = useCallback(async () => {
     const trimmed = email.trim()
     if (!validateEmail(trimmed)) {

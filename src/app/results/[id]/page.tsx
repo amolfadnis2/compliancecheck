@@ -10,6 +10,7 @@ import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPCo
 import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
 import { GatedResults, getGateConfig } from '@/components/results/gated-results'
+import { ReportViewTracker } from '@/components/results/report-view-tracker'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // Type definitions
@@ -152,6 +153,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto">
+        <ReportViewTracker assessmentType={ASSESSMENT_TYPES.LABOUR_CODE} complianceScore={overallScore} assessmentId={assessment.id} />
         {/* Header */}
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">
@@ -332,6 +334,7 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto">
+        <ReportViewTracker assessmentType={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE} complianceScore={Math.round(overallScore)} assessmentId={assessment.id} />
         {/* Header */}
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">
@@ -601,6 +604,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto">
+        <ReportViewTracker assessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH} complianceScore={overallScore} assessmentId={assessment.id} />
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -744,6 +748,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto">
+        <ReportViewTracker assessmentType={ASSESSMENT_TYPES.DPDP} complianceScore={overallScore} assessmentId={assessment.id} />
         {/* Header */}
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 print:hidden">

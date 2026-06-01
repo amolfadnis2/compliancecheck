@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { analytics } from '@/lib/analytics/tracking'
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -119,6 +120,7 @@ export default function RegisterPage() {
           },
         ])
 
+        analytics.userSignedUp({ method: 'email' })
         setSuccess(true)
       }
     } catch (err) {

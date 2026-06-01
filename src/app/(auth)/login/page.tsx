@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { analytics } from '@/lib/analytics/tracking'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -45,6 +46,7 @@ export default function LoginPage() {
         return
       }
 
+      analytics.userLoggedIn({ method: 'email' })
       router.push('/dashboard')
       router.refresh()
     } catch (err) {
