@@ -196,6 +196,11 @@ export interface FeedbackSubmittedProps {
   has_comments: boolean;
 }
 
+export interface SuggestionSubmittedProps {
+  category: 'improve_existing' | 'new_assessment' | 'new_tool' | 'bug_report' | 'other';
+  has_contact: boolean;
+}
+
 
 // =============================================================================
 // EVENT NAMES (for consistent naming across codebase)
@@ -229,6 +234,7 @@ export const ANALYTICS_EVENTS = {
   
   // Feedback
   FEEDBACK_SUBMITTED: 'feedback_submitted',
+  SUGGESTION_SUBMITTED: 'suggestion_submitted',
 } as const;
 
 export type AnalyticsEventName = typeof ANALYTICS_EVENTS[keyof typeof ANALYTICS_EVENTS];
