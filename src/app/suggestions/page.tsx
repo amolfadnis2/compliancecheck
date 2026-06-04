@@ -2,9 +2,17 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle, Lightbulb } from 'lucide-react'
+import { ArrowLeft, Check, CheckCircle, Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { analytics } from '@/lib/analytics'
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 
@@ -75,6 +83,31 @@ export default function SuggestionsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-950">
+      {/* Header — consistent branding with site + theme toggle */}
+      <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+            >
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-blue-500 flex items-center justify-center">
+                <Check className="w-6 h-6 text-white" strokeWidth={3} />
+              </div>
+              <div>
+                <span className="font-semibold text-lg text-gray-900 dark:text-white">
+                  ComplianceCheck
+                </span>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  Share an idea
+                </div>
+              </div>
+            </Link>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
       <div className="max-w-xl mx-auto px-6 py-12">
         <Link
           href="/"
@@ -126,18 +159,21 @@ export default function SuggestionsPage() {
                 >
                   What is this about?
                 </label>
-                <select
-                  id="category"
+                <Select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as Category)}
-                  className="w-full h-10 px-3 rounded-md border border-input bg-transparent text-sm text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  onValueChange={(v) => setCategory(v as Category)}
                 >
-                  {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="category" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Suggestion */}
