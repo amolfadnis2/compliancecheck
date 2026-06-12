@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,8 +30,11 @@ import {
 } from '@/lib/assessments/state-wise-compliance-questions';
 import { useAssessmentTracking } from '@/lib/analytics';
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
+import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress';
 
 type AssessmentPhase = 'user_details' | 'phase1' | 'applicability_results' | 'phase2' | 'submitting';
+
+const STATE_WISE_STORAGE_KEY = 'assessment_progress_state_wise';
 
 // Helper to format state names in reason text
 function formatStateNames(reason: string): string {
@@ -64,6 +67,29 @@ export default function StateWiseComplianceAssessment() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [multiSelectValues, setMultiSelectValues] = useState<string[]>([]);
+
+  // Progress save/restore
+  const savedProgress = useAssessmentProgress(
+    STATE_WISE_STORAGE_KEY,
+    { currentPhase, userDetails, phase1Responses, phase2Responses },
+    Object.keys(phase1Responses).length > 0 || Object.keys(phase2Responses).length > 0
+  );
+
+  useEffect(() => {
+    if (savedProgress.savedState && savedProgress.hasSaved) {
+      const s = savedProgress.savedState;
+      if (s.userDetails) setUserDetails(s.userDetails);
+      if (s.phase1Responses && Object.keys(s.phase1Responses).length > 0) {
+        setPhase1Responses(s.phase1Responses);
+      }
+      if (s.phase2Responses && Object.keys(s.phase2Responses).length > 0) {
+        setPhase2Responses(s.phase2Responses);
+      }
+      if (s.currentPhase && s.currentPhase !== 'user_details') setCurrentPhase(s.currentPhase);
+    }
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Initialize assessment tracking
   const assessmentTracking = useAssessmentTracking({

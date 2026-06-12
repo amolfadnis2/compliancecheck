@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit } from '@/lib/rate-limit'
 import {
   calculateDPDPScore,
   generateDPDPActionItems,
@@ -40,6 +41,11 @@ interface OrganizationProfile {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+    if (!checkRateLimit(`submit:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': '60' } })
+    }
+
     const body = await req.json()
     const { organizationProfile, responses } = body as {
       organizationProfile: OrganizationProfile;

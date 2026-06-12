@@ -69,12 +69,12 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 interface PageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ type?: string }>
+  searchParams: Promise<{ type?: string; email?: string }>
 }
 
 export default async function ResultsPage({ params, searchParams }: PageProps) {
   const { id } = await params
-  const { type } = await searchParams
+  const { type, email: emailParam } = await searchParams
   
   const assessmentType = type || ASSESSMENT_TYPES.STATUTORY_HEALTH
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
@@ -108,6 +108,21 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   if (error || !assessment) {
     // Show demo results if not found
     return <TempResultsPage assessmentType={assessmentType} />
+  }
+
+  // Ownership gate: require email searchParam to match stored assessment email
+  const storedEmail = assessment.responses?.userDetails?.email ||
+                      assessment.responses?.userDetails?.contactEmail ||
+                      assessment.user_details?.email
+  if (!emailParam || !storedEmail || emailParam.toLowerCase() !== storedEmail.toLowerCase()) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow p-8 max-w-md text-center">
+          <h2 className="text-xl font-semibold mb-2">Verify your identity</h2>
+          <p className="text-gray-600">Please use the link from your report email to access this assessment.</p>
+        </div>
+      </div>
+    )
   }
 
   // Render based on assessment type — all behind the shared OTP gate
@@ -330,8 +345,8 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
           </CardHeader>
           <CardContent className="space-y-4">
             {LABOUR_CODE_CATEGORIES.map((cat) => {
-              const score = categoryScores[cat.id] || 0
-              const catStatus = score >= 80 ? 'ready' : score >= 50 ? 'attention' : 'risk'
+              const score = categoryScores[cat.id] ?? 0
+              const catStatus = score >= 90 ? 'ready' : score >= 70 ? 'attention' : 'risk'
               
               return (
                 <div key={cat.id} className="p-4 bg-gray-50 rounded-lg">
@@ -446,8 +461,8 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
   const applicableCount = applicabilityResults.filter(r => r.applies).length
   
   // Status based on score
-  const status = overallScore >= 80 ? { text: 'On Track', color: 'green', bg: 'bg-green-50', border: 'border-green-200' } :
-                 overallScore >= 50 ? { text: 'Needs Attention', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' } :
+  const status = overallScore >= 90 ? { text: 'On Track', color: 'green', bg: 'bg-green-50', border: 'border-green-200' } :
+                 overallScore >= 70 ? { text: 'Needs Attention', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' } :
                  { text: 'At Risk', color: 'red', bg: 'bg-red-50', border: 'border-red-200' }
 
   return (
@@ -565,8 +580,8 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
             <CardContent className="space-y-3">
               {Object.entries(categoryScores).map(([category, scores]) => {
                 const scoreData = typeof scores === 'object' && scores !== null ? scores as { percentage?: number } : { percentage: 0 }
-                const percentage = scoreData.percentage || 0
-                const catStatus = percentage >= 80 ? 'compliant' : percentage >= 50 ? 'needs-attention' : 'non-compliant'
+                const percentage = scoreData.percentage ?? 0
+                const catStatus = percentage >= 90 ? 'compliant' : percentage >= 70 ? 'needs-attention' : 'non-compliant'
                 
                 return (
                   <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -942,7 +957,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
               <div>
                 <h3 className="font-semibold text-red-900 mb-1">Penalty Exposure</h3>
                 <p className="text-sm text-red-700 mb-2">
-                  {overallScore < 50 ? 'Up to ₹250 crore' : overallScore < 80 ? 'Up to ₹50 crore' : 'Minimal exposure'}
+                  {overallScore < 50 ? 'Up to ₹250 crore' : overallScore < 90 ? 'Up to ₹50 crore' : 'Minimal exposure'}
                 </p>
                 <p className="text-xs text-red-600">
                   Compliance deadline: 13 May 2027 ({daysUntilDeadline} days remaining)
@@ -963,8 +978,8 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
               const catScore = categoryScores[catId]
               const score = typeof catScore === 'number'
                 ? catScore
-                : (catScore?.percentage || 0)
-              const catStatus = score >= 80 ? 'ready' : score >= 60 ? 'attention' : score >= 40 ? 'risk' : 'critical'
+                : (catScore?.percentage ?? 0)
+              const catStatus = score >= 90 ? 'ready' : score >= 70 ? 'attention' : score >= 40 ? 'risk' : 'critical'
 
               return (
                 <div key={catId} className="p-4 bg-gray-50 rounded-lg">
@@ -1087,8 +1102,8 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
 
 // Temporary Results Page (when DB not configured or temp ID)
 function TempResultsPage({ assessmentType }: { assessmentType: string }) {
-  const isLabourCode = assessmentType === 'labour_code'
-  
+  const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
+
   // Demo data
   const demoScore = 65
   const demoStatus = { status: 'Needs Attention', color: 'amber', description: 'Several areas require attention.' }

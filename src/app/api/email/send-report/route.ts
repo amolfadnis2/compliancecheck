@@ -47,7 +47,7 @@ function generateEmailHtml(
           <!-- Score Box -->
           <div style="background: #FDF2F8; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid ${statusColour};">
             <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 14px;">Overall Compliance Score</p>
-            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score || 0}%</p>
+            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score ?? 0}%</p>
             <p style="color: ${statusColour}; font-weight: 600; margin: 5px 0 0 0;">${status}</p>
           </div>
           
@@ -187,7 +187,7 @@ function generateEmailHtml(
           <!-- Score Box -->
           <div style="background: #FFF7ED; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid ${statusColour};">
             <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 14px;">Overall Compliance Score</p>
-            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score || 0}%</p>
+            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score ?? 0}%</p>
             <p style="color: ${statusColour}; font-weight: 600; margin: 5px 0 0 0;">${status}</p>
           </div>
           
@@ -316,7 +316,7 @@ function generateEmailHtml(
         <!-- Score Box -->
         <div style="background: #F9FAFB; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid ${statusColour};">
           <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 14px;">Overall Compliance Score</p>
-          <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score || 0}%</p>
+          <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score ?? 0}%</p>
           <p style="color: ${statusColour}; font-weight: 600; margin: 5px 0 0 0;">${status}</p>
         </div>
         
@@ -370,6 +370,17 @@ function generateEmailHtml(
   `
 }
 
+// Simple in-memory rate limit: max 3 sends per assessmentId per hour
+const _sendRateLimit = new Map<string, number[]>()
+function checkSendRateLimit(assessmentId: string): boolean {
+  const now = Date.now()
+  const windowMs = 60 * 60 * 1000
+  const existing = (_sendRateLimit.get(assessmentId) ?? []).filter(t => now - t < windowMs)
+  if (existing.length >= 3) return false
+  _sendRateLimit.set(assessmentId, [...existing, now])
+  return true
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Check if API key is configured
@@ -382,14 +393,49 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { 
-      email, 
-      // assessmentId - available in body if needed for future analytics
-      pdfBase64, 
-      companyName, 
-      score, 
-      assessmentType 
+    const {
+      email,
+      assessmentId,
+      pdfBase64,
+      companyName,
+      score,
+      assessmentType
     } = body
+
+    // Require assessmentId and verify email matches stored assessment
+    if (!assessmentId) {
+      return NextResponse.json(
+        { success: false, error: 'assessmentId is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!checkSendRateLimit(assessmentId)) {
+      return NextResponse.json(
+        { success: false, error: 'Too many send requests for this assessment' },
+        { status: 429, headers: { 'Retry-After': '3600' } }
+      )
+    }
+
+    // Verify the requested email matches the stored assessment email
+    try {
+      const { createAdminClient } = await import('@/lib/supabase/admin')
+      const adminClient = createAdminClient()
+      // Try assessments table first, then posh_assessments
+      let storedEmail: string | null = null
+      const { data: asmData } = await adminClient.from('assessments').select('responses, user_details').eq('id', assessmentId).single()
+      if (asmData) {
+        storedEmail = asmData.responses?.userDetails?.email || asmData.user_details?.email || null
+      } else {
+        const { data: poshData } = await adminClient.from('posh_assessments').select('email').eq('id', assessmentId).single()
+        if (poshData) storedEmail = poshData.email
+      }
+      if (storedEmail && storedEmail.toLowerCase() !== email.toLowerCase()) {
+        return NextResponse.json({ success: false, error: 'Email mismatch' }, { status: 403 })
+      }
+    } catch {
+      // If lookup fails (misconfigured env), allow through — don't block email delivery
+    }
 
     // Validate required fields
     if (!email || !pdfBase64) {
@@ -433,12 +479,12 @@ export async function POST(request: NextRequest) {
 
     // Get status based on score
     const getStatus = (score: number): string => {
-      if (score >= 80) return 'Compliant'
-      if (score >= 50) return 'Needs Attention'
+      if (score >= 90) return 'Compliant'
+      if (score >= 70) return 'Needs Attention'
       return 'Non-Compliant'
     }
-    const status = getStatus(score || 0)
-    const statusColour = score >= 80 ? '#059669' : score >= 50 ? '#D97706' : '#DC2626'
+    const status = getStatus(score ?? 0)
+    const statusColour = score >= 90 ? '#059669' : score >= 70 ? '#D97706' : '#DC2626'
 
     // Generate date for filename
     const dateStr = new Date().toISOString().split('T')[0]
@@ -449,7 +495,7 @@ export async function POST(request: NextRequest) {
       from: process.env.EMAIL_FROM || 'ComplianceCheck <noreply@compliancecheck.co.in>',
       to: email,
       subject: `Your ${reportLabel} Report - ${companyName || 'Assessment Complete'}`,
-      html: generateEmailHtml(assessmentType, reportLabel, companyName, score || 0, status, statusColour),
+      html: generateEmailHtml(assessmentType, reportLabel, companyName, score ?? 0, status, statusColour),
       attachments: [
         {
           filename: filename,

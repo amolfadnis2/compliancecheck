@@ -77,7 +77,7 @@ test.describe('DPDP Assessment - Core Flow', () => {
     await fillCompanyDetails(page, {
       name: 'Growing Startup',
       industry: 'e_commerce',
-      employees: '20-49 employees',
+      employeeCount: '20-49 employees',
       state: 'Karnataka',
       revenue: '₹5-10 crore',
       processesChildrenData: false,
@@ -111,7 +111,7 @@ test.describe('DPDP Assessment - Core Flow', () => {
     await fillCompanyDetails(page, {
       name: 'EdTech Platform',
       industry: 'education',
-      employees: '100-249 employees',
+      employeeCount: '100-249 employees',
       state: 'Delhi',
       revenue: '₹50-100 crore',
       processesChildrenData: true, // Enable children's data questions
@@ -146,7 +146,7 @@ test.describe('DPDP Assessment - Core Flow', () => {
     await fillCompanyDetails(page, {
       name: 'Enterprise Corp',
       industry: 'it_services',
-      employees: '500+ employees',
+      employeeCount: '500+ employees',
       state: 'Maharashtra',
       revenue: '₹500+ crore', // Above SDF threshold
       processesChildrenData: false,
@@ -174,7 +174,7 @@ test.describe('DPDP Assessment - Phase Navigation', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -198,7 +198,7 @@ test.describe('DPDP Assessment - Phase Navigation', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -225,7 +225,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
     await fillCompanyDetails(page, {
       name: 'Fully Compliant Org',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra',
       processesChildrenData: false,
       processesHealthData: false
@@ -259,7 +259,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
     await fillCompanyDetails(page, {
       name: 'Mixed Compliance Org',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -299,7 +299,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
     await fillCompanyDetails(page, {
       name: 'Weight Test Org',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -341,7 +341,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
       await fillCompanyDetails(page, {
         name: `Test ${testCase.pattern}`,
         industry: 'it_services',
-        employees: '50-99 employees',
+        employeeCount: '50-99 employees',
         state: 'Maharashtra'
       });
 
@@ -376,7 +376,7 @@ test.describe('DPDP Assessment - Scoring Verification', () => {
     await fillCompanyDetails(page, {
       name: 'Detailed Breakdown Test',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -417,7 +417,7 @@ test.describe('DPDP Assessment - Action Items', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -446,7 +446,7 @@ test.describe('DPDP Assessment - Action Items', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -503,7 +503,7 @@ test.describe('DPDP Assessment - UI Consistency', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -560,7 +560,7 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -578,7 +578,7 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -600,7 +600,7 @@ test.describe('DPDP Assessment - Navigation Patterns', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -624,7 +624,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Tech Solutions',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -669,7 +669,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -697,7 +697,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -726,7 +726,7 @@ test.describe('DPDP Assessment - Results Page Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -756,7 +756,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Tech Solutions',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -785,7 +785,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -815,7 +815,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company',
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -862,7 +862,7 @@ test.describe('DPDP Assessment - PDF Generation Comprehensive', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company ' + Date.now(), // Unique
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -897,7 +897,7 @@ test.describe('DPDP Assessment - Database Integration', () => {
     await fillCompanyDetails(page, {
       name: 'Test Company ' + Date.now(), // Unique name
       industry: 'it_services',
-      employees: '50-99 employees',
+      employeeCount: '50-99 employees',
       state: 'Maharashtra'
     });
 
@@ -932,7 +932,10 @@ async function fillCompanyDetails(page: Page, details: {
   industry?: string;
   dataPrincipals?: string;
   state?: string;
+  employeeCount?: string;
+  revenue?: string;
   processesChildrenData?: boolean;
+  processesHealthData?: boolean;
   transfersDataAbroad?: boolean;
   operatesPlatform?: boolean;
 }) {
@@ -1213,7 +1216,7 @@ test.describe('DPDP Assessment - Mobile Responsive', () => {
     await fillCompanyDetails(page, {
       name: 'Mobile Test',
       industry: 'it_services',
-      employees: '20-49 employees',
+      employeeCount: '20-49 employees',
       state: 'Karnataka'
     });
 

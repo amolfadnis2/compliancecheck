@@ -24,6 +24,7 @@ import { Controller } from 'react-hook-form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
+import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress'
 import { useAssessmentTracking, analytics } from '@/lib/analytics'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS } from '@/lib/constants/india'
 
@@ -61,6 +62,8 @@ type UserDetails = z.infer<typeof userDetailsSchema>
 
 type Step = 'details' | 'applicability' | 'summary' | 'questions'
 
+const FOOD_BUSINESS_STORAGE_KEY = 'assessment_progress_food_business'
+
 // ============================================================================
 // COMPONENT
 // ============================================================================
@@ -91,6 +94,29 @@ export default function FoodBusinessAssessmentPage() {
   const { register, handleSubmit, control, formState: { errors } } = useForm<UserDetails>({
     resolver: zodResolver(userDetailsSchema),
   })
+
+  // Progress save/restore
+  const savedProgress = useAssessmentProgress(
+    FOOD_BUSINESS_STORAGE_KEY,
+    { currentStep, userDetails, applicabilityResponses, responses },
+    Object.keys(applicabilityResponses).length > 0 || Object.keys(responses).length > 0
+  )
+
+  useEffect(() => {
+    if (savedProgress.savedState && savedProgress.hasSaved) {
+      const s = savedProgress.savedState
+      if (s.userDetails) setUserDetails(s.userDetails)
+      if (s.applicabilityResponses && Object.keys(s.applicabilityResponses).length > 0) {
+        setApplicabilityResponses(s.applicabilityResponses)
+      }
+      if (s.responses && Object.keys(s.responses).length > 0) {
+        setResponses(s.responses)
+      }
+      if (s.currentStep && s.currentStep !== 'details') setCurrentStep(s.currentStep)
+    }
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Current applicability question
   const currentApplicabilityQuestion = FOOD_BUSINESS_APPLICABILITY_QUESTIONS[applicabilityIndex]
@@ -456,7 +482,7 @@ export default function FoodBusinessAssessmentPage() {
               {applicabilityIndex + 1} of {FOOD_BUSINESS_APPLICABILITY_QUESTIONS.length}
             </span>
           </div>
-          <Progress value={progress} aria-label={`Applicability progress: ${Math.round(progress)}% complete`} className="h-3 mb-4" />
+          <Progress value={progress} aria-label={`Applicability progress: ${Math.round(progress)}% complete`} className="h-3 [&>div]:bg-green-600 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">
@@ -648,7 +674,7 @@ export default function FoodBusinessAssessmentPage() {
               {currentQuestionIndex + 1} of {filteredQuestions.length}
             </span>
           </div>
-          <Progress value={progress} aria-label={`Assessment progress: ${Math.round(progress)}% complete`} className="h-3 mb-4" />
+          <Progress value={progress} aria-label={`Assessment progress: ${Math.round(progress)}% complete`} className="h-3 [&>div]:bg-green-600 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">

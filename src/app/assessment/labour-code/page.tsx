@@ -120,7 +120,7 @@ export default function LabourCodeAssessmentPage() {
     userTier: 'free',
     organizationIndustry: userDetails.industry || undefined,
     organizationSize: userDetails.employeeCount as OrganizationSize | undefined,
-    questionCount: totalFilteredQuestions || 30, // fallback to approx count
+    questionCount: totalFilteredQuestions ?? 30, // fallback to approx count
     enableAutoAbandon: true,
   });
 

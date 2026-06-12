@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 /**
  * POSH Assessment Submission API
@@ -25,8 +26,13 @@ function getSupabase(): any {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+    if (!checkRateLimit(`submit:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': '60' } })
+    }
+
     const body = await request.json()
-    
+
     const {
       companyDetails,
       applicabilityResponses,
@@ -43,13 +49,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Local fallback when Supabase is unconfigured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({
+        success: true,
+        assessmentId: `local_${Date.now()}`,
+        savedToDb: false,
+        message: 'Database not configured. Results saved locally.',
+      })
+    }
+
     // Generate assessment ID
     const assessmentId = crypto.randomUUID()
     
     // Prepare data for insertion
     const assessmentData = {
       id: assessmentId,
-      assessment_type: assessmentType || 'posh_compliance',
+      assessment_type: assessmentType || 'posh',
       
       // Company details
       company_name: companyDetails.companyName,
@@ -205,7 +221,7 @@ async function sendEmailNotification(
         <p>Access your complete assessment report and detailed remediation guidance at:</p>
         
         <div style="text-align: center; margin: 24px 0;">
-          <a href="https://compliancecheck.co.in/results/${data.assessmentId}" 
+          <a href="https://compliancecheck.co.in/assessment/posh?resultId=${data.assessmentId}"
              style="display: inline-block; background: #1e40af; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">
             View Full Report
           </a>

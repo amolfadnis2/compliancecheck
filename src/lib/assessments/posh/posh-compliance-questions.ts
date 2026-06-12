@@ -232,14 +232,14 @@ const ICC_CONSTITUTION_QUESTIONS: POSHQuestion[] = [
     category: 'icc_constitution',
     weight: 1,
     options: [
-      { value: 'yes', label: 'Yes - fees (â‚¹200/day) and travel (3-tier AC or equivalent) paid' },
+      { value: 'yes', label: 'Yes - fees (Rs.200/day) and travel (3-tier AC or equivalent) paid' },
       { value: 'partial', label: 'Partial payment arrangement exists' },
       { value: 'pro_bono', label: 'External member works pro bono by choice' },
       { value: 'no', label: 'No payment arrangement' },
     ],
     compliantAnswers: ['yes', 'pro_bono'],
     partiallyCompliantAnswers: ['partial'],
-    helpText: 'External member is entitled to â‚¹200/day fee and travel reimbursement (3-tier AC train or equivalent) per Rule 6, to be paid by the employer.',
+    helpText: 'External member is entitled to Rs.200/day fee and travel reimbursement (3-tier AC train or equivalent) per Rule 6, to be paid by the employer.',
     governmentRef: 'POSH Rules 2013, Rule 6',
     applicabilityCode: 'POSH_ICC_CONSTITUTION',
   },
@@ -829,7 +829,7 @@ const COMPLAINT_HANDLING_QUESTIONS: POSHQuestion[] = [
     ],
     compliantAnswers: ['yes_comprehensive'],
     partiallyCompliantAnswers: ['yes_basic'],
-    helpText: 'Section 16/Rule 12 mandates confidentiality. Breach attracts â‚¹5,000 penalty. Consider: case code system, restricted file access, NDA for ICC members, secure physical/digital storage.',
+    helpText: 'Section 16/Rule 12 mandates confidentiality. Breach attracts Rs.5,000 penalty. Consider: case code system, restricted file access, NDA for ICC members, secure physical/digital storage.',
     governmentRef: 'POSH Act 2013, Section 16; Rule 12',
     applicabilityCode: 'POSH_COMPLAINT_HANDLING',
   },
@@ -1057,15 +1057,15 @@ export function calculatePOSHScore(
   Object.keys(categoryScores).forEach((cat) => {
     const cs = categoryScores[cat as POSHCategory];
     cs.percentage = cs.maxScore > 0 ? Math.round((cs.score / cs.maxScore) * 100) : 0;
-    cs.status = cs.percentage >= 90 ? 'compliant' : cs.percentage >= 60 ? 'needs_attention' : 'non_compliant';
+    cs.status = cs.percentage >= 90 ? 'compliant' : cs.percentage >= 70 ? 'needs_attention' : 'non_compliant';
   });
-  
+
   // Calculate overall
   const overallPercentage = totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
-  
-  const complianceStatus: POSHScoreResult['complianceStatus'] = 
+
+  const complianceStatus: POSHScoreResult['complianceStatus'] =
     overallPercentage >= 90 ? 'compliant' :
-    overallPercentage >= 60 ? 'needs_attention' : 'non_compliant';
+    overallPercentage >= 70 ? 'needs_attention' : 'non_compliant';
   
   // Determine risk level based on score and critical questions
   const criticalMissing = actionItems.filter((a) => a.priority === 'high').length;
@@ -1161,7 +1161,7 @@ export const POSH_COMPLIANCE_RULES: POSHComplianceRule[] = [
     governmentRef: 'POSH Act 2013, Section 4',
     officialLink: 'https://wcd.nic.in/act/sexual-harassment-women-workplace-prevention-prohibition-and-redressal-act-2013',
     deadline: 'Immediate (mandatory for 10+ employees)',
-    penalty: 'â‚¹50,000 (first offense), â‚¹1,00,000 (repeat), License cancellation (continued)',
+    penalty: 'Rs.50,000 (first offense), Rs.1,00,000 (repeat), License cancellation (continued)',
     actionIfNonCompliant: [
       'Identify senior woman employee as Presiding Officer',
       'Nominate minimum 2 employee members',
@@ -1183,7 +1183,7 @@ export const POSH_COMPLIANCE_RULES: POSHComplianceRule[] = [
       'Alternatively, find person with 5+ years women\'s empowerment experience',
       'Document external member\'s qualification clearly',
       'Issue formal nomination with term dates',
-      'Arrange for fees (â‚¹200/day) and travel reimbursement',
+      'Arrange for fees (Rs.200/day) and travel reimbursement',
     ],
     actionIfCompliant: 'Maintain documentation of external member qualification. Review engagement annually.',
   },
@@ -1193,7 +1193,7 @@ export const POSH_COMPLIANCE_RULES: POSHComplianceRule[] = [
     governmentRef: 'POSH Act 2013, Section 19',
     officialLink: 'https://wcd.nic.in/act/sexual-harassment-women-workplace-prevention-prohibition-and-redressal-act-2013',
     deadline: 'Before commencing operations',
-    penalty: 'â‚¹50,000+ for Section 19 violation',
+    penalty: 'Rs.50,000+ for Section 19 violation',
     actionIfNonCompliant: [
       'Draft comprehensive POSH policy covering all Section 3 harassment types',
       'Include ICC details, complaint procedure, timelines',
@@ -1224,7 +1224,7 @@ export const POSH_COMPLIANCE_RULES: POSHComplianceRule[] = [
     governmentRef: 'POSH Act 2013, Section 19(c)',
     officialLink: 'https://wcd.nic.in/act/sexual-harassment-women-workplace-prevention-prohibition-and-redressal-act-2013',
     deadline: 'Annual (ongoing)',
-    penalty: 'â‚¹50,000+ for Section 19 violation; Conducted training without records = no evidence',
+    penalty: 'Rs.50,000+ for Section 19 violation; Conducted training without records = no evidence',
     actionIfNonCompliant: [
       'Schedule annual POSH awareness training for all employees',
       'Include all worker categories: regular, contract, interns',
@@ -1240,7 +1240,7 @@ export const POSH_COMPLIANCE_RULES: POSHComplianceRule[] = [
     governmentRef: 'POSH Act 2013, Section 19(b)',
     officialLink: 'https://wcd.nic.in/act/sexual-harassment-women-workplace-prevention-prohibition-and-redressal-act-2013',
     deadline: 'Immediate and ongoing',
-    penalty: 'â‚¹50,000+ for Section 19 violation',
+    penalty: 'Rs.50,000+ for Section 19 violation',
     actionIfNonCompliant: [
       'Create posters/notices with penal consequences',
       'Display at conspicuous locations: reception, notice boards, common areas',
@@ -1256,7 +1256,7 @@ export const POSH_COMPLIANCE_RULES: POSHComplianceRule[] = [
     governmentRef: 'POSH Act 2013, Section 21',
     officialLink: 'https://wcd.nic.in/act/sexual-harassment-women-workplace-prevention-prohibition-and-redressal-act-2013',
     deadline: 'January 31 each year (for previous calendar year)',
-    penalty: 'â‚¹50,000+ for non-filing',
+    penalty: 'Rs.50,000+ for non-filing',
     actionIfNonCompliant: [
       'Identify District Officer for your jurisdiction',
       'Prepare annual report with required information',
@@ -1272,7 +1272,7 @@ export const POSH_COMPLIANCE_RULES: POSHComplianceRule[] = [
     governmentRef: 'POSH Act 2013, Section 16; Rule 12',
     officialLink: 'https://wcd.nic.in/act/sexual-harassment-women-workplace-prevention-prohibition-and-redressal-act-2013',
     deadline: 'Before receiving any complaint',
-    penalty: 'â‚¹5,000 per breach of confidentiality',
+    penalty: 'Rs.5,000 per breach of confidentiality',
     actionIfNonCompliant: [
       'Establish case code system for complaint tracking',
       'Implement restricted access to complaint files',

@@ -34,3 +34,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# Netlify cache (generated at build time, not source)
+/.netlify/
+
+# Playwright test artifacts
+/playwright-report/
+/test-results/
+
+# Backup files
+*.backup
+*.old-backup
+*.old
+
+# One-time fix scripts
+*.ps1
+*.bat
+check-dpdp-questions.py
+fix_forward_reference.py
+tsconfig_hex.txt
+src/app/assessment/files.zip
+
+# Large documentation directories
+/ALL-36-DOCS/
+/Key-Documents-Complete/

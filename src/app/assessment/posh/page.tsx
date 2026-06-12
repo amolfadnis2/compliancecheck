@@ -16,7 +16,8 @@
  * - PDF report generation
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -128,19 +129,6 @@ interface AssessmentResults {
 // CONSTANTS
 // ============================================================================
 
-// PostHog event names
-const POSTHOG_EVENTS = {
-  ASSESSMENT_STARTED: 'posh_assessment_started',
-  APPLICABILITY_COMPLETED: 'posh_applicability_completed',
-  QUESTION_ANSWERED: 'posh_question_answered',
-  CATEGORY_COMPLETED: 'posh_category_completed',
-  ASSESSMENT_COMPLETED: 'posh_assessment_completed',
-  ASSESSMENT_ABANDONED: 'posh_assessment_abandoned',
-  REPORT_DOWNLOADED: 'posh_report_downloaded',
-  REPORT_EMAILED: 'posh_report_emailed',
-  ASSESSMENT_ERROR: 'posh_assessment_error',
-}
-
 // ============================================================================
 // VALIDATION SCHEMA
 // ============================================================================
@@ -165,6 +153,43 @@ function getStatusColor(status: 'compliant' | 'needs_attention' | 'non_compliant
     non_compliant: 'text-red-600',
   }
   return colors[status]
+}
+
+// ============================================================================
+// LABEL MAPS (single source of truth for PDF/email handlers)
+// ============================================================================
+
+const POSH_EMPLOYEE_COUNT_LABELS: Record<string, string> = {
+  'below_10': 'Less than 10 employees',
+  '10_to_49': '10-49 employees',
+  '50_to_199': '50-199 employees',
+  '200_to_499': '200-499 employees',
+  '500_plus': '500+ employees',
+}
+
+const POSH_STATE_LABELS: Record<string, string> = {
+  'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
+  'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
+  'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
+  'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
+  'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
+  'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
+  'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
+  'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
+  'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
+  'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
+}
+
+const POSH_STORAGE_KEY = 'assessment_progress_posh'
+
+const POSH_INDUSTRY_LABELS: Record<string, string> = {
+  'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
+  'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
+  'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
+  'education': 'Education', 'media_entertainment': 'Media / Entertainment',
+  'banking_finance': 'Banking / Finance', 'construction': 'Construction',
+  'logistics': 'Logistics', 'professional_services': 'Professional Services',
+  'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
 }
 
 // ============================================================================
@@ -226,6 +251,30 @@ export default function POSHAssessmentPage() {
     resolver: zodResolver(companyDetailsSchema),
   })
 
+  // Progress save/restore
+  const savedProgress = useAssessmentProgress(
+    POSH_STORAGE_KEY,
+    { phase, applicabilityResponses, complianceResponses, companyDetails },
+    Object.keys(applicabilityResponses).length > 0 || Object.keys(complianceResponses).length > 0
+  )
+
+  useEffect(() => {
+    if (savedProgress.savedState && savedProgress.hasSaved) {
+      // Restore will be offered via banner — auto-restore on first render
+      const s = savedProgress.savedState
+      if (s.companyDetails) setCompanyDetails(s.companyDetails)
+      if (s.applicabilityResponses && Object.keys(s.applicabilityResponses).length > 0) {
+        setApplicabilityResponses(s.applicabilityResponses)
+      }
+      if (s.complianceResponses && Object.keys(s.complianceResponses).length > 0) {
+        setComplianceResponses(s.complianceResponses)
+      }
+      if (s.phase && s.phase !== 'details') setPhase(s.phase)
+    }
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // -------------------------------------------------------------------------
   // DERIVED STATE
   // -------------------------------------------------------------------------
@@ -267,37 +316,31 @@ export default function POSHAssessmentPage() {
   // POSTHOG TRACKING
   // -------------------------------------------------------------------------
   
-  const trackEvent = useCallback((event: string, properties: Record<string, string | number | boolean | undefined> = {}) => {
-    analytics.trackEvent(event, { assessment_type: ASSESSMENT_TYPES.POSH, ...properties })
-  }, [])
-
   // Track assessment start
   useEffect(() => {
-    trackEvent(POSTHOG_EVENTS.ASSESSMENT_STARTED, {
-      source: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
-      timestamp: new Date().toISOString(),
+    analytics.assessmentStarted({
+      assessment_type: ASSESSMENT_TYPES.POSH,
+      user_tier: 'free',
+      question_count: ALL_POSH_QUESTIONS.length,
     })
-    
+
     // Track abandonment on page leave
     const handleBeforeUnload = () => {
       if (phase !== 'results') {
-        trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
-          phase,
-          last_question_id: phase === 'applicability' 
-            ? currentApplicabilityQuestion?.id 
-            : currentComplianceQuestion?.id,
-          category: phase === 'compliance' ? currentComplianceQuestion?.category : undefined,
-          completion_percentage: phase === 'applicability' 
-            ? applicabilityProgress 
-            : complianceProgress,
+        analytics.assessmentAbandoned({
+          assessment_type: ASSESSMENT_TYPES.POSH,
+          completion_percentage: phase === 'applicability' ? applicabilityProgress : complianceProgress,
           time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
+          questions_answered: phase === 'applicability'
+            ? currentApplicabilityIndex
+            : currentComplianceIndex,
         })
       }
     }
-    
+
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [phase, currentApplicabilityQuestion, currentComplianceQuestion, applicabilityProgress, complianceProgress, startTime, trackEvent])
+  }, [phase, currentApplicabilityIndex, currentComplianceIndex, applicabilityProgress, complianceProgress, startTime])
 
   // Update canGoBack state based on current phase and question index
   useEffect(() => {
@@ -327,7 +370,8 @@ export default function POSHAssessmentPage() {
       setCurrentApplicabilityIndex(prev => prev - 1)
       setQuestionStartTime(Date.now())
       
-      trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+      analytics.trackEvent('question_answered', {
+        assessment_type: ASSESSMENT_TYPES.POSH,
         action: 'back_navigation',
         phase: 'applicability',
         from_question: currentApplicabilityIndex,
@@ -336,22 +380,25 @@ export default function POSHAssessmentPage() {
     } else {
       // Back from first applicability question goes to company details
       setPhase('details')
-      
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
-        reason: 'back_to_company_details',
-        phase: 'applicability',
+
+      analytics.assessmentAbandoned({
+        assessment_type: ASSESSMENT_TYPES.POSH,
+        completion_percentage: 0,
+        time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
+        questions_answered: 0,
       })
     }
   }
-  
+
   // Handle back navigation - Compliance Phase
   const handleComplianceBack = () => {
     if (currentComplianceIndex > 0) {
       // Go to previous compliance question
       setCurrentComplianceIndex(prev => prev - 1)
       setQuestionStartTime(Date.now())
-      
-      trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+
+      analytics.trackEvent('question_answered', {
+        assessment_type: ASSESSMENT_TYPES.POSH,
         action: 'back_navigation',
         phase: 'compliance',
         from_question: currentComplianceIndex,
@@ -362,10 +409,12 @@ export default function POSHAssessmentPage() {
       // Back from first compliance question goes to applicability
       setPhase('applicability')
       setCurrentApplicabilityIndex(visibleApplicabilityQuestions.length - 1)
-      
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
-        reason: 'back_to_applicability',
-        phase: 'compliance',
+
+      analytics.assessmentAbandoned({
+        assessment_type: ASSESSMENT_TYPES.POSH,
+        completion_percentage: applicabilityProgress,
+        time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
+        questions_answered: currentApplicabilityIndex,
       })
     }
   }
@@ -395,7 +444,8 @@ export default function POSHAssessmentPage() {
     setApplicabilityResponses(cleanedResponses)
 
     // Track question answered
-    trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+    analytics.trackEvent('question_answered', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       question_id: questionId,
       phase: 'applicability',
       category: currentApplicabilityQuestion?.category,
@@ -435,7 +485,8 @@ export default function POSHAssessmentPage() {
     setAssessmentProfile(profile)
 
     // Track applicability completed
-    trackEvent(POSTHOG_EVENTS.APPLICABILITY_COMPLETED, {
+    analytics.trackEvent('assessment_applicability_completed', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       employee_count: responses['POSH_APP_001'],
       industry: responses['POSH_APP_008'],
       state: responses['POSH_APP_006'],
@@ -545,7 +596,8 @@ export default function POSHAssessmentPage() {
     }
     
     // Track question answered
-    trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+    analytics.trackEvent('question_answered', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       question_id: questionId,
       phase: 'compliance',
       category: question?.category,
@@ -583,7 +635,8 @@ export default function POSHAssessmentPage() {
     
     const percentage = scores.max > 0 ? Math.round((scores.earned / scores.max) * 100) : 100
     
-    trackEvent(POSTHOG_EVENTS.CATEGORY_COMPLETED, {
+    analytics.trackEvent('category_completed', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       category,
       score: scores.earned,
       max_score: scores.max,
@@ -604,17 +657,14 @@ export default function POSHAssessmentPage() {
       setResults(assessmentResults)
       
       // Track completion
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_COMPLETED, {
-        total_score: assessmentResults.overallScore,
-        risk_level: assessmentResults.riskLevel,
-        category_scores_json: JSON.stringify(assessmentResults.categoryScores.reduce((acc, cat) => ({
-          ...acc,
-          [cat.category]: cat.percentage,
-        }), {})),
-        total_time_seconds: totalTime,
+      analytics.assessmentCompleted({
+        assessment_type: ASSESSMENT_TYPES.POSH,
+        compliance_score: assessmentResults.overallScore,
+        gap_count: assessmentResults.actionItems.length,
+        high_priority_gaps: assessmentResults.actionItems.filter(a => a.priority === 'high').length,
+        time_to_complete_seconds: totalTime,
         questions_answered: Object.keys(complianceResponses).length,
-        action_items_count: assessmentResults.actionItems.length,
-        high_priority_items: assessmentResults.actionItems.filter(a => a.priority === 'high').length,
+        questions_skipped: 0,
       })
       
       // Set user properties
@@ -632,7 +682,8 @@ export default function POSHAssessmentPage() {
       setPhase('results')
     } catch (err) {
       console.error('Assessment completion error:', err)
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ERROR, {
+      analytics.trackEvent('assessment_error', {
+        assessment_type: ASSESSMENT_TYPES.POSH,
         error_type: 'completion_error',
         error_message: err instanceof Error ? err.message : 'Unknown error',
       })
@@ -780,7 +831,7 @@ export default function POSHAssessmentPage() {
           applicabilityResponses,
           complianceResponses,
           results: assessmentResults,
-          assessmentType: 'posh_compliance',
+          assessmentType: ASSESSMENT_TYPES.POSH,
         }),
       })
       
@@ -816,11 +867,6 @@ export default function POSHAssessmentPage() {
   const handleDownloadReport = async () => {
     if (!results || !companyDetails) return
     
-    trackEvent(POSTHOG_EVENTS.REPORT_DOWNLOADED, {
-      score: results.overallScore,
-      risk_level: results.riskLevel,
-      format: 'pdf',
-    })
     analytics.reportDownloaded({
       assessment_type: 'posh',
       format: 'pdf',
@@ -845,46 +891,14 @@ export default function POSHAssessmentPage() {
         compliantItems: results.compliantItems,
       }
 
-      // Map applicability response values to readable labels
-      const employeeCountLabels: Record<string, string> = {
-        'below_10': 'Less than 10 employees',
-        '10_to_49': '10-49 employees',
-        '50_to_199': '50-199 employees',
-        '200_to_499': '200-499 employees',
-        '500_plus': '500+ employees',
-      }
-      
-      const stateLabels: Record<string, string> = {
-        'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
-        'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
-        'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
-        'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
-        'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
-        'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
-        'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
-        'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
-        'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
-        'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
-      }
-      
-      const industryLabels: Record<string, string> = {
-        'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
-        'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
-        'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
-        'education': 'Education', 'media_entertainment': 'Media / Entertainment',
-        'banking_finance': 'Banking / Finance', 'construction': 'Construction',
-        'logistics': 'Logistics', 'professional_services': 'Professional Services',
-        'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
-      }
-
       const userDetails = {
         fullName: companyDetails.fullName,
         email: companyDetails.email,
         phone: companyDetails.phone,
         companyName: companyDetails.companyName,
-        state: stateLabels[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
-        employeeCount: employeeCountLabels[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
-        industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
+        state: POSH_STATE_LABELS[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
+        employeeCount: POSH_EMPLOYEE_COUNT_LABELS[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
+        industry: POSH_INDUSTRY_LABELS[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
       const blob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
@@ -926,46 +940,14 @@ export default function POSHAssessmentPage() {
         compliantItems: results.compliantItems,
       }
 
-      // Map applicability response values to readable labels
-      const employeeCountLabels: Record<string, string> = {
-        'below_10': 'Less than 10 employees',
-        '10_to_49': '10-49 employees',
-        '50_to_199': '50-199 employees',
-        '200_to_499': '200-499 employees',
-        '500_plus': '500+ employees',
-      }
-      
-      const stateLabels: Record<string, string> = {
-        'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
-        'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
-        'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
-        'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
-        'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
-        'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
-        'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
-        'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
-        'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
-        'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
-      }
-      
-      const industryLabels: Record<string, string> = {
-        'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
-        'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
-        'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
-        'education': 'Education', 'media_entertainment': 'Media / Entertainment',
-        'banking_finance': 'Banking / Finance', 'construction': 'Construction',
-        'logistics': 'Logistics', 'professional_services': 'Professional Services',
-        'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
-      }
-
       const userDetails = {
         fullName: companyDetails.fullName,
         email: companyDetails.email,
         phone: companyDetails.phone,
         companyName: companyDetails.companyName,
-        state: stateLabels[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
-        employeeCount: employeeCountLabels[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
-        industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
+        state: POSH_STATE_LABELS[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
+        employeeCount: POSH_EMPLOYEE_COUNT_LABELS[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
+        industry: POSH_INDUSTRY_LABELS[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
       const pdfBlob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
@@ -999,12 +981,6 @@ export default function POSHAssessmentPage() {
       if (data.success) {
         setEmailSuccess(companyDetails.email)
         
-        trackEvent(POSTHOG_EVENTS.REPORT_EMAILED, {
-          score: results.overallScore,
-          risk_level: results.riskLevel,
-          format: 'email',
-          email_sent: true,
-        })
         analytics.reportEmailed({
           assessment_type: 'posh',
           compliance_score: results.overallScore,
@@ -1134,8 +1110,8 @@ export default function POSHAssessmentPage() {
             </span>
           </div>
           
-          <div 
-            className="relative h-2 bg-gray-200 rounded-full overflow-hidden"
+          <div
+            className="relative h-3 bg-gray-200 rounded-full overflow-hidden"
             role="progressbar"
             aria-valuenow={Math.round(applicabilityProgress)}
             aria-valuemin={0}
@@ -1143,8 +1119,8 @@ export default function POSHAssessmentPage() {
             aria-label={`Applicability check progress: ${Math.round(applicabilityProgress)}%`}
           >
             {/* Progress fill */}
-            <div 
-              className="h-full bg-blue-600 transition-all duration-300"
+            <div
+              className="h-full bg-green-600 transition-all duration-300"
               style={{ width: `${applicabilityProgress}%` }}
             />
           </div>
@@ -1431,7 +1407,7 @@ export default function POSHAssessmentPage() {
               onVerified={() => setGateCleared(true)}
               showMarketingConsent
               showDeadlineRemindersConsent
-              ctaLabel="Verify email &amp; get full report"
+              ctaLabel="Verify email & get full report"
             />
           </div>
         )
@@ -1558,12 +1534,9 @@ export default function POSHAssessmentPage() {
                       {cat.percentage}%
                     </span>
                   </div>
-                  <Progress 
-                    value={cat.percentage} 
-                    className={`h-2 ${
-                      cat.status === 'compliant' ? '[&>div]:bg-green-500' :
-                      cat.status === 'needs_attention' ? '[&>div]:bg-amber-500' : '[&>div]:bg-red-500'
-                    }`}
+                  <Progress
+                    value={cat.percentage}
+                    className="h-3 [&>div]:bg-green-600"
                     aria-label={`${cat.categoryName} compliance: ${cat.percentage}%`}
                   />
                 </div>

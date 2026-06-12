@@ -109,7 +109,7 @@ export default function DPDPAssessmentPage() {
     userTier: 'free',
     organizationIndustry: organizationProfile?.industry || undefined,
     organizationSize: organizationProfile?.employeeCount as OrganizationSize | undefined,
-    questionCount: totalQuestions || 45, // fallback to approx count
+    questionCount: totalQuestions ?? 45, // fallback to approx count
     enableAutoAbandon: true,
   })
 

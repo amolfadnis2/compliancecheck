@@ -527,9 +527,9 @@ const DPDP_COMPLIANCE_ANSWERS: Record<string, string> = {
 function getStatusFromScore(score: number, isDPDP: boolean = false) {
   if (isDPDP) {
     // DPDP uses different status labels
-    if (score >= 80) {
+    if (score >= 90) {
       return { status: 'Ready', color: 'green', description: 'Your organisation demonstrates strong DPDP compliance readiness.' }
-    } else if (score >= 60) {
+    } else if (score >= 70) {
       return { status: 'Needs Attention', color: 'amber', description: 'Several areas require attention before May 2027 deadline.' }
     } else if (score >= 40) {
       return { status: 'At Risk', color: 'orange', description: 'Significant gaps. Immediate action needed to avoid penalties.' }
@@ -537,11 +537,11 @@ function getStatusFromScore(score: number, isDPDP: boolean = false) {
       return { status: 'Critical', color: 'red', description: 'Critical compliance gaps. Immediate action required to avoid severe penalties.' }
     }
   }
-  
+
   // Standard status for statutory/labour code
-  if (score >= 80) {
+  if (score >= 90) {
     return { status: 'Compliant', color: 'green', description: 'Your organisation meets key compliance requirements.' }
-  } else if (score >= 50) {
+  } else if (score >= 70) {
     return { status: 'Needs Attention', color: 'amber', description: 'Several areas require immediate attention to avoid penalties.' }
   } else {
     return { status: 'Non-Compliant', color: 'red', description: 'Significant compliance gaps identified. Urgent action required.' }
@@ -695,12 +695,12 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
     // For POSH and Food Business, derive compliance from category scores
     // since we don't have individual question summaries
     Object.entries(categoryScores).forEach(([catId, data]) => {
-      const percentage = typeof data === 'number' ? data : data.percentage || 0
-      const catName = isPOSH 
+      const percentage = typeof data === 'number' ? data : data.percentage ?? 0
+      const catName = isPOSH
         ? (POSH_CATEGORIES[catId as keyof typeof POSH_CATEGORIES]?.name || catId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
         : (FOOD_BUSINESS_CATEGORIES[catId as keyof typeof FOOD_BUSINESS_CATEGORIES]?.name || catId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
-      
-      if (percentage >= 80) {
+
+      if (percentage >= 90) {
         compliantItems.push({
           id: `cat_${catId}`,
           text: `${catName}: ${percentage}% compliant`
@@ -758,14 +758,14 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
 
   // Count by category
   const categoryStats = Object.entries(categoryScores).map(([cat, data]) => {
-    const percentage = typeof data === 'number' ? data : data.percentage || 0
+    const percentage = typeof data === 'number' ? data : data.percentage ?? 0
     const catInfo = getCategoryInfo(cat)
     return {
       category: cat,
       name: catInfo.name,
       penaltyExposure: catInfo.penaltyExposure,
       percentage,
-      status: percentage >= 80 ? 'compliant' : percentage >= 50 ? 'needs-attention' : 'non-compliant'
+      status: percentage >= 90 ? 'compliant' : percentage >= 70 ? 'needs-attention' : 'non-compliant'
     }
   })
 

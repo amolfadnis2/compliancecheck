@@ -126,10 +126,7 @@ export function EmailGate({
       // Record source, consents, and event
       await Promise.all([
         appendSource(source),
-        updateProfile({
-          ...(marketingConsent ? { marketing_consent_at: new Date().toISOString() } : {}),
-          ...(deadlineConsent ? { deadline_reminders_consent_at: new Date().toISOString() } : {}),
-        }),
+        updateProfile({}),
         logEvent('email_verified', { source, marketing_consent: marketingConsent, deadline_consent: deadlineConsent }),
       ])
 

@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import posthog from 'posthog-js'
 import { analytics } from '@/lib/analytics/tracking'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import {
-  ArrowLeft, Loader2, AlertCircle, CheckCircle2, AlertTriangle, XCircle,
+  ArrowLeft, Loader2, AlertCircle, CheckCircle, AlertTriangle, XCircle,
   Download, Mail, Lock, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -99,7 +99,7 @@ function ScoreGauge({ score, status }: { score: number; status: string }) {
 function StatusBanner({ status }: { status: string }) {
   if (status === 'green') return (
     <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-      <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" aria-hidden="true" />
+      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" aria-hidden="true" />
       <p className="text-sm font-medium text-green-800">Strong compliance posture — maintain and monitor renewals.</p>
     </div>
   )
@@ -234,7 +234,7 @@ function EmailGate({ email: initialEmail, assessmentId, onVerified }: EmailGateP
       })
       const json = await res.json() as { success?: boolean; error?: string }
       if (!json.success) throw new Error(json.error ?? 'Invalid or expired OTP')
-      try { posthog.identify(activeEmail) } catch { /* non-fatal */ }
+      try { analytics.identify(activeEmail) } catch { /* non-fatal */ }
       onVerified()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Verification failed. Please try again.')
@@ -367,10 +367,10 @@ function PaymentGate({ tier, questionCount, onPaid }: PaymentGateProps) {
           <p className="text-sm text-blue-700 mt-1">{tierInfo.description}</p>
         </div>
         <ul className="text-sm text-gray-600 space-y-1.5">
-          <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Full gap analysis with remediation plan</li>
-          <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />12-month compliance calendar</li>
-          <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Documentation checklist</li>
-          <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Downloadable PDF report</li>
+          <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Full gap analysis with remediation plan</li>
+          <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />12-month compliance calendar</li>
+          <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Documentation checklist</li>
+          <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />Downloadable PDF report</li>
         </ul>
         <Button onClick={onPaid} className="w-full bg-blue-700 hover:bg-blue-800 h-12">
           Free in beta — View Report
@@ -420,11 +420,6 @@ export default function ResultsPage() {
   const [isEmailing, setIsEmailing] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>('gaps')
-
-  const track = useCallback((event: string, props: Record<string, string | number | boolean> = {}) => {
-    try { posthog.capture(event, { assessment_type: 'auto_dealer', ...props }) }
-    catch { /* non-fatal */ }
-  }, [])
 
   // Load results — first try Supabase, fall back to localStorage
   useEffect(() => {
@@ -478,7 +473,7 @@ export default function ResultsPage() {
         setData({ ...json, responses: finalResponses, phaseScores, overallScore, gapAnalysis, profile, applicabilityChecks, calendarEntries: calendar })
         setEmailVerified(json.emailVerified)
         setPaid(prev => prev || json.paymentStatus === 'paid')
-        track('auto_dealer_results_view', { score: overallScore.score })
+        analytics.reportViewed({ assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, compliance_score: overallScore.score })
         setIsLoading(false)
         return
       }
@@ -523,7 +518,7 @@ export default function ResultsPage() {
         priceTier: tier,
         totalQuestions,
       })
-      track('auto_dealer_results_view_local', { score: overallScore.score })
+      analytics.reportViewed({ assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, compliance_score: overallScore.score })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load results.')
     } finally {
@@ -547,7 +542,6 @@ export default function ResultsPage() {
       a.download = `compliance-report-${assessmentId.slice(0, 8)}.pdf`
       a.click()
       URL.revokeObjectURL(url)
-      track('auto_dealer_pdf_downloaded')
       analytics.reportDownloaded({
         assessment_type: 'auto_dealer',
         format: 'pdf',
@@ -590,7 +584,6 @@ export default function ResultsPage() {
       const json = await emailRes.json()
       if (!json.success) throw new Error(json.error || 'Failed to send email')
       setEmailSuccess(data.email)
-      track('auto_dealer_email_sent', { score: data.overallScore.score })
       analytics.reportEmailed({
         assessment_type: 'auto_dealer',
         compliance_score: data.overallScore.score,
@@ -843,7 +836,7 @@ export default function ResultsPage() {
                         <td className="px-3 py-2 text-gray-500">Phase {check.phase}</td>
                         <td className="px-3 py-2">
                           {check.applies
-                            ? <span className="flex items-center gap-1 text-green-700"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />Yes</span>
+                            ? <span className="flex items-center gap-1 text-green-700"><CheckCircle className="h-4 w-4" aria-hidden="true" />Yes</span>
                             : <span className="text-gray-400">No</span>
                           }
                         </td>
@@ -878,7 +871,7 @@ export default function ResultsPage() {
             <CardContent className="space-y-3">
               {gapAnalysis.length === 0 ? (
                 <div className="flex items-center gap-2 p-4 bg-green-50 rounded-lg">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="h-5 w-5 text-green-600" aria-hidden="true" />
                   <p className="text-green-800 font-medium">No compliance gaps identified. Excellent work!</p>
                 </div>
               ) : (

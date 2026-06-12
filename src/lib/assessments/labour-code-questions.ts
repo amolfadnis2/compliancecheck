@@ -844,23 +844,12 @@ export function getComplianceStatus(score: number): {
   color: string;
   description: string;
 } {
-  if (score >= 80) {
-    return {
-      status: 'Ready',
-      color: 'green',
-      description: 'Your organisation is well-prepared for the new Labour Codes.',
-    };
-  } else if (score >= 50) {
-    return {
-      status: 'Needs Attention',
-      color: 'amber',
-      description: 'Several areas require attention before full Labour Code implementation.',
-    };
+  const s = score >= 90 ? 'compliant' : score >= 70 ? 'needs_attention' : 'non_compliant'
+  if (s === 'compliant') {
+    return { status: 'Ready', color: 'green', description: 'Your organisation is well-prepared for the new Labour Codes.' }
+  } else if (s === 'needs_attention') {
+    return { status: 'Needs Attention', color: 'amber', description: 'Several areas require attention before full Labour Code implementation.' }
   } else {
-    return {
-      status: 'At Risk',
-      color: 'red',
-      description: 'Significant gaps exist. Immediate action required for Labour Code compliance.',
-    };
+    return { status: 'At Risk', color: 'red', description: 'Significant gaps exist. Immediate action required for Labour Code compliance.' }
   }
 }

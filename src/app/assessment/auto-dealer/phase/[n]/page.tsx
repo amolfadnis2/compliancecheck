@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams, useParams } from 'next/navigation'
 import Link from 'next/link'
-import posthog from 'posthog-js'
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
@@ -21,6 +20,8 @@ import {
 } from '@/lib/assessments/auto-dealer/rules-engine'
 import type { Responses, AutoDealerQuestion } from '@/types/auto-dealer'
 import { PHASE_METADATA } from '@/types/auto-dealer'
+import { analytics } from '@/lib/analytics/tracking'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 // --------------------------------------------------------------------------
 // Constants
@@ -72,10 +73,6 @@ export default function PhasePlayerPage() {
   const [error, setError] = useState<string | null>(null)
   const startTimeRef = useRef(Date.now())
 
-  const track = useCallback((event: string, props: Record<string, string | number | boolean> = {}) => {
-    try { posthog.capture(event, { assessment_type: 'auto_dealer', phase, ...props }) }
-    catch { /* non-fatal */ }
-  }, [phase])
 
   // Initialise questions from stored profile
   useEffect(() => {
@@ -102,7 +99,7 @@ export default function PhasePlayerPage() {
     const firstUnanswered = applicable.findIndex(q => !merged[q.id])
     setCurrentIndex(firstUnanswered >= 0 ? firstUnanswered : 0)
     setIsLoading(false)
-    track('auto_dealer_phase_view', { question_count: applicable.length })
+    analytics.trackEvent('assessment_phase_view', { assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, phase: phase as number, question_count: applicable.length })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessmentId, phase])
 
@@ -138,7 +135,7 @@ export default function PhasePlayerPage() {
   const handleAnswer = useCallback((questionId: string, value: string | string[]) => {
     const newResponses: Responses = { ...responses, [questionId]: value }
     setResponses(newResponses)
-    track('auto_dealer_question_answered', { question_id: questionId })
+    analytics.trackEvent('question_answered', { assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, question_id: questionId })
     persistToLocalStorage(newResponses)
 
     const currentQuestion = questions[currentIndex]
@@ -147,7 +144,7 @@ export default function PhasePlayerPage() {
 
     setTimeout(() => { void advancePhase(newResponses) }, 600)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [responses, currentIndex, questions, persistToLocalStorage, advancePhase, track])
+  }, [responses, currentIndex, questions, persistToLocalStorage, advancePhase])
 
   const handlePhaseContinue = useCallback(() => {
     void advancePhase(responses)
@@ -169,7 +166,7 @@ export default function PhasePlayerPage() {
       const json = await res.json() as { success?: boolean; error?: string }
       if (!json.success) throw new Error(json.error ?? 'Failed to save phase')
 
-      track('auto_dealer_phase_complete', { duration_seconds: duration })
+      analytics.assessmentProgress({ assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, completion_percentage: phase ? Math.round(((phase as number) - 1) * 20) : 0, questions_answered: Object.keys(finalResponses).length, time_spent_seconds: duration })
 
       // Navigate to next phase or results
       const nextPhase = (phase as number) + 1

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -81,12 +81,15 @@ export function PaymentGate({
   const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
   const handlePayClick = async () => {
-    analytics.checkoutStarted({ plan: 'pro', billing_cycle: 'monthly', source: 'payment_gate', current_tier: 'free' })
-
     if (!isLiveMode) {
+      // Beta stub: not a real checkout, so record a feature-gate hit rather
+      // than polluting checkout conversion metrics
+      analytics.featureGateHit({ feature: 'pdf_export', current_tier: 'free', attempted_action: 'view_paid_report' })
       onPaid()
       return
     }
+
+    analytics.checkoutStarted({ plan: 'pro', billing_cycle: 'monthly', source: 'payment_gate', current_tier: 'free' })
 
     if (!validateEmail(email)) {
       setError('Please enter a valid email address')
@@ -205,7 +208,7 @@ export function PaymentGate({
         <ul className="text-sm text-gray-600 space-y-1.5">
           {features.map((f) => (
             <li key={f} className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />
+              <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />
               {f}
             </li>
           ))}

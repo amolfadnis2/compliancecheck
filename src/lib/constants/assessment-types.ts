@@ -97,3 +97,20 @@ export function getAssessmentDisplayName(type: AssessmentType): string {
 export function getLocalStorageKey(assessmentId: string): string {
   return `assessment_${assessmentId}`;
 }
+
+export function getComplianceStatus(score: number): 'compliant' | 'needs_attention' | 'non_compliant' {
+  if (score >= 90) return 'compliant'
+  if (score >= 70) return 'needs_attention'
+  return 'non_compliant'
+}
+
+export function getStatusLabel(score: number): string {
+  const s = getComplianceStatus(score)
+  return s === 'compliant' ? 'Compliant' : s === 'needs_attention' ? 'Needs Attention' : 'Non-Compliant'
+}
+
+export const STATUS_COLOR = {
+  compliant: '#16a34a',
+  needs_attention: '#d97706',
+  non_compliant: '#dc2626',
+} as const

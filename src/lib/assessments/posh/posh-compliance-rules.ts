@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ComplianceCheck - POSH Act 2013 Compliance Rules
  * 
  * Complete compliance knowledge base for POSH Assessment
