@@ -370,6 +370,17 @@ function generateEmailHtml(
   `
 }
 
+// Simple in-memory rate limit: max 3 sends per assessmentId per hour
+const _sendRateLimit = new Map<string, number[]>()
+function checkSendRateLimit(assessmentId: string): boolean {
+  const now = Date.now()
+  const windowMs = 60 * 60 * 1000
+  const existing = (_sendRateLimit.get(assessmentId) ?? []).filter(t => now - t < windowMs)
+  if (existing.length >= 3) return false
+  _sendRateLimit.set(assessmentId, [...existing, now])
+  return true
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Check if API key is configured
@@ -382,14 +393,49 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { 
-      email, 
-      // assessmentId - available in body if needed for future analytics
-      pdfBase64, 
-      companyName, 
-      score, 
-      assessmentType 
+    const {
+      email,
+      assessmentId,
+      pdfBase64,
+      companyName,
+      score,
+      assessmentType
     } = body
+
+    // Require assessmentId and verify email matches stored assessment
+    if (!assessmentId) {
+      return NextResponse.json(
+        { success: false, error: 'assessmentId is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!checkSendRateLimit(assessmentId)) {
+      return NextResponse.json(
+        { success: false, error: 'Too many send requests for this assessment' },
+        { status: 429, headers: { 'Retry-After': '3600' } }
+      )
+    }
+
+    // Verify the requested email matches the stored assessment email
+    try {
+      const { createAdminClient } = await import('@/lib/supabase/admin')
+      const adminClient = createAdminClient()
+      // Try assessments table first, then posh_assessments
+      let storedEmail: string | null = null
+      const { data: asmData } = await adminClient.from('assessments').select('responses, user_details').eq('id', assessmentId).single()
+      if (asmData) {
+        storedEmail = asmData.responses?.userDetails?.email || asmData.user_details?.email || null
+      } else {
+        const { data: poshData } = await adminClient.from('posh_assessments').select('email').eq('id', assessmentId).single()
+        if (poshData) storedEmail = poshData.email
+      }
+      if (storedEmail && storedEmail.toLowerCase() !== email.toLowerCase()) {
+        return NextResponse.json({ success: false, error: 'Email mismatch' }, { status: 403 })
+      }
+    } catch {
+      // If lookup fails (misconfigured env), allow through — don't block email delivery
+    }
 
     // Validate required fields
     if (!email || !pdfBase64) {

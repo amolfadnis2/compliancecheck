@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 // Lazy-init Supabase — module-level init breaks Netlify build when env vars are absent
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,6 +92,11 @@ async function sendCompletionEmail(
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+    if (!checkRateLimit(`submit:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': '60' } })
+    }
+
     const rawBody = await request.json()
 
     const parseResult = submitBodySchema.safeParse(rawBody)

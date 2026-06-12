@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
+import { checkRateLimit } from '@/lib/rate-limit'
 import {
   calculateLabourCodeScore,
   generateLabourCodeActionItems,
@@ -18,6 +19,11 @@ const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+    if (!checkRateLimit(`submit:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': '60' } })
+    }
+
     const body = await request.json()
     const { userDetails, responses, assessmentType, filteredQuestionCount } = body
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import crypto from 'crypto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _supabase: any = null
@@ -63,8 +64,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Too many failed attempts. Please request a new code.' }, { status: 400 })
     }
 
-    // Compare OTP (simplified — in production use bcrypt.compare)
-    if (record.otp_hash !== otp) {
+    // Compare OTP using timing-safe comparison against stored SHA-256 hash
+    const incomingHash = crypto.createHash('sha256').update(otp).digest('hex')
+    const storedHash = record.otp_hash
+    let otpMatch = false
+    try {
+      otpMatch = crypto.timingSafeEqual(
+        Buffer.from(storedHash.padEnd(64, '0')),
+        Buffer.from(incomingHash.padEnd(64, '0'))
+      )
+    } catch {
+      otpMatch = false
+    }
+    if (!otpMatch) {
       await supabase
         .from('otp_attempts')
         .update({ attempt_count: (record.attempt_count ?? 0) + 1 })

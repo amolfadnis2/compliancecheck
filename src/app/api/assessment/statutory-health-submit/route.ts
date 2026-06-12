@@ -6,6 +6,7 @@ import {
   generateStatutoryHealthActionItems,
 } from '@/lib/assessments/statutory-health-questions'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -14,6 +15,11 @@ const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+    if (!checkRateLimit(`submit:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: { 'Retry-After': '60' } })
+    }
+
     const body = await request.json()
     const { userDetails, responses } = body as {
       userDetails: {

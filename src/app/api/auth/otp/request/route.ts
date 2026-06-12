@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import crypto from 'crypto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _supabase: any = null
@@ -26,7 +27,7 @@ const MAX_PER_EMAIL_PER_HOUR = 3
 const MAX_PER_IP_PER_HOUR = 10
 
 function generateOtp(): string {
-  return String(Math.floor(100000 + Math.random() * 900000))
+  return String(crypto.randomInt(100000, 999999))
 }
 
 function getClientIp(req: NextRequest): string {
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
       .insert({
         email: emailLower,
         assessment_id: assessmentId,
-        otp_hash: otp,   // In production, store bcrypt hash; simplified here
+        otp_hash: crypto.createHash('sha256').update(otp).digest('hex'),
         action: 'request',
         ip_address: ip,
         expires_at: expiresAt,
