@@ -593,7 +593,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     requirement: 'Wage Structure Compliance (50% Basic + DA)',
     governmentRef: 'Code on Wages 2019 - Section 2(y) definition of wages',
     officialLink: 'https://labour.gov.in/sites/default/files/THE%20CODE%20ON%20WAGES%2C%202019%20No.%2029%20of%202019.pdf',
-    deadline: 'From date Labour Codes are notified (expected November 2025)',
+    deadline: 'From date Labour Codes are notified (pending central notification (date TBD))',
     penalty: 'Non-compliant wage structure affects PF, Gratuity, Bonus calculations; risk of back claims',
     actionIfNonCompliant: [
       'Audit current salary structure for all employees',
@@ -632,7 +632,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     requirement: 'Updated Employment Contracts',
     governmentRef: 'All Four Labour Codes - Definitions of Wages, Worker, Employee',
     officialLink: 'https://labour.gov.in',
-    deadline: 'Before Labour Codes effective date (expected November 2025)',
+    deadline: 'Before Labour Codes effective date (pending central notification (date TBD))',
     penalty: 'Contractual disputes; non-compliance with new definitions',
     actionIfNonCompliant: [
       'Review employment contract templates for new definitions',

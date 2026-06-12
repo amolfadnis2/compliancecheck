@@ -780,7 +780,7 @@ export default function POSHAssessmentPage() {
           applicabilityResponses,
           complianceResponses,
           results: assessmentResults,
-          assessmentType: 'posh_compliance',
+          assessmentType: ASSESSMENT_TYPES.POSH,
         }),
       })
       
@@ -1431,7 +1431,7 @@ export default function POSHAssessmentPage() {
               onVerified={() => setGateCleared(true)}
               showMarketingConsent
               showDeadlineRemindersConsent
-              ctaLabel="Verify email &amp; get full report"
+              ctaLabel="Verify email & get full report"
             />
           </div>
         )
