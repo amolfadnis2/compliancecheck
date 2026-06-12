@@ -11,7 +11,8 @@ import { DownloadWithFeedback } from '@/components/results/download-with-feedbac
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
 import { GatedResults, getGateConfig } from '@/components/results/gated-results'
 import { ReportViewTracker } from '@/components/results/report-view-tracker'
-import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
+import { StatutoryHealthSummary, type StatutoryHealthSummaryData } from '@/components/results/statutory-health-summary'
 
 // Type definitions
 interface ActionItem {
@@ -131,11 +132,100 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
       </GatedResults>
     )
   } else {
+    // Statutory Health: show free summary → pay to unlock, when live payment is on
+    if (isPaymentLive(ASSESSMENT_TYPES.STATUTORY_HEALTH)) {
+      const { data: entitlement } = await supabase
+        .from('assessment_entitlements')
+        .select('status')
+        .eq('assessment_id', id)
+        .eq('assessment_type', ASSESSMENT_TYPES.STATUTORY_HEALTH)
+        .in('status', ['paid', 'waived'])
+        .maybeSingle()
+
+      if (!entitlement) {
+        return <StatutoryHealthSummary assessmentId={id} summary={buildStatutoryHealthSummary(assessment)} />
+      }
+      // Entitled: render full report — no extra OTP gate needed (email captured at payment)
+      return <StatutoryHealthResultsView assessment={assessment} />
+    }
+    // Not live: old free flow with email OTP gate
     return (
       <GatedResults source={source} reason={reason}>
         <StatutoryHealthResultsView assessment={assessment} />
       </GatedResults>
     )
+  }
+}
+
+// Builds teaser-only summary data for Statutory Health (no remediation text).
+// Full action item text intentionally excluded — only category names are passed
+// so the paywall is real and not just hidden UI.
+function buildStatutoryHealthSummary(assessment: AssessmentData): StatutoryHealthSummaryData {
+  const responses = (assessment.responses ?? {}) as {
+    userDetails?: { fullName?: string; email?: string; companyName?: string }
+    answers?: Record<string, string>
+  }
+  const answers = responses.answers ?? {}
+
+  const categoryScores = Object.keys(CATEGORY_INFO).map((cat) => {
+    const qs = STATUTORY_HEALTH_QUESTIONS.filter((q) => q.category === cat)
+    let score = 0, max = 0
+    qs.forEach((q) => {
+      max += q.weight
+      const answer = answers[q.id]
+      if (q.complianceAnswer) {
+        if (answer === q.complianceAnswer) score += q.weight
+      } else {
+        score += q.weight
+      }
+    })
+    const percentage = max > 0 ? Math.round((score / max) * 100) : 0
+    const status =
+      percentage >= 70 ? 'compliant' :
+      percentage >= 40 ? 'needs-attention' : 'non-compliant'
+    return {
+      key: cat,
+      name: CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO].name,
+      percentage,
+      status: status as 'compliant' | 'needs-attention' | 'non-compliant',
+    }
+  })
+
+  const overallScore =
+    categoryScores.length > 0
+      ? Math.round(categoryScores.reduce((sum, c) => sum + c.percentage, 0) / categoryScores.length)
+      : (assessment.overall_score ?? 0)
+
+  const riskColor: 'green' | 'amber' | 'red' =
+    overallScore >= 70 ? 'green' : overallScore >= 40 ? 'amber' : 'red'
+  const riskLabel =
+    overallScore >= 70 ? 'Compliant' : overallScore >= 40 ? 'Needs Attention' : 'Non-Compliant'
+
+  const actionItems = assessment.action_items ?? []
+  const gapsCount = actionItems.length
+  const highPriorityCount = actionItems.filter((i) => i.priority === 'high' || i.priority === 'critical').length
+
+  // Only category names — no remediation text reaches the client
+  const topIssues = actionItems.slice(0, 3).map((i) => ({
+    priority: i.priority as string,
+    category: i.category ?? 'General',
+  }))
+
+  let penaltyRange: string
+  if (overallScore >= 70) penaltyRange = 'Low exposure — you\'re in reasonable shape'
+  else if (overallScore >= 40) penaltyRange = 'Estimated ₹1L–₹5L in penalties across defaults'
+  else penaltyRange = 'Significant exposure — up to ₹25L+ across multiple defaults'
+
+  return {
+    overallScore,
+    riskLabel,
+    riskColor,
+    categoryScores,
+    gapsCount,
+    highPriorityCount,
+    penaltyRange,
+    topIssues,
+    companyName: responses.userDetails?.companyName ?? '',
   }
 }
 
