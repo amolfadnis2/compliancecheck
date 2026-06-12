@@ -48,6 +48,16 @@ export async function GET(
       )
     }
 
+    // Ownership gate: caller must provide the email that matches this assessment
+    const emailParam = request.nextUrl.searchParams.get('email')
+    const assessmentEmail = assessment.users?.email ||
+                            assessment.responses?.userDetails?.email ||
+                            assessment.responses?.userDetails?.contactEmail ||
+                            assessment.user_details?.email
+    if (!emailParam || !assessmentEmail || emailParam.toLowerCase() !== assessmentEmail.toLowerCase()) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
     // Format response with combined data
     // Check all possible locations for user details (different assessment types store differently)
     const responsesUserDetails = assessment.responses?.userDetails || {}

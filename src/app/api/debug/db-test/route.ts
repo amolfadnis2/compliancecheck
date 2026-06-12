@@ -7,6 +7,10 @@ import { NextRequest, NextResponse } from 'next/server'
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(_request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   const results: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     environment: {},

@@ -68,12 +68,12 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 interface PageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ type?: string }>
+  searchParams: Promise<{ type?: string; email?: string }>
 }
 
 export default async function ResultsPage({ params, searchParams }: PageProps) {
   const { id } = await params
-  const { type } = await searchParams
+  const { type, email: emailParam } = await searchParams
   
   const assessmentType = type || ASSESSMENT_TYPES.STATUTORY_HEALTH
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
@@ -107,6 +107,21 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   if (error || !assessment) {
     // Show demo results if not found
     return <TempResultsPage assessmentType={assessmentType} />
+  }
+
+  // Ownership gate: require email searchParam to match stored assessment email
+  const storedEmail = assessment.responses?.userDetails?.email ||
+                      assessment.responses?.userDetails?.contactEmail ||
+                      assessment.user_details?.email
+  if (!emailParam || !storedEmail || emailParam.toLowerCase() !== storedEmail.toLowerCase()) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow p-8 max-w-md text-center">
+          <h2 className="text-xl font-semibold mb-2">Verify your identity</h2>
+          <p className="text-gray-600">Please use the link from your report email to access this assessment.</p>
+        </div>
+      </div>
+    )
   }
 
   // Render based on assessment type — all behind the shared OTP gate

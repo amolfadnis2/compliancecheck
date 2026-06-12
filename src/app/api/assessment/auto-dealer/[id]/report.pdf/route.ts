@@ -754,6 +754,11 @@ export async function GET(
       if (gstResult.data) gstRates = gstResult.data as GSTRate[]
     }
 
+    // Require email verification for both JSON and PDF responses
+    if (!a.email_verified) {
+      return NextResponse.json({ error: 'Email verification required' }, { status: 403 })
+    }
+
     // JSON response for the results page metadata fetch
     if (acceptJson) {
       return NextResponse.json({
@@ -775,11 +780,6 @@ export async function GET(
         priceTier: tier,
         totalQuestions,
       })
-    }
-
-    // PDF response — require email_verified (payment check deferred: free in beta)
-    if (!a.email_verified) {
-      return NextResponse.json({ error: 'Email verification required' }, { status: 403 })
     }
 
     const pdfData = generatePdf({
