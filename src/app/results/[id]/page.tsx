@@ -132,23 +132,36 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
       </GatedResults>
     )
   } else {
-    // Statutory Health: show free summary → pay to unlock, when live payment is on
+    // Statutory Health: show free summary → pay to unlock, when live payment is on.
+    // The entitlement check is wrapped in try/catch so that a missing table
+    // (migrations not yet applied) or any other DB error degrades gracefully
+    // to the old free flow rather than crashing the page with a 500.
     if (isPaymentLive(ASSESSMENT_TYPES.STATUTORY_HEALTH)) {
-      const { data: entitlement } = await supabase
-        .from('assessment_entitlements')
-        .select('status')
-        .eq('assessment_id', id)
-        .eq('assessment_type', ASSESSMENT_TYPES.STATUTORY_HEALTH)
-        .in('status', ['paid', 'waived'])
-        .maybeSingle()
+      try {
+        const { data: entitlement, error: entitlementError } = await supabase
+          .from('assessment_entitlements')
+          .select('status')
+          .eq('assessment_id', id)
+          .eq('assessment_type', ASSESSMENT_TYPES.STATUTORY_HEALTH)
+          .in('status', ['paid', 'waived'])
+          .maybeSingle()
 
-      if (!entitlement) {
-        return <StatutoryHealthSummary assessmentId={id} summary={buildStatutoryHealthSummary(assessment)} />
+        if (entitlementError) {
+          // DB error (e.g. table not yet migrated) — fall through to free flow below
+          console.error('Entitlement check error (migrations applied?):', entitlementError.message)
+        } else if (entitlement) {
+          // Entitled: render full report; email was captured at payment so no OTP gate needed
+          return <StatutoryHealthResultsView assessment={assessment} />
+        } else {
+          // Not entitled: render summary/paywall
+          return <StatutoryHealthSummary assessmentId={id} summary={buildStatutoryHealthSummary(assessment)} />
+        }
+      } catch (err) {
+        console.error('Entitlement check threw unexpectedly:', err)
+        // Fall through to free flow below
       }
-      // Entitled: render full report — no extra OTP gate needed (email captured at payment)
-      return <StatutoryHealthResultsView assessment={assessment} />
     }
-    // Not live: old free flow with email OTP gate
+    // Fallback: old free flow with email OTP gate
     return (
       <GatedResults source={source} reason={reason}>
         <StatutoryHealthResultsView assessment={assessment} />
@@ -161,71 +174,87 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
 // Full action item text intentionally excluded — only category names are passed
 // so the paywall is real and not just hidden UI.
 function buildStatutoryHealthSummary(assessment: AssessmentData): StatutoryHealthSummaryData {
-  const responses = (assessment.responses ?? {}) as {
-    userDetails?: { fullName?: string; email?: string; companyName?: string }
-    answers?: Record<string, string>
-  }
-  const answers = responses.answers ?? {}
+  try {
+    const responses = (assessment.responses ?? {}) as {
+      userDetails?: { fullName?: string; email?: string; companyName?: string }
+      answers?: Record<string, string>
+    }
+    const answers = responses.answers ?? {}
 
-  const categoryScores = Object.keys(CATEGORY_INFO).map((cat) => {
-    const qs = STATUTORY_HEALTH_QUESTIONS.filter((q) => q.category === cat)
-    let score = 0, max = 0
-    qs.forEach((q) => {
-      max += q.weight
-      const answer = answers[q.id]
-      if (q.complianceAnswer) {
-        if (answer === q.complianceAnswer) score += q.weight
-      } else {
-        score += q.weight
+    const categoryScores = Object.keys(CATEGORY_INFO).map((cat) => {
+      const qs = STATUTORY_HEALTH_QUESTIONS.filter((q) => q.category === cat)
+      let score = 0, max = 0
+      qs.forEach((q) => {
+        max += q.weight
+        const answer = answers[q.id]
+        if (q.complianceAnswer) {
+          if (answer === q.complianceAnswer) score += q.weight
+        } else {
+          score += q.weight
+        }
+      })
+      const percentage = max > 0 ? Math.round((score / max) * 100) : 0
+      const status =
+        percentage >= 70 ? 'compliant' :
+        percentage >= 40 ? 'needs-attention' : 'non-compliant'
+      return {
+        key: cat,
+        name: CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO].name,
+        percentage,
+        status: status as 'compliant' | 'needs-attention' | 'non-compliant',
       }
     })
-    const percentage = max > 0 ? Math.round((score / max) * 100) : 0
-    const status =
-      percentage >= 70 ? 'compliant' :
-      percentage >= 40 ? 'needs-attention' : 'non-compliant'
+
+    const overallScore =
+      categoryScores.length > 0
+        ? Math.round(categoryScores.reduce((sum, c) => sum + c.percentage, 0) / categoryScores.length)
+        : (assessment.overall_score ?? 0)
+
+    const riskColor: 'green' | 'amber' | 'red' =
+      overallScore >= 70 ? 'green' : overallScore >= 40 ? 'amber' : 'red'
+    const riskLabel =
+      overallScore >= 70 ? 'Compliant' : overallScore >= 40 ? 'Needs Attention' : 'Non-Compliant'
+
+    const actionItems = assessment.action_items ?? []
+    const gapsCount = actionItems.length
+    const highPriorityCount = actionItems.filter((i) => i.priority === 'high' || i.priority === 'critical').length
+
+    // Only category names — no remediation text reaches the client
+    const topIssues = actionItems.slice(0, 3).map((i) => ({
+      priority: i.priority as string,
+      category: i.category ?? 'General',
+    }))
+
+    let penaltyRange: string
+    if (overallScore >= 70) penaltyRange = "Low exposure — you're in reasonable shape"
+    else if (overallScore >= 40) penaltyRange = 'Estimated Rs.1L-5L in penalties across defaults'
+    else penaltyRange = 'Significant exposure — up to Rs.25L+ across multiple defaults'
+
     return {
-      key: cat,
-      name: CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO].name,
-      percentage,
-      status: status as 'compliant' | 'needs-attention' | 'non-compliant',
+      overallScore,
+      riskLabel,
+      riskColor,
+      categoryScores,
+      gapsCount,
+      highPriorityCount,
+      penaltyRange,
+      topIssues,
+      companyName: responses.userDetails?.companyName ?? '',
     }
-  })
-
-  const overallScore =
-    categoryScores.length > 0
-      ? Math.round(categoryScores.reduce((sum, c) => sum + c.percentage, 0) / categoryScores.length)
-      : (assessment.overall_score ?? 0)
-
-  const riskColor: 'green' | 'amber' | 'red' =
-    overallScore >= 70 ? 'green' : overallScore >= 40 ? 'amber' : 'red'
-  const riskLabel =
-    overallScore >= 70 ? 'Compliant' : overallScore >= 40 ? 'Needs Attention' : 'Non-Compliant'
-
-  const actionItems = assessment.action_items ?? []
-  const gapsCount = actionItems.length
-  const highPriorityCount = actionItems.filter((i) => i.priority === 'high' || i.priority === 'critical').length
-
-  // Only category names — no remediation text reaches the client
-  const topIssues = actionItems.slice(0, 3).map((i) => ({
-    priority: i.priority as string,
-    category: i.category ?? 'General',
-  }))
-
-  let penaltyRange: string
-  if (overallScore >= 70) penaltyRange = 'Low exposure — you\'re in reasonable shape'
-  else if (overallScore >= 40) penaltyRange = 'Estimated ₹1L–₹5L in penalties across defaults'
-  else penaltyRange = 'Significant exposure — up to ₹25L+ across multiple defaults'
-
-  return {
-    overallScore,
-    riskLabel,
-    riskColor,
-    categoryScores,
-    gapsCount,
-    highPriorityCount,
-    penaltyRange,
-    topIssues,
-    companyName: responses.userDetails?.companyName ?? '',
+  } catch {
+    // Safe fallback if assessment data has an unexpected shape
+    const score = assessment.overall_score ?? 0
+    return {
+      overallScore: score,
+      riskLabel: score >= 70 ? 'Compliant' : score >= 40 ? 'Needs Attention' : 'Non-Compliant',
+      riskColor: score >= 70 ? 'green' : score >= 40 ? 'amber' : 'red',
+      categoryScores: [],
+      gapsCount: (assessment.action_items ?? []).length,
+      highPriorityCount: 0,
+      penaltyRange: 'Review your full results to understand your exposure',
+      topIssues: [],
+      companyName: '',
+    }
   }
 }
 
