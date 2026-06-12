@@ -226,8 +226,8 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
           </CardHeader>
           <CardContent className="space-y-4">
             {LABOUR_CODE_CATEGORIES.map((cat) => {
-              const score = categoryScores[cat.id] || 0
-              const catStatus = score >= 80 ? 'ready' : score >= 50 ? 'attention' : 'risk'
+              const score = categoryScores[cat.id] ?? 0
+              const catStatus = score >= 90 ? 'ready' : score >= 70 ? 'attention' : 'risk'
               
               return (
                 <div key={cat.id} className="p-4 bg-gray-50 rounded-lg">
@@ -342,8 +342,8 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
   const applicableCount = applicabilityResults.filter(r => r.applies).length
   
   // Status based on score
-  const status = overallScore >= 80 ? { text: 'On Track', color: 'green', bg: 'bg-green-50', border: 'border-green-200' } :
-                 overallScore >= 50 ? { text: 'Needs Attention', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' } :
+  const status = overallScore >= 90 ? { text: 'On Track', color: 'green', bg: 'bg-green-50', border: 'border-green-200' } :
+                 overallScore >= 70 ? { text: 'Needs Attention', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' } :
                  { text: 'At Risk', color: 'red', bg: 'bg-red-50', border: 'border-red-200' }
 
   return (
@@ -461,8 +461,8 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
             <CardContent className="space-y-3">
               {Object.entries(categoryScores).map(([category, scores]) => {
                 const scoreData = typeof scores === 'object' && scores !== null ? scores as { percentage?: number } : { percentage: 0 }
-                const percentage = scoreData.percentage || 0
-                const catStatus = percentage >= 80 ? 'compliant' : percentage >= 50 ? 'needs-attention' : 'non-compliant'
+                const percentage = scoreData.percentage ?? 0
+                const catStatus = percentage >= 90 ? 'compliant' : percentage >= 70 ? 'needs-attention' : 'non-compliant'
                 
                 return (
                   <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -838,7 +838,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
               <div>
                 <h3 className="font-semibold text-red-900 mb-1">Penalty Exposure</h3>
                 <p className="text-sm text-red-700 mb-2">
-                  {overallScore < 50 ? 'Up to ₹250 crore' : overallScore < 80 ? 'Up to ₹50 crore' : 'Minimal exposure'}
+                  {overallScore < 50 ? 'Up to ₹250 crore' : overallScore < 90 ? 'Up to ₹50 crore' : 'Minimal exposure'}
                 </p>
                 <p className="text-xs text-red-600">
                   Compliance deadline: 13 May 2027 ({daysUntilDeadline} days remaining)
@@ -859,8 +859,8 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
               const catScore = categoryScores[catId]
               const score = typeof catScore === 'number'
                 ? catScore
-                : (catScore?.percentage || 0)
-              const catStatus = score >= 80 ? 'ready' : score >= 60 ? 'attention' : score >= 40 ? 'risk' : 'critical'
+                : (catScore?.percentage ?? 0)
+              const catStatus = score >= 90 ? 'ready' : score >= 70 ? 'attention' : score >= 40 ? 'risk' : 'critical'
 
               return (
                 <div key={catId} className="p-4 bg-gray-50 rounded-lg">

@@ -760,14 +760,14 @@ export function getDPDPComplianceStatus(score: number): {
   color: string;
   description: string;
 } {
-  if (score >= 80) {
+  if (score >= 90) {
     return {
       status: 'compliant',
       label: 'Compliance Ready',
       color: 'green',
       description: 'Your organization meets most DPDP requirements. Focus on continuous improvement.'
     };
-  } else if (score >= 50) {
+  } else if (score >= 70) {
     return {
       status: 'partial',
       label: 'Partial Compliance',
@@ -847,7 +847,7 @@ export function calculateDPDPScore(
     };
 
     // Apply phase weights to total score
-    const phaseWeight = PHASE_INFO[phase as keyof typeof PHASE_INFO]?.weight || 0.10;
+    const phaseWeight = PHASE_INFO[phase as keyof typeof PHASE_INFO]?.weight ?? 0.10;
     totalScore += (percentage / 100) * phaseWeight * 100;
     maxTotalScore += phaseWeight * 100;
   });

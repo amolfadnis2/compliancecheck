@@ -1316,7 +1316,7 @@ export function calculateComplianceScore(
     if (!categoryScores[q.category]) {
       categoryScores[q.category] = { earned: 0, max: 0 };
     }
-    const weight = q.weight || 5;
+    const weight = q.weight ?? 5;
     categoryScores[q.category].max += weight;
     const answer = responses[q.id];
 
@@ -1363,9 +1363,9 @@ export function calculateComplianceScore(
   const overallScore = totalMax > 0 ? Math.round((totalEarned / totalMax) * 100) : 100;
 
   let status: 'Compliant' | 'Needs Attention' | 'Non-Compliant';
-  if (overallScore >= 80) {
+  if (overallScore >= 90) {
     status = 'Compliant';
-  } else if (overallScore >= 50) {
+  } else if (overallScore >= 70) {
     status = 'Needs Attention';
   } else {
     status = 'Non-Compliant';
@@ -1375,7 +1375,7 @@ export function calculateComplianceScore(
     overallScore,
     categoryScores: formattedCategoryScores,
     status,
-    gaps: gaps.sort((a, b) => (b.question.weight || 5) - (a.question.weight || 5)),
+    gaps: gaps.sort((a, b) => (b.question.weight ?? 5) - (a.question.weight ?? 5)),
     compliantItems,
   };
 }

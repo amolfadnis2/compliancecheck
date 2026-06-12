@@ -479,12 +479,12 @@ export async function POST(request: NextRequest) {
 
     // Get status based on score
     const getStatus = (score: number): string => {
-      if (score >= 80) return 'Compliant'
-      if (score >= 50) return 'Needs Attention'
+      if (score >= 90) return 'Compliant'
+      if (score >= 70) return 'Needs Attention'
       return 'Non-Compliant'
     }
-    const status = getStatus(score || 0)
-    const statusColour = score >= 80 ? '#059669' : score >= 50 ? '#D97706' : '#DC2626'
+    const status = getStatus(score ?? 0)
+    const statusColour = score >= 90 ? '#059669' : score >= 70 ? '#D97706' : '#DC2626'
 
     // Generate date for filename
     const dateStr = new Date().toISOString().split('T')[0]
@@ -495,7 +495,7 @@ export async function POST(request: NextRequest) {
       from: process.env.EMAIL_FROM || 'ComplianceCheck <noreply@compliancecheck.co.in>',
       to: email,
       subject: `Your ${reportLabel} Report - ${companyName || 'Assessment Complete'}`,
-      html: generateEmailHtml(assessmentType, reportLabel, companyName, score || 0, status, statusColour),
+      html: generateEmailHtml(assessmentType, reportLabel, companyName, score ?? 0, status, statusColour),
       attachments: [
         {
           filename: filename,

@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       const localId = `local_${Date.now()}`;
       return NextResponse.json({
         success: true, assessmentId: localId, message: 'Assessment saved locally',
-        overallScore: scoreResult?.overallScore || 0, categoryScores: scoreResult?.categoryScores || {}, status: scoreResult?.status || 'Unknown',
+        overallScore: scoreResult?.overallScore ?? 0, categoryScores: scoreResult?.categoryScores || {}, status: scoreResult?.status || 'Unknown',
       });
     }
     
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         userDetails,
         compliantItems: scoreResult?.compliantItems || [],
       },
-      overall_score: scoreResult?.overallScore || 0,
+      overall_score: scoreResult?.overallScore ?? 0,
       category_scores: scoreResult?.categoryScores || {},
       action_items: scoreResult?.gaps?.map((gap: { question: { category: string; text: string }; recommendation: string }) => ({
         priority: 'high', text: gap.recommendation, category: gap.question.category,
@@ -87,15 +87,15 @@ export async function POST(request: NextRequest) {
       const localId = `local_${Date.now()}`;
       return NextResponse.json({
         success: true, assessmentId: localId, message: 'Assessment saved locally (database error)',
-        overallScore: scoreResult?.overallScore || 0, categoryScores: scoreResult?.categoryScores || {}, status: scoreResult?.status || 'Unknown',
+        overallScore: scoreResult?.overallScore ?? 0, categoryScores: scoreResult?.categoryScores || {}, status: scoreResult?.status || 'Unknown',
       });
     }
     
     sendReportEmail(userDetails, scoreResult, applicabilitySummary, assessment.id).catch(err => console.error('Email send error:', err));
     
     return NextResponse.json({
-      success: true, assessmentId: assessment.id, overallScore: scoreResult?.overallScore || 0,
-      categoryScores: scoreResult?.categoryScores || {}, status: scoreResult?.status || 'Unknown', applicableCount: applicabilitySummary?.applicableCount || 0,
+      success: true, assessmentId: assessment.id, overallScore: scoreResult?.overallScore ?? 0,
+      categoryScores: scoreResult?.categoryScores || {}, status: scoreResult?.status || 'Unknown', applicableCount: applicabilitySummary?.applicableCount ?? 0,
     });
     
   } catch (error) {

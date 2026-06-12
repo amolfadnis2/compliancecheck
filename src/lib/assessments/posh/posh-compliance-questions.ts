@@ -1057,15 +1057,15 @@ export function calculatePOSHScore(
   Object.keys(categoryScores).forEach((cat) => {
     const cs = categoryScores[cat as POSHCategory];
     cs.percentage = cs.maxScore > 0 ? Math.round((cs.score / cs.maxScore) * 100) : 0;
-    cs.status = cs.percentage >= 90 ? 'compliant' : cs.percentage >= 60 ? 'needs_attention' : 'non_compliant';
+    cs.status = cs.percentage >= 90 ? 'compliant' : cs.percentage >= 70 ? 'needs_attention' : 'non_compliant';
   });
-  
+
   // Calculate overall
   const overallPercentage = totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
-  
-  const complianceStatus: POSHScoreResult['complianceStatus'] = 
+
+  const complianceStatus: POSHScoreResult['complianceStatus'] =
     overallPercentage >= 90 ? 'compliant' :
-    overallPercentage >= 60 ? 'needs_attention' : 'non_compliant';
+    overallPercentage >= 70 ? 'needs_attention' : 'non_compliant';
   
   // Determine risk level based on score and critical questions
   const criticalMissing = actionItems.filter((a) => a.priority === 'high').length;

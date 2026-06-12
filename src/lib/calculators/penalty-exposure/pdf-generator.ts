@@ -1,23 +1,8 @@
 import { jsPDF } from 'jspdf'
 import type { BusinessInput, PenaltyExposureResult } from './types'
 import { formatRupees } from './calculator'
+import { cleanText } from '@/lib/pdf/unified-report-generator'
 
-// ---------------------------------------------------------------------------
-// Text sanitiser — strips Unicode that the default jsPDF Helvetica cannot render
-// ---------------------------------------------------------------------------
-function cleanText(text: string): string {
-  if (!text) return ''
-  return text
-    .replace(/[‘’‚‛]/g, "'")
-    .replace(/[“”„‟]/g, '"')
-    .replace(/–/g, '-')
-    .replace(/—/g, '--')
-    .replace(/•/g, '*')
-    .replace(/ /g, ' ')
-    .replace(/₹/g, 'Rs.')  // rupee symbol -> ASCII
-    .replace(/[^\x00-\x7E]/g, '')
-    .trim()
-}
 
 // ---------------------------------------------------------------------------
 // Layout constants

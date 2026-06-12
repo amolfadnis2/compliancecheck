@@ -81,6 +81,7 @@ function ascii(s: string): string {
     .replace(/…/g, '...')
     .replace(/ /g, ' ')
     .replace(/→/g, '->')
+    .replace(/§/g, 'S.')
     .replace(/[^\x00-\x7F]/g, '')
 }
 

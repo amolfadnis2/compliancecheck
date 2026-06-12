@@ -79,20 +79,20 @@ function extractUserDetails(data: AssessmentData): UnifiedUserDetails {
 }
 
 function getRiskLevel(score: number): string {
-  if (score >= 80) return 'Low Risk'
-  if (score >= 60) return 'Moderate Risk'
+  if (score >= 90) return 'Low Risk'
+  if (score >= 70) return 'Moderate Risk'
   if (score >= 40) return 'High Risk'
   return 'Critical Risk'
 }
 
 function getPenaltyExposure(score: number, assessmentType: string): string {
   if (assessmentType === 'dpdp') {
-    if (score >= 80) return 'Minimal'
-    if (score >= 60) return 'Up to Rs. 50 Cr'
+    if (score >= 90) return 'Minimal'
+    if (score >= 70) return 'Up to Rs. 50 Cr'
     return 'Up to Rs. 250 Cr'
   }
-  if (score >= 80) return 'Minimal'
-  if (score >= 60) return 'Moderate'
+  if (score >= 90) return 'Minimal'
+  if (score >= 70) return 'Moderate'
   if (score >= 40) return 'Significant'
   return 'Severe'
 }
@@ -124,11 +124,11 @@ function getCategoryScoresFromRaw(
     return {
       category: label,
       score: Math.round(percentage),
-      status: percentage >= 80 ? 'compliant' as const
-        : percentage >= 50 ? 'needs_attention' as const
+      status: percentage >= 90 ? 'compliant' as const
+        : percentage >= 70 ? 'needs_attention' as const
         : 'non_compliant' as const,
-      questionCount: questionCount || 0,
-      compliantCount: compliantCount || 0,
+      questionCount: questionCount ?? 0,
+      compliantCount: compliantCount ?? 0,
     }
   })
 }

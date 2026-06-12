@@ -101,35 +101,35 @@ export interface UnifiedReportData {
 // HELPER FUNCTIONS
 // ============================================================================
 
-function cleanText(text: string): string {
+export function cleanText(text: string): string {
   if (!text) return '';
   return text
-    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
-    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
-    .replace(/\u2013/g, '-')
-    .replace(/\u2014/g, '--')
-    .replace(/\u2015/g, '--')
-    .replace(/\u2022/g, '*')
-    .replace(/\u00A0/g, ' ')
-    .replace(/\u00B7/g, '-')
-    .replace(/\u2026/g, '...')
-    .replace(/\u20B9/g, 'Rs.')
+    .replace(/[‘’‚‛]/g, "'")
+    .replace(/[“”„‟]/g, '"')
+    .replace(/–/g, '-')
+    .replace(/—/g, '--')
+    .replace(/―/g, '--')
+    .replace(/•/g, '*')
+    .replace(/ /g, ' ')
+    .replace(/·/g, '-')
+    .replace(/…/g, '...')
     .replace(/₹/g, 'Rs.')
-    .replace(/\u2713/g, '[Y]')
-    .replace(/\u2714/g, '[Y]')
-    .replace(/\u2717/g, '[X]')
-    .replace(/\u2718/g, '[X]')
+    .replace(/₹/g, 'Rs.')
+    .replace(/✓/g, '[Y]')
+    .replace(/✔/g, '[Y]')
+    .replace(/✗/g, '[X]')
+    .replace(/✘/g, '[X]')
     .replace(/✓/g, '[Y]')
     .replace(/✗/g, '[X]')
-    .replace(/\u2192/g, '->')
-    .replace(/\u2190/g, '<-')
+    .replace(/→/g, '->')
+    .replace(/←/g, '<-')
     .replace(/→/g, '->')
     .replace(/[^\x00-\x7F]/g, '');
 }
 
 function getScoreColor(score: number): [number, number, number] {
-  if (score >= 80) return COLORS.success;
-  if (score >= 50) return COLORS.warning;
+  if (score >= 90) return COLORS.success;
+  if (score >= 70) return COLORS.warning;
   return COLORS.danger;
 }
 
