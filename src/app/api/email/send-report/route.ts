@@ -47,7 +47,7 @@ function generateEmailHtml(
           <!-- Score Box -->
           <div style="background: #FDF2F8; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid ${statusColour};">
             <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 14px;">Overall Compliance Score</p>
-            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score || 0}%</p>
+            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score ?? 0}%</p>
             <p style="color: ${statusColour}; font-weight: 600; margin: 5px 0 0 0;">${status}</p>
           </div>
           
@@ -187,7 +187,7 @@ function generateEmailHtml(
           <!-- Score Box -->
           <div style="background: #FFF7ED; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid ${statusColour};">
             <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 14px;">Overall Compliance Score</p>
-            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score || 0}%</p>
+            <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score ?? 0}%</p>
             <p style="color: ${statusColour}; font-weight: 600; margin: 5px 0 0 0;">${status}</p>
           </div>
           
@@ -316,7 +316,7 @@ function generateEmailHtml(
         <!-- Score Box -->
         <div style="background: #F9FAFB; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; border-left: 4px solid ${statusColour};">
           <p style="color: #6B7280; margin: 0 0 5px 0; font-size: 14px;">Overall Compliance Score</p>
-          <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score || 0}%</p>
+          <p style="font-size: 48px; font-weight: bold; color: ${statusColour}; margin: 0;">${score ?? 0}%</p>
           <p style="color: ${statusColour}; font-weight: 600; margin: 5px 0 0 0;">${status}</p>
         </div>
         

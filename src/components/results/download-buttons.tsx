@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Download, Mail, Loader2, Check } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
-import { generateUnifiedReportBlob } from '@/lib/pdf/unified-report-generator'
-import { adaptStatutoryHealth, adaptLabourCode, adaptDPDP, adaptStateWise, adaptFoodBusiness } from '@/lib/pdf/report-data-adapter'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { analytics, type AssessmentType } from '@/lib/analytics'
 
@@ -323,15 +321,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getStatusText(score: number): string {
-  if (score >= 80) return 'Compliant'
-  if (score >= 50) return 'Needs Attention'
+  if (score >= 90) return 'Compliant'
+  if (score >= 70) return 'Needs Attention'
   return 'Non-Compliant'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getStatusColour(score: number): [number, number, number] {
-  if (score >= 80) return [5, 150, 105] // Green
-  if (score >= 50) return [217, 119, 6] // Amber
+  if (score >= 90) return [5, 150, 105] // Green
+  if (score >= 70) return [217, 119, 6] // Amber
   return [220, 38, 38] // Red
 }
 
@@ -480,6 +478,12 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
       // Generate PDF client-side based on assessment type
       const assessmentType = data.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH
+
+      // Lazy-load jsPDF only when user clicks Download
+      const [{ generateUnifiedReportBlob }, { adaptStatutoryHealth, adaptLabourCode, adaptDPDP, adaptStateWise, adaptFoodBusiness }] = await Promise.all([
+        import('@/lib/pdf/unified-report-generator'),
+        import('@/lib/pdf/report-data-adapter'),
+      ])
 
       // Transform assessment data using type-specific adapter
       let reportData
@@ -634,22 +638,28 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       // Generate PDF as base64
       const assessmentType = data.assessment_type || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
 
+      // Lazy-load jsPDF only when user clicks Email
+      const [{ generateUnifiedReportBlob: genBlob }, { adaptStatutoryHealth: adaptSH, adaptLabourCode: adaptLC, adaptDPDP: adaptD, adaptStateWise: adaptSW, adaptFoodBusiness: adaptFB }] = await Promise.all([
+        import('@/lib/pdf/unified-report-generator'),
+        import('@/lib/pdf/report-data-adapter'),
+      ])
+
       // Transform assessment data using type-specific adapter
       let reportData
       if (assessmentType === ASSESSMENT_TYPES.DPDP) {
-        reportData = adaptDPDP(data)
+        reportData = adaptD(data)
       } else if (assessmentType === ASSESSMENT_TYPES.LABOUR_CODE) {
-        reportData = adaptLabourCode(data)
+        reportData = adaptLC(data)
       } else if (assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE) {
-        reportData = adaptStateWise(data)
+        reportData = adaptSW(data)
       } else if (assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS) {
-        reportData = adaptFoodBusiness(data)
+        reportData = adaptFB(data)
       } else {
-        reportData = adaptStatutoryHealth(data, COMPLIANCE_RULES)
+        reportData = adaptSH(data, COMPLIANCE_RULES)
       }
 
       // Generate consistent PDF using unified generator
-      const blob = generateUnifiedReportBlob(reportData)
+      const blob = genBlob(reportData)
 
       // Convert blob to base64
       const reader = new FileReader()

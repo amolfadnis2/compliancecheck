@@ -222,7 +222,7 @@ test.describe('PostHog - Page View Events', () => {
     const resultsEvents = events.filter(e => 
       e.event === '$pageview' || 
       e.event === 'report_viewed' ||
-      e.properties?.current_url?.includes('results')
+      (e.properties?.current_url as string | undefined)?.includes('results')
     );
     
     expect(events.length).toBeGreaterThan(0);
@@ -240,7 +240,7 @@ test.describe('PostHog - Event Properties', () => {
     // Check if any event has assessment_type property
     const eventsWithType = events.filter(e => 
       e.properties?.assessment_type ||
-      e.properties?.$pathname?.includes('statutory')
+      (e.properties?.$pathname as string | undefined)?.includes('statutory')
     );
     
     // Events should have context

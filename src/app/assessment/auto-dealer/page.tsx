@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import posthog from 'posthog-js'
 import { ArrowLeft, Building2, Car, AlertCircle, Loader2, ArrowRight, Info, ToggleLeft, ToggleRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -18,6 +17,8 @@ import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { ApplicabilityForm } from '@/components/auto-dealer/ApplicabilityForm'
 
 import { APPLICABILITY_QUESTIONS } from '@/lib/assessments/auto-dealer/applicability-questions'
+import { analytics } from '@/lib/analytics/tracking'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 
 import type { Responses, LabourRegime } from '@/types/auto-dealer'
 
@@ -71,17 +72,12 @@ export default function AutoDealerLandingPage() {
       : 35
 
   // --------------------------------------------------------------------------
-  // PostHog tracking
+  // Analytics tracking
   // --------------------------------------------------------------------------
 
-  const track = useCallback((event: string, props: Record<string, string | number | boolean> = {}) => {
-    try { posthog.capture(event, { assessment_type: 'auto_dealer', ...props }) }
-    catch { /* non-fatal */ }
-  }, [])
-
   useEffect(() => {
-    track('auto_dealer_landing_view')
-  }, [track])
+    analytics.trackEvent('assessment_landing_view', { assessment_type: ASSESSMENT_TYPES.AUTO_DEALER })
+  }, [])
 
   // --------------------------------------------------------------------------
   // Handlers
@@ -103,7 +99,7 @@ export default function AutoDealerLandingPage() {
       localStorage.setItem('auto_dealer_assessment_id', json.assessmentId)
       localStorage.setItem('auto_dealer_details', JSON.stringify(data))
       setPhase('applicability')
-      track('auto_dealer_phase1_start', { email: data.email })
+      analytics.assessmentStarted({ assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, user_tier: 'free', question_count: visibleQuestions.length })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     } finally {
@@ -126,10 +122,7 @@ export default function AutoDealerLandingPage() {
         })
         const json = await res.json()
         if (!json.success) throw new Error('Failed to persist applicability')
-        track('auto_dealer_phase1_complete', {
-          applicable_phases: json.applicablePhases?.join(',') ?? '',
-          question_count: json.totalQuestions ?? 0,
-        })
+        analytics.assessmentProgress({ assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, completion_percentage: 35, questions_answered: json.totalQuestions ?? 0, time_spent_seconds: 0 })
         localStorage.setItem(`auto_dealer_profile_${assessmentId}`, JSON.stringify(newResponses))
         router.push(`/assessment/auto-dealer/phase/2?id=${assessmentId}`)
       } catch (e) {
@@ -137,19 +130,19 @@ export default function AutoDealerLandingPage() {
         setPhase('applicability')
       }
     }
-  }, [currentIndex, visibleQuestions.length, assessmentId, router, track])
+  }, [currentIndex, visibleQuestions.length, assessmentId, router])
 
   const handleApplicabilityAnswer = useCallback((questionId: string, value: string | string[]) => {
     const newResponses: Responses = { ...responses, [questionId]: value, AD_APP_labour_regime: labourRegime }
     setResponses(newResponses)
-    track('auto_dealer_question_answered', { question_id: questionId, phase: 1 })
+    analytics.trackEvent('question_answered', { assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, question_id: questionId, phase: 1 })
 
     const currentQuestion = visibleQuestions[currentIndex]
     // Multi-choice questions use a Continue button — don't auto-advance here
     if (currentQuestion?.type === 'multi_choice') return
 
     setTimeout(() => { void advanceApplicability(newResponses) }, 600)
-  }, [responses, currentIndex, visibleQuestions, labourRegime, track, advanceApplicability])
+  }, [responses, currentIndex, visibleQuestions, labourRegime, advanceApplicability])
 
   const handleApplicabilityContinue = useCallback(() => {
     // Called by the Continue button on multi_choice questions

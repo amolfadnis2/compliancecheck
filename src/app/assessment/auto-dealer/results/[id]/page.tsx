@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import posthog from 'posthog-js'
 import { analytics } from '@/lib/analytics/tracking'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import {
   ArrowLeft, Loader2, AlertCircle, CheckCircle2, AlertTriangle, XCircle,
   Download, Mail, Lock, ChevronDown, ChevronUp, ExternalLink,
@@ -234,7 +234,7 @@ function EmailGate({ email: initialEmail, assessmentId, onVerified }: EmailGateP
       })
       const json = await res.json() as { success?: boolean; error?: string }
       if (!json.success) throw new Error(json.error ?? 'Invalid or expired OTP')
-      try { posthog.identify(activeEmail) } catch { /* non-fatal */ }
+      try { analytics.identify(activeEmail) } catch { /* non-fatal */ }
       onVerified()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Verification failed. Please try again.')
@@ -421,11 +421,6 @@ export default function ResultsPage() {
   const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>('gaps')
 
-  const track = useCallback((event: string, props: Record<string, string | number | boolean> = {}) => {
-    try { posthog.capture(event, { assessment_type: 'auto_dealer', ...props }) }
-    catch { /* non-fatal */ }
-  }, [])
-
   // Load results — first try Supabase, fall back to localStorage
   useEffect(() => {
     if (!assessmentId) { router.replace('/assessment/auto-dealer'); return }
@@ -478,7 +473,7 @@ export default function ResultsPage() {
         setData({ ...json, responses: finalResponses, phaseScores, overallScore, gapAnalysis, profile, applicabilityChecks, calendarEntries: calendar })
         setEmailVerified(json.emailVerified)
         setPaid(prev => prev || json.paymentStatus === 'paid')
-        track('auto_dealer_results_view', { score: overallScore.score })
+        analytics.reportViewed({ assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, compliance_score: overallScore.score })
         setIsLoading(false)
         return
       }
@@ -523,7 +518,7 @@ export default function ResultsPage() {
         priceTier: tier,
         totalQuestions,
       })
-      track('auto_dealer_results_view_local', { score: overallScore.score })
+      analytics.reportViewed({ assessment_type: ASSESSMENT_TYPES.AUTO_DEALER, compliance_score: overallScore.score })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load results.')
     } finally {
@@ -547,7 +542,6 @@ export default function ResultsPage() {
       a.download = `compliance-report-${assessmentId.slice(0, 8)}.pdf`
       a.click()
       URL.revokeObjectURL(url)
-      track('auto_dealer_pdf_downloaded')
       analytics.reportDownloaded({
         assessment_type: 'auto_dealer',
         format: 'pdf',
@@ -590,7 +584,6 @@ export default function ResultsPage() {
       const json = await emailRes.json()
       if (!json.success) throw new Error(json.error || 'Failed to send email')
       setEmailSuccess(data.email)
-      track('auto_dealer_email_sent', { score: data.overallScore.score })
       analytics.reportEmailed({
         assessment_type: 'auto_dealer',
         compliance_score: data.overallScore.score,

@@ -983,8 +983,8 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
 
 // Temporary Results Page (when DB not configured or temp ID)
 function TempResultsPage({ assessmentType }: { assessmentType: string }) {
-  const isLabourCode = assessmentType === 'labour_code'
-  
+  const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
+
   // Demo data
   const demoScore = 65
   const demoStatus = { status: 'Needs Attention', color: 'amber', description: 'Several areas require attention.' }

@@ -1,7 +1,7 @@
 export type EntityType = 'pvt_ltd' | 'llp' | 'proprietorship' | 'partnership' | 'opc'
 export type IndustryType = 'it' | 'manufacturing' | 'retail' | 'healthcare' | 'fintech' | 'other'
 export type EmployeeCount = '1-10' | '11-50' | '51-100' | '101-500' | '500+'
-export type ProductType = 'statutory_health' | 'labor_code' | 'dpdp' | 'document'
+export type ProductType = 'statutory_health' | 'labour_code' | 'dpdp' | 'document'
 export type PaymentStatus = 'created' | 'paid' | 'failed' | 'refunded'
 export type AssessmentStatus = 'paid' | 'in_progress' | 'completed'
 

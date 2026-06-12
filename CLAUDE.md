@@ -258,16 +258,19 @@ Every assessment submit handler MUST:
 
 ## 12. Dead Code Policy
 
-These files are confirmed dead — do not reference them:
+As of 2026-06-12 all files in the original dead-code list have been deleted. The policy stands: if you confirm a file has zero importers and no callers, add it to this list before deleting.
+
+Historical list (confirmed gone):
 - `src/lib/pdf/report-generator.ts`
 - `src/lib/pdf/posh-report-generator.ts`
 - `src/lib/pdf/report-template.tsx`
 - `src/components/results/download-buttons-with-feedback.tsx`
 - `src/components/assessment/auto-save.tsx`
-- `src/app/api/assessment/submit/route.ts` (no callers — superseded)
-- `src/app/api/assessment/create/route.ts` (no callers — superseded)
-- `src/app/api/assessment/free-submit/route.ts` (no callers — superseded)
-- `src/app/api/assessment/[id]/pdf/route.tsx` (react-pdf approach abandoned)
+- `src/app/api/assessment/submit/route.ts`
+- `src/app/api/assessment/create/route.ts`
+- `src/app/api/assessment/free-submit/route.ts`
+- `src/app/api/assessment/[id]/pdf/route.tsx`
+- `src/lib/analytics/useAssessmentAnalytics.ts` (zero importers — deleted 2026-06-12)
 
 ---
 

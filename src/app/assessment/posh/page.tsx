@@ -16,7 +16,7 @@
  * - PDF report generation
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -127,19 +127,6 @@ interface AssessmentResults {
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-
-// PostHog event names
-const POSTHOG_EVENTS = {
-  ASSESSMENT_STARTED: 'posh_assessment_started',
-  APPLICABILITY_COMPLETED: 'posh_applicability_completed',
-  QUESTION_ANSWERED: 'posh_question_answered',
-  CATEGORY_COMPLETED: 'posh_category_completed',
-  ASSESSMENT_COMPLETED: 'posh_assessment_completed',
-  ASSESSMENT_ABANDONED: 'posh_assessment_abandoned',
-  REPORT_DOWNLOADED: 'posh_report_downloaded',
-  REPORT_EMAILED: 'posh_report_emailed',
-  ASSESSMENT_ERROR: 'posh_assessment_error',
-}
 
 // ============================================================================
 // VALIDATION SCHEMA
@@ -267,37 +254,31 @@ export default function POSHAssessmentPage() {
   // POSTHOG TRACKING
   // -------------------------------------------------------------------------
   
-  const trackEvent = useCallback((event: string, properties: Record<string, string | number | boolean | undefined> = {}) => {
-    analytics.trackEvent(event, { assessment_type: ASSESSMENT_TYPES.POSH, ...properties })
-  }, [])
-
   // Track assessment start
   useEffect(() => {
-    trackEvent(POSTHOG_EVENTS.ASSESSMENT_STARTED, {
-      source: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
-      timestamp: new Date().toISOString(),
+    analytics.assessmentStarted({
+      assessment_type: ASSESSMENT_TYPES.POSH,
+      user_tier: 'free',
+      question_count: ALL_POSH_QUESTIONS.length,
     })
-    
+
     // Track abandonment on page leave
     const handleBeforeUnload = () => {
       if (phase !== 'results') {
-        trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
-          phase,
-          last_question_id: phase === 'applicability' 
-            ? currentApplicabilityQuestion?.id 
-            : currentComplianceQuestion?.id,
-          category: phase === 'compliance' ? currentComplianceQuestion?.category : undefined,
-          completion_percentage: phase === 'applicability' 
-            ? applicabilityProgress 
-            : complianceProgress,
+        analytics.assessmentAbandoned({
+          assessment_type: ASSESSMENT_TYPES.POSH,
+          completion_percentage: phase === 'applicability' ? applicabilityProgress : complianceProgress,
           time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
+          questions_answered: phase === 'applicability'
+            ? currentApplicabilityIndex
+            : currentComplianceIndex,
         })
       }
     }
-    
+
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [phase, currentApplicabilityQuestion, currentComplianceQuestion, applicabilityProgress, complianceProgress, startTime, trackEvent])
+  }, [phase, currentApplicabilityIndex, currentComplianceIndex, applicabilityProgress, complianceProgress, startTime])
 
   // Update canGoBack state based on current phase and question index
   useEffect(() => {
@@ -327,7 +308,8 @@ export default function POSHAssessmentPage() {
       setCurrentApplicabilityIndex(prev => prev - 1)
       setQuestionStartTime(Date.now())
       
-      trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+      analytics.trackEvent('question_answered', {
+        assessment_type: ASSESSMENT_TYPES.POSH,
         action: 'back_navigation',
         phase: 'applicability',
         from_question: currentApplicabilityIndex,
@@ -336,22 +318,25 @@ export default function POSHAssessmentPage() {
     } else {
       // Back from first applicability question goes to company details
       setPhase('details')
-      
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
-        reason: 'back_to_company_details',
-        phase: 'applicability',
+
+      analytics.assessmentAbandoned({
+        assessment_type: ASSESSMENT_TYPES.POSH,
+        completion_percentage: 0,
+        time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
+        questions_answered: 0,
       })
     }
   }
-  
+
   // Handle back navigation - Compliance Phase
   const handleComplianceBack = () => {
     if (currentComplianceIndex > 0) {
       // Go to previous compliance question
       setCurrentComplianceIndex(prev => prev - 1)
       setQuestionStartTime(Date.now())
-      
-      trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+
+      analytics.trackEvent('question_answered', {
+        assessment_type: ASSESSMENT_TYPES.POSH,
         action: 'back_navigation',
         phase: 'compliance',
         from_question: currentComplianceIndex,
@@ -362,10 +347,12 @@ export default function POSHAssessmentPage() {
       // Back from first compliance question goes to applicability
       setPhase('applicability')
       setCurrentApplicabilityIndex(visibleApplicabilityQuestions.length - 1)
-      
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ABANDONED, {
-        reason: 'back_to_applicability',
-        phase: 'compliance',
+
+      analytics.assessmentAbandoned({
+        assessment_type: ASSESSMENT_TYPES.POSH,
+        completion_percentage: applicabilityProgress,
+        time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
+        questions_answered: currentApplicabilityIndex,
       })
     }
   }
@@ -395,7 +382,8 @@ export default function POSHAssessmentPage() {
     setApplicabilityResponses(cleanedResponses)
 
     // Track question answered
-    trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+    analytics.trackEvent('question_answered', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       question_id: questionId,
       phase: 'applicability',
       category: currentApplicabilityQuestion?.category,
@@ -435,7 +423,8 @@ export default function POSHAssessmentPage() {
     setAssessmentProfile(profile)
 
     // Track applicability completed
-    trackEvent(POSTHOG_EVENTS.APPLICABILITY_COMPLETED, {
+    analytics.trackEvent('assessment_applicability_completed', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       employee_count: responses['POSH_APP_001'],
       industry: responses['POSH_APP_008'],
       state: responses['POSH_APP_006'],
@@ -545,7 +534,8 @@ export default function POSHAssessmentPage() {
     }
     
     // Track question answered
-    trackEvent(POSTHOG_EVENTS.QUESTION_ANSWERED, {
+    analytics.trackEvent('question_answered', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       question_id: questionId,
       phase: 'compliance',
       category: question?.category,
@@ -583,7 +573,8 @@ export default function POSHAssessmentPage() {
     
     const percentage = scores.max > 0 ? Math.round((scores.earned / scores.max) * 100) : 100
     
-    trackEvent(POSTHOG_EVENTS.CATEGORY_COMPLETED, {
+    analytics.trackEvent('category_completed', {
+      assessment_type: ASSESSMENT_TYPES.POSH,
       category,
       score: scores.earned,
       max_score: scores.max,
@@ -604,17 +595,14 @@ export default function POSHAssessmentPage() {
       setResults(assessmentResults)
       
       // Track completion
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_COMPLETED, {
-        total_score: assessmentResults.overallScore,
-        risk_level: assessmentResults.riskLevel,
-        category_scores_json: JSON.stringify(assessmentResults.categoryScores.reduce((acc, cat) => ({
-          ...acc,
-          [cat.category]: cat.percentage,
-        }), {})),
-        total_time_seconds: totalTime,
+      analytics.assessmentCompleted({
+        assessment_type: ASSESSMENT_TYPES.POSH,
+        compliance_score: assessmentResults.overallScore,
+        gap_count: assessmentResults.actionItems.length,
+        high_priority_gaps: assessmentResults.actionItems.filter(a => a.priority === 'high').length,
+        time_to_complete_seconds: totalTime,
         questions_answered: Object.keys(complianceResponses).length,
-        action_items_count: assessmentResults.actionItems.length,
-        high_priority_items: assessmentResults.actionItems.filter(a => a.priority === 'high').length,
+        questions_skipped: 0,
       })
       
       // Set user properties
@@ -632,7 +620,8 @@ export default function POSHAssessmentPage() {
       setPhase('results')
     } catch (err) {
       console.error('Assessment completion error:', err)
-      trackEvent(POSTHOG_EVENTS.ASSESSMENT_ERROR, {
+      analytics.trackEvent('assessment_error', {
+        assessment_type: ASSESSMENT_TYPES.POSH,
         error_type: 'completion_error',
         error_message: err instanceof Error ? err.message : 'Unknown error',
       })
@@ -816,11 +805,6 @@ export default function POSHAssessmentPage() {
   const handleDownloadReport = async () => {
     if (!results || !companyDetails) return
     
-    trackEvent(POSTHOG_EVENTS.REPORT_DOWNLOADED, {
-      score: results.overallScore,
-      risk_level: results.riskLevel,
-      format: 'pdf',
-    })
     analytics.reportDownloaded({
       assessment_type: 'posh',
       format: 'pdf',
@@ -999,12 +983,6 @@ export default function POSHAssessmentPage() {
       if (data.success) {
         setEmailSuccess(companyDetails.email)
         
-        trackEvent(POSTHOG_EVENTS.REPORT_EMAILED, {
-          score: results.overallScore,
-          risk_level: results.riskLevel,
-          format: 'email',
-          email_sent: true,
-        })
         analytics.reportEmailed({
           assessment_type: 'posh',
           compliance_score: results.overallScore,

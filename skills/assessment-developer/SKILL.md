@@ -97,7 +97,7 @@ ALWAYS collect these 7 fields with this exact validation:
 | Industry | Select | - | `INDUSTRY_OPTIONS` |
 
 ```typescript
-import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants';
+import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/india';
 
 const userDetailsSchema = z.object({
   fullName: z.string().min(2).max(100),
@@ -156,8 +156,8 @@ className="bg-gray-300 text-gray-500 cursor-not-allowed"
 ```tsx
 <Progress 
   value={progressPercent} 
-  aria-label="Assessment progress"  // REQUIRED for accessibility
-  className="h-2"
+  className="h-3 [&>div]:bg-green-600"
+  aria-label={`Assessment progress: ${progressPercent}% complete`}
 />
 <span className="text-sm text-gray-500">
   {currentQuestionIndex + 1} of {filteredQuestions.length}
@@ -168,61 +168,59 @@ className="bg-gray-300 text-gray-500 cursor-not-allowed"
 
 ## 6. PostHog Analytics (Required Events)
 
-Every assessment MUST track these 6 events:
+Every assessment MUST track these 6 events using the typed `analytics` object.
+Never call `posthog.capture` directly — use `analytics` from `@/lib/analytics/tracking`.
 
 ```typescript
-import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
-import posthog from 'posthog-js';
+import { analytics } from '@/lib/analytics/tracking';
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types';
 
 // 1. Assessment started (after Step 0)
-posthog.capture(ANALYTICS_EVENTS.ASSESSMENT_STARTED, {
+analytics.assessmentStarted({
   assessment_type: ASSESSMENT_TYPES.NEW_ASSESSMENT,
-  industry: userDetails.industry,
-  employee_count: userDetails.employeeCount,
+  user_tier: 'free',
   question_count: filteredQuestions.length,
-  user_tier: 'free'
 });
 
 // 2. Assessment completed
-posthog.capture(ANALYTICS_EVENTS.ASSESSMENT_COMPLETED, {
+analytics.assessmentCompleted({
   assessment_type: ASSESSMENT_TYPES.NEW_ASSESSMENT,
   compliance_score: score,
   gap_count: actionItems.length,
   high_priority_gaps: actionItems.filter(a => a.priority === 'high').length,
   time_to_complete_seconds: Math.floor((Date.now() - startTime) / 1000),
   questions_answered: Object.keys(responses).length,
-  questions_skipped: 0
+  questions_skipped: 0,
 });
 
 // 3. Report downloaded
-posthog.capture(ANALYTICS_EVENTS.REPORT_DOWNLOADED, {
+analytics.reportDownloaded({
   assessment_type: ASSESSMENT_TYPES.NEW_ASSESSMENT,
   format: 'pdf',
   compliance_score: score,
-  user_tier: 'free'
+  user_tier: 'free',
 });
 
-// 4. Feedback submitted
-posthog.capture(ANALYTICS_EVENTS.FEEDBACK_SUBMITTED, {
-  assessment_type: ASSESSMENT_TYPES.NEW_ASSESSMENT,
-  nps_score: feedback.npsScore,
-  would_recommend: feedback.wouldRecommend,
-  has_comments: !!feedback.comments
-});
-
-// 5. Assessment abandoned (in useEffect cleanup or beforeunload)
-posthog.capture(ANALYTICS_EVENTS.ASSESSMENT_ABANDONED, {
+// 4. Assessment abandoned (in useEffect cleanup or beforeunload)
+analytics.assessmentAbandoned({
   assessment_type: ASSESSMENT_TYPES.NEW_ASSESSMENT,
   completion_percentage: Math.round((currentQuestionIndex / filteredQuestions.length) * 100),
-  last_question_id: currentQuestion?.id,
-  time_spent_seconds: Math.floor((Date.now() - startTime) / 1000)
+  time_spent_seconds: Math.floor((Date.now() - startTime) / 1000),
+  questions_answered: Object.keys(responses).length,
 });
 
-// 6. Report viewed (on results page load)
-posthog.capture(ANALYTICS_EVENTS.REPORT_VIEWED, {
+// 5. Report viewed (on results page load)
+analytics.reportViewed({
   assessment_type: ASSESSMENT_TYPES.NEW_ASSESSMENT,
   compliance_score: score,
-  assessment_id: assessmentId
+  assessment_id: assessmentId,
+});
+
+// 6. Report emailed
+analytics.reportEmailed({
+  assessment_type: ASSESSMENT_TYPES.NEW_ASSESSMENT,
+  compliance_score: score,
+  user_tier: 'free',
 });
 ```
 
