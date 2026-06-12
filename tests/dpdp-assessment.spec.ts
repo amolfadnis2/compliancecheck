@@ -932,7 +932,10 @@ async function fillCompanyDetails(page: Page, details: {
   industry?: string;
   dataPrincipals?: string;
   state?: string;
+  employeeCount?: string;
+  revenue?: string;
   processesChildrenData?: boolean;
+  processesHealthData?: boolean;
   transfersDataAbroad?: boolean;
   operatesPlatform?: boolean;
 }) {

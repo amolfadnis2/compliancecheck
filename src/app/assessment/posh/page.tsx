@@ -17,6 +17,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
+import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -179,6 +180,8 @@ const POSH_STATE_LABELS: Record<string, string> = {
   'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
 }
 
+const POSH_STORAGE_KEY = 'assessment_progress_posh'
+
 const POSH_INDUSTRY_LABELS: Record<string, string> = {
   'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
   'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
@@ -247,6 +250,30 @@ export default function POSHAssessmentPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<CompanyDetailsForm>({
     resolver: zodResolver(companyDetailsSchema),
   })
+
+  // Progress save/restore
+  const savedProgress = useAssessmentProgress(
+    POSH_STORAGE_KEY,
+    { phase, applicabilityResponses, complianceResponses, companyDetails },
+    Object.keys(applicabilityResponses).length > 0 || Object.keys(complianceResponses).length > 0
+  )
+
+  useEffect(() => {
+    if (savedProgress.savedState && savedProgress.hasSaved) {
+      // Restore will be offered via banner — auto-restore on first render
+      const s = savedProgress.savedState
+      if (s.companyDetails) setCompanyDetails(s.companyDetails)
+      if (s.applicabilityResponses && Object.keys(s.applicabilityResponses).length > 0) {
+        setApplicabilityResponses(s.applicabilityResponses)
+      }
+      if (s.complianceResponses && Object.keys(s.complianceResponses).length > 0) {
+        setComplianceResponses(s.complianceResponses)
+      }
+      if (s.phase && s.phase !== 'details') setPhase(s.phase)
+    }
+  // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // -------------------------------------------------------------------------
   // DERIVED STATE
