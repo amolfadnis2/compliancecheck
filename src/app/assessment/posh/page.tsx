@@ -155,6 +155,41 @@ function getStatusColor(status: 'compliant' | 'needs_attention' | 'non_compliant
 }
 
 // ============================================================================
+// LABEL MAPS (single source of truth for PDF/email handlers)
+// ============================================================================
+
+const POSH_EMPLOYEE_COUNT_LABELS: Record<string, string> = {
+  'below_10': 'Less than 10 employees',
+  '10_to_49': '10-49 employees',
+  '50_to_199': '50-199 employees',
+  '200_to_499': '200-499 employees',
+  '500_plus': '500+ employees',
+}
+
+const POSH_STATE_LABELS: Record<string, string> = {
+  'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
+  'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
+  'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
+  'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
+  'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
+  'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
+  'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
+  'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
+  'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
+  'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
+}
+
+const POSH_INDUSTRY_LABELS: Record<string, string> = {
+  'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
+  'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
+  'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
+  'education': 'Education', 'media_entertainment': 'Media / Entertainment',
+  'banking_finance': 'Banking / Finance', 'construction': 'Construction',
+  'logistics': 'Logistics', 'professional_services': 'Professional Services',
+  'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
+}
+
+// ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
@@ -829,46 +864,14 @@ export default function POSHAssessmentPage() {
         compliantItems: results.compliantItems,
       }
 
-      // Map applicability response values to readable labels
-      const employeeCountLabels: Record<string, string> = {
-        'below_10': 'Less than 10 employees',
-        '10_to_49': '10-49 employees',
-        '50_to_199': '50-199 employees',
-        '200_to_499': '200-499 employees',
-        '500_plus': '500+ employees',
-      }
-      
-      const stateLabels: Record<string, string> = {
-        'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
-        'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
-        'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
-        'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
-        'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
-        'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
-        'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
-        'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
-        'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
-        'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
-      }
-      
-      const industryLabels: Record<string, string> = {
-        'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
-        'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
-        'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
-        'education': 'Education', 'media_entertainment': 'Media / Entertainment',
-        'banking_finance': 'Banking / Finance', 'construction': 'Construction',
-        'logistics': 'Logistics', 'professional_services': 'Professional Services',
-        'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
-      }
-
       const userDetails = {
         fullName: companyDetails.fullName,
         email: companyDetails.email,
         phone: companyDetails.phone,
         companyName: companyDetails.companyName,
-        state: stateLabels[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
-        employeeCount: employeeCountLabels[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
-        industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
+        state: POSH_STATE_LABELS[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
+        employeeCount: POSH_EMPLOYEE_COUNT_LABELS[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
+        industry: POSH_INDUSTRY_LABELS[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
       const blob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
@@ -910,46 +913,14 @@ export default function POSHAssessmentPage() {
         compliantItems: results.compliantItems,
       }
 
-      // Map applicability response values to readable labels
-      const employeeCountLabels: Record<string, string> = {
-        'below_10': 'Less than 10 employees',
-        '10_to_49': '10-49 employees',
-        '50_to_199': '50-199 employees',
-        '200_to_499': '200-499 employees',
-        '500_plus': '500+ employees',
-      }
-      
-      const stateLabels: Record<string, string> = {
-        'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
-        'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
-        'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
-        'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
-        'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
-        'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
-        'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
-        'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
-        'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
-        'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
-      }
-      
-      const industryLabels: Record<string, string> = {
-        'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
-        'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
-        'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
-        'education': 'Education', 'media_entertainment': 'Media / Entertainment',
-        'banking_finance': 'Banking / Finance', 'construction': 'Construction',
-        'logistics': 'Logistics', 'professional_services': 'Professional Services',
-        'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
-      }
-
       const userDetails = {
         fullName: companyDetails.fullName,
         email: companyDetails.email,
         phone: companyDetails.phone,
         companyName: companyDetails.companyName,
-        state: stateLabels[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
-        employeeCount: employeeCountLabels[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
-        industry: industryLabels[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
+        state: POSH_STATE_LABELS[applicabilityResponses['POSH_APP_006']] || applicabilityResponses['POSH_APP_006'] || 'India',
+        employeeCount: POSH_EMPLOYEE_COUNT_LABELS[applicabilityResponses['POSH_APP_001']] || applicabilityResponses['POSH_APP_001'] || 'Not specified',
+        industry: POSH_INDUSTRY_LABELS[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
       const pdfBlob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
@@ -1112,8 +1083,8 @@ export default function POSHAssessmentPage() {
             </span>
           </div>
           
-          <div 
-            className="relative h-2 bg-gray-200 rounded-full overflow-hidden"
+          <div
+            className="relative h-3 bg-gray-200 rounded-full overflow-hidden"
             role="progressbar"
             aria-valuenow={Math.round(applicabilityProgress)}
             aria-valuemin={0}
@@ -1121,8 +1092,8 @@ export default function POSHAssessmentPage() {
             aria-label={`Applicability check progress: ${Math.round(applicabilityProgress)}%`}
           >
             {/* Progress fill */}
-            <div 
-              className="h-full bg-blue-600 transition-all duration-300"
+            <div
+              className="h-full bg-green-600 transition-all duration-300"
               style={{ width: `${applicabilityProgress}%` }}
             />
           </div>
@@ -1536,12 +1507,9 @@ export default function POSHAssessmentPage() {
                       {cat.percentage}%
                     </span>
                   </div>
-                  <Progress 
-                    value={cat.percentage} 
-                    className={`h-2 ${
-                      cat.status === 'compliant' ? '[&>div]:bg-green-500' :
-                      cat.status === 'needs_attention' ? '[&>div]:bg-amber-500' : '[&>div]:bg-red-500'
-                    }`}
+                  <Progress
+                    value={cat.percentage}
+                    className="h-3 [&>div]:bg-green-600"
                     aria-label={`${cat.categoryName} compliance: ${cat.percentage}%`}
                   />
                 </div>

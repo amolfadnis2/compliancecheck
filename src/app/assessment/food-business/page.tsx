@@ -456,7 +456,7 @@ export default function FoodBusinessAssessmentPage() {
               {applicabilityIndex + 1} of {FOOD_BUSINESS_APPLICABILITY_QUESTIONS.length}
             </span>
           </div>
-          <Progress value={progress} aria-label={`Applicability progress: ${Math.round(progress)}% complete`} className="h-3 mb-4" />
+          <Progress value={progress} aria-label={`Applicability progress: ${Math.round(progress)}% complete`} className="h-3 [&>div]:bg-green-600 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">
@@ -648,7 +648,7 @@ export default function FoodBusinessAssessmentPage() {
               {currentQuestionIndex + 1} of {filteredQuestions.length}
             </span>
           </div>
-          <Progress value={progress} aria-label={`Assessment progress: ${Math.round(progress)}% complete`} className="h-3 mb-4" />
+          <Progress value={progress} aria-label={`Assessment progress: ${Math.round(progress)}% complete`} className="h-3 [&>div]:bg-green-600 mb-4" />
           <CardTitle className="text-lg">{q.text}</CardTitle>
           {q.helpText && (
             <CardDescription className="flex items-start gap-2 mt-2">
