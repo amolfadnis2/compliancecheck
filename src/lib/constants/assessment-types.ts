@@ -43,6 +43,31 @@ export function isPaidAssessment(type: AssessmentType): boolean {
   return ASSESSMENT_PRICING[type] === 'paid';
 }
 
+// Per-assessment price and live-payment rollout flag.
+// Set live: true one assessment at a time after QA in Razorpay test mode.
+export interface AssessmentPriceConfig {
+  amountPaise: number;
+  live: boolean;
+}
+
+export const ASSESSMENT_PRICES: Record<AssessmentType, AssessmentPriceConfig> = {
+  [ASSESSMENT_TYPES.STATUTORY_HEALTH]:      { amountPaise: 49900,  live: true },
+  [ASSESSMENT_TYPES.LABOUR_CODE]:           { amountPaise: 99900,  live: false },
+  [ASSESSMENT_TYPES.DPDP]:                  { amountPaise: 249900, live: false },
+  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: { amountPaise: 49900,  live: false },
+  [ASSESSMENT_TYPES.FOOD_BUSINESS]:         { amountPaise: 99900,  live: false },
+  [ASSESSMENT_TYPES.POSH]:                  { amountPaise: 199900, live: false },
+  [ASSESSMENT_TYPES.AUTO_DEALER]:           { amountPaise: 299900, live: false },
+};
+
+export function getAssessmentPricePaise(type: AssessmentType): number {
+  return ASSESSMENT_PRICES[type].amountPaise;
+}
+
+export function isPaymentLive(type: AssessmentType): boolean {
+  return ASSESSMENT_PRICES[type]?.live ?? false;
+}
+
 /**
  * Helper to validate if a string is a valid assessment type
  */

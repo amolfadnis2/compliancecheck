@@ -265,11 +265,11 @@ export default function StatutoryHealthAssessmentPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
-      <AssessmentHeader 
+      <AssessmentHeader
         title="ComplianceCheck"
         subtitle="Statutory Health Check"
-        badgeText="FREE Assessment"
-        badgeVariant="free"
+        badgeText="Compliance Report"
+        badgeVariant="paid"
       />
 
       <div className="max-w-2xl mx-auto py-8 px-4">
@@ -399,7 +399,7 @@ export default function StatutoryHealthAssessmentPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Assessment Complete!</CardTitle>
-                <CardDescription>Review your preliminary results and get your free report</CardDescription>
+                <CardDescription>Review your preliminary score, then view your full results</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Overall Score Preview */}
@@ -432,28 +432,28 @@ export default function StatutoryHealthAssessmentPage() {
               </CardContent>
             </Card>
 
-            {/* Report Card - Free Access */}
-            <Card className="border-2 border-green-600">
+            {/* Report Card - View summary, then unlock */}
+            <Card className="border-2 border-blue-600">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h3 className="font-semibold text-lg">Statutory Health Check Report</h3>
-                    <p className="text-gray-600 text-sm">Detailed PDF report with action items</p>
+                    <p className="text-gray-600 text-sm">See your free summary, then unlock the full report</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">FREE</div>
-                    <div className="text-sm text-gray-500 line-through">₹999</div>
+                    <div className="text-2xl font-bold text-blue-600">₹499</div>
+                    <div className="text-sm text-gray-500">full report</div>
                   </div>
                 </div>
 
                 <div className="space-y-2 mb-6 text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    Detailed compliance score by category
+                    Free summary: score &amp; category breakdown
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    Priority action items (High/Medium/Low)
+                    Full report: priority action items with remediation
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <CheckCircle className="w-4 h-4 text-green-600" />
@@ -461,12 +461,12 @@ export default function StatutoryHealthAssessmentPage() {
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    Email copy of report
+                    Optional email copy of report
                   </div>
                 </div>
 
-                <Button 
-                  className="w-full bg-green-600 hover:bg-green-700" 
+                <Button
+                  className="w-full bg-blue-700 hover:bg-blue-800"
                   size="lg"
                   onClick={handleFreeSubmit}
                   disabled={isSubmitting}
@@ -477,7 +477,7 @@ export default function StatutoryHealthAssessmentPage() {
                       Processing...
                     </>
                   ) : (
-                    'Get Free Report'
+                    'View My Results'
                   )}
                 </Button>
 
