@@ -349,6 +349,11 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
   const [emailSuccess, setEmailSuccess] = useState(false)
   const [emailError, setEmailError] = useState<string | null>(null)
 
+  // Email override — lets user correct the address before sending
+  const [emailOverride, setEmailOverride] = useState<string | null>(null)
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [editEmailDraft, setEditEmailDraft] = useState('')
+
   useEffect(() => {
     const id = assessmentId || window.location.pathname.split('/').pop() || ''
     
@@ -624,7 +629,9 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
                    dataAsUnknown.email ||
                    dataAsUnknown.contactEmail
 
-      if (!email) {
+      const resolvedEmail = emailOverride || email
+
+      if (!resolvedEmail) {
         console.error('Email lookup failed. Data structure:', {
           userDetails,
           responsesUserDetails,
@@ -681,7 +688,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email: resolvedEmail,
           assessmentId: id,
           pdfBase64,
           companyName: userDetails.companyName || 'Your Company',
@@ -712,7 +719,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     } finally {
       setIsEmailing(false)
     }
-  }, [assessmentId, assessmentData, propAssessmentType, complianceScore])
+  }, [assessmentId, assessmentData, propAssessmentType, complianceScore, emailOverride])
 
   // Auto-trigger download or email after feedback completion
   useEffect(() => {
@@ -788,6 +795,56 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       {emailSuccess && (
         <p className="text-sm text-green-600 text-center">Report sent successfully! Check your inbox.</p>
       )}
+
+      {/* Email address display + inline edit */}
+      {(() => {
+        const userDetails = assessmentData?.userDetails || assessmentData?.responses?.userDetails || {}
+        const storedEmail = (userDetails as Record<string, string | undefined>).email ||
+                            (userDetails as Record<string, string | undefined>).contactEmail || ''
+        const displayEmail = emailOverride ?? storedEmail
+        if (!displayEmail && !isEditingEmail) return null
+        return (
+          <div className="text-sm text-gray-500 text-center">
+            {isEditingEmail ? (
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <input
+                  type="email"
+                  value={editEmailDraft}
+                  onChange={(e) => setEditEmailDraft(e.target.value)}
+                  className="border rounded px-2 py-1 text-sm text-gray-800 w-48 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="Enter email"
+                  autoFocus
+                />
+                <button
+                  onClick={() => {
+                    if (editEmailDraft.trim()) setEmailOverride(editEmailDraft.trim())
+                    setIsEditingEmail(false)
+                  }}
+                  className="text-blue-600 hover:underline"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setIsEditingEmail(false)}
+                  className="text-gray-400 hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <span>
+                Report will be sent to: <span className="font-medium text-gray-700">{displayEmail}</span>{' '}
+                <button
+                  onClick={() => { setEditEmailDraft(displayEmail); setIsEditingEmail(true) }}
+                  className="text-blue-600 hover:underline"
+                >
+                  Change
+                </button>
+              </span>
+            )}
+          </div>
+        )
+      })()}
     </div>
   )
 }
