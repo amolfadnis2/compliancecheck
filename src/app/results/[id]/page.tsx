@@ -731,7 +731,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
           </Link>
           <Badge className="bg-green-100 text-green-700 mb-2">Statutory Health Check</Badge>
           <h1 className="text-2xl font-bold text-gray-900">Your Compliance Report</h1>
-          <p className="text-gray-600">{responses.userDetails.companyName}</p>
+          <p className="text-gray-600">{responses.userDetails?.companyName}</p>
         </div>
 
         <Card className="mb-6">
