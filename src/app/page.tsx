@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import {
@@ -27,25 +27,39 @@ const TRUST_SIGNALS = [
 ];
 
 // Assessment card data
-const assessments = [
+const assessments: {
+  id: string;
+  title: string;
+  description: string;
+  questions: number;
+  fullPrice: string;
+  isLive: boolean;
+  href: string;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
+  gradient: string;
+  hoverBorder: string;
+  badge: { text: string; color: string } | null;
+}[] = [
   {
     id: 'statutory-health-check',
     title: 'Statutory Health Check',
     description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance.',
     questions: 12,
-    price: 'Rs.999 after beta',
+    fullPrice: '₹499',
+    isLive: true,
     href: '/assessment/statutory-health',
     icon: Heart,
     gradient: 'from-blue-500 to-blue-600',
     hoverBorder: 'hover:border-blue-500',
-    badge: null
+    badge: { text: 'LIVE', color: 'bg-blue-600' }
   },
   {
     id: 'labour-code-readiness',
     title: 'Labour Code Readiness',
     description: 'Assessment for all 4 new Labour Codes (Nov 2025). Gap analysis & action items.',
     questions: 30,
-    price: 'Rs.1,999 after beta',
+    fullPrice: '₹999',
+    isLive: false,
     href: '/assessment/labour-code',
     icon: Scale,
     gradient: 'from-teal-500 to-teal-600',
@@ -57,7 +71,8 @@ const assessments = [
     title: 'DPDP Gap Assessment',
     description: 'Data protection compliance for DPDP Act 2023 (effective May 2027). Maturity scoring.',
     questions: 45,
-    price: 'Rs.2,499 after beta',
+    fullPrice: '₹2,499',
+    isLive: false,
     href: '/assessment/dpdp',
     icon: Shield,
     gradient: 'from-blue-600 to-cyan-600',
@@ -69,7 +84,8 @@ const assessments = [
     title: 'Which Laws Apply to My Business?',
     description: "Find out exactly what's required in your state — Professional Tax slabs, Labour Welfare Fund rates, S&E deadlines, and more.",
     questions: 10,
-    price: 'Rs.1,499 after beta',
+    fullPrice: '₹499',
+    isLive: false,
     href: '/assessment/state-wise-compliance',
     icon: MapPin,
     gradient: 'from-indigo-600 to-purple-600',
@@ -81,7 +97,8 @@ const assessments = [
     title: 'Restaurant & Food Business',
     description: 'FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.',
     questions: 26,
-    price: 'Rs.999 after beta',
+    fullPrice: '₹999',
+    isLive: false,
     href: '/assessment/food-business',
     icon: Utensils,
     gradient: 'from-cyan-500 to-teal-600',
@@ -93,7 +110,8 @@ const assessments = [
     title: 'POSH Act 2013 Compliance',
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
     questions: 40,
-    price: 'Rs.1,999 after beta',
+    fullPrice: '₹1,999',
+    isLive: false,
     href: '/assessment/posh',
     icon: AlertTriangle,
     gradient: 'from-purple-500 to-pink-600',
@@ -105,7 +123,8 @@ const assessments = [
     title: 'Auto Dealership Compliance',
     description: '2-Wheeler & 4-Wheeler Dealers — Labour, CMVR, EHS, IRDAI MISP, ELV, GST 2.0, DPDP. 6-phase, up to 100 questions.',
     questions: 100,
-    price: 'Rs.999–4,999',
+    fullPrice: '₹2,999',
+    isLive: false,
     href: '/assessment/auto-dealer',
     icon: Car,
     gradient: 'from-blue-700 to-sky-500',
@@ -253,7 +272,7 @@ function Header({
               href="#assessments"
               className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
-              Get Started Free
+              Start an Assessment
             </Link>
 
             {/* Mobile Menu Button */}
@@ -294,7 +313,7 @@ function Header({
                     onClick={() => setMobileMenuOpen(false)}
                     className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
                   >
-                    Get Started Free
+                    Start an Assessment
                   </Link>
                 </li>
                 <li>
@@ -336,9 +355,10 @@ function HeroSection() {
         </h1>
 
         <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
-          Answer a guided set of questions. Get an instant PDF report with your compliance score,
-          every gap identified, and a prioritised action list — with citations to the actual law.
-          No lawyer appointment needed.
+          Answer a guided set of questions and get a free compliance summary instantly:
+          your score, category breakdown, and top gaps identified. Unlock the full report —
+          with every gap explained, the exact law cited, and a prioritised action plan —
+          from ₹499. No lawyer appointment needed.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
@@ -346,7 +366,7 @@ function HeroSection() {
             href="#assessments"
             className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           >
-            View All Assessments
+            See All Assessments &amp; Pricing
             <ArrowRight className="w-5 h-5" aria-hidden="true" />
           </a>
           <a
@@ -401,19 +421,15 @@ function AssessmentsSection() {
 
           {/* Subtitle */}
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Each assessment delivers a scored PDF report with your gaps, risk level, and exact steps to fix them.
-            No subscription — pay only for what you need.
+            Start with a free compliance summary — your score and top gaps, instantly.
+            Unlock the full report with remediation steps, legal citations, and a
+            downloadable PDF. Pay once per assessment. No subscription.
           </p>
 
-          {/* Beta notice — Fix 3: single clear message, no contradictory "after beta" signals */}
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <span className="inline-block bg-green-50 dark:bg-green-900/30 border-2 border-green-200 dark:border-green-700 rounded-2xl px-6 py-3 text-green-700 dark:text-green-300 font-semibold">
-              🎉 All assessments are FREE during beta
-            </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Your report is yours to keep permanently.
-            </span>
-          </div>
+          <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            Free compliance summary included with every assessment.
+            Full reports from ₹499 — pay once, no subscription.
+          </p>
         </header>
 
         {/* Assessment Cards Grid */}
@@ -470,19 +486,29 @@ function AssessmentCard({ assessment }: { assessment: typeof assessments[number]
 
       {/* Spacer + Bottom Content - pushed to bottom */}
       <div className="mt-auto">
-        {/* Metadata Row */}
-        <div className="flex items-center gap-4 mb-4 text-sm">
-          <span>
-            <strong className="font-semibold text-gray-700 dark:text-gray-300">{assessment.questions}</strong>
-            <span className="text-gray-500 dark:text-gray-500"> questions</span>
-          </span>
-          <span className="w-px h-4 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
-          <span className="text-xs text-gray-400 dark:text-gray-500 italic">{assessment.price}</span>
+        {/* Questions count */}
+        <div className="mb-3 text-sm">
+          <strong className="font-semibold text-gray-700 dark:text-gray-300">{assessment.questions}</strong>
+          <span className="text-gray-500 dark:text-gray-500"> questions</span>
         </div>
 
-        {/* CTA Button — Fix 2: visible solid background in resting state (touch-device safe) */}
+        {/* Pricing line */}
+        <div className="flex items-center gap-3 mb-4 text-sm">
+          <span className="text-gray-600 dark:text-gray-400">Free summary</span>
+          <span className="w-px h-4 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
+          <span className="font-semibold text-gray-800 dark:text-gray-200">
+            Full report: {assessment.fullPrice}
+          </span>
+          {!assessment.isLive && (
+            <span className="text-xs text-green-600 dark:text-green-400">Early access — free now</span>
+          )}
+        </div>
+
+        {/* CTA Button */}
         <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg bg-blue-600 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 text-white transition-all duration-300">
-          <span className="font-medium">Start Free Assessment</span>
+          <span className="font-medium">
+            {assessment.isLive ? 'Start — Free Summary' : 'Start Assessment'}
+          </span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
@@ -577,17 +603,22 @@ function HowItWorksSection() {
     {
       number: '1',
       title: 'Choose Your Assessment',
-      description: 'Select from our compliance assessments based on your business needs.'
+      description: 'Pick from 7 domains: labour law, data protection, food safety, POSH, and more.'
     },
     {
       number: '2',
-      title: 'Answer Questions',
-      description: 'Complete the guided questionnaire in 10-15 minutes. Save and resume anytime.'
+      title: 'Answer the Questions',
+      description: 'Guided questions take 10–45 minutes depending on the assessment. No jargon — plain language throughout.'
     },
     {
       number: '3',
-      title: 'Get Your Report',
-      description: 'Receive instant gap analysis, compliance score, and prioritised action items.'
+      title: 'Get Your Free Summary',
+      description: 'Instantly see your compliance score, category breakdown, and the top gaps your business has. No payment needed.'
+    },
+    {
+      number: '4',
+      title: 'Unlock the Full Report',
+      description: 'Pay once to access every gap with the exact legal provision, a prioritised fix-it list, and a PDF you can download or get by email.'
     }
   ];
 
@@ -609,11 +640,11 @@ function HowItWorksSection() {
             How It Works
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
-            Get compliance clarity in three simple steps
+            Get compliance clarity in four simple steps
           </p>
         </header>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
             <div
               key={step.number}
@@ -629,7 +660,7 @@ function HowItWorksSection() {
                 {step.description}
               </p>
               {index < steps.length - 1 && (
-                <ArrowRight className="hidden md:block absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+                <ArrowRight className="hidden lg:block absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
               )}
             </div>
           ))}
@@ -647,16 +678,20 @@ function FAQSection() {
       answer: 'Startup founders, HR managers, and compliance professionals managing Indian businesses with 10-500 employees.'
     },
     {
+      question: 'What do I get for free?',
+      answer: 'Every assessment gives you a free compliance summary the moment you finish: your overall score, a breakdown by category, and your top compliance gaps. No sign-up, no payment.'
+    },
+    {
+      question: 'What do I get when I pay?',
+      answer: 'The full report includes every gap with the exact legal section that applies, a prioritised action plan your team can act on immediately, and a branded PDF you can download or receive by email. One payment — no subscription, no renewal. Prices start at ₹499.'
+    },
+    {
       question: 'Is this a subscription?',
-      answer: 'No. Pay only when you need an assessment. No recurring charges, no lock-in contracts.'
+      answer: 'No. Pay only when you need an assessment. No recurring charges, no lock-in contracts. Each report is a one-time purchase. Prices are shown on every assessment card before you start.'
     },
     {
       question: 'How accurate are the assessments?',
       answer: 'Our questions are based on the actual government acts and rules. Every answer maps to a specific legal section so you can verify everything yourself.'
-    },
-    {
-      question: 'What do I get in the report?',
-      answer: 'Each report includes a compliance score, gap analysis, risk assessment, and prioritised action items with legal references.'
     }
   ];
 
