@@ -380,7 +380,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
                     item.priority === 'high' ? 'bg-red-100 text-red-700' :
                     item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {item.priority.toUpperCase()}
+                    {(item.priority ?? 'low').toUpperCase()}
                   </div>
                   <div>
                     <p className="text-gray-900">{item.text}</p>
@@ -628,9 +628,9 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
 
 // Statutory Health Results Component
 function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData }) {
-  const responses = assessment.responses as { 
-    userDetails: { fullName: string; email: string; companyName: string }
-    answers: Record<string, string> 
+  const responses = (assessment.responses ?? {}) as {
+    userDetails?: { fullName?: string; email?: string; companyName?: string }
+    answers?: Record<string, string>
   }
 
   // Calculate scores
@@ -644,7 +644,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 
       categoryQuestions.forEach(q => {
         max += q.weight
-        const answer = responses.answers[q.id]
+        const answer = responses.answers?.[q.id]
         
         if (q.complianceAnswer) {
           // Compliance question: check if answer matches required answer
@@ -701,7 +701,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
     }
 
     STATUTORY_HEALTH_QUESTIONS.forEach(q => {
-      const answer = responses.answers[q.id]
+      const answer = responses.answers?.[q.id]
       if (q.complianceAnswer && answer !== q.complianceAnswer) {
         const priority = q.weight >= 10 ? 'high' : q.weight >= 6 ? 'medium' : 'low'
         items.push({
@@ -731,7 +731,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
           </Link>
           <Badge className="bg-green-100 text-green-700 mb-2">Statutory Health Check</Badge>
           <h1 className="text-2xl font-bold text-gray-900">Your Compliance Report</h1>
-          <p className="text-gray-600">{responses.userDetails.companyName}</p>
+          <p className="text-gray-600">{responses.userDetails?.companyName}</p>
         </div>
 
         <Card className="mb-6">
@@ -801,7 +801,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
                     item.priority === 'high' ? 'bg-red-100 text-red-700' :
                     item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {item.priority.toUpperCase()}
+                    {(item.priority ?? 'low').toUpperCase()}
                   </div>
                   <div>
                     <p className="text-gray-900">{item.text}</p>
@@ -1017,7 +1017,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
                     item.priority === 'high' ? 'bg-red-100 text-red-700' :
                     item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {item.priority.toUpperCase()}
+                    {(item.priority ?? 'low').toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-gray-900 text-sm">{item.title || item.text}</p>
