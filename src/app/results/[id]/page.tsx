@@ -628,9 +628,9 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
 
 // Statutory Health Results Component
 function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData }) {
-  const responses = assessment.responses as { 
-    userDetails: { fullName: string; email: string; companyName: string }
-    answers: Record<string, string> 
+  const responses = (assessment.responses ?? {}) as {
+    userDetails?: { fullName?: string; email?: string; companyName?: string }
+    answers?: Record<string, string>
   }
 
   // Calculate scores
@@ -644,7 +644,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 
       categoryQuestions.forEach(q => {
         max += q.weight
-        const answer = responses.answers[q.id]
+        const answer = responses.answers?.[q.id]
         
         if (q.complianceAnswer) {
           // Compliance question: check if answer matches required answer
