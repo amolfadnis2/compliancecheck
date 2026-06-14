@@ -380,7 +380,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
                     item.priority === 'high' ? 'bg-red-100 text-red-700' :
                     item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {item.priority.toUpperCase()}
+                    {(item.priority ?? 'low').toUpperCase()}
                   </div>
                   <div>
                     <p className="text-gray-900">{item.text}</p>
@@ -801,7 +801,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
                     item.priority === 'high' ? 'bg-red-100 text-red-700' :
                     item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {item.priority.toUpperCase()}
+                    {(item.priority ?? 'low').toUpperCase()}
                   </div>
                   <div>
                     <p className="text-gray-900">{item.text}</p>
@@ -1017,7 +1017,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
                     item.priority === 'high' ? 'bg-red-100 text-red-700' :
                     item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {item.priority.toUpperCase()}
+                    {(item.priority ?? 'low').toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-gray-900 text-sm">{item.title || item.text}</p>
