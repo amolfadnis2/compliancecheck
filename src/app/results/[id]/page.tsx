@@ -701,7 +701,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
     }
 
     STATUTORY_HEALTH_QUESTIONS.forEach(q => {
-      const answer = responses.answers[q.id]
+      const answer = responses.answers?.[q.id]
       if (q.complianceAnswer && answer !== q.complianceAnswer) {
         const priority = q.weight >= 10 ? 'high' : q.weight >= 6 ? 'medium' : 'low'
         items.push({
