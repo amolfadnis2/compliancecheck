@@ -1,25 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, AlertTriangle, CheckCircle, XCircle, Lock, Building } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-
-// ssr: false prevents posthog-js / Razorpay from being evaluated during SSR
-const PaymentGate = dynamic(
-  () => import('@/components/results/payment-gate').then((m) => ({ default: m.PaymentGate })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="max-w-md mx-auto p-8 text-center text-gray-500">
-        Loading payment options…
-      </div>
-    ),
-  }
-)
+import { PaymentGate } from '@/components/results/payment-gate'
 
 export interface StatutoryHealthSummaryData {
   overallScore: number

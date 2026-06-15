@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { EmailGate } from '@/components/identity/EmailGate'
+import { getGateConfig } from '@/lib/results/gate-config'
 import type { User } from '@/lib/identity/types'
 
 interface GatedResultsProps {
@@ -59,42 +60,6 @@ export function GatedResults({ source, reason, children }: GatedResultsProps) {
   return <>{children}</>
 }
 
-// ============================================================================
-// Per-assessment gate config
-// ============================================================================
-
-const GATE_CONFIG: Record<string, { source: string; reason: string }> = {
-  statutory_health: {
-    source: 'statutory_health_assessment',
-    reason: 'Email me my Statutory Health Check report so I can refer back to it',
-  },
-  labour_code: {
-    source: 'labour_code_assessment',
-    reason: 'Email me my Labour Code Readiness report so I can refer back to it',
-  },
-  dpdp: {
-    source: 'dpdp_assessment',
-    reason: 'Email me my DPDP Gap Assessment report so I can refer back to it',
-  },
-  state_wise_compliance: {
-    source: 'state_wise_assessment',
-    reason: 'Email me my State-Wise Compliance report so I can refer back to it',
-  },
-  food_business: {
-    source: 'food_business_assessment',
-    reason: 'Email me my Food Business Compliance report so I can refer back to it',
-  },
-  posh: {
-    source: 'posh_assessment',
-    reason: 'Email me my POSH Compliance report so I can refer back to it',
-  },
-}
-
-export function getGateConfig(assessmentType: string) {
-  return (
-    GATE_CONFIG[assessmentType] ?? {
-      source: `${assessmentType}_assessment`,
-      reason: 'Verify your email to view your compliance report',
-    }
-  )
-}
+// getGateConfig now lives in a server-safe module (see import above).
+// Re-exported here for backward compatibility with existing client imports.
+export { getGateConfig }
