@@ -170,7 +170,7 @@ export function StatutoryHealthSummary({
               {topIssues.map((issue, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 border rounded-lg relative">
                   <div className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${PRIORITY_STYLES[issue.priority] ?? 'bg-gray-100 text-gray-700'}`}>
-                    {issue.priority.toUpperCase()}
+                    {(issue.priority ?? 'low').toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900">{issue.category}</p>
