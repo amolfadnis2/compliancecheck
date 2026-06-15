@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,21 +12,8 @@ import { LocalStorageResultsPage } from '@/components/results/local-storage-resu
 import { GatedResults, getGateConfig } from '@/components/results/gated-results'
 import { ReportViewTracker } from '@/components/results/report-view-tracker'
 import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
-import type { StatutoryHealthSummaryData } from '@/components/results/statutory-health-summary'
-
-// StatutoryHealthSummary contains PaymentGate which loads Razorpay and uses browser
-// APIs (window.Razorpay, router.refresh). Skip SSR to avoid server-side crashes.
-const StatutoryHealthSummary = dynamic(
-  () => import('@/components/results/statutory-health-summary').then((m) => ({ default: m.StatutoryHealthSummary })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading your results&hellip;</p>
-      </div>
-    ),
-  }
-)
+import { StatutoryHealthSummary, type StatutoryHealthSummaryData } from '@/components/results/statutory-health-summary'
+import { DebugBoundary } from '@/components/results/debug-boundary'
 
 // Type definitions
 interface ActionItem {
@@ -176,10 +162,18 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
           console.error('[results] entitlement check error:', entitlementError.code, entitlementError.message)
         } else if (entitlement) {
           // Entitled: render full report; email was captured at payment so no OTP gate needed
-          return <StatutoryHealthResultsView assessment={assessment} />
+          return (
+            <DebugBoundary>
+              <StatutoryHealthResultsView assessment={assessment} />
+            </DebugBoundary>
+          )
         } else {
-          // Not entitled: render summary/paywall (ssr:false prevents SSR crash in PaymentGate)
-          return <StatutoryHealthSummary assessmentId={id} summary={buildStatutoryHealthSummary(assessment)} />
+          // Not entitled: render summary/paywall (Razorpay payment gate)
+          return (
+            <DebugBoundary>
+              <StatutoryHealthSummary assessmentId={id} summary={buildStatutoryHealthSummary(assessment)} />
+            </DebugBoundary>
+          )
         }
       }
     } catch (err) {
@@ -188,9 +182,11 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
     }
     // Fallback: gated free flow with email OTP
     return (
-      <GatedResults source={source} reason={reason}>
-        <StatutoryHealthResultsView assessment={assessment} />
-      </GatedResults>
+      <DebugBoundary>
+        <GatedResults source={source} reason={reason}>
+          <StatutoryHealthResultsView assessment={assessment} />
+        </GatedResults>
+      </DebugBoundary>
     )
   }
 }
