@@ -9,7 +9,8 @@ import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeAct
 import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPComplianceStatus, getDaysUntilDeadline } from '@/lib/assessments/dpdp-questions'
 import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
 import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
-import { GatedResults, getGateConfig } from '@/components/results/gated-results'
+import { GatedResults } from '@/components/results/gated-results'
+import { getGateConfig } from '@/lib/results/gate-config'
 import { ReportViewTracker } from '@/components/results/report-view-tracker'
 import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { StatutoryHealthSummary, type StatutoryHealthSummaryData } from '@/components/results/statutory-health-summary'
@@ -67,6 +68,17 @@ interface DPDPProfile {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+// Always opt out of Next.js fetch cache for Supabase queries — stale cache
+// entries can silently return incorrect data in Server Components.
+function makeSupabaseClient() {
+  return createClient(supabaseUrl!, supabaseServiceKey!, {
+    global: {
+      fetch: (url: RequestInfo | URL, init?: RequestInit) =>
+        fetch(url, { ...init, cache: 'no-store' }),
+    },
+  })
+}
+
 interface PageProps {
   params: Promise<{ id: string }>
   searchParams: Promise<{ type?: string; email?: string }>
@@ -98,7 +110,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
     return <TempResultsPage assessmentType={assessmentType} />
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = makeSupabaseClient()
   const { data: assessment, error } = await supabase
     .from('assessments')
     .select('*')
@@ -132,12 +144,11 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
       </GatedResults>
     )
   } else {
-    // Statutory Health: show free summary → pay to unlock, when live payment is on.
-    // The entitlement check is wrapped in try/catch so that a missing table
-    // (migrations not yet applied) or any other DB error degrades gracefully
-    // to the old free flow rather than crashing the page with a 500.
-    if (isPaymentLive(ASSESSMENT_TYPES.STATUTORY_HEALTH)) {
-      try {
+    // Statutory Health: paywall flow when live payment is on.
+    // Client Components in the render tree use next/dynamic({ssr:false}) for
+    // Razorpay / posthog-js so they are excluded from SSR entirely.
+    try {
+      if (isPaymentLive(ASSESSMENT_TYPES.STATUTORY_HEALTH)) {
         const { data: entitlement, error: entitlementError } = await supabase
           .from('assessment_entitlements')
           .select('status')
@@ -147,21 +158,20 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
           .maybeSingle()
 
         if (entitlementError) {
-          // DB error (e.g. table not yet migrated) — fall through to free flow below
-          console.error('Entitlement check error (migrations applied?):', entitlementError.message)
+          console.error('[results] entitlement check error:', entitlementError.code, entitlementError.message)
+          // Fall through to free flow below
         } else if (entitlement) {
-          // Entitled: render full report; email was captured at payment so no OTP gate needed
           return <StatutoryHealthResultsView assessment={assessment} />
         } else {
-          // Not entitled: render summary/paywall
-          return <StatutoryHealthSummary assessmentId={id} summary={buildStatutoryHealthSummary(assessment)} />
+          const summary = buildStatutoryHealthSummary(assessment)
+          return <StatutoryHealthSummary assessmentId={id} summary={summary} />
         }
-      } catch (err) {
-        console.error('Entitlement check threw unexpectedly:', err)
-        // Fall through to free flow below
       }
+    } catch (err) {
+      console.error('[results] statutory health path threw:', err)
+      // Fall through to gated free flow below
     }
-    // Fallback: old free flow with email OTP gate
+    // Fallback: gated free flow with email OTP
     return (
       <GatedResults source={source} reason={reason}>
         <StatutoryHealthResultsView assessment={assessment} />
@@ -718,7 +728,12 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
     })
   }
 
-  const actionItems = generateActionItems()
+  let actionItems: { priority: 'high' | 'medium' | 'low'; text: string; category: string }[] = []
+  try {
+    actionItems = generateActionItems()
+  } catch (err) {
+    console.error('[results] generateActionItems threw:', err)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
