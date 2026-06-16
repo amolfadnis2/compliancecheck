@@ -161,10 +161,8 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
           console.error('[results] entitlement check error:', entitlementError.code, entitlementError.message)
           // Fall through to free flow below
         } else if (entitlement) {
-          console.log('[results] entitlement found, rendering full report for', id)
           return <StatutoryHealthResultsView assessment={assessment} />
         } else {
-          console.log('[results] no entitlement, rendering paywall for', id)
           const summary = buildStatutoryHealthSummary(assessment)
           return <StatutoryHealthSummary assessmentId={id} summary={summary} />
         }
@@ -174,7 +172,6 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
       // Fall through to gated free flow below
     }
     // Fallback: gated free flow with email OTP
-    console.log('[results] falling back to gated free flow for', id)
     return (
       <GatedResults source={source} reason={reason}>
         <StatutoryHealthResultsView assessment={assessment} />

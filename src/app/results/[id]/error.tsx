@@ -33,9 +33,9 @@ export default function ResultsError({
           <Button onClick={reset} variant="outline">
             Try again
           </Button>
-          <Link href="/">
-            <Button>Back to Home</Button>
-          </Link>
+          <Button asChild>
+            <Link href="/">Back to Home</Link>
+          </Button>
         </div>
       </div>
     </div>
