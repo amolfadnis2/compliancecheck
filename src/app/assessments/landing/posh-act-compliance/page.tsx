@@ -4,7 +4,7 @@ import styles from '../assessment-landing.module.css'
 
 export const metadata: Metadata = {
   title: 'POSH Act 2013 Compliance | ICC Audit & Workplace Safety | ComplianceCheck',
-  description: 'Complete POSH Act compliance assessment. ICC constitution audit, policy review, complaint mechanism check, and annual report requirements. ₹1,999 post-beta.',
+  description: 'Complete POSH Act compliance assessment. ICC constitution audit, policy review, complaint mechanism check, and annual report requirements. Free summary, full report ₹1,999.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/posh-act-compliance',
   },
@@ -27,7 +27,7 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessment/posh" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/posh" className={styles.navCta} style={{ background: accentColor }}>Start Assessment</Link>
           </div>
         </div>
       </nav>
@@ -49,7 +49,7 @@ export default function POSHActCompliancePage() {
                 ))}
               </ul>
               <Link href="/assessment/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
-                Start Free Assessment →
+                Start Assessment — Free Summary →
               </Link>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
                 <div className={styles.alertIcon} style={{ background: 'rgba(220, 38, 38, 0.1)' }}>⚠️</div>
@@ -83,7 +83,7 @@ export default function POSHActCompliancePage() {
             <div className={styles.statItem}><h3>40-50</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>20 min</h3><p>To Complete</p></div>
             <div className={styles.statItem}><h3>6</h3><p>Audit Areas</p></div>
-            <div className={styles.statItem}><h3>₹1,999</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹1,999</h3><p>One-Time Fee</p></div>
           </div>
         </div>
       </section>
@@ -196,16 +196,16 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
           <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
+            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>Free summary · Pay ₹1,999 for full report</div>
             <div className={styles.pricingAmount}>₹1,999</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
+            <div className={styles.pricingPeriod}>One-time assessment fee · UPI / Cards / Net Banking</div>
             <ul className={styles.pricingFeatures}>
               {['Complete 40-50 question ICC audit', 'Instant compliance score', '6-area gap analysis', 'ICC composition verification', 'Prioritized remediation steps', 'POSH Act section references', 'Professional PDF report', 'Email delivery of results'].map((feature, i) => (
                 <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
               ))}
             </ul>
             <Link href="/assessment/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
+              Start Assessment — Free Summary →
             </Link>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <h2>Is Your Workplace POSH Compliant?</h2>
           <p>Don&apos;t wait for a complaint to discover gaps. Assess your compliance proactively.</p>
-          <Link href="/assessment/posh" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/posh" className={styles.btnWhite}>Start Assessment — Free Summary →</Link>
         </div>
       </section>
 

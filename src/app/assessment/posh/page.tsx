@@ -50,7 +50,7 @@ import { POSHProgressSection } from '@/components/assessment/posh-progress-secti
 import { EmailGate } from '@/components/identity/EmailGate'
 import { PaymentGate } from '@/components/results/payment-gate'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
-import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, isPaymentLive, getAssessmentPricePaise } from '@/lib/constants/assessment-types'
 import { analytics } from '@/lib/analytics/tracking'
 
 // Import POSH data files
@@ -237,6 +237,7 @@ export default function POSHAssessmentPage() {
   const gateRequired = shouldRequireEmailVerification(ASSESSMENT_TYPES.POSH)
   const [gateCleared, setGateCleared] = useState(false)
   const [paymentCleared, setPaymentCleared] = useState(false)
+  const [savedAssessmentId, setSavedAssessmentId] = useState<string | null>(null)
   
   // Timing
   const [startTime] = useState(Date.now())
@@ -834,10 +835,12 @@ export default function POSHAssessmentPage() {
           assessmentType: ASSESSMENT_TYPES.POSH,
         }),
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success && data.assessmentId) {
+        setSavedAssessmentId(data.assessmentId)
+
         // Store in localStorage for results page
         localStorage.setItem(
           `posh_assessment_${data.assessmentId}`,
@@ -849,8 +852,24 @@ export default function POSHAssessmentPage() {
             completedAt: new Date().toISOString(),
           })
         )
+
+        // If payment is live, check whether this ID already has a valid entitlement
+        // (handles idempotent re-submission or revisit within the same session)
+        if (isPaymentLive(ASSESSMENT_TYPES.POSH)) {
+          try {
+            const entRes = await fetch(
+              `/api/payment/entitlement-status?assessmentId=${encodeURIComponent(data.assessmentId)}&assessmentType=${ASSESSMENT_TYPES.POSH}`
+            )
+            const entData = await entRes.json()
+            if (entData.paid) {
+              setPaymentCleared(true)
+            }
+          } catch {
+            // non-fatal — user will still see the PaymentGate
+          }
+        }
       }
-      
+
       return data
     } catch (err) {
       console.error('Save assessment error:', err)
@@ -1414,12 +1433,13 @@ export default function POSHAssessmentPage() {
       }
 
       if (!paymentCleared) {
+        const liveMode = isPaymentLive(ASSESSMENT_TYPES.POSH)
         return (
           <div className="mt-4">
             <PaymentGate
               title="Download your full POSH compliance report"
               description="POSH Act 2013 compliance assessment"
-              priceINR={999}
+              priceINR={getAssessmentPricePaise(ASSESSMENT_TYPES.POSH) / 100}
               features={[
                 'Full gap analysis with remediation plan',
                 'Priority-ranked action items',
@@ -1428,6 +1448,9 @@ export default function POSHAssessmentPage() {
                 'Email report to your inbox',
               ]}
               onPaid={() => setPaymentCleared(true)}
+              {...(liveMode && savedAssessmentId
+                ? { assessmentId: savedAssessmentId, assessmentType: ASSESSMENT_TYPES.POSH }
+                : {})}
             />
           </div>
         )

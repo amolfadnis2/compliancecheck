@@ -56,7 +56,7 @@ export const ASSESSMENT_PRICES: Record<AssessmentType, AssessmentPriceConfig> = 
   [ASSESSMENT_TYPES.DPDP]:                  { amountPaise: 249900, live: false },
   [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: { amountPaise: 49900,  live: false },
   [ASSESSMENT_TYPES.FOOD_BUSINESS]:         { amountPaise: 99900,  live: false },
-  [ASSESSMENT_TYPES.POSH]:                  { amountPaise: 199900, live: false },
+  [ASSESSMENT_TYPES.POSH]:                  { amountPaise: 199900, live: true },
   [ASSESSMENT_TYPES.AUTO_DEALER]:           { amountPaise: 299900, live: false },
 };
 
