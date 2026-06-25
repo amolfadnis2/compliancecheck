@@ -111,12 +111,12 @@ const assessments: {
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
     questions: 40,
     fullPrice: '₹1,999',
-    isLive: false,
+    isLive: true,
     href: '/assessment/posh',
     icon: AlertTriangle,
     gradient: 'from-purple-500 to-pink-600',
     hoverBorder: 'hover:border-purple-500',
-    badge: { text: 'NEW', color: 'bg-purple-500' }
+    badge: { text: 'LIVE', color: 'bg-purple-600' }
   },
   {
     id: 'auto-dealer-compliance',
