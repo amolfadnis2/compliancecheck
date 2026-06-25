@@ -497,51 +497,58 @@ function generateActionItemsPages(doc: jsPDF, data: UnifiedReportData, pageNum: 
       doc.setFont('helvetica', 'italic');
       doc.setTextColor(...COLORS.textLight);
       const descLines = doc.splitTextToSize(`"${cleanText(item.description)}"`, CONTENT_WIDTH - 4);
+      currentY = checkPageBreak(doc, currentY, descLines.length * 5 + 2);
       doc.text(descLines, MARGIN_LEFT + 2, currentY);
-      currentY += descLines.length * 4 + 2;
+      currentY += descLines.length * 5 + 2;
 
       // Remediation steps
+      currentY = checkPageBreak(doc, currentY, 10);
       doc.setFontSize(FONTS.small);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...COLORS.text);
       doc.text('Steps to Address:', MARGIN_LEFT + 2, currentY);
-      currentY += 5;
+      currentY += 6;
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(FONTS.body);
       for (let i = 0; i < item.remediation.length; i++) {
         const step = `${i + 1}. ${cleanText(item.remediation[i])}`;
         const stepLines = doc.splitTextToSize(step, CONTENT_WIDTH - 8);
+        currentY = checkPageBreak(doc, currentY, stepLines.length * 5 + 2);
         doc.text(stepLines, MARGIN_LEFT + 4, currentY);
-        currentY += stepLines.length * 4 + 1;
+        currentY += stepLines.length * 5 + 2;
       }
 
       // Deadline
       if (item.deadline) {
         currentY += 2;
+        currentY = checkPageBreak(doc, currentY, 8);
         doc.setFontSize(FONTS.small);
+        doc.setFont('helvetica', 'normal');
         doc.setTextColor(...COLORS.textLight);
         doc.text(`Deadline: ${cleanText(item.deadline)}`, MARGIN_LEFT + 2, currentY);
-        currentY += 5;
+        currentY += 6;
       }
 
       // Penalty
       if (item.penalty) {
+        currentY = checkPageBreak(doc, currentY, 8);
         doc.setFontSize(FONTS.small);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...COLORS.danger);
-        const penaltyText = `Penalty: ${cleanText(item.penalty)}`;
-        doc.text(penaltyText, MARGIN_LEFT + 2, currentY);
-        currentY += 5;
+        const penaltyLines = doc.splitTextToSize(`Penalty: ${cleanText(item.penalty)}`, CONTENT_WIDTH - 4);
+        doc.text(penaltyLines, MARGIN_LEFT + 2, currentY);
+        currentY += penaltyLines.length * 5 + 1;
       }
 
       // Government ref
       if (item.governmentRef) {
+        currentY = checkPageBreak(doc, currentY, 6);
         doc.setFontSize(FONTS.tiny);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...COLORS.textLight);
         doc.text(`Ref: ${cleanText(item.governmentRef)}`, MARGIN_LEFT + 2, currentY);
-        currentY += 4;
+        currentY += 5;
       }
 
       currentY += 3;

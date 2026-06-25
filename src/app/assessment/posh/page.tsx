@@ -233,9 +233,10 @@ export default function POSHAssessmentPage() {
   const [isEmailingSaving, setIsEmailingSaving] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
 
-  // Email gate: POSH is a paid assessment, always requires verification
+  // Email gate: POSH is a paid assessment, always requires verification.
+  // When payment is live the PaymentGate itself captures email, so bypass OTP.
   const gateRequired = shouldRequireEmailVerification(ASSESSMENT_TYPES.POSH)
-  const [gateCleared, setGateCleared] = useState(false)
+  const [gateCleared, setGateCleared] = useState(isPaymentLive(ASSESSMENT_TYPES.POSH))
   const [paymentCleared, setPaymentCleared] = useState(false)
   const [savedAssessmentId, setSavedAssessmentId] = useState<string | null>(null)
   
@@ -1521,24 +1522,26 @@ export default function POSHAssessmentPage() {
               }`}>
                 {results.overallScore}%
               </div>
-              <p className="text-gray-500 mt-2">Overall Compliance</p>
+              <p className="text-muted-foreground mt-2">Overall Compliance</p>
               <div className="flex items-center justify-center gap-2 mt-2">
                 <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                  results.riskLevel === 'low' ? 'bg-green-100 text-green-700' :
-                  results.riskLevel === 'medium' ? 'bg-amber-100 text-amber-700' :
-                  results.riskLevel === 'high' ? 'bg-orange-100 text-orange-700' :
-                  'bg-red-100 text-red-700'
+                  results.riskLevel === 'low' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                  results.riskLevel === 'medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' :
+                  results.riskLevel === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' :
+                  'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
                 }`}>
                   {RISK_LEVEL_INFO[results.riskLevel]?.label || results.riskLevel}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   · {RISK_LEVEL_INFO[results.riskLevel]?.penaltyExposure}
                 </span>
               </div>
             </div>
 
             {/* Report CTA — email gate → payment gate → download buttons */}
-            {renderReportCTA()}
+            <div id="report-cta-section">
+              {renderReportCTA()}
+            </div>
           </CardContent>
         </Card>
 
@@ -1572,7 +1575,7 @@ export default function POSHAssessmentPage() {
         {results.actionItems.length > 0 && (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2 text-amber-700">
+              <CardTitle className="text-lg flex items-center gap-2 text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="h-5 w-5" />
                 {highPriorityCount} High Priority Issues Found
               </CardTitle>
@@ -1581,21 +1584,21 @@ export default function POSHAssessmentPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="divide-y">
+              <div className="divide-y divide-border">
                 {results.actionItems.slice(0, TOP_ITEMS_TO_SHOW).map((item, index) => (
                   <div key={index} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex items-start gap-2">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded flex-shrink-0 ${
-                        item.priority === 'high' ? 'bg-red-200 text-red-800' :
-                        item.priority === 'medium' ? 'bg-amber-200 text-amber-800' :
-                        'bg-blue-200 text-blue-800'
+                        item.priority === 'high' ? 'bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                        item.priority === 'medium' ? 'bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-200' :
+                        'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                       }`}>
                         {index + 1}
                       </span>
                       <div>
-                        <p className="font-medium text-gray-900">{item.title}</p>
+                        <p className="font-medium text-foreground">{item.title}</p>
                         {item.governmentRef && (
-                          <p className="text-sm text-gray-500 mt-0.5">
+                          <p className="text-sm text-muted-foreground mt-0.5">
                             → Ref: {item.governmentRef}
                           </p>
                         )}
@@ -1605,42 +1608,56 @@ export default function POSHAssessmentPage() {
                   </div>
                 ))}
               </div>
-              
+
               {results.actionItems.length > TOP_ITEMS_TO_SHOW && (
-                <p className="text-sm text-gray-500 mt-4 pt-3 border-t">
+                <p className="text-sm text-muted-foreground mt-4 pt-3 border-t border-border">
                   + {results.actionItems.length - TOP_ITEMS_TO_SHOW} more action items in full report
                 </p>
               )}
-              
-              <Button 
-                onClick={handleDownloadReport} 
-                className="mt-4 w-full bg-blue-700 hover:bg-blue-800"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download Full Report for Details
-              </Button>
+
+              {/* Gate this button — only allow download after payment */}
+              {paymentCleared ? (
+                <Button
+                  onClick={handleDownloadReport}
+                  className="mt-4 w-full bg-blue-700 hover:bg-blue-800"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Full Report for Details
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() => {
+                    document.getElementById('report-cta-section')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Pay ₹{getAssessmentPricePaise(ASSESSMENT_TYPES.POSH) / 100} to Download Full Report
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
 
         {/* Compliant Areas - COUNT ONLY */}
         {results.compliantItems.length > 0 && (
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-            <h3 className="font-semibold text-green-700 flex items-center gap-2">
+          <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+            <h3 className="font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
               {results.compliantItems.length} Areas Already Compliant
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-green-700 dark:text-green-400 mt-1">
               See full list in PDF report
             </p>
           </div>
         )}
 
         {/* Disclaimer */}
-        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-          <p className="text-xs text-amber-800">
-            <strong>Note:</strong> This assessment provides general guidance based on POSH Act 2013 requirements. 
-            For comprehensive compliance, download the full report with detailed remediation steps, 
+        <div className="p-4 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+          <p className="text-xs text-amber-800 dark:text-amber-300">
+            <strong>Note:</strong> This assessment provides general guidance based on POSH Act 2013 requirements.
+            For comprehensive compliance, download the full report with detailed remediation steps,
             deadlines, and legal references.
           </p>
         </div>
