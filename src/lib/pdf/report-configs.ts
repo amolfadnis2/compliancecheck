@@ -16,6 +16,7 @@ export const STATUTORY_HEALTH_CONFIG: ReportConfig = {
   legislationDescription: 'EPF, ESI, Professional Tax, Gratuity & Bonus Compliance',
   legislationLine2: 'Key Labour Statutes for Indian Businesses',
   filenamePrefix: 'ComplianceCheck-Report',
+  accentColor: '#1C3055',
   resources: [
     { name: 'EPFO Unified Portal', url: 'https://unifiedportal-emp.epfindia.gov.in' },
     { name: 'ESIC Portal', url: 'https://www.esic.gov.in' },
@@ -51,6 +52,7 @@ export const LABOUR_CODE_CONFIG: ReportConfig = {
   legislationDescription: 'India\'s Four New Labour Codes (2019-2020)',
   legislationLine2: 'Code on Wages | Social Security | OSH | Industrial Relations',
   filenamePrefix: 'Labour-Code-Readiness',
+  accentColor: '#6B3FA0',
   resources: [
     { name: 'Ministry of Labour & Employment', url: 'https://labour.gov.in' },
     { name: 'Shram Suvidha Portal', url: 'https://shramsuvidha.gov.in' },
@@ -83,6 +85,7 @@ export const DPDP_CONFIG: ReportConfig = {
   legislationDescription: 'Digital Personal Data Protection Act, 2023',
   legislationLine2: 'DPDP Rules, 2025',
   filenamePrefix: 'DPDP-Gap-Assessment',
+  accentColor: '#3A4DC4',
   resources: [
     { name: 'MeitY Data Protection Framework', url: 'https://www.meity.gov.in/data-protection-framework' },
     { name: 'Data Protection Board of India', url: 'https://www.dataprotection.gov.in' },
@@ -119,6 +122,7 @@ export const STATE_WISE_CONFIG: ReportConfig = {
   legislationDescription: 'Central & State Labour Law Compliance',
   legislationLine2: 'EPF, ESI, Professional Tax, Shops & Establishments',
   filenamePrefix: 'State-Wise-Compliance',
+  accentColor: '#1C3055',
   resources: [
     { name: 'EPFO Portal', url: 'https://unifiedportal-emp.epfindia.gov.in' },
     { name: 'ESIC Portal', url: 'https://www.esic.gov.in' },
@@ -156,6 +160,7 @@ export const POSH_CONFIG: ReportConfig = {
   legislationDescription: 'Sexual Harassment of Women at Workplace Act, 2013',
   legislationLine2: 'Prevention, Prohibition and Redressal',
   filenamePrefix: 'POSH-Compliance-Report',
+  accentColor: '#0E7C86',
   resources: [
     { name: 'WCD Ministry (POSH)', url: 'https://wcd.nic.in' },
     { name: 'SHe-Box Portal', url: 'https://shebox.nic.in' },
@@ -178,6 +183,52 @@ export const POSH_CONFIG: ReportConfig = {
 }
 
 // ============================================================================
+// AUTO DEALERSHIP COMPLIANCE
+// ============================================================================
+
+export const AUTO_DEALER_CONFIG: ReportConfig = {
+  assessmentTitle: 'Auto Dealership Compliance',
+  assessmentSubtitle: 'Full Compliance Report — All Phases',
+  legislationDescription: 'Multi-Phase Statutory & Regulatory Compliance',
+  legislationLine2: 'Labour, Environment, EV, Data & Dealer-Specific Obligations',
+  filenamePrefix: 'Auto-Dealer-Compliance',
+  accentColor: '#A65A2A',
+  resources: [
+    { name: 'Ministry of Labour & Employment', url: 'https://labour.gov.in' },
+    { name: 'Shram Suvidha Portal', url: 'https://shramsuvidha.gov.in' },
+    { name: 'MoRTH (Vehicle Rules)', url: 'https://morth.nic.in' },
+    { name: 'CPCB (Environment)', url: 'https://cpcb.nic.in' },
+    { name: 'BIS / BEE Standards', url: 'https://www.bis.gov.in' },
+    { name: 'GST Portal', url: 'https://gst.gov.in' },
+    { name: 'MeitY (DPDP Act)', url: 'https://www.meity.gov.in' },
+    { name: 'EPFO Portal', url: 'https://unifiedportal-emp.epfindia.gov.in' },
+  ],
+  legislation: [
+    'Motor Vehicles Act, 1988 & Rules thereunder',
+    'Code on Wages, 2019',
+    'Code on Social Security, 2020',
+    'Occupational Safety, Health and Working Conditions Code, 2020',
+    'Environmental Protection Act, 1986 & E-Waste Rules, 2022',
+    'Battery Waste Management Rules, 2022',
+    'Digital Personal Data Protection Act, 2023',
+    'Central Goods and Services Tax Act, 2017',
+    'Consumer Protection Act, 2019',
+    'State Shops and Establishments Acts',
+  ],
+  deadlines: [
+    { item: 'EPF/ESI Monthly Deposit', date: '15th of following month' },
+    { item: 'GST Returns (GSTR-1, GSTR-3B)', date: '11th/20th monthly' },
+    { item: 'E-Waste / Battery Return Filing', date: 'Quarterly (CPCB portal)' },
+    { item: 'Annual Environmental Returns', date: 'June 30 annually' },
+    { item: 'DPDP Act Full Compliance', date: '13 May 2027' },
+    { item: 'Labour Code Implementation', date: 'Expected November 2025' },
+  ],
+  deadlineWarning: {
+    text: 'DPDP Act enforcement commences 13 May 2027. All dealers collecting customer data must implement consent mechanisms and data-protection controls before this date. Penalties up to ₹250 Crore for non-compliance.',
+  },
+}
+
+// ============================================================================
 // FOOD BUSINESS COMPLIANCE
 // ============================================================================
 
@@ -187,6 +238,7 @@ export const FOOD_BUSINESS_CONFIG: ReportConfig = {
   legislationDescription: 'FSSAI, GST, Fire Safety & Labour Law Compliance',
   legislationLine2: 'Restaurant & Food Service Business',
   filenamePrefix: 'Food-Business-Compliance',
+  accentColor: '#4E7A1E',
   resources: [
     { name: 'FSSAI FoSCoS Portal', url: 'https://foscos.fssai.gov.in' },
     { name: 'FOSTAC Training', url: 'https://fostac.fssai.gov.in' },

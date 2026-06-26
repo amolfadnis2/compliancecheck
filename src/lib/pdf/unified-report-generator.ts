@@ -55,7 +55,7 @@ export interface UnifiedCategoryScore {
 }
 
 export interface UnifiedActionItem {
-  priority: 'high' | 'medium' | 'low';
+  priority: 'critical' | 'high' | 'medium' | 'low';
   category: string;
   questionId: string;
   title: string;
@@ -83,6 +83,8 @@ export interface ReportConfig {
   deadlines: { item: string; date: string }[];
   deadlineWarning?: { text: string };
   filenamePrefix: string;
+  /** Per-assessment accent colour (hex). Defaults to #1C3055 if omitted. */
+  accentColor?: string;
 }
 
 export interface UnifiedReportData {

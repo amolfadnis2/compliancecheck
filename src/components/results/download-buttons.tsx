@@ -439,58 +439,65 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     try {
       const id = assessmentId || window.location.pathname.split('/').pop() || 'demo'
-      let data: AssessmentData | null = null
-      
-      // For local/temp IDs, use localStorage
-      if (id.startsWith('local_') || id.startsWith('temp_')) {
-        data = assessmentData || null
-      } else {
-        // For database IDs, fetch assessment data from API
-        try {
-          const response = await fetch('/api/assessment/' + id)
-          if (response.ok) {
-            const apiData = await response.json()
-            data = {
-              id: apiData.id,
-              assessment_type: apiData.assessment_type,
-              overall_score: apiData.overall_score,
-              category_scores: apiData.category_scores,
-              responses: apiData.responses,
-              userDetails: apiData.userDetails,
-            }
-          }
-        } catch (fetchError) {
-          console.error('Error fetching assessment:', fetchError)
+
+      // For UUID IDs: use server-side HTML+Playwright PDF generation
+      if (isValidUUID(id)) {
+        const email = assessmentData?.userDetails?.email || assessmentData?.userDetails?.contactEmail || ''
+        const emailParam = email ? `?email=${encodeURIComponent(email)}` : ''
+        const response = await fetch(`/api/assessment/${id}/pdf${emailParam}`)
+
+        if (!response.ok) {
+          throw new Error('PDF generation failed')
         }
+
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        const disposition = response.headers.get('Content-Disposition')
+        const filenameMatch = disposition?.match(/filename="([^"]+)"/)
+        link.download = filenameMatch?.[1] || `ComplianceCheck-Report-${new Date().toISOString().split('T')[0]}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+
+        analytics.reportDownloaded({
+          assessment_type: (assessmentData?.assessment_type ?? ASSESSMENT_TYPES.STATUTORY_HEALTH) as AssessmentType,
+          format: 'pdf',
+          compliance_score: assessmentData?.overall_score ?? complianceScore ?? 0,
+          assessment_id: id,
+          user_tier: 'free',
+        })
+        setDownloadSuccess(true)
+        setTimeout(() => setDownloadSuccess(false), 3000)
+        return
       }
 
-      // Use fallback demo data if nothing found
+      // Fallback for local/temp IDs: client-side jsPDF generation
+      let data: AssessmentData | null = assessmentData || null
+      if (!data) {
+        try {
+          const stored = localStorage.getItem(`assessment_${id}`)
+          if (stored) data = JSON.parse(stored)
+        } catch (_e) { /* ignore */ }
+      }
       if (!data) {
         data = {
           id,
           assessment_type: ASSESSMENT_TYPES.STATUTORY_HEALTH,
           overall_score: 65,
-          category_scores: {
-            pf: { percentage: 70 },
-            esi: { percentage: 60 },
-            pt: { percentage: 65 },
-            gratuity: { percentage: 55 },
-            bonus: { percentage: 70 },
-          },
+          category_scores: { pf: { percentage: 70 }, esi: { percentage: 60 }, pt: { percentage: 65 }, gratuity: { percentage: 55 }, bonus: { percentage: 70 } },
           userDetails: { companyName: 'Demo Company' },
         }
       }
 
-      // Generate PDF client-side based on assessment type
       const assessmentType = data.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH
-
-      // Lazy-load jsPDF only when user clicks Download
       const [{ generateUnifiedReportBlob }, { adaptStatutoryHealth, adaptLabourCode, adaptDPDP, adaptStateWise, adaptFoodBusiness }] = await Promise.all([
         import('@/lib/pdf/unified-report-generator'),
         import('@/lib/pdf/report-data-adapter'),
       ])
 
-      // Transform assessment data using type-specific adapter
       let reportData
       if (assessmentType === ASSESSMENT_TYPES.DPDP) {
         reportData = adaptDPDP(data)
@@ -504,20 +511,16 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         reportData = adaptStatutoryHealth(data, COMPLIANCE_RULES)
       }
 
-      // Generate consistent PDF using unified generator
       const blob = generateUnifiedReportBlob(reportData)
-
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      const reportPrefix = reportData.config.filenamePrefix
-      link.download = reportPrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
+      link.download = reportData.config.filenamePrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 
-      // Track successful download
       analytics.reportDownloaded({
         assessment_type: assessmentType as AssessmentType,
         format: 'pdf',
@@ -525,7 +528,6 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         assessment_id: id,
         user_tier: 'free',
       })
-
       setDownloadSuccess(true)
       setTimeout(() => setDownloadSuccess(false), 3000)
     } catch (err) {
@@ -547,111 +549,99 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     try {
       const id = assessmentId || window.location.pathname.split('/').pop() || 'demo'
-      let data: AssessmentData | null = null
-      
-      // For local/temp IDs, try localStorage first (both from state and direct read)
-      if (id.startsWith('local_') || id.startsWith('temp_')) {
-        // First try from state
-        data = assessmentData || null
-        
-        // If state is empty, try loading directly from localStorage
-        if (!data) {
-          try {
-            const stored = localStorage.getItem(`assessment_${id}`)
-            if (stored) {
-              data = JSON.parse(stored)
-            }
-          } catch (e) {
-            console.error('Error loading from localStorage:', e)
-          }
-        }
-      } else {
-        // For database IDs, fetch assessment data from API
-        try {
-          const response = await fetch('/api/assessment/' + id)
-          if (response.ok) {
-            const apiData = await response.json()
-            data = {
-              id: apiData.id,
-              assessment_type: apiData.assessment_type,
-              overall_score: apiData.overall_score,
-              category_scores: apiData.category_scores,
-              responses: apiData.responses,
-              userDetails: apiData.userDetails,
-            }
-          }
-        } catch (fetchError) {
-          console.error('Error fetching assessment:', fetchError)
-        }
+
+      // Resolve email address from all possible locations
+      const getEmail = (data: AssessmentData | null) => {
+        const userDetails = data?.userDetails || data?.user_details || data?.responses?.userDetails || {}
+        const responsesUserDetails = data?.responses?.userDetails || {}
+        const dataAsUnknown = data as unknown as Record<string, unknown>
+        const orgProfile = dataAsUnknown?.organizationProfile as Record<string, unknown> | undefined
+        const userDetailsField = dataAsUnknown?.user_details as Record<string, unknown> | undefined
+        return (
+          (userDetails as Record<string, string | undefined>).email ||
+          (userDetails as Record<string, string | undefined>).contactEmail ||
+          (responsesUserDetails as Record<string, string | undefined>).email ||
+          (responsesUserDetails as Record<string, string | undefined>).contactEmail ||
+          (userDetailsField?.email as string | undefined) ||
+          (orgProfile?.email as string | undefined) ||
+          (dataAsUnknown?.email as string | undefined) ||
+          (dataAsUnknown?.contactEmail as string | undefined)
+        )
       }
 
-      // Use fallback if nothing found - try localStorage one more time
+      // For UUID IDs: fetch PDF bytes from server, then send via email API
+      if (isValidUUID(id)) {
+        const resolvedEmail = emailOverride || getEmail(assessmentData)
+        if (!resolvedEmail) {
+          setEmailError('No email address found. Please download the report instead.')
+          return
+        }
+
+        const emailParam = `?email=${encodeURIComponent(resolvedEmail)}`
+        const pdfResponse = await fetch(`/api/assessment/${id}/pdf${emailParam}`)
+        if (!pdfResponse.ok) throw new Error('PDF generation failed')
+
+        const arrayBuffer = await pdfResponse.arrayBuffer()
+        const uint8 = new Uint8Array(arrayBuffer)
+        let binary = ''
+        for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i])
+        const pdfBase64 = btoa(binary)
+
+        const userDetails = assessmentData?.userDetails || assessmentData?.responses?.userDetails || {}
+        const assessmentType = assessmentData?.assessment_type ?? propAssessmentType ?? ASSESSMENT_TYPES.STATUTORY_HEALTH
+
+        const response = await fetch('/api/email/send-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: resolvedEmail,
+            assessmentId: id,
+            pdfBase64,
+            companyName: (userDetails as Record<string, string | undefined>).companyName || 'Your Company',
+            score: assessmentData?.overall_score ?? 0,
+            assessmentType,
+          }),
+        })
+        const result = await response.json()
+        if (!response.ok || !result.success) throw new Error(result.error || 'Failed to send email')
+
+        analytics.trackEvent('report_emailed', {
+          assessment_type: assessmentType as AssessmentType,
+          compliance_score: assessmentData?.overall_score ?? complianceScore ?? 0,
+          assessment_id: id,
+          user_tier: 'free',
+        })
+        setEmailSuccess(true)
+        setTimeout(() => setEmailSuccess(false), 5000)
+        return
+      }
+
+      // Fallback for local/temp IDs: client-side jsPDF generation
+      let data: AssessmentData | null = assessmentData || null
       if (!data) {
         try {
           const stored = localStorage.getItem(`assessment_${id}`)
-          if (stored) {
-            data = JSON.parse(stored)
-          }
-        } catch (e) {
-          console.error('Final localStorage fallback failed:', e)
-        }
+          if (stored) data = JSON.parse(stored)
+        } catch (_e) { /* ignore */ }
       }
-      
-      // If still no data, use minimal fallback
       if (!data) {
-        data = assessmentData || {
-          id,
-          assessment_type: ASSESSMENT_TYPES.STATUTORY_HEALTH,
-          overall_score: 65,
-          category_scores: {},
-          userDetails: { companyName: 'Unknown' },
-        }
+        data = { id, assessment_type: ASSESSMENT_TYPES.STATUTORY_HEALTH, overall_score: 65, category_scores: {}, userDetails: { companyName: 'Unknown' } }
       }
 
-      // Get email from user details (check ALL possible field names and structures)
-      // Different assessment types store email in different places:
-      // - Statutory Health: userDetails.email (from responses.userDetails.email)
-      // - Labour Code: userDetails.contactEmail (from responses.userDetails.contactEmail)
-      // - DPDP: user_details.email or organizationProfile.email
-      const userDetails = data.userDetails || data.user_details || data.responses?.userDetails || {}
-      const responsesUserDetails = data.responses?.userDetails || {}
-      const dataAsUnknown = data as unknown as Record<string, unknown>
-      const orgProfile = dataAsUnknown.organizationProfile as Record<string, unknown> | undefined
-      const userDetailsField = dataAsUnknown.user_details as Record<string, unknown> | undefined
-      
-      // Check all possible email field names across all assessment types
-      const email = userDetails.email || 
-                   userDetails.contactEmail || 
-                   responsesUserDetails.email || 
-                   responsesUserDetails.contactEmail ||
-                   userDetailsField?.email ||
-                   orgProfile?.email ||
-                   dataAsUnknown.email ||
-                   dataAsUnknown.contactEmail
-
-      const resolvedEmail = emailOverride || email
-
+      const resolvedEmail = emailOverride || getEmail(data)
       if (!resolvedEmail) {
-        console.error('Email lookup failed. Data structure:', {
-          userDetails,
-          responsesUserDetails,
-          orgProfile,
-          dataKeys: Object.keys(data || {}),
-        })
         setEmailError('No email address found. Please download the report instead.')
         return
       }
 
-      // Generate PDF as base64
       const assessmentType = data.assessment_type || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
+      const userDetails = data.userDetails || data.user_details || data.responses?.userDetails || {}
 
-      // Lazy-load jsPDF only when user clicks Email
       const [{ generateUnifiedReportBlob: genBlob }, { adaptStatutoryHealth: adaptSH, adaptLabourCode: adaptLC, adaptDPDP: adaptD, adaptStateWise: adaptSW, adaptFoodBusiness: adaptFB }] = await Promise.all([
         import('@/lib/pdf/unified-report-generator'),
         import('@/lib/pdf/report-data-adapter'),
       ])
 
-      // Transform assessment data using type-specific adapter
       let reportData
       if (assessmentType === ASSESSMENT_TYPES.DPDP) {
         reportData = adaptD(data)
@@ -665,52 +655,35 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         reportData = adaptSH(data, COMPLIANCE_RULES)
       }
 
-      // Generate consistent PDF using unified generator
       const blob = genBlob(reportData)
-
-      // Convert blob to base64
       const reader = new FileReader()
       const pdfBase64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const result = reader.result as string
-          // Remove the data:application/pdf;base64, prefix
-          const base64 = result.split(',')[1]
-          resolve(base64)
-        }
+        reader.onload = () => resolve((reader.result as string).split(',')[1])
         reader.onerror = () => reject(new Error('Failed to read PDF'))
         reader.readAsDataURL(blob)
       })
 
-      // Send to email API
-      const response = await fetch('/api/email/send-report', {
+      const emailResponse = await fetch('/api/email/send-report', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: resolvedEmail,
           assessmentId: id,
           pdfBase64,
-          companyName: userDetails.companyName || 'Your Company',
+          companyName: (userDetails as Record<string, string | undefined>).companyName || 'Your Company',
           score: data.overall_score ?? 0,
           assessmentType,
         }),
       })
+      const result = await emailResponse.json()
+      if (!emailResponse.ok || !result.success) throw new Error(result.error || 'Failed to send email')
 
-      const result = await response.json()
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to send email')
-      }
-
-      // Track successful email
       analytics.trackEvent('report_emailed', {
         assessment_type: assessmentType as AssessmentType,
         compliance_score: data.overall_score ?? complianceScore ?? 0,
         assessment_id: id,
         user_tier: 'free',
       })
-
       setEmailSuccess(true)
       setTimeout(() => setEmailSuccess(false), 5000)
     } catch (err) {
