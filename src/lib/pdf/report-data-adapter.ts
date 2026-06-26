@@ -28,6 +28,7 @@ import {
   STATE_WISE_CONFIG,
   FOOD_BUSINESS_CONFIG,
   POSH_CONFIG,
+  AUTO_DEALER_CONFIG,
 } from './report-configs'
 
 // ============================================================================
@@ -97,8 +98,9 @@ function getPenaltyExposure(score: number, assessmentType: string): string {
   return 'Severe'
 }
 
-function determinePriority(score: number): 'high' | 'medium' | 'low' {
-  if (score < 40) return 'high'
+function determinePriority(score: number): 'critical' | 'high' | 'medium' | 'low' {
+  if (score < 20) return 'critical'
+  if (score < 50) return 'high'
   if (score < 70) return 'medium'
   return 'low'
 }
@@ -455,7 +457,8 @@ function assignPrioritiesFromCategoryScores(
     const catScore = scoreMap[prefix] ?? scoreMap[item.category.toLowerCase()] ?? null
 
     if (catScore !== null) {
-      if (catScore < 40) item.priority = 'high'
+      if (catScore < 20) item.priority = 'critical'
+      else if (catScore < 50) item.priority = 'high'
       else if (catScore < 70) item.priority = 'medium'
       else item.priority = 'low'
     }
@@ -499,6 +502,105 @@ export interface POSHUserInput {
   employeeCount?: string
   industry?: string
 }
+
+// ============================================================================
+// AUTO DEALER ADAPTER (server-side — takes computed objects from route)
+// ============================================================================
+
+import type {
+  GapItem,
+  PhaseScore,
+  OverallScore as AutoDealerOverallScore,
+} from '@/types/auto-dealer'
+
+export interface AutoDealerInput {
+  assessmentId: string
+  companyName: string | null
+  fullName: string | null
+  email: string
+  labourRegime?: string
+  phaseScores: PhaseScore[]
+  overallScore: AutoDealerOverallScore
+  gapAnalysis: GapItem[]
+  generatedAt?: string
+}
+
+/**
+ * Adapts computed auto-dealer results to UnifiedReportData for the HTML pipeline.
+ * Called from the auto-dealer PDF route handler.
+ */
+export function adaptAutoDealer(input: AutoDealerInput): UnifiedReportData {
+  const companyName = input.companyName ?? 'Auto Dealership'
+
+  // Map phase scores → UnifiedCategoryScore
+  const categoryScores: UnifiedCategoryScore[] = input.phaseScores
+    .filter((ps) => ps.phase !== 1) // Phase 1 is applicability, not compliance
+    .map((ps) => ({
+      category: ps.phaseName,
+      score: Math.round(ps.score),
+      status:
+        ps.score >= 80 ? ('compliant' as const)
+        : ps.score >= 50 ? ('needs_attention' as const)
+        : ('non_compliant' as const),
+      questionCount: ps.questionCount,
+      compliantCount: ps.compliantCount,
+    }))
+
+  // Map gap analysis → UnifiedActionItem
+  const actionItems: UnifiedActionItem[] = input.gapAnalysis.map((gap) => ({
+    priority: gap.severity, // auto-dealer already uses critical/high/medium/low
+    category: gap.phaseName,
+    questionId: gap.questionId,
+    title: gap.title,
+    description: gap.finding,
+    remediation: [gap.recommendation],
+    governmentRef: gap.source,
+    penalty: gap.penaltyExposure,
+    deadline: typeof gap.timeline === 'string' ? gap.timeline : undefined,
+  }))
+
+  // Compliant phase summaries — phases scoring well enough to highlight
+  const compliantItems: UnifiedCompliantItem[] = input.phaseScores
+    .filter((ps) => ps.phase !== 1 && ps.score >= 70 && ps.compliantCount > 0)
+    .map((ps) => ({
+      questionId: `phase_${ps.phase}`,
+      category: ps.phaseName,
+      text: `${ps.compliantCount} of ${ps.questionCount} requirements met (${Math.round(ps.score)}%)`,
+    }))
+
+  const sc = input.overallScore
+  const riskLevel =
+    sc.status === 'green' ? 'Low Risk'
+    : sc.status === 'yellow' ? 'Moderate Risk'
+    : 'High Risk'
+
+  const penaltyExposure =
+    sc.status === 'green' ? 'Minimal'
+    : sc.status === 'yellow' ? 'Moderate'
+    : 'Significant'
+
+  return {
+    assessmentId: input.assessmentId,
+    overallScore: Math.round(sc.score),
+    riskLevel,
+    penaltyExposure,
+    categoryScores,
+    actionItems,
+    compliantItems,
+    userDetails: {
+      fullName: input.fullName ?? '',
+      email: input.email,
+      companyName,
+      state: 'India',
+      industry: 'Auto Dealership',
+    },
+    config: AUTO_DEALER_CONFIG,
+  }
+}
+
+// ============================================================================
+// POSH COMPLIANCE (from computed in-memory result)
+// ============================================================================
 
 /**
  * Adapts already-computed POSH result objects to UnifiedReportData.
