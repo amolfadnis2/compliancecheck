@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import { cleanText } from './pdf-primitives';
 
 // ============================================================================
 // CONSTANTS
@@ -101,31 +102,10 @@ export interface UnifiedReportData {
 // HELPER FUNCTIONS
 // ============================================================================
 
-export function cleanText(text: string): string {
-  if (!text) return '';
-  return text
-    .replace(/[‘’‚‛]/g, "'")
-    .replace(/[“”„‟]/g, '"')
-    .replace(/–/g, '-')
-    .replace(/—/g, '--')
-    .replace(/―/g, '--')
-    .replace(/•/g, '*')
-    .replace(/ /g, ' ')
-    .replace(/·/g, '-')
-    .replace(/…/g, '...')
-    .replace(/₹/g, 'Rs.')
-    .replace(/₹/g, 'Rs.')
-    .replace(/✓/g, '[Y]')
-    .replace(/✔/g, '[Y]')
-    .replace(/✗/g, '[X]')
-    .replace(/✘/g, '[X]')
-    .replace(/✓/g, '[Y]')
-    .replace(/✗/g, '[X]')
-    .replace(/→/g, '->')
-    .replace(/←/g, '<-')
-    .replace(/→/g, '->')
-    .replace(/[^\x00-\x7F]/g, '');
-}
+// cleanText lives in pdf-primitives.ts so it is shared with the auto-dealer
+// generator. Re-exported here to preserve the long-standing import path
+// (see CLAUDE.md sec 5).
+export { cleanText };
 
 function getScoreColor(score: number): [number, number, number] {
   if (score >= 90) return COLORS.success;

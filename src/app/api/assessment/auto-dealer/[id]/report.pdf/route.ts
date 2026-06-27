@@ -22,6 +22,7 @@ import type {
   ApplicabilityProfile,
 } from '@/types/auto-dealer'
 import { PHASE_METADATA, PRICE_TIERS } from '@/types/auto-dealer'
+import { cleanText } from '@/lib/pdf/pdf-primitives'
 
 const ALL_QUESTIONS = [
   ...APPLICABILITY_QUESTIONS,
@@ -68,21 +69,10 @@ const C = {
   white:     [255, 255, 255] as [number, number, number],
 }
 
-// ASCII-safe sanitiser
+// ASCII-safe sanitiser. Delegates to the shared canonical sanitiser in
+// pdf-primitives.ts so jsPDF glyph handling stays in one place (CLAUDE.md sec 5).
 function ascii(s: string): string {
-  if (!s) return ''
-  return s
-    .replace(/₹/g, 'Rs.')
-    .replace(/[₹]/g, 'Rs.')
-    .replace(/[–—]/g, '-')
-    .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
-    .replace(/[•·•]/g, '*')
-    .replace(/…/g, '...')
-    .replace(/ /g, ' ')
-    .replace(/→/g, '->')
-    .replace(/§/g, 'S.')
-    .replace(/[^\x00-\x7F]/g, '')
+  return cleanText(s)
 }
 
 function severityColor(sev: string): [number, number, number] {

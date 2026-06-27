@@ -3,17 +3,9 @@
  * FSSAI, Fire Safety, GST, Labour Laws, and Liquor Licensing
  */
 
-export interface FoodComplianceRule {
-  questionId: string;
-  category: string;
-  requirement: string;
-  governmentRef: string;
-  officialLink: string;
-  deadline: string;
-  penalty: string;
-  actionIfNonCompliant: string[];
-  actionIfCompliant: string;
-}
+import type { ComplianceRule } from '@/types/compliance';
+
+export type FoodComplianceRule = ComplianceRule;
 
 export const FOOD_CATEGORY_LABELS: Record<string, string> = {
   'FSSAI': 'Food Safety (FSSAI)',

@@ -20,6 +20,7 @@ import { FOOD_COMPLIANCE_RULES, FOOD_CATEGORY_LABELS } from './food-business-com
 import { LABOUR_CODE_RULES } from '@/lib/assessments/labour-code-rules'
 import { LABOUR_CODE_CATEGORY_LABELS } from '@/types/compliance'
 import { STATE_WISE_COMPLIANCE_RULES, STATE_WISE_CATEGORY_LABELS } from './state-wise-compliance-rules'
+import { STATUTORY_HEALTH_COMPLIANCE_RULES } from './statutory-health-compliance-rules'
 
 import {
   STATUTORY_HEALTH_CONFIG,
@@ -37,7 +38,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyRecord = Record<string, any>
 
-interface AssessmentData {
+export interface AssessmentData {
   id?: string
   assessment_type?: string
   overall_score?: number
@@ -45,20 +46,6 @@ interface AssessmentData {
   responses?: AnyRecord
   userDetails?: AnyRecord
   user_details?: AnyRecord
-}
-
-// Inline compliance rules for Statutory Health (same as in download-buttons.tsx)
-interface ComplianceRuleInline {
-  questionId: string
-  category: string
-  requirement: string
-  governmentRef: string
-  officialLink: string
-  deadline: string
-  penalty: string
-  actionIfNonCompliant: string[]
-  actionIfCompliant: string
-  applicabilityNote?: string
 }
 
 // ============================================================================
@@ -137,10 +124,7 @@ function getCategoryScoresFromRaw(
 // STATUTORY HEALTH ADAPTER
 // ============================================================================
 
-export function adaptStatutoryHealth(
-  data: AssessmentData,
-  inlineRules: Record<string, ComplianceRuleInline>
-): UnifiedReportData {
+export function adaptStatutoryHealth(data: AssessmentData): UnifiedReportData {
   const answers = data.responses?.answers || data.responses || {}
   const overallScore = data.overall_score ?? 50
   const userDetails = extractUserDetails(data)
@@ -150,19 +134,19 @@ export function adaptStatutoryHealth(
   const compliantItems: UnifiedCompliantItem[] = []
 
   Object.entries(answers).forEach(([questionId, answer]) => {
-    const rule = inlineRules[questionId]
+    const rule = STATUTORY_HEALTH_COMPLIANCE_RULES[questionId]
     if (!rule) return
 
     if (answer === 'yes') {
       compliantItems.push({
         questionId,
-        category: rule.category,
+        category: rule.category ?? '',
         text: rule.requirement,
       })
     } else if (answer === 'no') {
       actionItems.push({
         priority: determinePriority(overallScore),
-        category: rule.category,
+        category: rule.category ?? '',
         questionId,
         title: rule.requirement,
         description: rule.governmentRef,
@@ -274,13 +258,13 @@ export function adaptDPDP(data: AssessmentData): UnifiedReportData {
     if (answer === 'yes') {
       compliantItems.push({
         questionId,
-        category: rule.category,
+        category: rule.category ?? '',
         text: rule.requirement,
       })
     } else if (answer === 'no') {
       actionItems.push({
         priority: determinePriority(overallScore),
-        category: rule.category,
+        category: rule.category ?? '',
         questionId,
         title: rule.requirement,
         description: rule.governmentRef,
@@ -332,13 +316,13 @@ export function adaptStateWise(data: AssessmentData): UnifiedReportData {
     if (answer === 'yes') {
       compliantItems.push({
         questionId,
-        category: rule.category,
+        category: rule.category ?? '',
         text: rule.requirement,
       })
     } else if (answer === 'no') {
       actionItems.push({
         priority: determinePriority(overallScore),
-        category: rule.category,
+        category: rule.category ?? '',
         questionId,
         title: rule.requirement,
         description: rule.governmentRef,

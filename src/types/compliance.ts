@@ -12,6 +12,7 @@ export interface ComplianceRule {
   actionIfCompliant: string
   applicabilityNote?: string
   // Optional category field - can be inferred from questionId prefix
+  // (labour-code-rules.ts omits it; PDF rule files always set it)
   category?: string
 }
 

@@ -4,18 +4,9 @@
  */
 
 import { ALL_DPDP_QUESTIONS } from '../assessments/dpdp-questions';
+import type { ComplianceRule } from '@/types/compliance';
 
-export interface DPDPComplianceRule {
-  questionId: string;
-  category: string;
-  requirement: string;
-  governmentRef: string;
-  officialLink: string;
-  deadline: string;
-  penalty: string;
-  actionIfNonCompliant: string[];
-  actionIfCompliant: string;
-}
+export type DPDPComplianceRule = ComplianceRule;
 
 export const DPDP_COMPLIANCE_RULES: Record<string, DPDPComplianceRule> = {
   // ============================================================================
