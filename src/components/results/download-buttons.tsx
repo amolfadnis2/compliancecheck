@@ -181,6 +181,24 @@ function resolveEmail(data: AssessmentData): string | undefined {
   )
 }
 
+// Trigger a browser download for a blob.
+function triggerBlobDownload(blob: Blob, filename: string): void {
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
+// Pull the filename out of a Content-Disposition header, with a fallback.
+function filenameFromDisposition(header: string | null, fallback: string): string {
+  const match = header?.match(/filename="?([^";]+)"?/)
+  return match?.[1] || fallback
+}
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -287,6 +305,38 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     try {
       const id = assessmentId || window.location.pathname.split('/').pop() || 'demo'
+
+      // DB-backed assessments (UUID) generate the PDF server-side so the file is
+      // built from the stored row, not client state. POSH and local/temp ids
+      // fall through to the client-side path below.
+      if (isValidUUID(id)) {
+        const email = emailOverride || (assessmentData ? resolveEmail(assessmentData) : undefined)
+        if (email) {
+          const res = await fetch(`/api/report/${id}/pdf?email=${encodeURIComponent(email)}`)
+          if (res.ok) {
+            const blob = await res.blob()
+            const filename = filenameFromDisposition(
+              res.headers.get('content-disposition'),
+              'ComplianceCheck-Report-' + new Date().toISOString().split('T')[0] + '.pdf'
+            )
+            triggerBlobDownload(blob, filename)
+
+            analytics.reportDownloaded({
+              assessment_type: (assessmentData?.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH) as AssessmentType,
+              format: 'pdf',
+              compliance_score: assessmentData?.overall_score ?? complianceScore ?? 0,
+              assessment_id: id,
+              user_tier: 'free',
+            })
+
+            setDownloadSuccess(true)
+            setTimeout(() => setDownloadSuccess(false), 3000)
+            return
+          }
+          // Non-OK response: fall through to client-side generation.
+        }
+      }
+
       const data = (await resolveAssessmentData(id, assessmentData)) || fallbackAssessmentData(id)
 
       const assessmentType = data.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH
@@ -302,16 +352,10 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
       // Generate consistent PDF using unified generator
       const blob = generateUnifiedReportBlob(reportData)
-
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      const reportPrefix = reportData.config.filenamePrefix
-      link.download = reportPrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      triggerBlobDownload(
+        blob,
+        reportData.config.filenamePrefix + '-' + new Date().toISOString().split('T')[0] + '.pdf'
+      )
 
       // Track successful download
       analytics.reportDownloaded({
@@ -330,7 +374,7 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
     } finally {
       setIsDownloading(false)
     }
-  }, [assessmentId, assessmentData, complianceScore])
+  }, [assessmentId, assessmentData, complianceScore, emailOverride])
 
   // ==========================================================================
   // EMAIL HANDLER
@@ -343,6 +387,49 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
 
     try {
       const id = assessmentId || window.location.pathname.split('/').pop() || 'demo'
+
+      // DB-backed assessments (UUID) generate the PDF server-side in-process, so
+      // the emailed attachment matches the download exactly. No client-side PDF
+      // build and no base64 round-trip. POSH and local/temp ids fall through.
+      if (isValidUUID(id)) {
+        const email = emailOverride || (assessmentData ? resolveEmail(assessmentData) : undefined)
+        if (email) {
+          const assessmentType = assessmentData?.assessment_type || propAssessmentType || ASSESSMENT_TYPES.STATUTORY_HEALTH
+          const companyName =
+            assessmentData?.userDetails?.companyName ||
+            assessmentData?.responses?.userDetails?.companyName ||
+            'Your Company'
+
+          const response = await fetch('/api/email/send-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              assessmentId: id,
+              companyName,
+              score: assessmentData?.overall_score ?? 0,
+              assessmentType,
+            }),
+          })
+          const result = await response.json()
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to send email')
+          }
+
+          analytics.trackEvent('report_emailed', {
+            assessment_type: assessmentType as AssessmentType,
+            compliance_score: assessmentData?.overall_score ?? complianceScore ?? 0,
+            assessment_id: id,
+            user_tier: 'free',
+          })
+
+          setEmailSuccess(true)
+          setTimeout(() => setEmailSuccess(false), 5000)
+          return
+        }
+        // Email unknown: fall through to client-side path below.
+      }
+
       const data =
         (await resolveAssessmentData(id, assessmentData)) ||
         assessmentData ||
