@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { FAQ_ITEMS } from '@/lib/calculators/penalty-exposure/faq-content'
+import { JsonLd } from '@/lib/seo/JsonLd'
+import { faqSchema } from '@/lib/seo/schema'
 import PenaltyCalculatorClient from './PenaltyCalculatorClient'
 
 export const metadata: Metadata = {
@@ -65,30 +67,11 @@ const webAppSchema = {
   },
 }
 
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: FAQ_ITEMS.map((item) => ({
-    '@type': 'Question',
-    name: item.question,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: item.answer,
-    },
-  })),
-}
-
 export default function CompliancePenaltyCalculatorPage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={webAppSchema} />
+      <JsonLd data={faqSchema(FAQ_ITEMS)} />
       <PenaltyCalculatorClient />
     </>
   )
