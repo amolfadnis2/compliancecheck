@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { LandingSchema } from '@/lib/seo/LandingSchema'
 
 export const metadata: Metadata = {
   title: 'Auto Dealer Compliance Assessment | Dealer License, GST, Labour, Environment | ComplianceCheck',
@@ -23,6 +25,7 @@ export default function AutoDealerCompliancePage() {
 
   return (
     <div className={styles.page}>
+      <LandingSchema type={ASSESSMENT_TYPES.AUTO_DEALER} />
       <nav className={styles.nav}>
         <div className={styles.container}>
           <div className={styles.navContent}>

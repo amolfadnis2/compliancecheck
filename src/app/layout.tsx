@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { organizationSchema } from "@/lib/seo/schema";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -72,35 +74,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Structured Data for SEO */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "ComplianceCheck",
-              applicationCategory: "BusinessApplication",
-              operatingSystem: "Web",
-              offers: {
-                "@type": "AggregateOffer",
-                lowPrice: "999",
-                highPrice: "2499",
-                priceCurrency: "INR",
-                offerCount: 6
-              },
-              description:
-                "Pay-as-you-go compliance assessments for Indian SMEs. Labour Codes, DPDP Act, POSH, Food Business & more.",
-              provider: {
-                "@type": "Organization",
-                name: "ComplianceCheck",
-                url: "https://compliancecheck.co.in"
-              },
-              areaServed: {
-                "@type": "Country",
-                name: "India"
-              }
-            }),
-          }}
+        <JsonLd data={organizationSchema()} />
+        {/* RSS feed for syndication / readers */}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="ComplianceCheck Blog"
+          href="https://compliancecheck.co.in/feed.xml"
         />
       </head>
       <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors overflow-x-hidden`}>
