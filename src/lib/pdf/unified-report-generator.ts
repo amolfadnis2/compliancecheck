@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import { cleanText } from './pdf-primitives';
 
 // ============================================================================
 // CONSTANTS
@@ -101,31 +102,10 @@ export interface UnifiedReportData {
 // HELPER FUNCTIONS
 // ============================================================================
 
-export function cleanText(text: string): string {
-  if (!text) return '';
-  return text
-    .replace(/[‘’‚‛]/g, "'")
-    .replace(/[“”„‟]/g, '"')
-    .replace(/–/g, '-')
-    .replace(/—/g, '--')
-    .replace(/―/g, '--')
-    .replace(/•/g, '*')
-    .replace(/ /g, ' ')
-    .replace(/·/g, '-')
-    .replace(/…/g, '...')
-    .replace(/₹/g, 'Rs.')
-    .replace(/₹/g, 'Rs.')
-    .replace(/✓/g, '[Y]')
-    .replace(/✔/g, '[Y]')
-    .replace(/✗/g, '[X]')
-    .replace(/✘/g, '[X]')
-    .replace(/✓/g, '[Y]')
-    .replace(/✗/g, '[X]')
-    .replace(/→/g, '->')
-    .replace(/←/g, '<-')
-    .replace(/→/g, '->')
-    .replace(/[^\x00-\x7F]/g, '');
-}
+// cleanText lives in pdf-primitives.ts so it is shared with the auto-dealer
+// generator. Re-exported here to preserve the long-standing import path
+// (see CLAUDE.md sec 5).
+export { cleanText };
 
 function getScoreColor(score: number): [number, number, number] {
   if (score >= 90) return COLORS.success;
@@ -791,7 +771,9 @@ function generateNextStepsPage(doc: jsPDF, data: UnifiedReportData, pageNum: num
 // MAIN GENERATOR FUNCTION
 // ============================================================================
 
-export function generateUnifiedReportBlob(data: UnifiedReportData): Blob {
+// Assemble the full report document. Shared by the browser (blob) and the
+// server (bytes) output functions so both paths render identical PDFs.
+function renderUnifiedReportDoc(data: UnifiedReportData): jsPDF {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -807,7 +789,16 @@ export function generateUnifiedReportBlob(data: UnifiedReportData): Blob {
   pageNum = generateCompliantAreasPage(doc, data, pageNum);
   void generateNextStepsPage(doc, data, pageNum);
 
-  // Convert to blob
-  const pdfBlob = doc.output('blob');
-  return pdfBlob;
+  return doc;
+}
+
+// Browser output — used for client-side download/email (POSH, local/temp ids).
+export function generateUnifiedReportBlob(data: UnifiedReportData): Blob {
+  return renderUnifiedReportDoc(data).output('blob');
+}
+
+// Server output — used by the server-side PDF route and the email route so the
+// emailed attachment is byte-identical to the download.
+export function generateUnifiedReportBytes(data: UnifiedReportData): Uint8Array {
+  return new Uint8Array(renderUnifiedReportDoc(data).output('arraybuffer'));
 }

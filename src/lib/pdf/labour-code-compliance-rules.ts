@@ -13,17 +13,9 @@
  * @created December 31, 2025
  */
 
-export interface LabourCodeComplianceRule {
-  questionId: string;
-  category: string;
-  requirement: string;
-  governmentRef: string;
-  officialLink: string;
-  deadline: string;
-  penalty: string;
-  actionIfNonCompliant: string[];
-  actionIfCompliant: string;
-}
+import type { ComplianceRule } from '@/types/compliance';
+
+export type LabourCodeComplianceRule = ComplianceRule;
 
 export const LABOUR_CODE_COMPLIANCE_RULES: Record<string, LabourCodeComplianceRule> = {
   // ==========================================================================
@@ -642,6 +634,6 @@ export function getLabourCodeComplianceRule(questionId: string): LabourCodeCompl
 
 export function getLabourCodeRulesByCategory(category: string): LabourCodeComplianceRule[] {
   return Object.values(LABOUR_CODE_COMPLIANCE_RULES).filter(rule => 
-    rule.category.toLowerCase().includes(category.toLowerCase())
+    (rule.category ?? '').toLowerCase().includes(category.toLowerCase())
   );
 }

@@ -11,17 +11,9 @@
  * @created December 31, 2025
  */
 
-export interface StateWiseComplianceRule {
-  questionId: string;
-  category: string;
-  requirement: string;
-  governmentRef: string;
-  officialLink: string;
-  deadline: string;
-  penalty: string;
-  actionIfNonCompliant: string[];
-  actionIfCompliant: string;
-}
+import type { ComplianceRule } from '@/types/compliance';
+
+export type StateWiseComplianceRule = ComplianceRule;
 
 export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule> = {
   // ==========================================================================
@@ -880,6 +872,6 @@ export function getStateWiseComplianceRule(questionId: string): StateWiseComplia
 
 export function getRulesByCategory(category: string): StateWiseComplianceRule[] {
   return Object.values(STATE_WISE_COMPLIANCE_RULES).filter(rule => 
-    rule.category.toLowerCase().includes(category.toLowerCase())
+    (rule.category ?? '').toLowerCase().includes(category.toLowerCase())
   );
 }

@@ -437,8 +437,32 @@ export async function POST(request: NextRequest) {
       // If lookup fails (misconfigured env), allow through — don't block email delivery
     }
 
+    // Resolve the PDF attachment. DB-backed assessments (UUID id) generate the
+    // PDF server-side in-process so the attachment matches the download exactly;
+    // POSH and local/temp assessments still send a client-built pdfBase64.
+    let attachmentBase64: string | undefined = pdfBase64
+    let resolvedAssessmentType: string = assessmentType
+    let resolvedCompanyName: string | undefined = companyName
+    let resolvedScore: number = score ?? 0
+    let generatedFilename: string | null = null
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(assessmentId)
+    if (!attachmentBase64 && isUuid) {
+      const { generateAssessmentPdf } = await import('@/lib/pdf/server-report')
+      const gen = await generateAssessmentPdf(assessmentId, email)
+      if ('error' in gen) {
+        const statusCode = gen.error === 'not_found' ? 404 : 403
+        return NextResponse.json({ success: false, error: gen.error }, { status: statusCode })
+      }
+      attachmentBase64 = Buffer.from(gen.bytes).toString('base64')
+      resolvedAssessmentType = resolvedAssessmentType || gen.assessmentType
+      resolvedCompanyName = resolvedCompanyName || gen.companyName
+      resolvedScore = score ?? gen.score
+      generatedFilename = gen.filename
+    }
+
     // Validate required fields
-    if (!email || !pdfBase64) {
+    if (!email || !attachmentBase64) {
       return NextResponse.json(
         { success: false, error: 'Email and PDF data are required' },
         { status: 400 }
@@ -464,8 +488,8 @@ export async function POST(request: NextRequest) {
       'posh': 'POSH Act 2013 Compliance Assessment',
       'auto_dealer': 'Auto Dealership Compliance Assessment',
     }
-    const reportLabel = reportTypeLabels[assessmentType] || 'Compliance Assessment'
-    
+    const reportLabel = reportTypeLabels[resolvedAssessmentType] || 'Compliance Assessment'
+
     const filenamePrefixes: Record<string, string> = {
       'statutory_health': 'Statutory-Health-Check',
       'labour_code': 'Labour-Code-Readiness',
@@ -475,7 +499,7 @@ export async function POST(request: NextRequest) {
       'posh': 'POSH-Compliance-Assessment',
       'auto_dealer': 'Auto-Dealer-Compliance',
     }
-    const filenamePrefix = filenamePrefixes[assessmentType] || 'ComplianceCheck-Report'
+    const filenamePrefix = filenamePrefixes[resolvedAssessmentType] || 'ComplianceCheck-Report'
 
     // Get status based on score
     const getStatus = (score: number): string => {
@@ -483,23 +507,23 @@ export async function POST(request: NextRequest) {
       if (score >= 70) return 'Needs Attention'
       return 'Non-Compliant'
     }
-    const status = getStatus(score ?? 0)
-    const statusColour = score >= 90 ? '#059669' : score >= 70 ? '#D97706' : '#DC2626'
+    const status = getStatus(resolvedScore)
+    const statusColour = resolvedScore >= 90 ? '#059669' : resolvedScore >= 70 ? '#D97706' : '#DC2626'
 
     // Generate date for filename
     const dateStr = new Date().toISOString().split('T')[0]
-    const filename = `${filenamePrefix}-${dateStr}.pdf`
+    const filename = generatedFilename || `${filenamePrefix}-${dateStr}.pdf`
 
     // Send email with PDF attachment
     const { data, error } = await getResendClient().emails.send({
       from: process.env.EMAIL_FROM || 'ComplianceCheck <noreply@compliancecheck.co.in>',
       to: email,
-      subject: `Your ${reportLabel} Report - ${companyName || 'Assessment Complete'}`,
-      html: generateEmailHtml(assessmentType, reportLabel, companyName, score ?? 0, status, statusColour),
+      subject: `Your ${reportLabel} Report - ${resolvedCompanyName || 'Assessment Complete'}`,
+      html: generateEmailHtml(resolvedAssessmentType, reportLabel, resolvedCompanyName, resolvedScore, status, statusColour),
       attachments: [
         {
           filename: filename,
-          content: pdfBase64,
+          content: attachmentBase64,
         },
       ],
     })
