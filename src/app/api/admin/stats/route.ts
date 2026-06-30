@@ -103,10 +103,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch assessments' }, { status: 500 })
     }
 
-    const allAssessments = rawAssessments || []
+    // 2. Fetch POSH assessments (dedicated table — schema doesn't match the generic one)
+    const { data: rawPosh, error: poshError } = await supabase
+      .from('posh_assessments')
+      .select('id, company_name, email, full_name, overall_score, created_at')
+      .gte('created_at', dateFrom)
+      .lte('created_at', dateTo)
+      .order('created_at', { ascending: false })
 
-    // 2. Map to flat AssessmentRow[]
-    const assessments: AssessmentRow[] = allAssessments.map((a) => {
+    if (poshError) console.error('POSH assessment fetch error:', poshError)
+
+    // 3. Fetch Auto Dealer assessments (dedicated table, multi-phase + payment gated)
+    const { data: rawAutoDealer, error: autoDealerError } = await supabase
+      .from('auto_dealer_assessments')
+      .select('id, user_email, full_name, company_name, overall_score, payment_status, created_at')
+      .gte('created_at', dateFrom)
+      .lte('created_at', dateTo)
+      .order('created_at', { ascending: false })
+
+    if (autoDealerError) console.error('Auto Dealer assessment fetch error:', autoDealerError)
+
+    // 4. Map all three sources into one flat AssessmentRow[]
+    const genericRows: AssessmentRow[] = (rawAssessments || []).map((a) => {
       const user = a.users as unknown as Record<string, string | null> | null
       return {
         id: a.id,
@@ -124,8 +142,42 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 3. Compute KPI stats
-    const completed = allAssessments.filter((a) => a.status === 'completed')
+    const poshRows: AssessmentRow[] = (rawPosh || []).map((a) => ({
+      id: a.id,
+      user_email: a.email || 'N/A',
+      user_name: a.full_name || 'N/A',
+      company_name: a.company_name || 'N/A',
+      assessment_type: formatAssessmentType('posh'),
+      status: 'completed',
+      overall_score: a.overall_score,
+      state: null,
+      industry: null,
+      employee_count: null,
+      created_at: a.created_at,
+      completed_at: a.created_at,
+    }))
+
+    const autoDealerRows: AssessmentRow[] = (rawAutoDealer || []).map((a) => ({
+      id: a.id,
+      user_email: a.user_email || 'N/A',
+      user_name: a.full_name || 'N/A',
+      company_name: a.company_name || 'N/A',
+      assessment_type: formatAssessmentType('auto_dealer'),
+      status: a.payment_status === 'paid' ? 'completed' : a.overall_score !== null ? 'in_progress' : 'started',
+      overall_score: a.overall_score,
+      state: null,
+      industry: null,
+      employee_count: null,
+      created_at: a.created_at,
+      completed_at: a.payment_status === 'paid' ? a.created_at : null,
+    }))
+
+    const assessments: AssessmentRow[] = [...genericRows, ...poshRows, ...autoDealerRows].sort(
+      (a, b) => b.created_at.localeCompare(a.created_at)
+    )
+
+    // 5. Compute KPI stats
+    const completed = assessments.filter((a) => a.status === 'completed')
     const scores = completed
       .map((a) => a.overall_score)
       .filter((s): s is number => s !== null && s !== undefined)
@@ -151,24 +203,24 @@ export async function GET(request: NextRequest) {
     }
 
     const stats: DashboardStats = {
-      totalAssessments: allAssessments.length,
+      totalAssessments: assessments.length,
       completedAssessments: completed.length,
       uniqueUsers: uniqueEmails.size,
       averageScore: scores.length > 0
         ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
         : null,
-      completionRate: allAssessments.length > 0
-        ? Math.round((completed.length / allAssessments.length) * 100)
+      completionRate: assessments.length > 0
+        ? Math.round((completed.length / assessments.length) * 100)
         : 0,
       npsScore,
       npsResponses,
       periodLabel,
     }
 
-    // 5. Assessment type breakdown
+    // 6. Assessment type breakdown
     const typeMap = new Map<string, { total: number; completed: number; scores: number[] }>()
-    allAssessments.forEach((a) => {
-      const type = formatAssessmentType(a.assessment_type)
+    assessments.forEach((a) => {
+      const type = a.assessment_type
       const entry = typeMap.get(type) || { total: 0, completed: 0, scores: [] }
       entry.total++
       if (a.status === 'completed') {
@@ -246,7 +298,7 @@ export async function GET(request: NextRequest) {
 
     // 9. Daily trend (group by date)
     const trendMap = new Map<string, number>()
-    allAssessments.forEach((a) => {
+    assessments.forEach((a) => {
       const date = a.created_at.split('T')[0]
       trendMap.set(date, (trendMap.get(date) || 0) + 1)
     })
@@ -321,6 +373,7 @@ function formatAssessmentType(type: string): string {
     document: 'Document',
     ctc_calculator: 'CTC Calculator',
     gratuity_calculator: 'Gratuity Calculator',
+    auto_dealer: 'Auto Dealer',
   }
   return map[type] || type
 }
