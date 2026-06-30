@@ -216,6 +216,7 @@ function Header({
     { href: '/how-it-works', label: 'How It Works' },
     { href: '#assessments', label: 'Assessments' },
     { href: '#free-tools', label: 'Free Tools' },
+    { href: '/blog', label: 'Guides' },
     { href: '#faq', label: 'FAQ' },
     { href: '/suggestions', label: 'Share an Idea' }
   ];
@@ -787,6 +788,11 @@ function Footer() {
               <li>
                 <Link href="/how-it-works" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
                   How It Works
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  Guides
                 </Link>
               </li>
               <li>

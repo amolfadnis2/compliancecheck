@@ -276,6 +276,7 @@ export default function AutoDealerCompliancePage() {
             <div className={styles.footerLinks}>
               <Link href="/">Home</Link>
               <Link href="/">All Assessments</Link>
+              <Link href="/blog">Guides</Link>
               <Link href="/contact">Contact</Link>
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Service</Link>
