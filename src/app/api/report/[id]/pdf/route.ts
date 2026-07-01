@@ -23,6 +23,9 @@ export async function GET(
       if (result.error === 'not_found') {
         return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
       }
+      if (result.error === 'payment_required') {
+        return NextResponse.json({ error: 'Payment required to download this report' }, { status: 402 })
+      }
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

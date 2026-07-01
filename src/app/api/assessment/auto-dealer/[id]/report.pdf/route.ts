@@ -23,6 +23,8 @@ import type {
 } from '@/types/auto-dealer'
 import { PHASE_METADATA, PRICE_TIERS } from '@/types/auto-dealer'
 import { cleanText } from '@/lib/pdf/pdf-primitives'
+import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
+import { getEntitlement } from '@/lib/payment/entitlement'
 
 const ALL_QUESTIONS = [
   ...APPLICABILITY_QUESTIONS,
@@ -729,12 +731,20 @@ export async function GET(
     const tier = (a.price_tier ?? computePriceTier(profile, ALL_QUESTIONS)) as 'basic' | 'standard' | 'premium'
     const totalQuestions = ALL_QUESTIONS.filter(q => q.phase !== 1 && q.appliesWhen(profile)).length
 
+    // Unified entitlement gate — auto-dealer converged onto assessment_entitlements
+    // (framework O-2). When payment is live, the shared entitlement is the source
+    // of truth for paid/waived; at live:false we fall back to the legacy inline
+    // payment_status column so the current "free in beta" behaviour is unchanged.
+    const autoDealerPaid = isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER)
+      ? (await getEntitlement(assessmentId, ASSESSMENT_TYPES.AUTO_DEALER)) !== 'none'
+      : a.payment_status === 'paid'
+
     // Fetch state reference data for verified + paid users
     let ptSlabs: PTSlab[] = []
     let sandE: StateAndE[] = []
     let gstRates: GSTRate[] = []
 
-    if (a.email_verified && a.payment_status === 'paid') {
+    if (a.email_verified && autoDealerPaid) {
       const [ptResult, sandEResult, gstResult] = await Promise.all([
         supabase.from('state_pt_slabs').select('*').in('state_code', profile.statesOfOperation),
         supabase.from('state_s_and_e').select('*').in('state_code', profile.statesOfOperation),
@@ -767,10 +777,16 @@ export async function GET(
         sandE,
         gstRates,
         emailVerified: a.email_verified,
-        paymentStatus: a.payment_status,
+        paymentStatus: autoDealerPaid ? 'paid' : a.payment_status,
         priceTier: tier,
         totalQuestions,
       })
+    }
+
+    // Binary PDF is the paid deliverable: when payment is live, require a
+    // paid/waived entitlement. Skipped at live:false (free in beta).
+    if (isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER) && !autoDealerPaid) {
+      return NextResponse.json({ error: 'Payment required to download this report' }, { status: 402 })
     }
 
     const pdfData = generatePdf({

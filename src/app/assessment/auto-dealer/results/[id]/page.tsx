@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { analytics } from '@/lib/analytics/tracking'
-import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, isPaymentLive, ASSESSMENT_PRICES } from '@/lib/constants/assessment-types'
+import { PaymentGate as SharedPaymentGate } from '@/components/results/payment-gate'
 import {
   ArrowLeft, Loader2, AlertCircle, CheckCircle, AlertTriangle, XCircle,
   Download, Mail, Lock, ChevronDown, ChevronUp, ExternalLink,
@@ -686,12 +687,27 @@ export default function ResultsPage() {
             </Card>
           </div>
 
-          <PaymentGate
-            assessmentId={assessmentId}
-            tier={data.priceTier}
-            questionCount={data.totalQuestions}
-            onPaid={() => { setPaid(true) }}
-          />
+          {isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER) ? (
+            // Converged onto the shared entitlement flow: real Razorpay checkout
+            // via /api/payment/create-order + /verify, writing to
+            // assessment_entitlements. Flat ₹2,999 (framework O-1). On success we
+            // refetch so the server-gated report unlocks.
+            <SharedPaymentGate
+              assessmentId={assessmentId}
+              assessmentType={ASSESSMENT_TYPES.AUTO_DEALER}
+              priceINR={Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.AUTO_DEALER].amountPaise / 100)}
+              title="Unlock your full compliance report"
+              description={`${data.totalQuestions} questions assessed`}
+              onPaid={() => { setPaid(true); loadResults() }}
+            />
+          ) : (
+            <PaymentGate
+              assessmentId={assessmentId}
+              tier={data.priceTier}
+              questionCount={data.totalQuestions}
+              onPaid={() => { setPaid(true) }}
+            />
+          )}
         </main>
       </div>
     )

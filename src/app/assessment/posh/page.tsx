@@ -50,7 +50,7 @@ import { POSHProgressSection } from '@/components/assessment/posh-progress-secti
 import { EmailGate } from '@/components/identity/EmailGate'
 import { PaymentGate } from '@/components/results/payment-gate'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
-import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { analytics } from '@/lib/analytics/tracking'
 
 // Import POSH data files
@@ -237,6 +237,9 @@ export default function POSHAssessmentPage() {
   const gateRequired = shouldRequireEmailVerification(ASSESSMENT_TYPES.POSH)
   const [gateCleared, setGateCleared] = useState(false)
   const [paymentCleared, setPaymentCleared] = useState(false)
+  // Persisted POSH assessment id (from posh-submit) — used to key the unified
+  // payment entitlement and to gate the emailed report server-side.
+  const [poshAssessmentId, setPoshAssessmentId] = useState<string | null>(null)
   
   // Timing
   const [startTime] = useState(Date.now())
@@ -838,6 +841,7 @@ export default function POSHAssessmentPage() {
       const data = await response.json()
       
       if (data.success && data.assessmentId) {
+        setPoshAssessmentId(data.assessmentId)
         // Store in localStorage for results page
         localStorage.setItem(
           `posh_assessment_${data.assessmentId}`,
@@ -969,6 +973,7 @@ export default function POSHAssessmentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: companyDetails.email,
+          assessmentId: poshAssessmentId ?? undefined,
           pdfBase64,
           companyName: companyDetails.companyName,
           score: results.overallScore,
@@ -1427,6 +1432,11 @@ export default function POSHAssessmentPage() {
                 'Downloadable PDF report',
                 'Email report to your inbox',
               ]}
+              // Live Razorpay + entitlement flow only once POSH payment is flipped
+              // live; until then these stay undefined and PaymentGate is the beta
+              // stub (calls onPaid directly) — identical to today.
+              assessmentId={isPaymentLive(ASSESSMENT_TYPES.POSH) ? (poshAssessmentId ?? undefined) : undefined}
+              assessmentType={isPaymentLive(ASSESSMENT_TYPES.POSH) ? ASSESSMENT_TYPES.POSH : undefined}
               onPaid={() => setPaymentCleared(true)}
             />
           </div>
