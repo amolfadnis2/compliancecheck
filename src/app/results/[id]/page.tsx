@@ -92,9 +92,6 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   const { type } = await searchParams
   
   const assessmentType = type || ASSESSMENT_TYPES.STATUTORY_HEALTH
-  const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
-  const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
-  const isStateWise = assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE
   const isFoodBusiness = assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS
 
   // Handle temporary/local IDs (when DB not configured or fallback)
@@ -125,12 +122,32 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
     return <TempResultsPage assessmentType={assessmentType} />
   }
 
-  const { source, reason } = getGateConfig(assessmentType)
+  // The stored row's type is authoritative from here on; the ?type= query param
+  // is only a pre-fetch hint and is attacker-controlled. Keying the paywall gate
+  // and view selection off the stored type prevents dodging a live paywall (or
+  // rendering a paid row's action items through another type's free view) by
+  // editing the URL.
+  const effectiveType =
+    assessment.assessment_type && isValidAssessmentType(assessment.assessment_type)
+      ? assessment.assessment_type
+      : assessmentType
+
+  const { source, reason } = getGateConfig(effectiveType)
+
+  // DB-backed food-business rows render through the localStorage results page,
+  // matching the pre-fetch branch above.
+  if (effectiveType === ASSESSMENT_TYPES.FOOD_BUSINESS) {
+    return (
+      <GatedResults source={source} reason={reason}>
+        <LocalStorageResultsPage id={id} assessmentType={effectiveType} />
+      </GatedResults>
+    )
+  }
 
   // The full, per-type detailed report view.
-  const fullView = isDPDP ? <DPDPResultsView assessment={assessment} />
-    : isLabourCode ? <LabourCodeResultsView assessment={assessment} />
-    : isStateWise ? <StateWiseResultsView assessment={assessment} />
+  const fullView = effectiveType === ASSESSMENT_TYPES.DPDP ? <DPDPResultsView assessment={assessment} />
+    : effectiveType === ASSESSMENT_TYPES.LABOUR_CODE ? <LabourCodeResultsView assessment={assessment} />
+    : effectiveType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE ? <StateWiseResultsView assessment={assessment} />
     : <StatutoryHealthResultsView assessment={assessment} />
 
   // Unified paywall gate (mirrors the shared PDF pattern): for ANY assessment
@@ -140,11 +157,11 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   // assessment except Statutory Health today — this block is skipped and the
   // existing free/OTP flow below runs unchanged (zero behaviour change until a
   // per-assessment `live` flag is flipped after QA).
-  if (isValidAssessmentType(assessmentType) && isPaymentLive(assessmentType)) {
+  if (isValidAssessmentType(effectiveType) && isPaymentLive(effectiveType)) {
     try {
-      const status = await getEntitlement(id, assessmentType)
+      const status = await getEntitlement(id, effectiveType)
       if (status === 'none') {
-        return <AssessmentSummary assessmentId={id} summary={buildSummary(assessmentType, assessment, id)} />
+        return <AssessmentSummary assessmentId={id} summary={buildSummary(effectiveType, assessment, id)} />
       }
       return fullView
     } catch (err) {

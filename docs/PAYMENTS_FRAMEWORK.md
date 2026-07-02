@@ -297,6 +297,7 @@ Then generalise:
 - **O-2 (entitlement consolidation):** migrate auto-dealer's inline `payment_status` into `assessment_entitlements`, or leave it. *Recommend:* leave for v1, unify later.
 - **O-3 (email at gate vs OTP):** capture email with light validation at the gate vs full OTP (auto-dealer does OTP). *Recommend:* light capture for #1–6 (less friction); revisit if fraud/abuse appears.
 - **O-4 (refunds):** define a refund/`failed` handling policy and whether admin needs a refund action.
+- **O-5 (POSH client-side PDF, go-live prerequisite):** POSH's report is built entirely client-side (`generateUnifiedReportBlob(adaptPOSHResult(...))` in `src/app/assessment/posh/page.tsx`) from in-memory data — unlike the DB-backed assessments and auto-dealer, there is no server route generating its download. Its *email* path is server-gated via `getEntitlement()`, but its *download* button is not: once `posh` is flipped `live: true`, an unpaid user could still trigger the client-side download. **Before flipping POSH live**, add a server-side gated PDF route for POSH (mirroring `/api/report/[id]/pdf`) and point its download button at it, or consciously accept client-side download as a known gap.
 
 ---
 

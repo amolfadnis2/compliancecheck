@@ -333,7 +333,13 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
             setTimeout(() => setDownloadSuccess(false), 3000)
             return
           }
-          // Non-OK response: fall through to client-side generation.
+          // 402 = live paywall says unpaid. Never downgrade to client-side
+          // generation here — that would sidestep the entitlement gate.
+          if (res.status === 402) {
+            setError('Payment required — unlock the full report to download it.')
+            return
+          }
+          // Other non-OK responses: fall through to client-side generation.
         }
       }
 
@@ -412,6 +418,12 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
             }),
           })
           const result = await response.json()
+          if (response.status === 402) {
+            // Live paywall says unpaid — do not fall through to the client-side
+            // path (it would sidestep the entitlement gate).
+            setEmailError('Payment required — unlock the full report to email it.')
+            return
+          }
           if (!response.ok || !result.success) {
             throw new Error(result.error || 'Failed to send email')
           }
