@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { isPaymentLive, isValidAssessmentType } from '@/lib/constants/assessment-types'
+import { getEntitlement } from '@/lib/payment/entitlement'
 
 // Lazy initialization - only create client when needed
 let resend: Resend | null = null
@@ -417,6 +419,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Entitlement gate for the client-supplied PDF path (POSH / local-storage
+    // assessments send a client-built pdfBase64 and never hit the server
+    // generator, which is gated separately). For any live paid assessment we
+    // refuse to email the full report unless it has been paid or waived. Skipped
+    // when live:false, so today nothing changes.
+    if (pdfBase64 && isValidAssessmentType(assessmentType) && isPaymentLive(assessmentType)) {
+      const entitlement = await getEntitlement(assessmentId, assessmentType)
+      if (entitlement === 'none') {
+        return NextResponse.json(
+          { success: false, error: 'payment_required' },
+          { status: 402 }
+        )
+      }
+    }
+
     // Verify the requested email matches the stored assessment email
     try {
       const { createAdminClient } = await import('@/lib/supabase/admin')
@@ -451,7 +468,7 @@ export async function POST(request: NextRequest) {
       const { generateAssessmentPdf } = await import('@/lib/pdf/server-report')
       const gen = await generateAssessmentPdf(assessmentId, email)
       if ('error' in gen) {
-        const statusCode = gen.error === 'not_found' ? 404 : 403
+        const statusCode = gen.error === 'not_found' ? 404 : gen.error === 'payment_required' ? 402 : 403
         return NextResponse.json({ success: false, error: gen.error }, { status: statusCode })
       }
       attachmentBase64 = Buffer.from(gen.bytes).toString('base64')

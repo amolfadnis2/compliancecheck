@@ -40,22 +40,37 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
+    // Bind the payment to the entitlement created at create-order. The HMAC only
+    // proves the order/payment pair is a genuine Razorpay payment — it says
+    // nothing about which assessment it was for, so the client-claimed
+    // assessmentId/assessmentType must match the row keyed by razorpay_order_id
+    // or a single cheap payment could be replayed to unlock any assessment.
+    const { data: entitlement, error: lookupError } = await supabase
+      .from('assessment_entitlements')
+      .select('assessment_id, assessment_type, status')
+      .eq('razorpay_order_id', razorpay_order_id)
+      .maybeSingle()
+
+    if (lookupError || !entitlement) {
+      console.error('verify: no entitlement for order', razorpay_order_id, lookupError?.message)
+      return NextResponse.json({ error: 'Unknown payment order' }, { status: 400 })
+    }
+    if (entitlement.assessment_id !== assessmentId || entitlement.assessment_type !== assessmentType) {
+      console.error('verify: order/assessment mismatch', razorpay_order_id, assessmentId, assessmentType)
+      return NextResponse.json({ error: 'Order does not match this assessment' }, { status: 400 })
+    }
+
     const { error } = await supabase
       .from('assessment_entitlements')
-      .upsert(
-        {
-          assessment_id: assessmentId,
-          assessment_type: assessmentType,
-          status: 'paid',
-          payment_method: 'razorpay',
-          razorpay_order_id,
-          razorpay_payment_id,
-          razorpay_signature,
-          email: email ?? null,
-          paid_at: new Date().toISOString(),
-        },
-        { onConflict: 'assessment_id,assessment_type' }
-      )
+      .update({
+        status: 'paid',
+        payment_method: 'razorpay',
+        razorpay_payment_id,
+        razorpay_signature,
+        email: email ?? null,
+        paid_at: new Date().toISOString(),
+      })
+      .eq('razorpay_order_id', razorpay_order_id)
 
     if (error) {
       console.error('Entitlement update error:', error)

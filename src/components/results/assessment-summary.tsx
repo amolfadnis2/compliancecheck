@@ -7,23 +7,7 @@ import { ArrowLeft, AlertTriangle, CheckCircle, XCircle, Lock, Building } from '
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { PaymentGate } from '@/components/results/payment-gate'
-
-export interface StatutoryHealthSummaryData {
-  overallScore: number
-  riskLabel: string
-  riskColor: 'green' | 'amber' | 'red'
-  categoryScores: Array<{
-    key: string
-    name: string
-    percentage: number
-    status: 'compliant' | 'needs-attention' | 'non-compliant'
-  }>
-  gapsCount: number
-  highPriorityCount: number
-  penaltyRange: string
-  topIssues: Array<{ priority: string; category: string }>
-  companyName: string
-}
+import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
 
 const PRIORITY_STYLES: Record<string, string> = {
   high: 'bg-red-100 text-red-700',
@@ -32,17 +16,40 @@ const PRIORITY_STYLES: Record<string, string> = {
   critical: 'bg-red-200 text-red-900',
 }
 
-export function StatutoryHealthSummary({
+/**
+ * Shared summary/teaser page for every paid assessment — the "lure" shown before
+ * payment. Renders any `UnifiedSummaryData` (score, category bars, gap counter,
+ * penalty range, locked top issues) and embeds the shared <PaymentGate>. On a
+ * successful pay/waiver it calls router.refresh() so the server re-checks the
+ * entitlement and swaps in the full report.
+ *
+ * This is the payment-side parallel to the shared PDF component: one component
+ * for all assessments, driven entirely by data.
+ */
+export function AssessmentSummary({
   assessmentId,
   summary,
 }: {
   assessmentId: string
-  summary: StatutoryHealthSummaryData
+  summary: UnifiedSummaryData
 }) {
   const router = useRouter()
   const [unlocking, setUnlocking] = useState(false)
 
-  const { overallScore, riskLabel, riskColor, categoryScores, gapsCount, highPriorityCount, penaltyRange, topIssues, companyName } = summary
+  const {
+    assessmentType,
+    displayName,
+    priceINR,
+    overallScore,
+    riskLabel,
+    riskColor,
+    categoryScores,
+    gapsCount,
+    highPriorityCount,
+    penaltyRange,
+    topIssues,
+    companyName,
+  } = summary
 
   const scoreColor =
     riskColor === 'green' ? 'text-green-600' :
@@ -71,7 +78,7 @@ export function StatutoryHealthSummary({
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Link>
-          <Badge className="bg-green-100 text-green-700 mb-2">Statutory Health Check</Badge>
+          <Badge className="bg-green-100 text-green-700 mb-2">{displayName}</Badge>
           <h1 className="text-2xl font-bold text-gray-900">Your Compliance Summary</h1>
           {companyName && (
             <div className="flex items-center gap-2 text-gray-600 mt-1">
@@ -92,7 +99,7 @@ export function StatutoryHealthSummary({
                   <span className={`font-semibold ${scoreColor}`}>{riskLabel}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  Based on your answers across all statutory requirements
+                  Based on your answers across all requirements
                 </p>
               </div>
               <div className="text-center">
@@ -104,41 +111,43 @@ export function StatutoryHealthSummary({
         </Card>
 
         {/* Category breakdown */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Category Breakdown</CardTitle>
-            <CardDescription>Where you stand across each statutory area</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {categoryScores.map((cat) => {
-              const catColor =
-                cat.status === 'compliant' ? 'text-green-600' :
-                cat.status === 'needs-attention' ? 'text-amber-600' : 'text-red-600'
-              const barColor =
-                cat.status === 'compliant' ? 'bg-green-500' :
-                cat.status === 'needs-attention' ? 'bg-amber-500' : 'bg-red-500'
-              const catIcon =
-                cat.status === 'compliant' ? <CheckCircle className="w-5 h-5 text-green-600" /> :
-                cat.status === 'needs-attention' ? <AlertTriangle className="w-5 h-5 text-amber-600" /> :
-                <XCircle className="w-5 h-5 text-red-600" />
+        {categoryScores.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Category Breakdown</CardTitle>
+              <CardDescription>Where you stand across each area</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {categoryScores.map((cat) => {
+                const catColor =
+                  cat.status === 'compliant' ? 'text-green-600' :
+                  cat.status === 'needs-attention' ? 'text-amber-600' : 'text-red-600'
+                const barColor =
+                  cat.status === 'compliant' ? 'bg-green-500' :
+                  cat.status === 'needs-attention' ? 'bg-amber-500' : 'bg-red-500'
+                const catIcon =
+                  cat.status === 'compliant' ? <CheckCircle className="w-5 h-5 text-green-600" /> :
+                  cat.status === 'needs-attention' ? <AlertTriangle className="w-5 h-5 text-amber-600" /> :
+                  <XCircle className="w-5 h-5 text-red-600" />
 
-              return (
-                <div key={cat.key} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">{cat.name}</span>
-                    <div className="flex items-center gap-2">
-                      {catIcon}
-                      <span className={`font-bold ${catColor}`}>{cat.percentage}%</span>
+                return (
+                  <div key={cat.key} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">{cat.name}</span>
+                      <div className="flex items-center gap-2">
+                        {catIcon}
+                        <span className={`font-bold ${catColor}`}>{cat.percentage}%</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className={`h-full ${barColor}`} style={{ width: `${cat.percentage}%` }} />
                     </div>
                   </div>
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className={`h-full ${barColor}`} style={{ width: `${cat.percentage}%` }} />
-                  </div>
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
+                )
+              })}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Gap & penalty summary */}
         <Card className="mb-6 border-amber-200 bg-amber-50">
@@ -227,8 +236,8 @@ export function StatutoryHealthSummary({
         ) : (
           <PaymentGate
             assessmentId={assessmentId}
-            assessmentType="statutory_health"
-            priceINR={499}
+            assessmentType={assessmentType}
+            priceINR={priceINR}
             onPaid={handleUnlocked}
           />
         )}

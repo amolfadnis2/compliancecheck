@@ -287,6 +287,7 @@ Historical list (confirmed gone):
 - `src/app/api/assessment/free-submit/route.ts`
 - `src/app/api/assessment/[id]/pdf/route.tsx`
 - `src/lib/analytics/useAssessmentAnalytics.ts` (zero importers — deleted 2026-06-12)
+- `src/components/results/statutory-health-summary.tsx` (replaced by the shared `src/components/results/assessment-summary.tsx` + `UnifiedSummaryData` — deleted)
 
 ---
 
@@ -308,9 +309,19 @@ The auto-dealer assessment is **intentionally different** from all other assessm
 - Server-side PDF generation (jsPDF in API route, not client-side)
 - Writes to `auto_dealer_assessments` table (not `assessments`)
 - 600ms auto-advance (by design for its phase structure)
-- Razorpay payment gate before report delivery
 
 Do not attempt to standardise these divergences — they are architectural decisions, not bugs.
+
+**Payment is now converged onto the unified stack** (framework open-item O-2). When
+`isPaymentLive('auto_dealer')` is true, the checkout uses the shared
+`<PaymentGate>` → `/api/payment/create-order` + `/verify`, and paid/waived state
+lives in `assessment_entitlements` (not the inline `payment_status` column). The
+gated PDF route (`report.pdf/route.ts`) reads entitlement via `getEntitlement()`
+and returns **402** for the binary PDF when unpaid. The single flat price is
+**₹2,999** (framework O-1). At `live:false` (today) it falls back to the legacy
+inline `payment_status` and the "free in beta" flow, so behaviour is unchanged
+until the flag is flipped. Everything else above (multi-phase, OTP, server-side
+jsPDF) remains auto-dealer-specific.
 
 ---
 

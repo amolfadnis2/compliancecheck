@@ -12,8 +12,11 @@ import { LocalStorageResultsPage } from '@/components/results/local-storage-resu
 import { GatedResults } from '@/components/results/gated-results'
 import { getGateConfig } from '@/lib/results/gate-config'
 import { ReportViewTracker } from '@/components/results/report-view-tracker'
-import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
-import { StatutoryHealthSummary, type StatutoryHealthSummaryData } from '@/components/results/statutory-health-summary'
+import { ASSESSMENT_TYPES, isPaymentLive, isValidAssessmentType, getAssessmentDisplayName, ASSESSMENT_PRICES } from '@/lib/constants/assessment-types'
+import { AssessmentSummary } from '@/components/results/assessment-summary'
+import { buildSummaryData } from '@/lib/payment/summary-registry'
+import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
+import { getEntitlement } from '@/lib/payment/entitlement'
 
 // Type definitions
 interface ActionItem {
@@ -89,9 +92,6 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   const { type } = await searchParams
   
   const assessmentType = type || ASSESSMENT_TYPES.STATUTORY_HEALTH
-  const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
-  const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
-  const isStateWise = assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE
   const isFoodBusiness = assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS
 
   // Handle temporary/local IDs (when DB not configured or fallback)
@@ -122,68 +122,91 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
     return <TempResultsPage assessmentType={assessmentType} />
   }
 
-  // Render based on assessment type — all behind the shared OTP gate
-  const { source, reason } = getGateConfig(assessmentType)
+  // The stored row's type is authoritative from here on; the ?type= query param
+  // is only a pre-fetch hint and is attacker-controlled. Keying the paywall gate
+  // and view selection off the stored type prevents dodging a live paywall (or
+  // rendering a paid row's action items through another type's free view) by
+  // editing the URL.
+  const effectiveType =
+    assessment.assessment_type && isValidAssessmentType(assessment.assessment_type)
+      ? assessment.assessment_type
+      : assessmentType
 
-  if (isDPDP) {
-    return (
-      <GatedResults source={source} reason={reason}>
-        <DPDPResultsView assessment={assessment} />
-      </GatedResults>
-    )
-  } else if (isLabourCode) {
-    return (
-      <GatedResults source={source} reason={reason}>
-        <LabourCodeResultsView assessment={assessment} />
-      </GatedResults>
-    )
-  } else if (isStateWise) {
-    return (
-      <GatedResults source={source} reason={reason}>
-        <StateWiseResultsView assessment={assessment} />
-      </GatedResults>
-    )
-  } else {
-    // Statutory Health: paywall flow when live payment is on.
-    // Client Components in the render tree use next/dynamic({ssr:false}) for
-    // Razorpay / posthog-js so they are excluded from SSR entirely.
-    try {
-      if (isPaymentLive(ASSESSMENT_TYPES.STATUTORY_HEALTH)) {
-        const { data: entitlement, error: entitlementError } = await supabase
-          .from('assessment_entitlements')
-          .select('status')
-          .eq('assessment_id', id)
-          .eq('assessment_type', ASSESSMENT_TYPES.STATUTORY_HEALTH)
-          .in('status', ['paid', 'waived'])
-          .maybeSingle()
+  const { source, reason } = getGateConfig(effectiveType)
 
-        if (entitlementError) {
-          console.error('[results] entitlement check error:', entitlementError.code, entitlementError.message)
-          // Fall through to free flow below
-        } else if (entitlement) {
-          return <StatutoryHealthResultsView assessment={assessment} />
-        } else {
-          const summary = buildStatutoryHealthSummary(assessment)
-          return <StatutoryHealthSummary assessmentId={id} summary={summary} />
-        }
-      }
-    } catch (err) {
-      console.error('[results] statutory health path threw:', err)
-      // Fall through to gated free flow below
-    }
-    // Fallback: gated free flow with email OTP
+  // DB-backed food-business rows render through the localStorage results page,
+  // matching the pre-fetch branch above.
+  if (effectiveType === ASSESSMENT_TYPES.FOOD_BUSINESS) {
     return (
       <GatedResults source={source} reason={reason}>
-        <StatutoryHealthResultsView assessment={assessment} />
+        <LocalStorageResultsPage id={id} assessmentType={effectiveType} />
       </GatedResults>
     )
   }
+
+  // The full, per-type detailed report view.
+  const fullView = effectiveType === ASSESSMENT_TYPES.DPDP ? <DPDPResultsView assessment={assessment} />
+    : effectiveType === ASSESSMENT_TYPES.LABOUR_CODE ? <LabourCodeResultsView assessment={assessment} />
+    : effectiveType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE ? <StateWiseResultsView assessment={assessment} />
+    : <StatutoryHealthResultsView assessment={assessment} />
+
+  // Unified paywall gate (mirrors the shared PDF pattern): for ANY assessment
+  // whose payment is live, show the shared <AssessmentSummary> teaser until the
+  // entitlement is paid or waived; once paid, show the full report directly
+  // (no OTP — email was captured at the payment gate). When live:false — every
+  // assessment except Statutory Health today — this block is skipped and the
+  // existing free/OTP flow below runs unchanged (zero behaviour change until a
+  // per-assessment `live` flag is flipped after QA).
+  if (isValidAssessmentType(effectiveType) && isPaymentLive(effectiveType)) {
+    try {
+      const status = await getEntitlement(id, effectiveType)
+      if (status === 'none') {
+        return <AssessmentSummary assessmentId={id} summary={buildSummary(effectiveType, assessment, id)} />
+      }
+      return fullView
+    } catch (err) {
+      console.error('[results] paywall gate threw:', err)
+      // Fall through to the free/OTP flow on any error.
+    }
+  }
+
+  // Free flow: gated behind email OTP, unchanged.
+  return (
+    <GatedResults source={source} reason={reason}>
+      {fullView}
+    </GatedResults>
+  )
+}
+
+// Build the teaser for a given assessment. Statutory Health keeps its bespoke,
+// question-derived builder (preserving the exact numbers on the one live
+// assessment); every other type flows through the shared summary registry which
+// reuses the PDF adapters so teaser numbers match the paid report.
+function buildSummary(assessmentType: string, assessment: AssessmentData, id: string): UnifiedSummaryData {
+  if (assessmentType === ASSESSMENT_TYPES.STATUTORY_HEALTH) {
+    return buildStatutoryHealthSummary(assessment)
+  }
+  return buildSummaryData(assessmentType, {
+    id,
+    assessment_type: assessment.assessment_type,
+    overall_score: assessment.overall_score,
+    category_scores: assessment.category_scores,
+    responses: assessment.responses,
+    user_details: assessment.user_details,
+  })
 }
 
 // Builds teaser-only summary data for Statutory Health (no remediation text).
 // Full action item text intentionally excluded — only category names are passed
 // so the paywall is real and not just hidden UI.
-function buildStatutoryHealthSummary(assessment: AssessmentData): StatutoryHealthSummaryData {
+const STATUTORY_HEALTH_PRICE_INR = Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.STATUTORY_HEALTH].amountPaise / 100)
+
+function buildStatutoryHealthSummary(assessment: AssessmentData): UnifiedSummaryData {
+  const base = {
+    assessmentType: ASSESSMENT_TYPES.STATUTORY_HEALTH,
+    displayName: getAssessmentDisplayName(ASSESSMENT_TYPES.STATUTORY_HEALTH),
+    priceINR: STATUTORY_HEALTH_PRICE_INR,
+  }
   try {
     const responses = (assessment.responses ?? {}) as {
       userDetails?: { fullName?: string; email?: string; companyName?: string }
@@ -241,6 +264,7 @@ function buildStatutoryHealthSummary(assessment: AssessmentData): StatutoryHealt
     else penaltyRange = 'Significant exposure — up to Rs.25L+ across multiple defaults'
 
     return {
+      ...base,
       overallScore,
       riskLabel,
       riskColor,
@@ -255,6 +279,7 @@ function buildStatutoryHealthSummary(assessment: AssessmentData): StatutoryHealt
     // Safe fallback if assessment data has an unexpected shape
     const score = assessment.overall_score ?? 0
     return {
+      ...base,
       overallScore: score,
       riskLabel: score >= 70 ? 'Compliant' : score >= 40 ? 'Needs Attention' : 'Non-Compliant',
       riskColor: score >= 70 ? 'green' : score >= 40 ? 'amber' : 'red',

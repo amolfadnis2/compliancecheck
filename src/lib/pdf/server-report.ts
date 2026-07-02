@@ -15,6 +15,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { buildReportData } from './report-registry'
 import type { AssessmentData } from './report-data-adapter'
 import { generateUnifiedReportBytes } from './unified-report-generator'
+import { getEntitlement } from '@/lib/payment/entitlement'
+import { isPaymentLive, isValidAssessmentType } from '@/lib/constants/assessment-types'
 
 export interface GeneratedAssessmentPdf {
   bytes: Uint8Array
@@ -26,7 +28,7 @@ export interface GeneratedAssessmentPdf {
 
 export type GenerateAssessmentPdfResult =
   | GeneratedAssessmentPdf
-  | { error: 'not_found' | 'unauthorized' }
+  | { error: 'not_found' | 'unauthorized' | 'payment_required' }
 
 // Same select + user-detail normalisation as GET /api/assessment/[id] so the
 // AssessmentData shape and ownership check match exactly.
@@ -112,6 +114,18 @@ export async function generateAssessmentPdf(
   }
 
   const assessmentType = assessment.assessment_type || ''
+
+  // Entitlement gate — the real paywall. For any assessment whose payment is
+  // live, the server refuses to produce the full PDF unless it has been paid or
+  // waived. When live:false this is skipped, so today only Statutory Health is
+  // gated and every other assessment downloads/emails exactly as before.
+  if (isValidAssessmentType(assessmentType) && isPaymentLive(assessmentType)) {
+    const entitlement = await getEntitlement(id, assessmentType)
+    if (entitlement === 'none') {
+      return { error: 'payment_required' }
+    }
+  }
+
   const reportData = buildReportData(assessmentType, data)
   const bytes = generateUnifiedReportBytes(reportData)
 
