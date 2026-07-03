@@ -203,7 +203,7 @@ export default function LabourCodeReadinessPage() {
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}>
-              <Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link>
+              <Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/blog">Guides</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link>
             </div>
             <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
           </div>
