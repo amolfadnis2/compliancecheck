@@ -1,0 +1,123 @@
+---
+title: "PF & ESI Applicability in India: The Employer's Plain-English Guide"
+slug: pf-esi-applicability-employer-guide
+meta_description: "When PF and ESI become mandatory, the wage ceilings, contribution rates, and what changes under the 2025 Labour Codes — a clear guide for Indian employers and HR teams."
+keywords: "PF ESI applicability, EPF eligibility, ESI wage limit, PF contribution rate, ESI contribution rate, PF ESI registration threshold, statutory compliance India, EPF 15000 ceiling"
+published: 2026-07-03
+author: ComplianceCheck Team
+canonical: https://compliancecheck.co.in/blog/pf-esi-applicability-employer-guide
+---
+
+# PF & ESI Applicability in India: The Employer's Plain-English Guide
+
+*When do PF and ESI become mandatory, what are the wage ceilings and rates, and what changes under the 2025 Labour Codes? Here's the clear version for founders and HR teams.*
+
+ComplianceCheck Team · Published 3 July 2026
+
+Provident Fund (EPF) and Employees' State Insurance (ESI) are the two statutory schemes almost every growing Indian employer has to deal with first. Get the thresholds wrong and you face back-contributions, interest, damages, and penalties. This guide explains exactly when each applies, what you pay, and how the new Labour Codes affect you.
+
+## Key facts at a glance
+
+- **EPF** becomes mandatory at **20 or more employees**. Wage ceiling: **Rs 15,000/month**. Rate: **12% employee + 12% employer**.
+- **ESI** becomes mandatory at **10 or more employees** (1+ in hazardous units). Wage ceiling: **Rs 21,000/month** (Rs 25,000 for employees with disability). Rate: **0.75% employee + 3.25% employer**.
+- Both schemes are administered centrally — **one registration covers all your states**.
+- Once you cross a threshold, **coverage continues even if headcount later falls**.
+- Registration is due **within 1 month** of becoming eligible, via the Shram Suvidha / EPFO / ESIC portals.
+
+## EPF (Employees' Provident Fund) — when it applies
+
+EPF is a retirement savings scheme under the Code on Social Security, 2020 (which subsumed the EPF Act, 1952).
+
+| Parameter | Value |
+| --- | --- |
+| Applicability trigger | 20 or more employees |
+| Wage ceiling | Rs 15,000/month (basic + DA) |
+| Employee contribution | 12% |
+| Employer contribution | 12% (split 3.67% EPF + 8.33% EPS + 0.5% EDLI) |
+| Reduced rate | 10% for establishments with fewer than 20 employees or notified "sick" industries |
+| Registration deadline | Within 1 month of crossing the threshold |
+
+**Who counts as an employee?** Everyone on your rolls — including contract and casual workers — counts toward the 20. Employees earning above Rs 15,000 basic can be enrolled voluntarily but are not mandatorily covered; most employers cover them anyway for retention.
+
+**Important:** Once registered, EPF coverage is **permanent** — it continues even if your headcount later drops below 20.
+
+## ESI (Employees' State Insurance) — when it applies
+
+ESI is a health-insurance and social-security scheme providing medical care, sickness, maternity and disablement benefits.
+
+| Parameter | Value |
+| --- | --- |
+| Applicability trigger | 10 or more employees (1+ in hazardous industries) |
+| Wage ceiling | Rs 21,000/month (Rs 25,000 for persons with disability) |
+| Employee contribution | 0.75% |
+| Employer contribution | 3.25% |
+| Coverage | Pan-India, single registration |
+
+ESI applies only to employees **earning Rs 21,000/month or less**. Employees above that ceiling are outside ESI (though many employers provide private group health cover instead). Contribution is calculated on **gross wages**, not just basic.
+
+## What the 2025 Labour Codes change
+
+The four Labour Codes took effect on **21 November 2025**, folding the EPF and ESI Acts into the Code on Social Security, 2020. The core thresholds above continue, but two changes matter for your cost base:
+
+- **The 50% wage rule.** Allowances can no longer exceed 50% of total remuneration — the rest must count as "wages." For many companies this **raises the wage base** used for PF, pushing up contributions and changing take-home structures.
+- **Wider coverage.** Gig and platform workers now have a social-security framework, and fixed-term employees get pro-rated benefits.
+
+**On the EPF wage ceiling:** the long-standing **Rs 15,000 ceiling remains in force** under the EPF Scheme, 2026. Proposals to raise it to Rs 21,000 (or higher) are under active consideration, and in January 2026 the Supreme Court directed the EPFO to revisit it — but until a notification is issued, **Rs 15,000 is the number to use**. If it rises, both employer cost and employee deductions increase, so it is worth modelling the impact now.
+
+## A quick contribution example
+
+For an employee with basic wages of Rs 15,000 and gross wages of Rs 20,000:
+
+- **EPF:** 12% of Rs 15,000 = Rs 1,800 employee + Rs 1,800 employer.
+- **ESI:** 0.75% of Rs 20,000 = Rs 150 employee + 3.25% = Rs 650 employer.
+
+The employer's statutory cost on top of gross is roughly **Rs 2,450/month** for this one employee — before gratuity and other benefits.
+
+## Penalties for non-compliance
+
+EPFO and ESIC both levy interest plus damages on late or missed contributions:
+
+- **EPF late payment:** interest at 12% per annum under Section 7Q, **plus damages up to 100%** of the arrears under Section 14B (graded by delay).
+- **ESI late payment:** interest at 12% per annum plus damages up to 25% per annum.
+- **Failure to register or deduct** can attract prosecution, including imprisonment for repeat defaults.
+
+These liabilities are calculated retrospectively from the date you should have registered — which is why getting applicability right early matters.
+
+## Your PF & ESI compliance checklist
+
+1. **Count all employees** — including contract and casual — to test the 20 (EPF) and 10 (ESI) thresholds.
+2. **Register within 1 month** of crossing either threshold, via Shram Suvidha / EPFO / ESIC.
+3. **Deduct correctly** — EPF on Rs 15,000 ceiling wages, ESI on gross up to Rs 21,000.
+4. **Deposit by the 15th** of the following month; file monthly ECR (EPF) and returns (ESI).
+5. **Review your wage structure** against the 50% rule so allowances don't exceed half of total pay.
+6. **Keep coverage active** even if headcount drops — deregistration is not automatic.
+7. **Model the ceiling change** — stress-test payroll for a possible Rs 21,000/Rs 25,000 EPF ceiling.
+
+## Frequently asked questions
+
+**Is PF mandatory for companies with less than 20 employees?**
+Not mandatory — EPF is triggered at 20 or more employees. Smaller establishments can register voluntarily, and a reduced 10% rate applies to units with fewer than 20 employees once covered.
+
+**What is the ESI wage limit in 2026?**
+ESI covers employees earning up to Rs 21,000 per month (Rs 25,000 for persons with disability). Those earning above the ceiling are not covered by ESI.
+
+**What are the current PF and ESI contribution rates?**
+EPF is 12% employee + 12% employer. ESI is 0.75% employee + 3.25% employer.
+
+**Has the EPF Rs 15,000 wage ceiling been increased?**
+Not yet. The EPF Scheme 2026 retains the Rs 15,000 ceiling. Increases to Rs 21,000 or Rs 25,000 are under consideration following a January 2026 Supreme Court direction, but no notification has been issued.
+
+**Does one PF/ESI registration cover multiple states?**
+Yes. Both EPF and ESI are administered centrally, so a single registration and code number covers employees across all states.
+
+---
+
+> This guide is general information, not legal advice. Applicability depends on your headcount, wages, industry and state. Verify on epfindia.gov.in and esic.gov.in.
+
+### Check your statutory compliance
+
+**Statutory Health Check** — a quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity and Bonus. Get your free compliance score instantly, then unlock the full report with every gap and the exact legal section cited.
+
+[Start free assessment →](https://compliancecheck.co.in/assessment/statutory-health) · Free during beta · no subscription
+
+**Sources:** [EPFO](https://epfindia.gov.in/), [ESIC](https://esic.gov.in/), [Code on Social Security, 2020 — labour.gov.in](https://labour.gov.in/)
