@@ -6,7 +6,14 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
-  
+
+  /* Only *.spec.ts are Playwright specs. tests/unit/*.test.ts are vitest unit
+   * tests (`import ... from 'vitest'`) — Playwright's default testMatch
+   * would otherwise pick those up too, fail to import 'vitest' under its
+   * CommonJS loader, and abort collection before running a single real
+   * test. This bit CI's own unscoped `npx playwright test --project=X` job. */
+  testMatch: '**/*.spec.ts',
+
   /* Run tests in files in parallel */
   fullyParallel: true,
   
@@ -28,8 +35,15 @@ export default defineConfig({
   
   /* Shared settings for all the projects below */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')` */
-    baseURL: process.env.BASE_URL || 'https://compliancecheck.co.in',
+    /* Base URL to use in actions like `await page.goto('/')`.
+     * Defaults to localhost, NOT production — most specs in this suite call
+     * page.goto() with relative paths and depend entirely on this value, so
+     * an unset BASE_URL must fail safe (connection refused against a dev
+     * server that isn't running) rather than silently drive real browsers,
+     * and write real data, against the live site. Always set BASE_URL
+     * explicitly to target staging/production (CI already does this via
+     * playwright.yml). */
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
     
     /* Collect trace when retrying the failed test */
     trace: 'on-first-retry',
