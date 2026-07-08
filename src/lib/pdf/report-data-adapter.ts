@@ -21,6 +21,12 @@ import { LABOUR_CODE_RULES } from '@/lib/assessments/labour-code-rules'
 import { LABOUR_CODE_CATEGORY_LABELS } from '@/types/compliance'
 import { STATE_WISE_COMPLIANCE_RULES, STATE_WISE_CATEGORY_LABELS } from './state-wise-compliance-rules'
 import { STATUTORY_HEALTH_COMPLIANCE_RULES } from './statutory-health-compliance-rules'
+import { RISK_LEVEL_INFO } from '@/lib/assessments/posh/posh-compliance-questions'
+import {
+  POSH_STATE_LABELS,
+  POSH_EMPLOYEE_COUNT_LABELS,
+  POSH_INDUSTRY_LABELS,
+} from '@/lib/assessments/posh/posh-labels'
 
 import {
   STATUTORY_HEALTH_CONFIG,
@@ -522,4 +528,42 @@ export function adaptPOSHResult(
     },
     config: POSH_CONFIG,
   }
+}
+
+/**
+ * Adapts a raw `posh_assessments` DB row (server-side, gated PDF route) to
+ * UnifiedReportData. Mirrors the mapping the client page performs before
+ * calling adaptPOSHResult directly, so the server-generated PDF matches what
+ * the client would have produced from the same stored result.
+ */
+export function adaptPOSHRow(row: AnyRecord): UnifiedReportData {
+  const applicability = row.applicability_responses || {}
+  const riskInfo = RISK_LEVEL_INFO[row.risk_level as keyof typeof RISK_LEVEL_INFO]
+
+  const resultInput: POSHResultInput = {
+    overallScore: row.overall_score ?? 0,
+    riskLevel: riskInfo?.label || row.risk_level,
+    penaltyExposure: riskInfo?.penaltyExposure || 'Unknown',
+    categoryScores: (row.category_scores || []).map((cat: AnyRecord) => ({
+      category: cat.categoryName,
+      score: cat.percentage,
+      status: cat.status,
+      questionCount: cat.questionCount,
+      compliantCount: cat.compliantCount,
+    })),
+    actionItems: row.action_items || [],
+    compliantItems: row.compliant_items || [],
+  }
+
+  const userInput: POSHUserInput = {
+    fullName: row.full_name || 'Not specified',
+    email: row.email || '',
+    phone: row.phone || undefined,
+    companyName: row.company_name || 'Not specified',
+    state: POSH_STATE_LABELS[applicability.POSH_APP_006] || applicability.POSH_APP_006 || 'India',
+    employeeCount: POSH_EMPLOYEE_COUNT_LABELS[applicability.POSH_APP_001] || applicability.POSH_APP_001 || 'Not specified',
+    industry: POSH_INDUSTRY_LABELS[applicability.POSH_APP_008] || applicability.POSH_APP_008 || 'Not specified',
+  }
+
+  return adaptPOSHResult(resultInput, userInput, row.id)
 }

@@ -52,6 +52,11 @@ import { PaymentGate } from '@/components/results/payment-gate'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
 import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { analytics } from '@/lib/analytics/tracking'
+import {
+  POSH_EMPLOYEE_COUNT_LABELS,
+  POSH_STATE_LABELS,
+  POSH_INDUSTRY_LABELS,
+} from '@/lib/assessments/posh/posh-labels'
 
 // Import POSH data files
 import {
@@ -159,38 +164,7 @@ function getStatusColor(status: 'compliant' | 'needs_attention' | 'non_compliant
 // LABEL MAPS (single source of truth for PDF/email handlers)
 // ============================================================================
 
-const POSH_EMPLOYEE_COUNT_LABELS: Record<string, string> = {
-  'below_10': 'Less than 10 employees',
-  '10_to_49': '10-49 employees',
-  '50_to_199': '50-199 employees',
-  '200_to_499': '200-499 employees',
-  '500_plus': '500+ employees',
-}
-
-const POSH_STATE_LABELS: Record<string, string> = {
-  'andhra_pradesh': 'Andhra Pradesh', 'assam': 'Assam', 'bihar': 'Bihar',
-  'chhattisgarh': 'Chhattisgarh', 'delhi': 'Delhi NCT', 'goa': 'Goa',
-  'gujarat': 'Gujarat', 'haryana': 'Haryana', 'himachal_pradesh': 'Himachal Pradesh',
-  'jharkhand': 'Jharkhand', 'karnataka': 'Karnataka', 'kerala': 'Kerala',
-  'madhya_pradesh': 'Madhya Pradesh', 'maharashtra': 'Maharashtra',
-  'manipur': 'Manipur', 'meghalaya': 'Meghalaya', 'mizoram': 'Mizoram',
-  'nagaland': 'Nagaland', 'odisha': 'Odisha', 'punjab': 'Punjab',
-  'rajasthan': 'Rajasthan', 'sikkim': 'Sikkim', 'tamil_nadu': 'Tamil Nadu',
-  'telangana': 'Telangana', 'tripura': 'Tripura', 'uttar_pradesh': 'Uttar Pradesh',
-  'uttarakhand': 'Uttarakhand', 'west_bengal': 'West Bengal', 'other_ut': 'Other UT',
-}
-
 const POSH_STORAGE_KEY = 'assessment_progress_posh'
-
-const POSH_INDUSTRY_LABELS: Record<string, string> = {
-  'it_services': 'IT Services / Software', 'bpo_ites': 'BPO / ITES',
-  'manufacturing': 'Manufacturing', 'healthcare': 'Healthcare',
-  'hospitality': 'Hospitality', 'retail': 'Retail / E-commerce',
-  'education': 'Education', 'media_entertainment': 'Media / Entertainment',
-  'banking_finance': 'Banking / Finance', 'construction': 'Construction',
-  'logistics': 'Logistics', 'professional_services': 'Professional Services',
-  'agriculture': 'Agriculture', 'ngo_nonprofit': 'NGO / Non-profit', 'other': 'Other',
-}
 
 // ============================================================================
 // MAIN COMPONENT
@@ -870,13 +844,39 @@ export default function POSHAssessmentPage() {
   // Download PDF report - Uses comprehensive PDF generator
   const handleDownloadReport = async () => {
     if (!results || !companyDetails) return
-    
+
     analytics.reportDownloaded({
       assessment_type: 'posh',
       format: 'pdf',
       compliance_score: results.overallScore,
       user_tier: 'free',
     })
+
+    // Once POSH payment is live, download must go through the server-gated
+    // route — the client-side generator below has no entitlement check, so
+    // it cannot be the paid deliverable once posh.live flips to true.
+    if (isPaymentLive(ASSESSMENT_TYPES.POSH) && poshAssessmentId && !poshAssessmentId.startsWith('local_')) {
+      try {
+        const res = await fetch(
+          `/api/report/posh/${poshAssessmentId}/pdf?email=${encodeURIComponent(companyDetails.email)}`
+        )
+        if (!res.ok) {
+          setError(res.status === 402 ? 'Payment required to download this report.' : 'Failed to generate report. Please try again.')
+          return
+        }
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'POSH-Compliance-Report.pdf'
+        a.click()
+        URL.revokeObjectURL(url)
+      } catch (err) {
+        console.error('PDF download error:', err)
+        setError('Failed to generate report. Please try again.')
+      }
+      return
+    }
 
     try {
       // Map results to PDF generator format
