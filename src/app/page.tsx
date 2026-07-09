@@ -73,7 +73,7 @@ const assessments: {
     description: 'Data protection compliance for DPDP Act 2023 (effective May 2027). Maturity scoring.',
     questions: 45,
     fullPrice: '₹2,499',
-    isLive: false,
+    isLive: true,
     href: '/assessment/dpdp',
     icon: Shield,
     gradient: 'from-blue-600 to-cyan-600',

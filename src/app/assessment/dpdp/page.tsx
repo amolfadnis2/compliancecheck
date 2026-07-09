@@ -289,11 +289,11 @@ export default function DPDPAssessmentPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
-      <AssessmentHeader 
+      <AssessmentHeader
         title="ComplianceCheck"
         subtitle="DPDP Gap Assessment"
-        badgeText="FREE during Beta"
-        badgeVariant="free"
+        badgeText="DPDP Compliance Report"
+        badgeVariant="paid"
       />
 
       <div className="container mx-auto px-4 max-w-4xl py-8">
