@@ -1,17 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, ArrowRight, Calculator, Save, Loader2, CheckCircle, AlertTriangle, Info, Calendar } from 'lucide-react'
+import { ArrowLeft, Calculator, Loader2, CheckCircle, AlertTriangle, Info, Calendar } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { RUPEE } from '@/lib/constants/india'
 import {
@@ -24,29 +21,17 @@ import {
   type GratuityResult,
 } from '@/lib/calculators/gratuity-calculator'
 
-// Form validation schema - simplified
-const userDetailsSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile number'),
-})
-
-type UserDetails = z.infer<typeof userDetailsSchema>
-
 // Local storage key
 const STORAGE_KEY = 'gratuity_calculator_progress'
 
 interface SavedProgress {
   step: number
-  userDetails: UserDetails | null
   savedAt: string
 }
 
 export default function GratuityCalculatorPage() {
   const [step, setStep] = useState(1)
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false)
 
   // Calculator input states
@@ -54,13 +39,9 @@ export default function GratuityCalculatorPage() {
   const [basicDA, setBasicDA] = useState<string>('')
   const [dateOfJoining, setDateOfJoining] = useState<string>('')
   const [lastWorkingDate, setLastWorkingDate] = useState<string>('')
-  
+
   // Result state
   const [result, setResult] = useState<GratuityResult | null>(null)
-
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<UserDetails>({
-    resolver: zodResolver(userDetailsSchema),
-  })
 
   // Load saved progress on mount
   useEffect(() => {
@@ -72,35 +53,13 @@ export default function GratuityCalculatorPage() {
         const now = Date.now()
         if (now - savedTime < 24 * 60 * 60 * 1000) {
           setStep(progress.step)
-          if (progress.userDetails) {
-            setUserDetails(progress.userDetails)
-            reset(progress.userDetails)
-          }
           setHasRestoredProgress(true)
         }
       }
     } catch (e) {
       console.error('Error loading saved progress:', e)
     }
-  }, [reset])
-
-  // Auto-save progress
-  const saveProgress = useCallback(() => {
-    setSaveStatus('saving')
-    try {
-      const progress: SavedProgress = {
-        step,
-        userDetails,
-        savedAt: new Date().toISOString(),
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
-      setSaveStatus('saved')
-      setTimeout(() => setSaveStatus('idle'), 2000)
-    } catch (e) {
-      console.error('Error saving progress:', e)
-      setSaveStatus('idle')
-    }
-  }, [step, userDetails])
+  }, [])
 
   // Clear saved progress
   const clearProgress = () => {
@@ -109,38 +68,26 @@ export default function GratuityCalculatorPage() {
 
   // Calculate progress percentage
   const getProgress = () => {
-    if (step === 1) return 10
-    if (step === 2) return 50
+    if (step === 1) return 50
     return 100
   }
 
-  // Handle user details submission
-  const onUserDetailsSubmit = (data: UserDetails) => {
-    setUserDetails(data)
-    setStep(2)
-    saveProgress()
-  }
-
-  // Auto-save to database
+  // Auto-save to database (anonymous — no contact info required)
   const saveToDatabase = async (calcResult: GratuityResult, inputs: {
     employmentType: string
     basicDA: number
     dateOfJoining: string
     lastWorkingDate: string
   }) => {
-    if (!userDetails) return
-    
     try {
       await fetch('/api/calculator/gratuity-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userDetails,
           inputs,
           result: calcResult,
         }),
       })
-      // Clear saved progress on successful submission
       clearProgress()
     } catch (error) {
       console.error('Auto-save error:', error)
@@ -165,7 +112,7 @@ export default function GratuityCalculatorPage() {
 
     const calculationResult = calculateGratuity(input)
     setResult(calculationResult)
-    setStep(3)
+    setStep(2)
 
     // Auto-save to database
     await saveToDatabase(calculationResult, {
@@ -206,21 +153,7 @@ export default function GratuityCalculatorPage() {
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-600 mb-2">
             <span>Progress</span>
-            <div className="flex items-center gap-2">
-              {saveStatus === 'saving' && (
-                <span className="flex items-center text-blue-600">
-                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  Saving...
-                </span>
-              )}
-              {saveStatus === 'saved' && (
-                <span className="flex items-center text-green-600">
-                  <Save className="w-3 h-3 mr-1" />
-                  Saved
-                </span>
-              )}
-              <span>{Math.round(getProgress())}%</span>
-            </div>
+            <span>{Math.round(getProgress())}%</span>
           </div>
           <Progress value={getProgress()} className="h-2" aria-label="Calculator progress" />
         </div>
@@ -234,7 +167,6 @@ export default function GratuityCalculatorPage() {
                 clearProgress()
                 setHasRestoredProgress(false)
                 setStep(1)
-                setUserDetails(null)
                 setEmploymentType(null)
                 setBasicDA('')
                 setDateOfJoining('')
@@ -248,60 +180,8 @@ export default function GratuityCalculatorPage() {
           </div>
         )}
 
-        {/* Step 1: User Details - Simplified */}
+        {/* Step 1: Calculator Inputs */}
         {step === 1 && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Calculator className="w-6 h-6 text-blue-600" />
-                </div>
-                <Badge className="bg-green-100 text-green-700 border-green-200">
-                  2025 Labour Code Rules
-                </Badge>
-              </div>
-              <CardTitle className="text-2xl">Gratuity Calculator</CardTitle>
-              <CardDescription>
-                Calculate your gratuity based on the new Labour Codes. 
-                Fixed-term employees are now eligible after just 1 year!
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onUserDetailsSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name *</Label>
-                  <Input id="fullName" {...register('fullName')} placeholder="Your full name" />
-                  {errors.fullName && <p className="text-sm text-red-600">{errors.fullName.message}</p>}
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" type="email" {...register('email')} placeholder="you@example.com" />
-                    {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <div className="flex">
-                      <span className="inline-flex items-center px-3 text-gray-600 bg-gray-100 border border-r-0 rounded-l-md">
-                        +91
-                      </span>
-                      <Input id="phone" {...register('phone')} placeholder="9876543210" className="rounded-l-none" />
-                    </div>
-                    {errors.phone && <p className="text-sm text-red-600">{errors.phone.message}</p>}
-                  </div>
-                </div>
-
-                <Button type="submit" className="w-full">
-                  Continue to Calculator <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 2: Calculator Inputs */}
-        {step === 2 && (
           <div className="space-y-6">
             {/* Info Card */}
             <Card className="border-blue-200 bg-blue-50">
@@ -434,18 +314,14 @@ export default function GratuityCalculatorPage() {
                       </>
                     )}
                   </Button>
-                  
-                  <Button variant="ghost" onClick={() => setStep(1)} className="w-full">
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Details
-                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Step 3: Results */}
-        {step === 3 && result && (
+        {/* Step 2: Results */}
+        {step === 2 && result && (
           <div className="space-y-6">
             {/* Main Result Card */}
             <Card className={result.isEligible ? 'border-green-200' : 'border-amber-200'}>
@@ -612,7 +488,7 @@ export default function GratuityCalculatorPage() {
 
             {/* Actions - No Save Button */}
             <div className="space-y-3">
-              <Button variant="outline" onClick={() => setStep(2)} className="w-full">
+              <Button variant="outline" onClick={() => setStep(1)} className="w-full">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Modify Inputs
               </Button>
 

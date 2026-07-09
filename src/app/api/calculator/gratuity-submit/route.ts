@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
 
-// Server-side validation schema - simplified
+// Server-side validation schema — contact info is optional: the calculator no
+// longer collects it before showing results, so most submissions arrive with
+// no userDetails at all.
 const userDetailsSchema = z.object({
   fullName: z.string().min(2).max(100),
   email: z.string().email().max(255),
@@ -45,7 +47,7 @@ const resultSchema = z.object({
 })
 
 const submissionSchema = z.object({
-  userDetails: userDetailsSchema,
+  userDetails: userDetailsSchema.optional(),
   inputs: calculatorInputsSchema,
   result: resultSchema,
 })
@@ -100,14 +102,16 @@ export async function POST(request: NextRequest) {
     const { userDetails, inputs, result } = validationResult.data
 
     // Sanitize inputs
-    const sanitizedUserDetails = sanitizeObject(userDetails as Record<string, unknown>)
+    const sanitizedUserDetails = userDetails
+      ? (sanitizeObject(userDetails as unknown as Record<string, unknown>) as unknown as typeof userDetails)
+      : null
     const sanitizedInputs = sanitizeObject(inputs as Record<string, unknown>)
 
     // If Supabase is not configured, return success without saving
     if (!supabaseUrl || !supabaseKey) {
       const localId = `local_calc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
       console.log('Supabase not configured, using local ID:', localId)
-      
+
       return NextResponse.json({
         success: true,
         calculationId: localId,
@@ -117,41 +121,39 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Generate new user ID
-    const newUserId = randomUUID()
-    let finalUserId = newUserId
+    let finalUserId = ANONYMOUS_USER_ID
 
-    // Create or find user - simplified (no company info)
-    const { error: userError } = await supabase
-      .from('users')
-      .insert({
-        id: newUserId,
-        email: sanitizedUserDetails.email,
-        full_name: sanitizedUserDetails.fullName,
-        phone: sanitizedUserDetails.phone,
-        is_deleted: false,
-        marketing_consent: false,
-      })
-      .select()
-      .single()
+    // Only create/find a user row when contact info was actually provided —
+    // most gratuity-calculator submissions are now anonymous.
+    if (sanitizedUserDetails) {
+      const newUserId = randomUUID()
+      const { error: userError } = await supabase
+        .from('users')
+        .insert({
+          id: newUserId,
+          email: sanitizedUserDetails.email,
+          full_name: sanitizedUserDetails.fullName,
+          phone: sanitizedUserDetails.phone,
+          is_deleted: false,
+          marketing_consent: false,
+        })
+        .select()
+        .single()
 
-    if (userError) {
-      console.error('User creation error:', userError)
-      
-      if (userError.code === '23505') {
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', sanitizedUserDetails.email)
-          .single()
-        
-        if (existingUser) {
-          finalUserId = existingUser.id
-        } else {
-          finalUserId = ANONYMOUS_USER_ID
+      if (userError) {
+        console.error('User creation error:', userError)
+
+        if (userError.code === '23505') {
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', sanitizedUserDetails.email)
+            .single()
+
+          finalUserId = existingUser ? existingUser.id : ANONYMOUS_USER_ID
         }
       } else {
-        finalUserId = ANONYMOUS_USER_ID
+        finalUserId = newUserId
       }
     }
 
