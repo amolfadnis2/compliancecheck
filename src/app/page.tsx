@@ -197,6 +197,9 @@ export default function LandingPage() {
 
         {/* FAQ Section */}
         <FAQSection />
+
+        {/* Testimonials — placeholder, see TestimonialsSection for replacement instructions */}
+        <TestimonialsSection />
       </main>
 
       {/* Footer */}
@@ -205,8 +208,51 @@ export default function LandingPage() {
   );
 }
 
+// Testimonials — PLACEHOLDER CONTENT. Do not treat these as real quotes.
+// Replace each card with a real beta-user testimonial (with permission to
+// publish) before this section goes live. The dashed border and explicit
+// "Add a real..." copy are intentional — they must stay visually obvious as
+// placeholders until replaced.
+function TestimonialsSection() {
+  const placeholders = [
+    { role: 'Founder, early beta user' },
+    { role: 'HR Lead, early beta user' },
+    { role: 'Compliance CS partner' },
+  ]
+
+  return (
+    <section className="py-20 bg-gray-50 dark:bg-gray-900/50" aria-labelledby="testimonials-heading">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-10">
+          <h2 id="testimonials-heading" className="text-3xl font-bold text-gray-900 dark:text-white">
+            What early users say
+          </h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Checklists reviewed against the DPDP Act 2023, the 2025 Labour Codes, and the POSH Act 2013.
+          </p>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {placeholders.map((p, i) => (
+            <div
+              key={i}
+              className="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-center"
+            >
+              <p className="text-sm italic text-gray-400 dark:text-gray-500">
+                &ldquo;Add a real customer quote here&rdquo;
+              </p>
+              <p className="mt-3 text-xs font-medium text-gray-400 dark:text-gray-600">
+                — {p.role} (placeholder)
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // Header Component
-function Header({ 
+function Header({
   mobileMenuOpen, 
   setMobileMenuOpen 
 }: { 
