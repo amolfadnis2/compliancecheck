@@ -228,6 +228,8 @@ fullName → email → phone → companyName → state → employeeCount → ind
 ```
 Use `INDIAN_STATES`, `EMPLOYEE_COUNT_OPTIONS`, `INDUSTRY_OPTIONS` from `@/lib/constants/india`. Never hardcode dropdown lists.
 
+**Exception — DPDP and Gratuity Calculator:** these two flows intentionally do **not** collect `fullName`/`email`/`phone`/`companyName` before showing value, per the 2026-07 growth-plan fix (`docs/Fixes as on 9 July.md`, fix #1 and #4). DPDP's Step 0 still collects `state`/`employeeCount`/`industry`/`revenue` and the 4 data-processing yes/no questions — these genuinely personalise which assessment questions are shown, so they stay — but contact info is deferred to the existing post-completion `<GatedResults>` email-OTP gate on the results page (no new gate was built; the mechanism already existed and is now DPDP's only identity gate). The Gratuity Calculator drops the gate entirely: calculator inputs and results show immediately, matching the homepage's "No signup required. Free forever." promise for calculators. Do not extend this exception to any other assessment type without an explicit decision — every other assessment (`statutory_health`, `labour_code`, `state_wise_compliance`, `food_business`, `posh`, `auto_dealer`) still follows the full 7-field Step 0 above.
+
 ### Yes/No Buttons
 ```typescript
 // Yes (selected)
