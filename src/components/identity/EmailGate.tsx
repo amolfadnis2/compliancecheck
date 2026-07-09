@@ -200,6 +200,9 @@ export function EmailGate({
               onMarketingChange={setMarketingConsent}
               onDeadlineRemindersChange={setDeadlineConsent}
             />
+            <p className="text-xs text-muted-foreground text-center">
+              We only use this to send your report — never sold, never spammed.
+            </p>
           </>
         )}
 

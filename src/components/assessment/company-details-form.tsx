@@ -178,6 +178,9 @@ export function CompanyDetailsForm({
           </>
         )}
       </Button>
+      <p className="text-xs text-gray-400 text-center">
+        We only use this to personalise your assessment and send your report — never sold, never spammed.
+      </p>
     </form>
   )
 }
