@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Mail, MapPin, Clock, ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { Footer } from '@/components/site/footer'
 
 export const metadata: Metadata = {
   title: 'Contact Us - ComplianceCheck',
@@ -190,14 +191,7 @@ export default function ContactPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} ComplianceCheck. Made in India 🇮🇳
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

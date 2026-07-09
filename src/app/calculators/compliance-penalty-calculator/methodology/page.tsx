@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import { COMPLIANCE_GAP_RATES } from '@/lib/calculators/penalty-exposure/calculator'
+import { Footer } from '@/components/site/footer'
 
 export const metadata: Metadata = {
   title: 'Methodology — Compliance Penalty Exposure Calculator | ComplianceCheck',
@@ -176,6 +177,8 @@ export default function MethodologyPage() {
           </p>
         </div>
       </div>
+
+      <Footer />
     </div>
   )
 }
