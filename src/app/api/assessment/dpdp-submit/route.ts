@@ -23,12 +23,16 @@ function getSupabase(): any {
   return _supabase
 }
 
-// Type definition for organization profile
+// Type definition for organization profile.
+// fullName/email/phone/companyName are optional: DPDP no longer collects them
+// before the assessment — they're captured post-completion via the results
+// page's email-OTP gate (GatedResults/EmailGate), so this route must accept a
+// payload that omits them entirely.
 interface OrganizationProfile {
-  fullName: string;
-  email: string;
-  phone: string;
-  companyName: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  companyName?: string;
   state: string;
   employeeCount: string;
   industry: string;
@@ -84,28 +88,35 @@ export async function POST(req: NextRequest) {
 
       const supabase = getSupabase()
 
-      // Upsert user by email so the email is queryable as a direct column
-      const { data: user } = await supabase
-        .from('users')
-        .upsert(
-          {
-            email: organizationProfile.email,
-            full_name: organizationProfile.fullName,
-            phone: organizationProfile.phone || null,
-            company_name: organizationProfile.companyName,
-            employee_count: organizationProfile.employeeCount,
-            registered_state: organizationProfile.state,
-            industry_type: organizationProfile.industry,
-          },
-          { onConflict: 'email' }
-        )
-        .select('id')
-        .single()
+      // Contact info is optional now — only upsert a users row when an email
+      // is actually present, so this never fires an upsert with an empty
+      // email (which would collide against the `onConflict: 'email'` unique
+      // constraint for every anonymous submission).
+      let userId: string | null = null
+      if (organizationProfile.email) {
+        const { data: user } = await supabase
+          .from('users')
+          .upsert(
+            {
+              email: organizationProfile.email,
+              full_name: organizationProfile.fullName,
+              phone: organizationProfile.phone || null,
+              company_name: organizationProfile.companyName,
+              employee_count: organizationProfile.employeeCount,
+              registered_state: organizationProfile.state,
+              industry_type: organizationProfile.industry,
+            },
+            { onConflict: 'email' }
+          )
+          .select('id')
+          .single()
+        userId = user?.id ?? null
+      }
 
       const { data, error } = await supabase
         .from('assessments')
         .insert({
-          user_id: user?.id ?? null,
+          user_id: userId,
           user_details: {
             fullName: organizationProfile.fullName,
             email: organizationProfile.email,

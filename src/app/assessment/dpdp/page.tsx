@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -35,10 +34,6 @@ import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment
 
 // Form validation schema for organization profile
 const organizationProfileSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile number'),
-  companyName: z.string().min(2, 'Company name is required'),
   state: z.string().min(1, 'Please select your state'),
   employeeCount: z.string().min(1, 'Please select employee count'),
   industry: z.string().min(1, 'Please select your industry'),
@@ -327,74 +322,12 @@ export default function DPDPAssessmentPage() {
                 Organization Profile
               </CardTitle>
               <CardDescription>
-                Tell us about your organization to personalize the assessment (7 questions) — approximately 20 minutes total
+                Tell us a bit about your business so we can personalise your assessment questions — no personal details required yet.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onProfileSubmit)} className="space-y-6">
-                {/* Row 1: Full Name + Company Name */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Your Full Name</Label>
-                    <Input
-                      id="fullName"
-                      {...register('fullName')}
-                      placeholder="John Doe"
-                    />
-                    {errors.fullName && (
-                      <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName">Company Name</Label>
-                    <Input
-                      id="companyName"
-                      {...register('companyName')}
-                      placeholder="Acme Technologies Pvt Ltd"
-                    />
-                    {errors.companyName && (
-                      <p className="text-sm text-red-600 mt-1">{errors.companyName.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Row 2: Email + Phone */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      {...register('email')}
-                      placeholder="john@company.com"
-                    />
-                    {errors.email && (
-                      <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <div className="flex">
-                      <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
-                        +91
-                      </span>
-                      <Input
-                        id="phone"
-                        {...register('phone')}
-                        placeholder="9876543210"
-                        className="rounded-l-none"
-                        maxLength={10}
-                      />
-                    </div>
-                    {errors.phone && (
-                      <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Row 3: State + Employee Count */}
+                {/* Row 1: State + Employee Count */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="state">State/UT</Label>

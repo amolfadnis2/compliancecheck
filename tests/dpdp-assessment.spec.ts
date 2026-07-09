@@ -468,18 +468,23 @@ test.describe('DPDP Assessment - Action Items', () => {
 
 test.describe('DPDP Assessment - UI Consistency', () => {
   
-  test('should match form field structure of other assessments', async ({ page }) => {
+  test('should show business-profile fields without asking for contact info upfront', async ({ page }) => {
     await page.goto('/assessment/dpdp');
 
     await page.waitForLoadState('networkidle');
 
-    // Verify actual field labels used by the DPDP form
-    await expect(page.getByLabel(/your full name/i)).toBeVisible();
-    await expect(page.getByLabel(/company name/i)).toBeVisible();
-    await expect(page.getByLabel(/email address/i)).toBeVisible();
-    await expect(page.getByLabel(/phone number/i)).toBeVisible();
+    // Contact info now moves to the post-completion email gate — must NOT
+    // appear before the questions start.
+    await expect(page.getByLabel(/your full name/i)).not.toBeVisible();
+    await expect(page.getByLabel(/company name/i)).not.toBeVisible();
+    await expect(page.getByLabel(/email address/i)).not.toBeVisible();
+    await expect(page.getByLabel(/phone number/i)).not.toBeVisible();
 
-    // Verify Start Assessment button is present
+    // Business-profile fields (needed to personalise the assessment) still
+    // gate Step 0.
+    await expect(page.getByRole('combobox').filter({ hasText: /select your state/i })).toBeVisible();
+    await expect(page.getByRole('combobox').filter({ hasText: /select employee count/i })).toBeVisible();
+
     const startButton = page.getByRole('button', { name: /start assessment/i });
     await expect(startButton).toBeVisible();
   });
