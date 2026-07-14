@@ -12,7 +12,7 @@ import { LocalStorageResultsPage } from '@/components/results/local-storage-resu
 import { GatedResults } from '@/components/results/gated-results'
 import { getGateConfig } from '@/lib/results/gate-config'
 import { ReportViewTracker } from '@/components/results/report-view-tracker'
-import { ASSESSMENT_TYPES, isPaymentLive, isValidAssessmentType, getAssessmentDisplayName, ASSESSMENT_PRICES } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, isPaymentLive, isValidAssessmentType, getAssessmentDisplayName, ASSESSMENT_PRICES, type AssessmentType } from '@/lib/constants/assessment-types'
 import { AssessmentSummary } from '@/components/results/assessment-summary'
 import { buildSummaryData } from '@/lib/payment/summary-registry'
 import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
@@ -97,6 +97,11 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   // Handle temporary/local IDs (when DB not configured or fallback)
   // Also use LocalStorageResults for Food Business assessments
   if (id.startsWith('temp_') || id.startsWith('local_') || isFoodBusiness) {
+    // Paid assessments with a local_ ID means the DB write failed silently.
+    // Show a retry page — routing to the free OTP gate would bypass the paywall.
+    if (!isFoodBusiness && isValidAssessmentType(assessmentType) && isPaymentLive(assessmentType)) {
+      return <AssessmentSaveFailedPage assessmentType={assessmentType} />
+    }
     const { source, reason } = getGateConfig(assessmentType)
     return (
       <GatedResults source={source} reason={reason}>
@@ -182,7 +187,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
 // question-derived builder (preserving the exact numbers on the one live
 // assessment); every other type flows through the shared summary registry which
 // reuses the PDF adapters so teaser numbers match the paid report.
-function buildSummary(assessmentType: string, assessment: AssessmentData, id: string): UnifiedSummaryData {
+function buildSummary(assessmentType: AssessmentType, assessment: AssessmentData, id: string): UnifiedSummaryData {
   if (assessmentType === ASSESSMENT_TYPES.STATUTORY_HEALTH) {
     return buildStatutoryHealthSummary(assessment)
   }
@@ -1118,6 +1123,44 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
                 </Button>
               </Link>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// Shown when the DB write failed for a paid assessment and the user landed on a
+// local_ fallback URL. We cannot show the payment gate (no DB row = no entitlement
+// to associate the payment with), so ask them to retry the submission instead.
+function AssessmentSaveFailedPage({ assessmentType }: { assessmentType: string }) {
+  const href = assessmentType === ASSESSMENT_TYPES.DPDP ? '/assessment/dpdp'
+    : assessmentType === ASSESSMENT_TYPES.STATUTORY_HEALTH ? '/assessment/statutory-health'
+    : '/'
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-md mx-auto">
+        <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Link>
+        <Card>
+          <CardContent className="pt-6 text-center space-y-4">
+            <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
+            <h1 className="text-lg font-semibold text-gray-900">We couldn&apos;t save your assessment</h1>
+            <p className="text-sm text-gray-600">
+              Your answers are still in your browser, but we weren&apos;t able to save them to our servers.
+              Please go back and submit again — it usually takes just a second.
+            </p>
+            <Link href={href}>
+              <Button className="w-full bg-blue-700 hover:bg-blue-800">
+                Go back and try again
+              </Button>
+            </Link>
+            <p className="text-xs text-gray-400">
+              If this keeps happening, email us at support@compliancecheck.in
+            </p>
           </CardContent>
         </Card>
       </div>
