@@ -19,7 +19,7 @@ export interface SummaryCategoryScore {
 }
 
 export interface UnifiedSummaryData {
-  assessmentType: string
+  assessmentType: AssessmentType
   displayName: string
   priceINR: number
   overallScore: number
@@ -78,7 +78,7 @@ function slugify(value: string): string {
  */
 export function toSummary(
   src: SummarySource,
-  opts: { assessmentType: string; priceINR: number }
+  opts: { assessmentType: AssessmentType; priceINR: number }
 ): UnifiedSummaryData {
   const overallScore = Math.round(src.overallScore ?? 0)
 

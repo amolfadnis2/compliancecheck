@@ -128,6 +128,7 @@ export interface FeatureGateHitProps {
 export interface PricingPageViewedProps {
   source: 'feature_gate' | 'navbar' | 'dashboard_banner' | 'assessment_complete' | 'direct';
   current_tier: UserTier;
+  assessment_type?: AssessmentType;
 }
 
 export interface CheckoutStartedProps {
@@ -135,6 +136,7 @@ export interface CheckoutStartedProps {
   billing_cycle: 'monthly' | 'annual';
   source: string;
   current_tier: UserTier;
+  assessment_type?: AssessmentType;
 }
 
 export interface SubscriptionUpgradedProps {

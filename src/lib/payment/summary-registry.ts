@@ -28,7 +28,7 @@ function priceINRFor(type: string): number {
  * Build the teaser for a DB-backed assessment (Statutory Health, Labour Code,
  * DPDP, State-Wise, Food Business).
  */
-export function buildSummaryData(type: string, data: AssessmentData): UnifiedSummaryData {
+export function buildSummaryData(type: AssessmentType, data: AssessmentData): UnifiedSummaryData {
   const report = buildReportData(type, data)
   return toSummary(
     {

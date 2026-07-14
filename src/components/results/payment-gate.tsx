@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { analytics } from '@/lib/analytics/tracking'
+import type { AssessmentType } from '@/lib/constants/assessment-types'
 
 // Minimal type for the client-side Razorpay Checkout widget
 interface RazorpayOptions {
@@ -48,7 +49,7 @@ interface PaymentGateProps {
   // Provide these to enable live Razorpay + promo flow.
   // Omitting them falls back to beta (calls onPaid directly).
   assessmentId?: string
-  assessmentType?: string
+  assessmentType?: AssessmentType
 }
 
 export function PaymentGate({
@@ -74,7 +75,7 @@ export function PaymentGate({
   const isLiveMode = !!assessmentId && !!assessmentType
 
   useEffect(() => {
-    analytics.pricingPageViewed({ source: 'assessment_complete', current_tier: 'free' })
+    analytics.pricingPageViewed({ source: 'assessment_complete', current_tier: 'free', assessment_type: assessmentType })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -84,12 +85,12 @@ export function PaymentGate({
     if (!isLiveMode) {
       // Beta stub: not a real checkout, so record a feature-gate hit rather
       // than polluting checkout conversion metrics
-      analytics.featureGateHit({ feature: 'pdf_export', current_tier: 'free', attempted_action: 'view_paid_report' })
+      analytics.featureGateHit({ feature: 'pdf_export', current_tier: 'free', attempted_action: 'view_paid_report', assessment_type: assessmentType })
       onPaid()
       return
     }
 
-    analytics.checkoutStarted({ plan: 'pro', billing_cycle: 'monthly', source: 'payment_gate', current_tier: 'free' })
+    analytics.checkoutStarted({ plan: 'pro', billing_cycle: 'monthly', source: 'payment_gate', current_tier: 'free', assessment_type: assessmentType })
 
     if (!validateEmail(email)) {
       setError('Please enter a valid email address')
