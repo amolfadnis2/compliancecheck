@@ -3,6 +3,8 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { DownloadSampleReportButton } from '@/components/trust/download-sample-report-button'
+import { LandingViewTracker } from '@/components/trust/landing-view-tracker'
 
 export const metadata: Metadata = {
   title: 'Statutory Health Check | PF, ESI, PT, Gratuity & Bonus Compliance | ComplianceCheck',
@@ -25,6 +27,7 @@ export default function StatutoryHealthCheckPage() {
   return (
     <div className={styles.page}>
       <LandingSchema type={ASSESSMENT_TYPES.STATUTORY_HEALTH} />
+      <LandingViewTracker assessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH} source="landing_page" />
       {/* Navigation */}
       <nav className={styles.nav}>
         <div className={styles.container}>
@@ -89,6 +92,9 @@ export default function StatutoryHealthCheckPage() {
               >
                 Start Free Assessment →
               </Link>
+              <div style={{ marginTop: '16px' }}>
+                <DownloadSampleReportButton assessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH} source="landing_page" />
+              </div>
             </div>
             <div className={styles.heroVisual}>
               <div className={styles.visualHeader}>

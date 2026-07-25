@@ -17,6 +17,11 @@ import { AssessmentSummary } from '@/components/results/assessment-summary'
 import { buildSummaryData } from '@/lib/payment/summary-registry'
 import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
 import { getEntitlement } from '@/lib/payment/entitlement'
+import { adaptStatutoryHealth, adaptDPDP } from '@/lib/pdf/report-data-adapter'
+import { ActionPlanChecklist } from '@/components/results/action-plan-checklist'
+import { MoneyBackGuaranteeBadge } from '@/components/trust/money-back-guarantee-badge'
+import { RefundRequestButton } from '@/components/results/refund-request-button'
+import { ExpertCallCTA } from '@/components/results/expert-call-cta'
 
 // Type definitions
 interface ActionItem {
@@ -765,6 +770,17 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
     console.error('[results] generateActionItems threw:', err)
   }
 
+  // Richer action plan (penalty exposure, statutory reference, remediation
+  // steps, deadline) — reuses the same adapter that renders the PDF's action
+  // items pages (report-data-adapter.ts), so this is the same content the
+  // paid report already contains, just surfaced on the results page too.
+  let richActionItems: ReturnType<typeof adaptStatutoryHealth>['actionItems'] = []
+  try {
+    richActionItems = adaptStatutoryHealth(assessment).actionItems
+  } catch (err) {
+    console.error('[results] adaptStatutoryHealth threw:', err)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto">
@@ -833,7 +849,13 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
           </CardContent>
         </Card>
 
-        {actionItems.length > 0 && (
+        {richActionItems.length > 0 ? (
+          <ActionPlanChecklist
+            items={richActionItems}
+            assessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH}
+            assessmentId={assessment.id}
+          />
+        ) : actionItems.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Action Items</CardTitle>
@@ -858,19 +880,29 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
           </Card>
         )}
 
+        <ExpertCallCTA
+          assessmentId={assessment.id}
+          assessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH}
+          defaultEmail={responses.userDetails?.email}
+        />
+
         <Card className="print:hidden">
           <CardContent className="pt-6">
             <DownloadWithFeedback assessmentType="statutory_health" />
             <p className="text-center text-sm text-gray-500 mt-4">
-              Report generated on {new Date().toLocaleDateString('en-IN', { 
-                day: 'numeric', month: 'long', year: 'numeric' 
+              Report generated on {new Date().toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'long', year: 'numeric'
               })}
             </p>
+            <div className="flex flex-col items-center gap-2 mt-4 pt-4 border-t print:hidden">
+              <MoneyBackGuaranteeBadge assessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH} source="results" />
+              <RefundRequestButton assessmentId={assessment.id} assessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH} />
+            </div>
           </CardContent>
         </Card>
 
         <div className="mt-8 p-4 bg-amber-50 rounded-lg text-sm text-amber-800">
-          <strong>Disclaimer:</strong> This report is for informational purposes only and does not 
+          <strong>Disclaimer:</strong> This report is for informational purposes only and does not
           constitute legal advice.
         </div>
 
@@ -908,6 +940,16 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
   const maturityLevel = assessment.maturity_level || scoreResult.maturityLevel
   const status = getDPDPComplianceStatus(overallScore)
   const daysUntilDeadline = getDaysUntilDeadline()
+
+  // Richer action plan (penalty exposure, statutory reference, remediation
+  // steps, deadline) — same adapter that renders the PDF's action items
+  // pages, so this is the same content the paid report already contains.
+  let richActionItems: ReturnType<typeof adaptDPDP>['actionItems'] = []
+  try {
+    richActionItems = adaptDPDP(assessment).actionItems
+  } catch (err) {
+    console.error('[results] adaptDPDP threw:', err)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -1047,8 +1089,10 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
           </CardContent>
         </Card>
 
-        {/* Action Items */}
-        {actionItems.length > 0 && (
+        {/* Action Plan */}
+        {richActionItems.length > 0 ? (
+          <ActionPlanChecklist items={richActionItems} assessmentType={ASSESSMENT_TYPES.DPDP} assessmentId={assessment.id} />
+        ) : actionItems.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Prioritised Action Items</CardTitle>
@@ -1084,15 +1128,25 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
           </Card>
         )}
 
+        <ExpertCallCTA
+          assessmentId={assessment.id}
+          assessmentType={ASSESSMENT_TYPES.DPDP}
+          defaultEmail={userDetails.email}
+        />
+
         {/* Download & Share */}
         <Card className="print:hidden">
           <CardContent className="pt-6">
             <DownloadWithFeedback assessmentType="dpdp" />
             <p className="text-center text-sm text-gray-500 mt-4">
-              Report generated on {new Date().toLocaleDateString('en-IN', { 
-                day: 'numeric', month: 'long', year: 'numeric' 
+              Report generated on {new Date().toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'long', year: 'numeric'
               })}
             </p>
+            <div className="flex flex-col items-center gap-2 mt-4 pt-4 border-t print:hidden">
+              <MoneyBackGuaranteeBadge assessmentType={ASSESSMENT_TYPES.DPDP} source="results" />
+              <RefundRequestButton assessmentId={assessment.id} assessmentType={ASSESSMENT_TYPES.DPDP} />
+            </div>
           </CardContent>
         </Card>
 

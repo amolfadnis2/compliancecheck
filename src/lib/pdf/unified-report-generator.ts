@@ -771,9 +771,38 @@ function generateNextStepsPage(doc: jsPDF, data: UnifiedReportData, pageNum: num
 // MAIN GENERATOR FUNCTION
 // ============================================================================
 
+export interface UnifiedReportOptions {
+  // Diagonal repeated watermark text (e.g. "SAMPLE - ILLUSTRATIVE ONLY"),
+  // stamped on every page. Must be ASCII — run through cleanText() by callers
+  // that build it dynamically.
+  watermarkText?: string;
+}
+
+// Stamps a diagonal watermark across the current page. Applied after all
+// other content so it stays visible over tables/boxes without altering the
+// real (non-watermarked) report path at all.
+function addWatermark(doc: jsPDF, text: string): void {
+  const clean = cleanText(text);
+  doc.setFontSize(48);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(220, 38, 38);
+  const gState = (doc as unknown as { GState: new (params: { opacity: number }) => unknown }).GState;
+  const setGState = (doc as unknown as { setGState?: (g: unknown) => void }).setGState;
+  if (gState && setGState) {
+    setGState.call(doc, new gState({ opacity: 0.15 }));
+  }
+  doc.text(clean, PAGE_WIDTH / 2, PAGE_HEIGHT / 2, {
+    align: 'center',
+    angle: 45,
+  });
+  if (gState && setGState) {
+    setGState.call(doc, new gState({ opacity: 1 }));
+  }
+}
+
 // Assemble the full report document. Shared by the browser (blob) and the
 // server (bytes) output functions so both paths render identical PDFs.
-function renderUnifiedReportDoc(data: UnifiedReportData): jsPDF {
+function renderUnifiedReportDoc(data: UnifiedReportData, options?: UnifiedReportOptions): jsPDF {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -789,16 +818,24 @@ function renderUnifiedReportDoc(data: UnifiedReportData): jsPDF {
   pageNum = generateCompliantAreasPage(doc, data, pageNum);
   void generateNextStepsPage(doc, data, pageNum);
 
+  if (options?.watermarkText) {
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      addWatermark(doc, options.watermarkText);
+    }
+  }
+
   return doc;
 }
 
 // Browser output — used for client-side download/email (POSH, local/temp ids).
-export function generateUnifiedReportBlob(data: UnifiedReportData): Blob {
-  return renderUnifiedReportDoc(data).output('blob');
+export function generateUnifiedReportBlob(data: UnifiedReportData, options?: UnifiedReportOptions): Blob {
+  return renderUnifiedReportDoc(data, options).output('blob');
 }
 
 // Server output — used by the server-side PDF route and the email route so the
 // emailed attachment is byte-identical to the download.
-export function generateUnifiedReportBytes(data: UnifiedReportData): Uint8Array {
-  return new Uint8Array(renderUnifiedReportDoc(data).output('arraybuffer'));
+export function generateUnifiedReportBytes(data: UnifiedReportData, options?: UnifiedReportOptions): Uint8Array {
+  return new Uint8Array(renderUnifiedReportDoc(data, options).output('arraybuffer'));
 }

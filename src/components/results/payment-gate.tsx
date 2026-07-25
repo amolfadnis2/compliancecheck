@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { analytics } from '@/lib/analytics/tracking'
+import { MoneyBackGuaranteeBadge } from '@/components/trust/money-back-guarantee-badge'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
 
 // Minimal type for the client-side Razorpay Checkout widget
@@ -224,6 +225,9 @@ export function PaymentGate({
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
             />
+            <div className="flex justify-center">
+              <MoneyBackGuaranteeBadge assessmentType={assessmentType!} source="checkout" />
+            </div>
           </div>
         )}
 

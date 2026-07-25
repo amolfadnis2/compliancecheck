@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Footer } from '@/components/site/footer';
+import { CaseSnippets } from '@/components/trust/case-snippets';
+import { DownloadSampleReportButton } from '@/components/trust/download-sample-report-button';
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types';
 import {
   Heart,
   Scale,
@@ -188,6 +191,12 @@ export default function LandingPage() {
 
         {/* Assessments Section */}
         <AssessmentsSection />
+
+        {/* Sample Reports Section — see the real output before paying */}
+        <SampleReportsSection />
+
+        {/* Case Snippets — concrete "found X, fixed Y" trust signals */}
+        <CaseSnippets />
 
         {/* Free Tools Section */}
         <FreeToolsSection />
@@ -484,6 +493,39 @@ function AssessmentsSection() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {assessments.map((assessment) => (
             <AssessmentCard key={assessment.id} assessment={assessment} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Sample Reports Section — download a real, watermarked report for every
+// assessment type before paying. No email or signup required.
+const SAMPLE_REPORT_TYPES = [
+  ASSESSMENT_TYPES.STATUTORY_HEALTH,
+  ASSESSMENT_TYPES.LABOUR_CODE,
+  ASSESSMENT_TYPES.DPDP,
+  ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
+  ASSESSMENT_TYPES.FOOD_BUSINESS,
+  ASSESSMENT_TYPES.POSH,
+  ASSESSMENT_TYPES.AUTO_DEALER,
+];
+
+function SampleReportsSection() {
+  return (
+    <section className="py-16 bg-gray-50 dark:bg-gray-900/50" aria-labelledby="sample-reports-heading">
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        <h2 id="sample-reports-heading" className="text-3xl font-bold text-gray-900 dark:text-white">
+          See a real report before you pay
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Every sample below is a full, watermarked report generated the same way your report would be —
+          same format, same level of detail.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {SAMPLE_REPORT_TYPES.map((type) => (
+            <DownloadSampleReportButton key={type} assessmentType={type} source="homepage" />
           ))}
         </div>
       </div>
