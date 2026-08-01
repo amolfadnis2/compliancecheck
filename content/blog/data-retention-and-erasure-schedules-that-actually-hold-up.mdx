@@ -1,0 +1,87 @@
+---
+title: "Data Retention and Erasure Schedules That Actually Hold Up"
+description: "How Indian businesses should build a DPDP-compliant data retention and erasure schedule, with practical timelines, triggers and documentation tips."
+date: "2026-06-03"
+lastReviewed: "2026-06-03"
+author: "ComplianceCheck Team"
+tags: ["dpdp", "data-retention"]
+relatedAssessment: "dpdp"
+draft: false
+faq:
+  - question: "What is a data retention schedule under DPDP?"
+    answer: "A data retention schedule is a written document mapping each category of personal data your business collects to how long it is kept, why, and what happens to it (deletion or anonymisation) once that purpose is served."
+  - question: "Does DPDP set a fixed retention period for personal data?"
+    answer: "No. The Digital Personal Data Protection Act 2023 does not prescribe a single fixed retention period; instead it requires data to be erased once the purpose for which it was collected is no longer being served, unless another law requires longer retention."
+  - question: "When do DPDP's data principal rights, including erasure requests, become enforceable?"
+    answer: "Full substantive DPDP obligations, including data-principal rights such as erasure requests, become enforceable on 13 May 2027, with no stated grace period after that date."
+  - question: "Can a business keep data longer than needed if another law requires it?"
+    answer: "Yes. If a separate law, such as tax, labour, or company law, mandates a longer retention period for specific records, that legal requirement overrides the general DPDP principle of deleting data once its original purpose ends."
+  - question: "What happens if a business has no documented retention schedule?"
+    answer: "Without a documented schedule, a business cannot demonstrate to the Data Protection Board that it erases data on time, which increases exposure if a complaint or audit arises after DPDP's substantive obligations take effect."
+  - question: "Should retention schedules cover data held by vendors too?"
+    answer: "Yes. A retention schedule should extend to any data processor or vendor holding personal data on your behalf, with contractual erasure or return obligations once the engagement or purpose ends."
+---
+
+A DPDP-ready data retention schedule tells you, for every category of personal data you hold, how long it stays and what triggers its deletion. Without one, "we'll deal with it later" becomes the default, and that default will not survive a Data Protection Board inquiry.
+
+## Key facts at a glance
+
+- The **Digital Personal Data Protection Act 2023** does not set one fixed retention number; data must be erased once its collection purpose is no longer being served.
+- Full DPDP substantive obligations, including erasure rights, become enforceable **13 May 2027**, with no stated grace period.
+- Penalties for failing to implement reasonable security safeguards, which includes data left lying around indefinitely, can reach **up to Rs 250 crore per instance**.
+- Sector-specific laws (tax, labour, company law) can require **longer** retention than DPDP's default "purpose served" rule, and those laws take precedence for that data.
+- The **Consent Manager** registration framework under DPDP Rules 2025 becomes operational **13 November 2026**.
+- A retention schedule should cover data held by **vendors and processors**, not just data inside your own systems.
+
+## Why "keep everything forever" is no longer a safe default
+
+Many small and mid-sized businesses accumulate customer, employee, and vendor data across email, spreadsheets, CRM tools, and old databases without ever deleting anything. That habit made sense when storage was cheap and no law penalised it. Under DPDP, indefinite retention without a documented reason becomes a liability rather than a convenience, because the law's default expectation is that data is erased once its purpose ends.
+
+This does not mean panic-deleting records. It means building a schedule that says, clearly, why each category of data is kept and for how long, so that erasure happens on a predictable timeline instead of never.
+
+## Building the retention schedule
+
+### Step 1: Inventory your data categories
+
+List every category of personal data you collect, such as customer contact details, order history, employee payroll records, job applicant resumes, and website visitor data. For each, note the source, the purpose of collection, and where it is stored.
+
+### Step 2: Assign a retention trigger and period
+
+For each category, decide what event ends the purpose, such as "contract termination," "last transaction," or "employee exit," and how long after that event the data should be erased or anonymised. Where a specific law mandates a minimum retention period (for example, financial records under tax law), that period should override the default DPDP purpose-based rule.
+
+### Step 3: Automate or schedule deletion
+
+Manual deletion is easy to forget. Wherever possible, configure systems to auto-purge or flag records for review once the retention period lapses, rather than relying on someone remembering months later.
+
+### Step 4: Extend the schedule to vendors
+
+If a payroll processor, marketing agency, or IT vendor holds personal data on your behalf, your retention schedule should specify what they must do with that data once the engagement ends, ideally backed by a contractual clause requiring return or erasure.
+
+## Common categories and reasonable retention starting points
+
+| Data category | Typical purpose | Retention trigger | Note |
+| --- | --- | --- | --- |
+| Customer order and transaction data | Order fulfilment, accounting | Last transaction or as required by tax law | Tax and accounting law may require longer retention |
+| Employee payroll and PF/ESI records | Statutory compliance | Employee exit | Labour and social security laws often require multi-year retention |
+| Job applicant data (unsuccessful candidates) | Recruitment | End of hiring process | Should generally be erased soon after unless consent is taken for future roles |
+| Marketing leads and website form data | Consent-based outreach | Withdrawal of consent or inactivity period | Depends on the consent given at collection |
+| CCTV or access-control footage | Security | Short, defined cycle | Common practice is a short rolling window unless an incident requires preservation |
+
+## What "erasure" actually means in practice
+
+Erasure does not always mean physically deleting a row from a database the same day. It can mean anonymising the data so it can no longer be linked back to an individual, provided the anonymisation is genuinely irreversible. Businesses should document which approach (deletion vs anonymisation) applies to which data category, since regulators and auditors will expect a clear, consistent answer rather than an ad hoc one.
+
+## Documenting the schedule for audit readiness
+
+A retention schedule is only useful if it is written down and kept current. At minimum, document: the data categories, the legal or business basis for each retention period, the deletion trigger, and who is responsible for executing it. Review the schedule at least annually, and whenever a new system or data source is added to the business.
+
+If you are not sure where your business stands on data retention and broader DPDP readiness, ComplianceCheck's DPDP assessment gives you a clear picture in a few minutes.
+
+## Sources
+
+- Ministry of Electronics and Information Technology - meity.gov.in
+- Data Protection Board of India (as constituted under DPDP) - meity.gov.in
+- Income Tax Department, for tax-related record retention rules - incometax.gov.in
+- Ministry of Corporate Affairs, for company record retention rules - mca.gov.in
+
+*This guide is general information, not legal advice. Requirements vary by state, sector and headcount - confirm specifics with a compliance professional or the relevant authority.*

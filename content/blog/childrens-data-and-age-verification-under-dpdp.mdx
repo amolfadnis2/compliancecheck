@@ -1,0 +1,84 @@
+---
+title: "Children's Data and Age Verification Under DPDP"
+description: "How the DPDP Act treats children's personal data, the parental consent requirement, and what age-verification obligations mean for apps and websites."
+date: "2026-06-02"
+lastReviewed: "2026-06-02"
+author: "ComplianceCheck Team"
+tags: ["dpdp", "childrens-data"]
+relatedAssessment: "dpdp"
+draft: false
+faq:
+  - question: "Who counts as a child under the DPDP Act?"
+    answer: "The DPDP Act defines a child as an individual who has not completed the age of 18 years."
+  - question: "Does DPDP require parental consent to process a child's data?"
+    answer: "Yes, a data fiduciary processing a child's personal data must obtain verifiable consent from the child's parent or lawful guardian before processing."
+  - question: "Are there activities involving children's data that DPDP prohibits outright?"
+    answer: "Yes, the Act restricts processing that involves tracking or behavioural monitoring of children, and targeted advertising directed at children, subject to any exemptions the government may specify."
+  - question: "Does every platform need age verification under DPDP?"
+    answer: "Any data fiduciary that may reasonably have child users needs some mechanism to determine age or obtain verifiable parental consent, though the exact verification method is left to the fiduciary to implement reasonably."
+  - question: "Are there exemptions from the parental consent rule?"
+    answer: "The government can notify specific classes of data fiduciaries or specific purposes as exempt from certain child-data provisions, such as for services like healthcare or education where strict application could harm the child's interest, but this is a government-notified exemption, not a general opt-out."
+  - question: "What happens if a business processes children's data without proper consent?"
+    answer: "This falls under the Act's broader penalty framework, where failures around consent and safeguards can attract significant financial penalties, alongside scrutiny from the Data Protection Board."
+  - question: "When does the parental consent requirement become enforceable?"
+    answer: "Like other substantive DPDP obligations, the children's data provisions become enforceable from 13 May 2027, alongside notice, consent and security requirements generally."
+---
+
+Under the DPDP Act, anyone under 18 is a **child**, and processing a child's personal data requires **verifiable parental or guardian consent** - along with a flat restriction on tracking, behavioural monitoring, and targeted advertising aimed at children.
+
+## Key facts at a glance
+
+- DPDP defines a **child** as anyone who has **not completed 18 years** of age.
+- Processing a child's data requires **verifiable consent from a parent or lawful guardian**.
+- The Act restricts **tracking, behavioural monitoring, and targeted advertising** directed at children.
+- The government may **notify exemptions** for specific purposes, such as certain healthcare or education services.
+- Full DPDP obligations, including child-data provisions, become enforceable from **13 May 2027**.
+- Penalties for consent and security failures can reach **up to Rs 250 crore** per instance.
+- The 18-year threshold is **broader** than the "under 13" or "under 16" thresholds used in some other countries' laws.
+
+## Why the 18-Year Threshold Matters
+
+Many global privacy laws set the age of digital consent lower - 13 in the US under COPPA, and often 16 in parts of the EU under GDPR unless a member state lowers it. DPDP sets the bar at 18, meaning a far broader population of users in India falls under the parental-consent requirement than under comparable regimes elsewhere. Any business with users in their late teens needs to plan for this, not just apps explicitly aimed at young children.
+
+This has real product implications: a platform aimed at, say, 16-to-18-year-olds (exam-prep apps, gaming platforms, ed-tech tools) needs the same verifiable parental consent mechanism as one aimed at 8-year-olds, under the letter of the Act.
+
+## What "Verifiable Consent" Means in Practice
+
+The Act requires consent to be verifiable, not just a checkbox claiming "I am over 18" or "I am a parent." In practice, businesses need some reasonable mechanism to establish that:
+
+- The user is or may be a child, and
+- Consent for their data processing has genuinely come from a parent or lawful guardian, not the child themselves.
+
+The DPDP framework does not mandate one specific technical method (such as government ID verification) for every business - the obligation is to implement a reasonable process appropriate to the risk and nature of the service.
+
+## Restricted Activities for Children's Data
+
+| Activity | Status under DPDP |
+| --- | --- |
+| Collecting basic data with verifiable parental consent | Permitted |
+| Behavioural monitoring / tracking of children | Restricted |
+| Targeted advertising directed at children | Restricted |
+| Processing for certain notified purposes (e.g. some healthcare, education, child-safety services) | May be exempted by government notification |
+| Processing without any parental consent mechanism | Not compliant |
+
+## Practical Steps for Apps, Websites and Schools-Facing Products
+
+1. **Assess whether your user base plausibly includes minors.** Consumer apps, ed-tech, gaming, and social platforms should assume some under-18 usage even if not explicitly targeted at children.
+2. **Build an age-flagging step** into onboarding, even a simple self-declared birth year, as a first-line signal.
+3. **Design a parental-consent flow** for any user flagged as a minor, rather than retrofitting one later.
+4. **Turn off behavioural tracking and targeted ads by default** for accounts flagged as belonging to minors.
+5. **Review analytics and ad-tech integrations** (third-party SDKs, ad networks) to confirm they are not profiling minor users without your knowledge.
+6. **Watch for government notifications** on sector-specific exemptions if you operate in healthcare, education, or child-safety services - these carve-outs are narrow and specific, not general opt-outs.
+
+## Why This Deserves Early Attention
+
+Retrofitting age-verification and parental-consent flows into an existing product is significantly harder than designing them in from the start, especially if your current onboarding treats all users identically regardless of age. Given that full enforcement begins 13 May 2027, businesses with any meaningful teenage user base should treat this as a product-design item now, not just a legal checkbox to revisit closer to the deadline.
+
+If you are not sure whether your platform's handling of younger users would hold up under DPDP, ComplianceCheck's DPDP assessment gives you a clear picture in a few minutes.
+
+## Sources
+
+- Ministry of Electronics and Information Technology, DPDP Act and Rules - meity.gov.in
+- Data Protection Board of India
+
+*This guide is general information, not legal advice. Requirements vary by state, sector and headcount - confirm specifics with a compliance professional or the relevant authority.*

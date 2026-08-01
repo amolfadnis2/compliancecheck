@@ -8,7 +8,7 @@ import { ContentShell } from '@/components/site/ContentShell'
 import { ShareButtons } from '@/components/site/ShareButtons'
 import { AssessmentCTA } from '@/components/site/AssessmentCTA'
 import { JsonLd } from '@/lib/seo/JsonLd'
-import { articleSchema, breadcrumbSchema } from '@/lib/seo/schema'
+import { articleSchema, breadcrumbSchema, faqSchema } from '@/lib/seo/schema'
 import { absoluteUrl } from '@/lib/seo/site'
 
 interface Params {
@@ -78,6 +78,7 @@ export default function BlogPostPage({ params }: Params) {
           { name: post.title, path: `/blog/${post.slug}` },
         ])}
       />
+      {post.faq && post.faq.length > 0 && <JsonLd data={faqSchema(post.faq)} />}
 
       <article className="mx-auto max-w-3xl px-4 py-12">
         <header className="mb-8">
@@ -105,6 +106,22 @@ export default function BlogPostPage({ params }: Params) {
             options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
           />
         </div>
+
+        {post.faq && post.faq.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mt-10 mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Frequently Asked Questions
+            </h2>
+            <dl className="space-y-6">
+              {post.faq.map((item) => (
+                <div key={item.question}>
+                  <dt className="font-semibold text-gray-900 dark:text-gray-100">{item.question}</dt>
+                  <dd className="mt-2 leading-7 text-gray-700 dark:text-gray-300">{item.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
 
         {post.relatedAssessment && <AssessmentCTA type={post.relatedAssessment} />}
 

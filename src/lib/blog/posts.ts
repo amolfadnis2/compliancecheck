@@ -20,6 +20,11 @@ import path from 'path'
 import matter from 'gray-matter'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
 
+export interface FaqItem {
+  question: string
+  answer: string
+}
+
 export interface PostFrontmatter {
   title: string
   description: string
@@ -29,6 +34,7 @@ export interface PostFrontmatter {
   tags?: string[]
   relatedAssessment?: AssessmentType
   draft?: boolean
+  faq?: FaqItem[]
 }
 
 export interface PostMeta extends PostFrontmatter {

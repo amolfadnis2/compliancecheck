@@ -1,0 +1,73 @@
+---
+title: "Cross-Border Data Transfer Under DPDP"
+description: "What Indian businesses need to know about transferring personal data outside India under the DPDP Act, including restrictions, notified countries and practical steps."
+date: "2026-06-07"
+lastReviewed: "2026-06-07"
+author: "ComplianceCheck Team"
+tags: ["dpdp", "cross-border"]
+relatedAssessment: "dpdp"
+draft: false
+faq:
+  - question: "Does the DPDP Act ban transferring personal data outside India?"
+    answer: "No, the DPDP Act does not impose a blanket ban on cross-border data transfer; instead it allows the central government to restrict transfers to specific countries or territories through notification, an approach often called a negative list or blocklist model."
+  - question: "When do cross-border transfer obligations become enforceable?"
+    answer: "Full substantive obligations under the DPDP Rules 2025, including provisions relevant to cross-border processing, become enforceable on 13 May 2027, with no stated grace period."
+  - question: "Do businesses need a data localisation strategy under DPDP?"
+    answer: "The DPDP Act's general approach is not full data localisation for all personal data; it restricts transfer only to countries the government specifically notifies as restricted, which is a lighter-touch approach than mandating all data stay in India."
+  - question: "Do sector-specific data localisation rules still apply alongside DPDP?"
+    answer: "Yes, sector regulators such as the RBI for payment data have their own localisation requirements that operate independently of and alongside the DPDP Act, so a business must check both."
+  - question: "What should a SaaS company using overseas cloud infrastructure do now?"
+    answer: "It should map which personal data is processed or stored outside India, confirm none of the destination countries are on any government-notified restricted list once issued, and build contractual and security safeguards with its cloud and sub-processor vendors."
+  - question: "What is the penalty risk if cross-border transfer safeguards fail?"
+    answer: "General DPDP penalties for failing to implement reasonable security safeguards can reach up to Rs 250 crore per instance, which applies to data regardless of whether it is processed in India or transferred abroad."
+---
+
+The **DPDP Act** does not ban sending personal data outside India outright, it instead gives the central government power to restrict transfers to specific notified countries, so most Indian businesses using global cloud services are not automatically blocked, but they do need to track how this framework develops.
+
+## Key facts at a glance
+
+- The DPDP Act uses a **restricted-country (negative list) model**: transfer is generally allowed unless the government specifically notifies a country as restricted.
+- Full substantive DPDP obligations, including those touching cross-border processing, become enforceable on **13 May 2027** under the DPDP Rules 2025.
+- This is a lighter-touch approach than **full data localisation**, which would require all personal data to stay within India.
+- **Sector-specific localisation rules**, such as RBI requirements for payment system data, apply independently and are not overridden by the DPDP Act's general approach.
+- Penalties for security-safeguard failures can reach **up to Rs 250 crore** per instance, applicable regardless of where the data is processed.
+- The **Data Protection Board** provisions already took effect immediately under the Rules.
+
+## How the DPDP Act's transfer model works
+
+Rather than requiring every business to justify each cross-border transfer individually, the DPDP Act flips the default: transfer to another country is permitted unless the central government has specifically notified that country as one where transfer is restricted. This is a meaningfully different approach from stricter localisation regimes, and it is designed to avoid disrupting the normal use of global cloud infrastructure, SaaS tools and outsourced processing that most modern businesses rely on.
+
+### Why this matters for SaaS and cloud-dependent businesses
+
+A large share of Indian businesses, especially SaaS companies and anyone using major cloud providers, routinely process or store data on servers located outside India, often without a conscious decision to do so. Under the DPDP Act's model, this is not automatically a violation. The compliance task is to know where your data actually goes, and to stay alert to which countries, if any, get added to a restricted list once the government issues one.
+
+## What businesses should actually track
+
+| Question | Why it matters |
+| --- | --- |
+| Which countries host your cloud infrastructure, SaaS vendors and sub-processors? | Needed to check against any future restricted-country list |
+| Does any sector regulator (RBI, IRDAI, etc.) impose its own localisation rule on this data? | Sector rules apply independently of DPDP's general approach |
+| Do vendor contracts cover data protection and breach notification for offshore processing? | Businesses remain responsible for data shared with vendors |
+| Is sensitive personal data (financial, health, biometric) processed offshore? | Higher-sensitivity data warrants closer scrutiny even without a specific ban |
+
+## Sector rules can be stricter than the general DPDP position
+
+The DPDP Act's relatively permissive default on cross-border transfer does not override stricter sector-specific rules. The Reserve Bank of India, for example, has its own data localisation requirements for payment system data that require certain data to be stored in India regardless of what the general DPDP framework allows elsewhere. Businesses in regulated sectors need to check both frameworks, not just DPDP, before assuming a transfer is fine.
+
+### Building a practical transfer map
+
+The most useful early step is not a legal opinion, it is an operational map: list every vendor and infrastructure provider that touches personal data, note the country or countries where that data is processed or stored, and flag anything involving particularly sensitive categories. This map becomes the reference point the moment any restricted-country notification is issued, rather than requiring a scramble to reconstruct vendor relationships under time pressure.
+
+## What to do before the 2027 deadline
+
+Since full obligations become enforceable on 13 May 2027, businesses have time to build this map, tighten vendor contracts to include data protection commitments, and confirm no sector-specific localisation rule is being missed. Waiting until a restricted-country list is actually issued to start this work leaves far less room to adjust vendor or infrastructure choices if needed.
+
+If you are not sure how exposed your business is on cross-border data flows, ComplianceCheck's DPDP assessment gives you a clear picture in a few minutes.
+
+## Sources
+
+- Ministry of Electronics and Information Technology — meity.gov.in
+- Reserve Bank of India — for sector-specific data localisation rules
+- Data Protection Board of India (as established under the DPDP Rules)
+
+*This guide is general information, not legal advice. Requirements vary by state, sector and headcount - confirm specifics with a compliance professional or the relevant authority.*
