@@ -8,10 +8,14 @@ import Link from 'next/link'
 import { type AssessmentType } from '@/lib/constants/assessment-types'
 import { getAssessmentMeta, describeAssessment } from '@/lib/seo/assessment-meta'
 import { formatPrice } from '@/lib/constants/india'
+import { getSampleReportPath } from '@/lib/pdf/sample-report-paths'
 
 export function AssessmentCTA({ type }: { type: AssessmentType }) {
   const d = describeAssessment(getAssessmentMeta(type))
-  const priceLabel = d.isFree ? 'Free during beta' : `From ${formatPrice(d.pricePaise / 100)}`
+  const priceLabel = d.isFree
+    ? 'Free during early access'
+    : `Free summary - full report ${formatPrice(d.pricePaise / 100)}`
+  const samplePath = getSampleReportPath(type)
 
   return (
     <div className="my-10 rounded-xl border border-primary/30 bg-primary/5 p-6">
@@ -29,6 +33,19 @@ export function AssessmentCTA({ type }: { type: AssessmentType }) {
         </Link>
         <span className="text-sm text-gray-500 dark:text-gray-400">{priceLabel} · no subscription</span>
       </div>
+      {samplePath && (
+        <p className="mt-3 text-sm">
+          <a
+            href={samplePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline hover:no-underline"
+          >
+            See a full sample report (PDF)
+          </a>
+          <span className="text-gray-500 dark:text-gray-400"> — real format, fictional company</span>
+        </p>
+      )}
     </div>
   )
 }

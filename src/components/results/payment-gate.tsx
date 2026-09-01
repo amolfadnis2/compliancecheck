@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input'
 import { analytics } from '@/lib/analytics/tracking'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
+import { getSampleReportPath } from '@/lib/pdf/sample-report-paths'
 
 // Minimal type for the client-side Razorpay Checkout widget
 interface RazorpayOptions {
@@ -73,6 +74,9 @@ export function PaymentGate({
   const [error, setError] = useState<string | null>(null)
 
   const isLiveMode = !!assessmentId && !!assessmentType
+  // "See what you get before you pay" — the report is the product, so a buyer
+  // deciding on a few thousand rupees should be able to read one first.
+  const samplePath = assessmentType ? getSampleReportPath(assessmentType) : null
 
   useEffect(() => {
     analytics.pricingPageViewed({ source: 'assessment_complete', current_tier: 'free', assessment_type: assessmentType })
@@ -214,6 +218,17 @@ export function PaymentGate({
             </li>
           ))}
         </ul>
+
+        {samplePath && (
+          <a
+            href={samplePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center text-sm font-medium text-blue-700 hover:text-blue-800 underline"
+          >
+            See a full sample report before you pay (PDF)
+          </a>
+        )}
 
         {isLiveMode && (
           <div className="space-y-2">

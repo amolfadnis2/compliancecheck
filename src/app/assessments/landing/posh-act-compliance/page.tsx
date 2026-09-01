@@ -3,10 +3,11 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'POSH Act 2013 Compliance | ICC Audit & Workplace Safety | ComplianceCheck',
-  description: 'Complete POSH Act compliance assessment. ICC constitution audit, policy review, complaint mechanism check, and annual report requirements. ₹1,999 post-beta.',
+  description: 'Complete POSH Act compliance assessment. ICC constitution audit, policy review, complaint mechanism check, and annual report requirements. Full report ₹1,999.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/posh-act-compliance',
   },
@@ -86,7 +87,7 @@ export default function POSHActCompliancePage() {
             <div className={styles.statItem}><h3>40-50</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>20 min</h3><p>To Complete</p></div>
             <div className={styles.statItem}><h3>6</h3><p>Audit Areas</p></div>
-            <div className={styles.statItem}><h3>₹1,999</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹1,999</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -198,19 +199,12 @@ export default function POSHActCompliancePage() {
       <section className={styles.pricing} style={{ background: 'white' }}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹1,999</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {['Complete 40-50 question ICC audit', 'Instant compliance score', '6-area gap analysis', 'ICC composition verification', 'Prioritized remediation steps', 'POSH Act section references', 'Professional PDF report', 'Email delivery of results'].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
-            </Link>
-          </div>
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.POSH}
+            accentColor={accentColor}
+            ctaHref="/assessment/posh"
+            features={['Complete 40-50 question ICC audit', 'Instant compliance score', '6-area gap analysis', 'ICC composition verification', 'Prioritized remediation steps', 'POSH Act section references', 'Professional PDF report', 'Email delivery of results']}
+          />
         </div>
       </section>
 

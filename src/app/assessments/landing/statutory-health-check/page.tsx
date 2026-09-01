@@ -3,10 +3,11 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'Statutory Health Check | PF, ESI, PT, Gratuity & Bonus Compliance | ComplianceCheck',
-  description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance. Get instant compliance score and action items. ₹999 post-beta.',
+  description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance. Get instant compliance score and action items. Full report ₹499.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/statutory-health-check',
   },
@@ -57,7 +58,7 @@ export default function StatutoryHealthCheckPage() {
                   color: accentColor
                 }}
               >
-                🎉 Free During Beta
+                🎉 Free summary - full report ₹499
               </div>
               <h1 className={styles.heroTitle}>Statutory Compliance Health Check</h1>
               <p className={styles.heroSubtitle}>
@@ -116,7 +117,7 @@ export default function StatutoryHealthCheckPage() {
             <div className={styles.statItem}><h3>12</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>10 min</h3><p>To Complete</p></div>
             <div className={styles.statItem}><h3>5</h3><p>Compliance Areas</p></div>
-            <div className={styles.statItem}><h3>₹999</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹499</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -215,19 +216,12 @@ export default function StatutoryHealthCheckPage() {
       <section className={styles.pricing}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹999</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {['Complete 12-question assessment', 'Instant compliance score', 'Category-wise gap analysis', 'Prioritized action items', 'Legal references & citations', 'Professional PDF report', 'Email delivery of results'].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/statutory-health" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
-            </Link>
-          </div>
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.STATUTORY_HEALTH}
+            accentColor={accentColor}
+            ctaHref="/assessment/statutory-health"
+            features={['Complete 12-question assessment', 'Instant compliance score', 'Category-wise gap analysis', 'Prioritized action items', 'Legal references & citations', 'Professional PDF report', 'Email delivery of results']}
+          />
         </div>
       </section>
 

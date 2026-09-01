@@ -33,6 +33,11 @@ const assessments: {
   title: string;
   description: string;
   questions: number;
+  /**
+   * Must match ASSESSMENT_PRICES in @/lib/constants/assessment-types — that is
+   * what /api/payment/create-order actually charges. Update both together when
+   * a price changes or a paywall goes live.
+   */
   fullPrice: string;
   isLive: boolean;
   href: string;
@@ -112,7 +117,7 @@ const assessments: {
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
     questions: 40,
     fullPrice: '₹1,999',
-    isLive: false,
+    isLive: true,
     href: '/assessment/posh',
     icon: AlertTriangle,
     gradient: 'from-purple-500 to-pink-600',

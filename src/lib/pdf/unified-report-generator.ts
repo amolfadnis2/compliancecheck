@@ -96,6 +96,13 @@ export interface UnifiedReportData {
   compliantItems: UnifiedCompliantItem[];
   userDetails: UnifiedUserDetails;
   config: ReportConfig;
+  /**
+   * Marks the PDF as a public sample built from a fictional company and
+   * illustrative answers (see sample-report-fixtures.ts). Adds a banner to the
+   * cover so a sample can never be mistaken for a real company's report.
+   * Never set this for a real assessment.
+   */
+  isSample?: boolean;
 }
 
 // ============================================================================
@@ -194,6 +201,19 @@ function generateCoverPage(doc: jsPDF, data: UnifiedReportData): number {
     align: 'center',
   });
 
+  // Sample banner — only ever set for the public sample reports, so a reader
+  // can never mistake a fictional demo for a real company's assessment.
+  if (data.isSample) {
+    doc.setFillColor(...COLORS.warning);
+    doc.rect(0, 60, PAGE_WIDTH, 14, 'F');
+    doc.setFontSize(FONTS.body);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.white);
+    doc.text('SAMPLE REPORT - FICTIONAL COMPANY, ILLUSTRATIVE ANSWERS', PAGE_WIDTH / 2, 69, {
+      align: 'center',
+    });
+  }
+
   // Assessment title
   currentY = 90;
   doc.setFontSize(FONTS.title);
@@ -281,9 +301,14 @@ function generateCoverPage(doc: jsPDF, data: UnifiedReportData): number {
   doc.setFontSize(FONTS.small);
   doc.setTextColor(...COLORS.danger);
   doc.setFont('helvetica', 'bold');
-  doc.text('CONFIDENTIAL - For Internal Use Only', PAGE_WIDTH / 2, PAGE_HEIGHT - 10, {
-    align: 'center',
-  });
+  doc.text(
+    data.isSample
+      ? 'SAMPLE - Not a real assessment. Take the assessment for your own report.'
+      : 'CONFIDENTIAL - For Internal Use Only',
+    PAGE_WIDTH / 2,
+    PAGE_HEIGHT - 10,
+    { align: 'center' }
+  );
 
   return 1;
 }
