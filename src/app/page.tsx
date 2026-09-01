@@ -33,6 +33,11 @@ const assessments: {
   title: string;
   description: string;
   questions: number;
+  /**
+   * Must match ASSESSMENT_PRICES in @/lib/constants/assessment-types — that is
+   * what /api/payment/create-order actually charges. Update both together when
+   * a price changes or a paywall goes live.
+   */
   fullPrice: string;
   isLive: boolean;
   href: string;
@@ -112,7 +117,7 @@ const assessments: {
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
     questions: 40,
     fullPrice: '₹1,999',
-    isLive: false,
+    isLive: true,
     href: '/assessment/posh',
     icon: AlertTriangle,
     gradient: 'from-purple-500 to-pink-600',
@@ -198,8 +203,10 @@ export default function LandingPage() {
         {/* FAQ Section */}
         <FAQSection />
 
-        {/* Testimonials — placeholder, see TestimonialsSection for replacement instructions */}
-        <TestimonialsSection />
+        {/* Methodology trust strip — replaces the old placeholder testimonials.
+            Real customer quotes (with permission) can be added back as a separate
+            section once they exist; never ship placeholder quotes. */}
+        <MethodologySection />
       </main>
 
       {/* Footer */}
@@ -208,44 +215,53 @@ export default function LandingPage() {
   );
 }
 
-// Testimonials — PLACEHOLDER CONTENT. Do not treat these as real quotes.
-// Replace each card with a real beta-user testimonial (with permission to
-// publish) before this section goes live. The dashed border and explicit
-// "Add a real..." copy are intentional — they must stay visually obvious as
-// placeholders until replaced.
-function TestimonialsSection() {
-  const placeholders = [
-    { role: 'Founder, early beta user' },
-    { role: 'HR Lead, early beta user' },
-    { role: 'Compliance CS partner' },
+// Methodology trust strip. Every claim here must stay true of the product:
+// no invented quotes, no invented reviewers. Real testimonials (named, with
+// permission) go in their own section when they exist.
+function MethodologySection() {
+  const cards = [
+    {
+      title: 'Cited to the section',
+      body: 'Every gap in a report references the specific act, section or rule it comes from - so you can verify it, or hand it to your CA or lawyer as-is.',
+    },
+    {
+      title: 'Built on current law',
+      body: 'Checklists track the DPDP Act 2023 and its Rules, the four Labour Codes in force since November 2025, the POSH Act 2013, and state-specific requirements.',
+    },
+    {
+      title: 'Honest about limits',
+      body: 'You get a score, your gaps, and a prioritised action plan. It is a structured self-assessment - not legal advice - and every report says so plainly.',
+    },
   ]
 
   return (
-    <section className="py-20 bg-gray-50 dark:bg-gray-900/50" aria-labelledby="testimonials-heading">
+    <section className="py-20 bg-gray-50 dark:bg-gray-900/50" aria-labelledby="methodology-heading">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-10">
-          <h2 id="testimonials-heading" className="text-3xl font-bold text-gray-900 dark:text-white">
-            What early users say
+          <h2 id="methodology-heading" className="text-3xl font-bold text-gray-900 dark:text-white">
+            How our assessments are built
           </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             Checklists reviewed against the DPDP Act 2023, the 2025 Labour Codes, and the POSH Act 2013.
           </p>
         </div>
         <div className="grid gap-6 sm:grid-cols-3">
-          {placeholders.map((p, i) => (
+          {cards.map((card) => (
             <div
-              key={i}
-              className="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-center"
+              key={card.title}
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6"
             >
-              <p className="text-sm italic text-gray-400 dark:text-gray-500">
-                &ldquo;Add a real customer quote here&rdquo;
-              </p>
-              <p className="mt-3 text-xs font-medium text-gray-400 dark:text-gray-600">
-                — {p.role} (placeholder)
-              </p>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{card.title}</h3>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{card.body}</p>
             </div>
           ))}
         </div>
+        <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+          Built and maintained by a solo founder in Pune.{' '}
+          <Link href="/about" className="text-blue-600 dark:text-blue-400 hover:underline">
+            Read who is behind ComplianceCheck →
+          </Link>
+        </p>
       </div>
     </section>
   )

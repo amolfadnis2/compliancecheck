@@ -171,8 +171,8 @@ export default function MethodologyPage() {
         <div className="mt-10 border-t border-gray-200 pt-8 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-500">
             Questions about this methodology? Email us at{' '}
-            <a href="mailto:compliancecheck@zohomail.in" className="text-blue-600 hover:underline dark:text-blue-400">
-              compliancecheck@zohomail.in
+            <a href="mailto:contact@compliancecheck.co.in" className="text-blue-600 hover:underline dark:text-blue-400">
+              contact@compliancecheck.co.in
             </a>
           </p>
         </div>

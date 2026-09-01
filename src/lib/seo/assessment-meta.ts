@@ -9,7 +9,7 @@
 import {
   ASSESSMENT_TYPES,
   ASSESSMENT_PRICES,
-  ASSESSMENT_PRICING,
+  isPaymentLive,
   getAssessmentDisplayName,
   type AssessmentType,
 } from '@/lib/constants/assessment-types'
@@ -149,7 +149,12 @@ export function getAssessmentMeta(type: AssessmentType): AssessmentMeta {
 
 /** Convenience: full display + pricing + routing record for a meta entry. */
 export function describeAssessment(meta: AssessmentMeta) {
-  const isFree = ASSESSMENT_PRICING[meta.type] === 'free'
+  // "Free" must mean free *right now*, not "not yet designated a paid tier".
+  // ASSESSMENT_PRICING is the long-term tier and still reads 'free' for
+  // Statutory Health even though its paywall is live at Rs.499 — driving copy
+  // and schema.org Offers off it advertised a price of 0 for a product that
+  // charges. The live payment flag is the only honest source here.
+  const isFree = !isPaymentLive(meta.type)
   return {
     name: getAssessmentDisplayName(meta.type),
     pricePaise: ASSESSMENT_PRICES[meta.type].amountPaise,

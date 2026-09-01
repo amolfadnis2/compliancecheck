@@ -50,7 +50,7 @@ import { POSHProgressSection } from '@/components/assessment/posh-progress-secti
 import { EmailGate } from '@/components/identity/EmailGate'
 import { PaymentGate } from '@/components/results/payment-gate'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
-import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { analytics } from '@/lib/analytics/tracking'
 import {
   POSH_EMPLOYEE_COUNT_LABELS,
@@ -1424,7 +1424,10 @@ export default function POSHAssessmentPage() {
             <PaymentGate
               title="Download your full POSH compliance report"
               description="POSH Act 2013 compliance assessment"
-              priceINR={999}
+              // Price comes from the single source of truth — a hardcoded value
+              // here would show one number and charge another, since
+              // /api/payment/create-order reads ASSESSMENT_PRICES server-side.
+              priceINR={Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.POSH].amountPaise / 100)}
               features={[
                 'Full gap analysis with remediation plan',
                 'Priority-ranked action items',

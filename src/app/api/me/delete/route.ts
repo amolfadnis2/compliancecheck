@@ -49,7 +49,7 @@ export async function DELETE() {
             <li>You will not receive any further emails from us after this date.</li>
           </ul>
           <p>If you did not make this request, please contact us immediately at
-            <a href="mailto:compliancecheck@zohomail.in">compliancecheck@zohomail.in</a>.
+            <a href="mailto:contact@compliancecheck.co.in">contact@compliancecheck.co.in</a>.
           </p>
           <p style="color:#6b7280;font-size:12px;margin-top:24px">
             ComplianceCheck — DPDP Act 2023 compliant data handling

@@ -3,10 +3,11 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'DPDP Act 2023 Gap Assessment | Data Protection Compliance | ComplianceCheck',
-  description: 'Comprehensive DPDP Act 2023 compliance assessment. 6-phase evaluation with maturity scoring, gap analysis, and remediation roadmap. ₹2,499 post-beta.',
+  description: 'Comprehensive DPDP Act 2023 compliance assessment. 6-phase evaluation with maturity scoring, gap analysis, and remediation roadmap. Full report ₹2,499.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/dpdp-gap-assessment',
   },
@@ -86,7 +87,7 @@ export default function DPDPGapAssessmentPage() {
             <div className={styles.statItem}><h3>45</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>6</h3><p>Assessment Phases</p></div>
             <div className={styles.statItem}><h3>₹250Cr</h3><p>Max Penalty</p></div>
-            <div className={styles.statItem}><h3>₹2,499</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹2,499</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -189,19 +190,12 @@ export default function DPDPGapAssessmentPage() {
       <section className={styles.pricing} style={{ background: 'white' }}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹2,499</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {['Complete 45-question assessment', '6-phase evaluation', '5-level maturity scoring', 'DPDP Act section mapping', 'Penalty risk assessment', 'Remediation roadmap', 'Professional PDF report'].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/dpdp" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
-            </Link>
-          </div>
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.DPDP}
+            accentColor={accentColor}
+            ctaHref="/assessment/dpdp"
+            features={['Complete 45-question assessment', '6-phase evaluation', '5-level maturity scoring', 'DPDP Act section mapping', 'Penalty risk assessment', 'Remediation roadmap', 'Professional PDF report']}
+          />
         </div>
       </section>
 

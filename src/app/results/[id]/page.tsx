@@ -1159,7 +1159,7 @@ function AssessmentSaveFailedPage({ assessmentType }: { assessmentType: string }
               </Button>
             </Link>
             <p className="text-xs text-gray-400">
-              If this keeps happening, email us at support@compliancecheck.in
+              If this keeps happening, email us at contact@compliancecheck.co.in
             </p>
           </CardContent>
         </Card>
