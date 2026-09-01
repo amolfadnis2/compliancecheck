@@ -240,6 +240,12 @@ export function PaymentGate({
         </Button>
 
         {isLiveMode && (
+          <p className="text-xs text-gray-500 text-center">
+            Not useful? Reply to your receipt email within 7 days for a full refund.
+          </p>
+        )}
+
+        {isLiveMode && (
           <div className="text-center">
             {!showPromo ? (
               <button

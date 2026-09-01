@@ -107,17 +107,22 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">5. Beta Programme</h2>
               <p className="text-gray-600 dark:text-gray-400">
-                During the beta period, all assessments are provided free of charge. We reserve the right to modify, limit, or discontinue the beta programme at any time. Beta features may contain bugs or errors, and we appreciate your feedback to improve the Service.
+                Some assessments are currently offered free of charge as part of an early-access programme. We reserve the right to modify, limit, or discontinue early-access availability at any time. Early-access features may contain bugs or errors, and we appreciate your feedback to improve the Service.
               </p>
             </section>
 
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. Pricing and Payments</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Post-beta, assessments will be available on a pay-as-you-go basis. Prices will be clearly displayed before purchase. All payments are processed securely through Razorpay.
+                Paid assessments are available on a pay-as-you-go basis. Prices are clearly displayed before purchase. All payments are processed securely through Razorpay.
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Prices are subject to change. We will notify registered users of any pricing changes before they take effect.
               </p>
               <p className="text-gray-600 dark:text-gray-400">
-                Prices are subject to change. We will notify registered users of any pricing changes before they take effect.
+                <strong>Refunds:</strong> if a paid report is not useful to you, reply to your payment
+                receipt email within 7 days of purchase and we will issue a full refund to your
+                original payment method.
               </p>
             </section>
 
@@ -176,7 +181,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">13. Contact</h2>
               <p className="text-gray-600 dark:text-gray-400">
                 For questions about these Terms, contact us at:<br />
-                Email: <a href="mailto:compliancecheck@zohomail.in" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">compliancecheck@zohomail.in</a>
+                Email: <a href="mailto:contact@compliancecheck.co.in" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">contact@compliancecheck.co.in</a>
               </p>
             </section>
           </article>

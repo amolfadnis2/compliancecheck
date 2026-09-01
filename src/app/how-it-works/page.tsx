@@ -776,7 +776,7 @@ export default function HowItWorksPage() {
           <div className="flex gap-6 text-sm text-gray-600">
             <Link href="/privacy" className="hover:text-gray-900">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-gray-900">Terms of Service</Link>
-            <Link href="mailto:support@compliancecheck.co.in" className="hover:text-gray-900">Contact</Link>
+            <Link href="mailto:contact@compliancecheck.co.in" className="hover:text-gray-900">Contact</Link>
           </div>
           <p className="text-sm text-gray-400">© 2025 ComplianceCheck</p>
         </div>

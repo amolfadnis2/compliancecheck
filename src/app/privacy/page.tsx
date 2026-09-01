@@ -158,7 +158,7 @@ export default function PrivacyPage() {
                 For privacy-related enquiries or to exercise your rights, contact us at:
               </p>
               <p className="text-gray-600 dark:text-gray-400">
-                Email: <a href="mailto:compliancecheck@zohomail.in" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">compliancecheck@zohomail.in</a><br />
+                Email: <a href="mailto:contact@compliancecheck.co.in" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">contact@compliancecheck.co.in</a><br />
                 Location: Pune, Maharashtra, India
               </p>
             </section>

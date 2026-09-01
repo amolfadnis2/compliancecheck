@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator/methodology`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.8 },
     // Utility / legal
+    { url: `${SITE_URL}/about`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/contact`, lastModified: currentDate, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${SITE_URL}/documents/employee-consent`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${SITE_URL}/privacy`, lastModified: currentDate, changeFrequency: 'yearly', priority: 0.5 },

@@ -96,7 +96,7 @@ function generateEmailHtml(): string {
         <div style="background: #FEF3C7; border-radius: 8px; padding: 15px; margin-top: 20px;">
           <p style="color: #92400E; margin: 0; font-size: 14px;">
             <strong>Questions?</strong> Reply to this email or contact us at
-            <a href="mailto:compliancecheck@zohomail.in" style="color: #92400E;">compliancecheck@zohomail.in</a>
+            <a href="mailto:contact@compliancecheck.co.in" style="color: #92400E;">contact@compliancecheck.co.in</a>
           </p>
         </div>
       </div>

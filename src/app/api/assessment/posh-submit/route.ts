@@ -235,7 +235,7 @@ async function sendEmailNotification(
         </p>
         
         <p style="font-size: 12px; color: #666;">
-          Questions? Reply to this email or contact us at support@compliancecheck.co.in
+          Questions? Reply to this email or contact us at contact@compliancecheck.co.in
         </p>
         
         <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb;">

@@ -11,6 +11,10 @@ export const SITE_NAME = 'ComplianceCheck'
 export const SITE_TAGLINE =
   'Pay-as-you-go compliance assessments for Indian SMEs'
 
+// The single public contact address. Every user-facing email mention must use
+// this constant — mixed addresses (zohomail, wrong domains) have shipped before.
+export const CONTACT_EMAIL = 'contact@compliancecheck.co.in'
+
 /** Build an absolute URL from a path (e.g. "/blog" -> full URL). */
 export function absoluteUrl(path = '/'): string {
   if (path.startsWith('http')) return path

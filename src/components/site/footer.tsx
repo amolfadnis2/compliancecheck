@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CONTACT_EMAIL } from '@/lib/seo/site'
 
 // Shared site footer. Anchor links point at the homepage explicitly
 // (`/#assessments` not `#assessments`) so they resolve correctly when this
@@ -67,6 +68,11 @@ export function Footer() {
                   FAQ
                 </Link>
               </li>
+              <li>
+                <Link href="/about" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                  About
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -99,7 +105,7 @@ export function Footer() {
             © {currentYear} ComplianceCheck. Made in India <span aria-label="Indian flag">🇮🇳</span>
           </p>
           <p className="text-gray-500 text-sm">
-            Contact: <a href="mailto:compliancecheck@zohomail.in" className="text-gray-400 hover:text-white transition-colors">compliancecheck@zohomail.in</a>
+            Contact: <a href={`mailto:${CONTACT_EMAIL}`} className="text-gray-400 hover:text-white transition-colors">{CONTACT_EMAIL}</a>
           </p>
         </div>
       </div>
