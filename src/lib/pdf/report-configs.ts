@@ -178,6 +178,39 @@ export const POSH_CONFIG: ReportConfig = {
 }
 
 // ============================================================================
+// AUTO DEALERSHIP COMPLIANCE (sample report only — live report generation
+// stays on its own standalone route per CLAUDE.md sec 14)
+// ============================================================================
+
+export const AUTO_DEALER_CONFIG: ReportConfig = {
+  assessmentTitle: 'Auto Dealership Compliance',
+  assessmentSubtitle: 'Assessment Report',
+  legislationDescription: 'Labour Codes, CMVR, EHS, IRDAI MISP, ELV, GST & DPDP Compliance',
+  legislationLine2: '2-Wheeler & 4-Wheeler Dealerships',
+  filenamePrefix: 'Auto-Dealer-Compliance',
+  resources: [
+    { name: 'Ministry of Road Transport & Highways', url: 'https://morth.nic.in' },
+    { name: 'IRDAI Portal', url: 'https://irdai.gov.in' },
+    { name: 'Ministry of Labour', url: 'https://labour.gov.in' },
+    { name: 'CPCB E-Waste/EPR Portal', url: 'https://cpcb.nic.in' },
+  ],
+  legislation: [
+    'Code on Wages, 2019',
+    'Occupational Safety, Health and Working Conditions Code, 2020',
+    'Central Motor Vehicles Rules, 1989',
+    'IRDAI (Insurance Web Aggregators/MISP) Regulations',
+    'E-Waste (Management) Rules, 2022 (EPR)',
+    'Digital Personal Data Protection Act, 2023',
+  ],
+  deadlines: [
+    { item: 'PF/ESI Monthly Deposit', date: '15th of following month' },
+    { item: 'POSH Annual Report', date: 'January 31 annually' },
+    { item: 'EPR (E-Waste) Annual Return', date: 'As prescribed by CPCB' },
+    { item: 'DPDP Act Full Compliance', date: '13 May 2027' },
+  ],
+}
+
+// ============================================================================
 // FOOD BUSINESS COMPLIANCE
 // ============================================================================
 

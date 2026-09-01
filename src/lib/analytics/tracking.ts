@@ -24,6 +24,15 @@ import {
   OrganizationCreatedProps,
   UserInvitedProps,
   FeedbackSubmittedProps,
+  LandingViewedProps,
+  CheckoutViewedProps,
+  PaymentSucceededProps,
+  SampleReportDownloadedProps,
+  GuaranteeViewedProps,
+  RefundRequestedProps,
+  ActionPlanViewedProps,
+  ActionItemCheckedProps,
+  ExpertCallRequestedProps,
   UserTier,
   OrganizationSize,
 } from './events';
@@ -185,6 +194,46 @@ export const trackFeedbackSubmitted = (props: FeedbackSubmittedProps) => {
 };
 
 // =============================================================================
+// TRUST & CONVERSION TRACKING (samples, guarantee, action plan, expert call)
+// =============================================================================
+
+export const trackLandingViewed = (props: LandingViewedProps) => {
+  safeCapture(ANALYTICS_EVENTS.LANDING_VIEWED, props);
+};
+
+export const trackCheckoutViewed = (props: CheckoutViewedProps) => {
+  safeCapture(ANALYTICS_EVENTS.CHECKOUT_VIEWED, props);
+};
+
+export const trackPaymentSucceeded = (props: PaymentSucceededProps) => {
+  safeCapture(ANALYTICS_EVENTS.PAYMENT_SUCCEEDED, props);
+};
+
+export const trackSampleReportDownloaded = (props: SampleReportDownloadedProps) => {
+  safeCapture(ANALYTICS_EVENTS.SAMPLE_REPORT_DOWNLOADED, props);
+};
+
+export const trackGuaranteeViewed = (props: GuaranteeViewedProps) => {
+  safeCapture(ANALYTICS_EVENTS.GUARANTEE_VIEWED, props);
+};
+
+export const trackRefundRequested = (props: RefundRequestedProps) => {
+  safeCapture(ANALYTICS_EVENTS.REFUND_REQUESTED, props);
+};
+
+export const trackActionPlanViewed = (props: ActionPlanViewedProps) => {
+  safeCapture(ANALYTICS_EVENTS.ACTION_PLAN_VIEWED, props);
+};
+
+export const trackActionItemChecked = (props: ActionItemCheckedProps) => {
+  safeCapture(ANALYTICS_EVENTS.ACTION_ITEM_CHECKED, props);
+};
+
+export const trackExpertCallRequested = (props: ExpertCallRequestedProps) => {
+  safeCapture(ANALYTICS_EVENTS.EXPERT_CALL_REQUESTED, props);
+};
+
+// =============================================================================
 // UNIFIED ANALYTICS OBJECT (for cleaner imports)
 // =============================================================================
 
@@ -229,7 +278,18 @@ export const analytics = {
   
   // Feedback
   feedbackSubmitted: trackFeedbackSubmitted,
-  
+
+  // Trust & conversion
+  landingViewed: trackLandingViewed,
+  checkoutViewed: trackCheckoutViewed,
+  paymentSucceeded: trackPaymentSucceeded,
+  sampleReportDownloaded: trackSampleReportDownloaded,
+  guaranteeViewed: trackGuaranteeViewed,
+  refundRequested: trackRefundRequested,
+  actionPlanViewed: trackActionPlanViewed,
+  actionItemChecked: trackActionItemChecked,
+  expertCallRequested: trackExpertCallRequested,
+
   // Generic tracking
   trackEvent,
 };

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { DownloadSampleReportButton } from '@/components/trust/download-sample-report-button'
+import { LandingViewTracker } from '@/components/trust/landing-view-tracker'
 
 export const metadata: Metadata = {
   title: 'State-Wise Compliance Check | Professional Tax, LWF, S&E Act | ComplianceCheck',
@@ -26,6 +28,7 @@ export default function StateWiseCompliancePage() {
   return (
     <div className={styles.page}>
       <LandingSchema type={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE} />
+      <LandingViewTracker assessmentType={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE} source="landing_page" />
       <nav className={styles.nav}>
         <div className={styles.container}>
           <div className={styles.navContent}>
@@ -54,6 +57,9 @@ export default function StateWiseCompliancePage() {
               <Link href="/assessment/state-wise-compliance" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Check My State →
               </Link>
+              <div style={{ marginTop: '16px' }}>
+                <DownloadSampleReportButton assessmentType={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE} source="landing_page" />
+              </div>
             </div>
             <div className={styles.heroVisual}>
               <div className={styles.visualHeader}>

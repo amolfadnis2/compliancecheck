@@ -3,6 +3,8 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { DownloadSampleReportButton } from '@/components/trust/download-sample-report-button'
+import { LandingViewTracker } from '@/components/trust/landing-view-tracker'
 
 export const metadata: Metadata = {
   title: 'Labour Code Readiness Assessment | Nov 2025 Deadline | ComplianceCheck',
@@ -26,6 +28,7 @@ export default function LabourCodeReadinessPage() {
   return (
     <div className={styles.page}>
       <LandingSchema type={ASSESSMENT_TYPES.LABOUR_CODE} />
+      <LandingViewTracker assessmentType={ASSESSMENT_TYPES.LABOUR_CODE} source="landing_page" />
       {/* Navigation */}
       <nav className={styles.nav}>
         <div className={styles.container}>
@@ -56,6 +59,9 @@ export default function LabourCodeReadinessPage() {
               <Link href="/assessment/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Start Free Assessment →
               </Link>
+              <div style={{ marginTop: '16px' }}>
+                <DownloadSampleReportButton assessmentType={ASSESSMENT_TYPES.LABOUR_CODE} source="landing_page" />
+              </div>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
                 <div className={styles.alertIcon} style={{ background: 'rgba(220, 38, 38, 0.1)' }}>⚠️</div>
                 <div className={styles.alertContent}>

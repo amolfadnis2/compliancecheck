@@ -203,6 +203,60 @@ export interface SuggestionSubmittedProps {
   has_contact: boolean;
 }
 
+// =============================================================================
+// TRUST & CONVERSION EVENTS (sample reports, guarantee, action plan, expert call)
+// =============================================================================
+
+export interface LandingViewedProps {
+  assessment_type: AssessmentType;
+  source?: string;
+}
+
+export interface CheckoutViewedProps {
+  assessment_type: AssessmentType;
+  price_inr: number;
+  assessment_id?: string;
+}
+
+export interface PaymentSucceededProps {
+  assessment_type: AssessmentType;
+  amount_inr: number;
+  assessment_id: string;
+}
+
+export interface SampleReportDownloadedProps {
+  assessment_type: AssessmentType;
+  source: 'homepage' | 'landing_page' | 'results_teaser' | 'samples_gallery';
+  email_provided: boolean;
+}
+
+export interface GuaranteeViewedProps {
+  assessment_type: AssessmentType;
+  source: 'checkout' | 'results';
+}
+
+export interface RefundRequestedProps {
+  assessment_type: AssessmentType;
+  assessment_id: string;
+  within_window: boolean;
+}
+
+export interface ActionPlanViewedProps {
+  assessment_type: AssessmentType;
+  assessment_id?: string;
+  item_count: number;
+}
+
+export interface ActionItemCheckedProps {
+  assessment_type: AssessmentType;
+  assessment_id?: string;
+  checked: boolean;
+}
+
+export interface ExpertCallRequestedProps {
+  assessment_type: AssessmentType;
+  assessment_id: string;
+}
 
 // =============================================================================
 // EVENT NAMES (for consistent naming across codebase)
@@ -237,6 +291,17 @@ export const ANALYTICS_EVENTS = {
   // Feedback
   FEEDBACK_SUBMITTED: 'feedback_submitted',
   SUGGESTION_SUBMITTED: 'suggestion_submitted',
+
+  // Trust & conversion (samples, guarantee, action plan, expert call)
+  LANDING_VIEWED: 'landing_viewed',
+  CHECKOUT_VIEWED: 'checkout_viewed',
+  PAYMENT_SUCCEEDED: 'payment_succeeded',
+  SAMPLE_REPORT_DOWNLOADED: 'sample_report_downloaded',
+  GUARANTEE_VIEWED: 'guarantee_viewed',
+  REFUND_REQUESTED: 'refund_requested',
+  ACTION_PLAN_VIEWED: 'action_plan_viewed',
+  ACTION_ITEM_CHECKED: 'action_item_checked',
+  EXPERT_CALL_REQUESTED: 'expert_call_requested',
 } as const;
 
 export type AnalyticsEventName = typeof ANALYTICS_EVENTS[keyof typeof ANALYTICS_EVENTS];

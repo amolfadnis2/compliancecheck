@@ -7,6 +7,7 @@ import { ArrowLeft, AlertTriangle, CheckCircle, XCircle, Lock, Building } from '
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { PaymentGate } from '@/components/results/payment-gate'
+import { DownloadSampleReportButton } from '@/components/trust/download-sample-report-button'
 import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -198,6 +199,12 @@ export function AssessmentSummary({
             </CardContent>
           </Card>
         )}
+
+        {/* Not sure yet? See a real sample report first */}
+        <div className="mb-6 text-center">
+          <p className="text-sm text-gray-500 mb-2">Not sure what you&apos;ll get? See a real sample first.</p>
+          <DownloadSampleReportButton assessmentType={assessmentType} source="results_teaser" className="inline-block" />
+        </div>
 
         {/* Value proposition */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">

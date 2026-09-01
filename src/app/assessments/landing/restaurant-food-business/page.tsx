@@ -3,6 +3,8 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { DownloadSampleReportButton } from '@/components/trust/download-sample-report-button'
+import { LandingViewTracker } from '@/components/trust/landing-view-tracker'
 
 export const metadata: Metadata = {
   title: 'Restaurant & Food Business Compliance | FSSAI, Fire NOC, Liquor License | ComplianceCheck',
@@ -26,6 +28,7 @@ export default function RestaurantFoodBusinessPage() {
   return (
     <div className={styles.page}>
       <LandingSchema type={ASSESSMENT_TYPES.FOOD_BUSINESS} />
+      <LandingViewTracker assessmentType={ASSESSMENT_TYPES.FOOD_BUSINESS} source="landing_page" />
       <nav className={styles.nav}>
         <div className={styles.container}>
           <div className={styles.navContent}>
@@ -54,6 +57,9 @@ export default function RestaurantFoodBusinessPage() {
               <Link href="/assessment/food-business" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
                 Start Free Assessment →
               </Link>
+              <div style={{ marginTop: '16px' }}>
+                <DownloadSampleReportButton assessmentType={ASSESSMENT_TYPES.FOOD_BUSINESS} source="landing_page" />
+              </div>
             </div>
             <div className={styles.heroVisual}>
               <div className={styles.visualHeader}>
