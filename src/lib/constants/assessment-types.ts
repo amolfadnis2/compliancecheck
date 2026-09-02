@@ -64,6 +64,30 @@ export function getAssessmentPricePaise(type: AssessmentType): number {
   return ASSESSMENT_PRICES[type].amountPaise;
 }
 
+/**
+ * Rupee price shown to users. Always derive display prices from here rather than
+ * hardcoding them next to a card or a gate: /api/payment/create-order charges
+ * ASSESSMENT_PRICES[type].amountPaise, so any duplicated literal is a price the
+ * page can silently drift away from.
+ */
+export function getAssessmentPriceINR(type: AssessmentType): number {
+  return Math.round(getAssessmentPricePaise(type) / 100);
+}
+
+/** Display-ready price string, e.g. "₹1,999". */
+export function formatAssessmentPriceINR(type: AssessmentType): string {
+  return `₹${getAssessmentPriceINR(type).toLocaleString('en-IN')}`;
+}
+
+/**
+ * Cheapest full-report price, for "reports from ₹X" claims. Derived so those
+ * claims cannot outlive a price change.
+ */
+export function formatLowestAssessmentPriceINR(): string {
+  const lowestPaise = Math.min(...Object.values(ASSESSMENT_PRICES).map((p) => p.amountPaise));
+  return `₹${Math.round(lowestPaise / 100).toLocaleString('en-IN')}`;
+}
+
 export function isPaymentLive(type: AssessmentType): boolean {
   return ASSESSMENT_PRICES[type]?.live ?? false;
 }

@@ -46,8 +46,15 @@ NEXT_PUBLIC_POSTHOG_HOST=
 RESEND_API_KEY=
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 ```
+
+`RAZORPAY_WEBHOOK_SECRET` is the **webhook** secret from the Razorpay dashboard
+(Settings > Webhooks), a different credential from `RAZORPAY_KEY_SECRET`. It signs
+the raw body of `payment.captured` deliveries to `/api/payment/razorpay-webhook`,
+which is what makes a payment durable when the browser never reaches
+`/api/payment/verify`.
 
 ---
 
