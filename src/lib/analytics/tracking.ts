@@ -17,6 +17,7 @@ import {
   FeatureGateHitProps,
   PricingPageViewedProps,
   CheckoutStartedProps,
+  PaymentCompletedProps,
   SubscriptionUpgradedProps,
   SubscriptionCancelledProps,
   UserSignedUpProps,
@@ -143,6 +144,14 @@ export const trackCheckoutStarted = (props: CheckoutStartedProps) => {
   safeCapture(ANALYTICS_EVENTS.CHECKOUT_STARTED, props);
 };
 
+/**
+ * Fired only once the server has verified the Razorpay signature — this is the
+ * revenue event, so it must never fire on checkout open or on a beta stub.
+ */
+export const trackPaymentCompleted = (props: PaymentCompletedProps) => {
+  safeCapture(ANALYTICS_EVENTS.PAYMENT_COMPLETED, props);
+};
+
 export const trackSubscriptionUpgraded = (props: SubscriptionUpgradedProps) => {
   safeCapture(ANALYTICS_EVENTS.SUBSCRIPTION_UPGRADED, {
     ...props,
@@ -218,6 +227,7 @@ export const analytics = {
   featureGateHit: trackFeatureGateHit,
   pricingPageViewed: trackPricingPageViewed,
   checkoutStarted: trackCheckoutStarted,
+  paymentCompleted: trackPaymentCompleted,
   subscriptionUpgraded: trackSubscriptionUpgraded,
   subscriptionCancelled: trackSubscriptionCancelled,
   

@@ -139,6 +139,12 @@ export interface CheckoutStartedProps {
   assessment_type?: AssessmentType;
 }
 
+export interface PaymentCompletedProps {
+  assessment_type: AssessmentType;
+  amount_inr: number;
+  assessment_id: string;
+}
+
 export interface SubscriptionUpgradedProps {
   from_tier: UserTier;
   to_tier: UserTier;
@@ -225,6 +231,7 @@ export const ANALYTICS_EVENTS = {
   FEATURE_GATE_HIT: 'feature_gate_hit',
   PRICING_PAGE_VIEWED: 'pricing_page_viewed',
   CHECKOUT_STARTED: 'checkout_started',
+  PAYMENT_COMPLETED: 'payment_completed',
   SUBSCRIPTION_UPGRADED: 'subscription_upgraded',
   SUBSCRIPTION_CANCELLED: 'subscription_cancelled',
   

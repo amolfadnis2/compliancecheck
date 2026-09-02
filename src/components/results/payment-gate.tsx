@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { analytics } from '@/lib/analytics/tracking'
-import type { AssessmentType } from '@/lib/constants/assessment-types'
+import { isPaymentLive, type AssessmentType } from '@/lib/constants/assessment-types'
 import { getSampleReportPath } from '@/lib/pdf/sample-report-paths'
 
 // Minimal type for the client-side Razorpay Checkout widget
@@ -74,6 +74,12 @@ export function PaymentGate({
   const [error, setError] = useState<string | null>(null)
 
   const isLiveMode = !!assessmentId && !!assessmentType
+  // A paid, live assessment can still land on the fallback: POSH passes
+  // assessmentType unconditionally but assessmentId only once its Supabase
+  // write succeeded, so a failed persist leaves a real ₹1,999 product on the
+  // stub. Calling that "free in beta" is untrue, so the copy below splits the
+  // two cases while the behaviour (unlock without charging) stays identical.
+  const isUnpricedBeta = !isLiveMode && !(assessmentType && isPaymentLive(assessmentType))
   // "See what you get before you pay" — the report is the product, so a buyer
   // deciding on a few thousand rupees should be able to read one first.
   const samplePath = assessmentType ? getSampleReportPath(assessmentType) : null
@@ -86,7 +92,7 @@ export function PaymentGate({
   const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
   const handlePayClick = async () => {
-    if (!isLiveMode) {
+    if (!assessmentId || !assessmentType) {
       // Beta stub: not a real checkout, so record a feature-gate hit rather
       // than polluting checkout conversion metrics
       analytics.featureGateHit({ feature: 'pdf_export', current_tier: 'free', attempted_action: 'view_paid_report', assessment_type: assessmentType })
@@ -143,6 +149,11 @@ export function PaymentGate({
               }),
             })
             if (verifyRes.ok) {
+              analytics.paymentCompleted({
+                assessment_type: assessmentType,
+                amount_inr: priceINR,
+                assessment_id: assessmentId,
+              })
               onPaid()
             } else {
               const err = await verifyRes.json()
@@ -251,7 +262,13 @@ export function PaymentGate({
           disabled={loading}
           className="w-full bg-blue-700 hover:bg-blue-800 h-12"
         >
-          {loading ? 'Processing…' : isLiveMode ? `Pay ₹${priceINR.toLocaleString('en-IN')} & Unlock` : 'Free in beta — View Report'}
+          {loading
+            ? 'Processing…'
+            : isLiveMode
+              ? `Pay ₹${priceINR.toLocaleString('en-IN')} & Unlock`
+              : isUnpricedBeta
+                ? 'Free in beta — View Report'
+                : 'View Report — no charge this time'}
         </Button>
 
         {isLiveMode && (
@@ -293,7 +310,11 @@ export function PaymentGate({
         )}
 
         {!isLiveMode && (
-          <p className="text-xs text-gray-400 text-center">Payment will be enabled in a future release.</p>
+          <p className="text-xs text-gray-400 text-center">
+            {isUnpricedBeta
+              ? 'Payment will be enabled in a future release.'
+              : "We couldn't start checkout for this report, so we've unlocked it at no charge. You have not been billed."}
+          </p>
         )}
       </CardContent>
     </Card>

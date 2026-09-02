@@ -5,6 +5,13 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Footer } from '@/components/site/footer';
 import {
+  ASSESSMENT_TYPES,
+  formatAssessmentPriceINR,
+  formatLowestAssessmentPriceINR,
+  isPaymentLive,
+  type AssessmentType,
+} from '@/lib/constants/assessment-types';
+import {
   Heart,
   Scale,
   Shield,
@@ -34,12 +41,12 @@ const assessments: {
   description: string;
   questions: number;
   /**
-   * Must match ASSESSMENT_PRICES in @/lib/constants/assessment-types — that is
-   * what /api/payment/create-order actually charges. Update both together when
-   * a price changes or a paywall goes live.
+   * The card's price and "early access" badge are derived from this via
+   * ASSESSMENT_PRICES — never restated here. /api/payment/create-order charges
+   * from that same constant, so a hardcoded card price is a price the site can
+   * silently drift away from (it has shipped that bug three times).
    */
-  fullPrice: string;
-  isLive: boolean;
+  type: AssessmentType;
   href: string;
   icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
   gradient: string;
@@ -51,8 +58,7 @@ const assessments: {
     title: 'Statutory Health Check',
     description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance.',
     questions: 12,
-    fullPrice: '₹499',
-    isLive: true,
+    type: ASSESSMENT_TYPES.STATUTORY_HEALTH,
     href: '/assessment/statutory-health',
     icon: Heart,
     gradient: 'from-blue-500 to-blue-600',
@@ -64,8 +70,7 @@ const assessments: {
     title: 'Labour Code Readiness',
     description: 'Assessment for all 4 new Labour Codes (Nov 2025). Gap analysis & action items.',
     questions: 30,
-    fullPrice: '₹999',
-    isLive: false,
+    type: ASSESSMENT_TYPES.LABOUR_CODE,
     href: '/assessment/labour-code',
     icon: Scale,
     gradient: 'from-teal-500 to-teal-600',
@@ -77,8 +82,7 @@ const assessments: {
     title: 'DPDP Gap Assessment',
     description: 'Data protection compliance for DPDP Act 2023 (effective May 2027). Maturity scoring.',
     questions: 45,
-    fullPrice: '₹2,499',
-    isLive: true,
+    type: ASSESSMENT_TYPES.DPDP,
     href: '/assessment/dpdp',
     icon: Shield,
     gradient: 'from-blue-600 to-cyan-600',
@@ -90,8 +94,7 @@ const assessments: {
     title: 'Which Laws Apply to My Business?',
     description: "Find out exactly what's required in your state — Professional Tax slabs, Labour Welfare Fund rates, S&E deadlines, and more.",
     questions: 10,
-    fullPrice: '₹499',
-    isLive: false,
+    type: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
     href: '/assessment/state-wise-compliance',
     icon: MapPin,
     gradient: 'from-indigo-600 to-purple-600',
@@ -103,8 +106,7 @@ const assessments: {
     title: 'Restaurant & Food Business',
     description: 'FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.',
     questions: 26,
-    fullPrice: '₹999',
-    isLive: false,
+    type: ASSESSMENT_TYPES.FOOD_BUSINESS,
     href: '/assessment/food-business',
     icon: Utensils,
     gradient: 'from-cyan-500 to-teal-600',
@@ -116,8 +118,7 @@ const assessments: {
     title: 'POSH Act 2013 Compliance',
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
     questions: 40,
-    fullPrice: '₹1,999',
-    isLive: true,
+    type: ASSESSMENT_TYPES.POSH,
     href: '/assessment/posh',
     icon: AlertTriangle,
     gradient: 'from-purple-500 to-pink-600',
@@ -129,8 +130,7 @@ const assessments: {
     title: 'Auto Dealership Compliance',
     description: '2-Wheeler & 4-Wheeler Dealers — Labour, CMVR, EHS, IRDAI MISP, ELV, GST 2.0, DPDP. 6-phase, up to 100 questions.',
     questions: 100,
-    fullPrice: '₹2,999',
-    isLive: false,
+    type: ASSESSMENT_TYPES.AUTO_DEALER,
     href: '/assessment/auto-dealer',
     icon: Car,
     gradient: 'from-blue-700 to-sky-500',
@@ -422,7 +422,7 @@ function HeroSection() {
           Answer a guided set of questions and get a free compliance summary instantly:
           your score, category breakdown, and top gaps identified. Unlock the full report —
           with every gap explained, the exact law cited, and a prioritised action plan —
-          from ₹499. No lawyer appointment needed.
+          from {formatLowestAssessmentPriceINR()}. No lawyer appointment needed.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
@@ -492,7 +492,7 @@ function AssessmentsSection() {
 
           <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
             Free compliance summary included with every assessment.
-            Full reports from ₹499 — pay once, no subscription.
+            Full reports from {formatLowestAssessmentPriceINR()} — pay once, no subscription.
           </p>
         </header>
 
@@ -561,9 +561,9 @@ function AssessmentCard({ assessment }: { assessment: typeof assessments[number]
           <span className="text-gray-600 dark:text-gray-400">Free summary</span>
           <span className="w-px h-4 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
           <span className="font-semibold text-gray-800 dark:text-gray-200">
-            Full report: {assessment.fullPrice}
+            Full report: {formatAssessmentPriceINR(assessment.type)}
           </span>
-          {!assessment.isLive && (
+          {!isPaymentLive(assessment.type) && (
             <span className="text-xs text-green-600 dark:text-green-400">Early access — free now</span>
           )}
         </div>
@@ -571,7 +571,7 @@ function AssessmentCard({ assessment }: { assessment: typeof assessments[number]
         {/* CTA Button */}
         <div className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg bg-blue-600 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-teal-600 text-white transition-all duration-300">
           <span className="font-medium">
-            {assessment.isLive ? 'Start — Free Summary' : 'Start Assessment'}
+            {isPaymentLive(assessment.type) ? 'Start — Free Summary' : 'Start Assessment'}
           </span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
@@ -747,7 +747,7 @@ function FAQSection() {
     },
     {
       question: 'What do I get when I pay?',
-      answer: 'The full report includes every gap with the exact legal section that applies, a prioritised action plan your team can act on immediately, and a branded PDF you can download or receive by email. One payment — no subscription, no renewal. Prices start at ₹499.'
+      answer: `The full report includes every gap with the exact legal section that applies, a prioritised action plan your team can act on immediately, and a branded PDF you can download or receive by email. One payment — no subscription, no renewal. Prices start at ${formatLowestAssessmentPriceINR()}.`
     },
     {
       question: 'Is this a subscription?',
