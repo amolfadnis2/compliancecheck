@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Calculators - high-traffic free tools
     { url: `${SITE_URL}/calculator/ctc`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculator/gratuity`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${SITE_URL}/calculator/pf-esi-pt`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator/methodology`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.8 },
     // Utility / legal
