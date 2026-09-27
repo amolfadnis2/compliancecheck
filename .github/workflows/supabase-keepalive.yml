@@ -1,8 +1,11 @@
 name: Supabase Keep-Alive
 
 # Supabase free-tier projects auto-pause after 7 days with no API activity.
-# This pings the REST API on a schedule well inside that window so the
-# project never goes idle long enough to pause.
+# This pings the Auth health endpoint on a schedule well inside that window
+# so the project never goes idle long enough to pause.
+#
+# Note: /rest/v1/ (the PostgREST root/OpenAPI endpoint) rejects the anon
+# key with 401 and requires service_role - do not point this at that path.
 
 on:
   schedule:
@@ -11,7 +14,7 @@ on:
 
 jobs:
   ping:
-    name: Ping Supabase REST API
+    name: Ping Supabase Auth API
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase
@@ -23,7 +26,7 @@ jobs:
           body=$(echo "$response" | sed '$d')
           echo "Supabase Auth API responded with HTTP $status"
           echo "Response body: $body"
-          if [ "$status" -ge 500 ]; then
+          if [ "$status" -ge 400 ]; then
             echo "::error::Supabase ping failed with HTTP $status"
             exit 1
           fi
