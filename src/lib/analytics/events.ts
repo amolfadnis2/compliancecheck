@@ -237,6 +237,9 @@ export const ANALYTICS_EVENTS = {
   // Feedback
   FEEDBACK_SUBMITTED: 'feedback_submitted',
   SUGGESTION_SUBMITTED: 'suggestion_submitted',
+
+  // Calculators
+  CALCULATOR_COMPLETED: 'calculator_completed',
 } as const;
 
 export type AnalyticsEventName = typeof ANALYTICS_EVENTS[keyof typeof ANALYTICS_EVENTS];

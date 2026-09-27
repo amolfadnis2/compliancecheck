@@ -167,6 +167,15 @@ const freeTools = [
     icon: Gift,
     gradient: 'from-emerald-500 to-emerald-600',
     tags: ['5+ years eligibility', 'New Labour Code ready']
+  },
+  {
+    id: 'pf-esi-pt-calculator',
+    title: 'PF, ESI & Professional Tax Calculator',
+    description: 'Check whether EPF and ESI apply to your business and see the monthly employee and employer contribution and Professional Tax per employee, for every state.',
+    href: '/calculator/pf-esi-pt',
+    icon: Calculator,
+    gradient: 'from-emerald-500 to-emerald-600',
+    tags: ['For employers', 'State-wise PT']
   }
 ];
 

@@ -51,6 +51,9 @@ function buildLlmsTxt(): string {
   lines.push(
     `- [Gratuity Calculator](${SITE_URL}/calculator/gratuity): Estimate gratuity payout under the Payment of Gratuity Act and the new Labour Code formula.`,
   )
+  lines.push(
+    `- [PF, ESI & Professional Tax Calculator](${SITE_URL}/calculator/pf-esi-pt): Check whether EPF and ESI apply to your business and see the monthly employee and employer contribution and Professional Tax per employee, by state. Free, no login.`,
+  )
   lines.push('')
 
   const posts = getAllPosts()
