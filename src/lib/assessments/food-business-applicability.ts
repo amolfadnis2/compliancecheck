@@ -182,12 +182,11 @@ export const FOOD_BUSINESS_APPLICABILITY_QUESTIONS: ApplicabilityQuestion[] = [
     category: 'scale_operations',
     required: true,
     options: [
-      { value: 'below_12_lakh', label: 'Below Rs. 12 lakh' },
-      { value: '12_to_20_lakh', label: 'Rs. 12 lakh to Rs. 20 lakh' },
-      { value: '20_lakh_to_1_cr', label: 'Rs. 20 lakh to Rs. 1 crore' },
-      { value: '1_cr_to_5_cr', label: 'Rs. 1 crore to Rs. 5 crore' },
-      { value: '5_cr_to_20_cr', label: 'Rs. 5 crore to Rs. 20 crore' },
-      { value: 'above_20_cr', label: 'Above Rs. 20 crore' },
+      { value: 'below_20_lakh', label: 'Below Rs. 20 lakh' },
+      { value: '20_lakh_to_1_5_cr', label: 'Rs. 20 lakh to Rs. 1.5 crore' },
+      { value: '1_5_cr_to_5_cr', label: 'Rs. 1.5 crore to Rs. 5 crore' },
+      { value: '5_cr_to_50_cr', label: 'Rs. 5 crore to Rs. 50 crore' },
+      { value: 'above_50_cr', label: 'Above Rs. 50 crore' },
     ],
     helpText: 'Turnover determines FSSAI licence type, GST registration requirement, and audit obligations.',
   },
@@ -533,7 +532,7 @@ export function calculateApplicability(responses: ApplicabilityResponse): Applic
   const results: ApplicabilityResult[] = [];
   
   // Parse responses
-  const turnover = responses.annual_turnover || 'below_12_lakh';
+  const turnover = responses.annual_turnover || 'below_20_lakh';
   const employeeCount = parseEmployeeCount(responses.employee_count || '1_4');
   const servesAlcohol = responses.serves_alcohol === 'yes';
   const primaryState = responses.primary_state || '';
@@ -770,16 +769,26 @@ function parseEmployeeCount(countStr: string): number {
   return map[countStr] || 0;
 }
 
-function getFssaiType(turnover: string): string {
-  if (turnover === 'below_12_lakh') return 'Basic Registration';
-  if (['12_to_20_lakh', '20_lakh_to_1_cr', '1_cr_to_5_cr', '5_cr_to_20_cr'].includes(turnover)) {
-    return 'State Licence';
-  }
+// FSSAI tiers per the FSS (Licensing & Registration) Amendment Regulations 2026,
+// effective 1 April 2026: Registration up to Rs.1.5 Cr, State Licence up to
+// Rs.50 Cr, Central Licence above that. Legacy band values (pre-2026 options)
+// are kept so saved in-progress answers still resolve.
+const REGISTRATION_BANDS = ['below_20_lakh', '20_lakh_to_1_5_cr', 'below_12_lakh', '12_to_20_lakh', '20_lakh_to_1_cr'];
+const STATE_LICENCE_BANDS = ['1_5_cr_to_5_cr', '5_cr_to_50_cr', '1_cr_to_5_cr', '5_cr_to_20_cr'];
+
+export function getFssaiType(turnover: string): string {
+  if (REGISTRATION_BANDS.includes(turnover)) return 'Basic Registration';
+  if (STATE_LICENCE_BANDS.includes(turnover)) return 'State Licence';
   return 'Central Licence';
 }
 
 function getTurnoverLabel(turnover: string): string {
   const labels: Record<string, string> = {
+    'below_20_lakh': '< 20 lakh',
+    '20_lakh_to_1_5_cr': '20L - 1.5 Cr',
+    '1_5_cr_to_5_cr': '1.5-5 Cr',
+    '5_cr_to_50_cr': '5-50 Cr',
+    'above_50_cr': '> 50 Cr',
     'below_12_lakh': '< 12 lakh',
     '12_to_20_lakh': '12-20 lakh',
     '20_lakh_to_1_cr': '20L - 1 Cr',
@@ -790,9 +799,9 @@ function getTurnoverLabel(turnover: string): string {
   return labels[turnover] || turnover;
 }
 
-function isGstRequired(turnover: string, isAggregator: boolean): boolean {
+export function isGstRequired(turnover: string, isAggregator: boolean): boolean {
   if (isAggregator) return true;
-  return !['below_12_lakh', '12_to_20_lakh'].includes(turnover);
+  return !['below_20_lakh', 'below_12_lakh', '12_to_20_lakh'].includes(turnover);
 }
 
 function isFireNocRequired(seating: string, area: string, alcohol: boolean): boolean {
