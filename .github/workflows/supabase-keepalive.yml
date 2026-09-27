@@ -17,11 +17,10 @@ jobs:
       - name: Ping Supabase
         run: |
           response=$(curl -s -w "\n%{http_code}" \
-            "${SUPABASE_URL}/rest/v1/" \
-            -H "apikey: ${SUPABASE_ANON_KEY}")
+            "${SUPABASE_URL}/auth/v1/health")
           status=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
-          echo "Supabase REST API responded with HTTP $status"
+          echo "Supabase Auth API responded with HTTP $status"
           echo "Response body: $body"
           if [ "$status" -ge 500 ]; then
             echo "::error::Supabase ping failed with HTTP $status"
