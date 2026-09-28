@@ -20,7 +20,7 @@ import {
   PHASE1_QUESTIONS,
   getNextPhase1Index,
   getPreviousPhase1Index,
-  TOP_10_STATES,
+  STATE_OPTIONS,
   Question,
   ApplicabilityResult,
   UserDetails,
@@ -43,7 +43,7 @@ function formatStateNames(reason: string): string {
   if (!reason) return reason;
   // Replace any lowercase state values with proper labels
   let formatted = reason;
-  TOP_10_STATES.forEach(state => {
+  STATE_OPTIONS.forEach(state => {
     // Match the value (case-insensitive) and replace with label
     const regex = new RegExp(`\\b${state.value}\\b`, 'gi');
     formatted = formatted.replace(regex, state.label);

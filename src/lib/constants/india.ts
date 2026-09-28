@@ -101,21 +101,58 @@ export const REVENUE_OPTIONS = [
 
 export type RevenueRange = typeof REVENUE_OPTIONS[number]['value'];
 
-// States where Professional Tax is NOT applicable
-export const PT_EXEMPT_STATES = [
-  'Delhi',
-  'Uttar Pradesh',
-  'Haryana',
-  'Uttarakhand',
-  'Himachal Pradesh',
-  'Jammu and Kashmir',
-  'Ladakh',
-  'Arunachal Pradesh',
-  'Nagaland',
-  'Mizoram',
-] as const;
+// Professional Tax status by state/UT — the single source of truth for whether
+// a state levies PT on salaries. 'verify' marks states where sources conflict
+// or no official source could be confirmed; show "confirm with the state".
+export type PTStatus = 'levied' | 'not_levied' | 'verify'
+
+export const PT_RULES_LAST_REVIEWED = '2026-09-28'
+
+export const PT_STATUS: Record<IndianState, PTStatus> = {
+  'Andhra Pradesh': 'levied',
+  'Arunachal Pradesh': 'not_levied',
+  'Assam': 'levied',
+  'Bihar': 'levied',
+  'Chhattisgarh': 'levied',
+  'Goa': 'verify',
+  'Gujarat': 'levied',
+  'Haryana': 'not_levied',
+  'Himachal Pradesh': 'not_levied',
+  'Jharkhand': 'levied',
+  'Karnataka': 'levied',
+  'Kerala': 'levied',
+  'Madhya Pradesh': 'levied',
+  'Maharashtra': 'levied',
+  'Manipur': 'levied',
+  'Meghalaya': 'levied',
+  'Mizoram': 'levied',
+  'Nagaland': 'levied',
+  'Odisha': 'levied',
+  'Punjab': 'levied', // Punjab State Development Tax, deducted from salaries like PT
+  'Rajasthan': 'not_levied',
+  'Sikkim': 'levied',
+  'Tamil Nadu': 'levied',
+  'Telangana': 'levied',
+  'Tripura': 'levied',
+  'Uttar Pradesh': 'not_levied',
+  'Uttarakhand': 'not_levied',
+  'West Bengal': 'levied',
+  'Andaman and Nicobar Islands': 'verify',
+  'Chandigarh': 'not_levied',
+  'Dadra and Nagar Haveli and Daman and Diu': 'verify',
+  'Delhi': 'not_levied',
+  'Jammu and Kashmir': 'not_levied',
+  'Ladakh': 'not_levied',
+  'Lakshadweep': 'verify',
+  'Puducherry': 'levied',
+}
+
+/** PT status for a state name (as in INDIAN_STATES). Unknown names return 'verify'. */
+export function getPTStatus(state: string): PTStatus {
+  return PT_STATUS[state as IndianState] ?? 'verify'
+}
 
 // Helper function to check if PT is applicable
 export function isPTApplicable(state: string): boolean {
-  return !PT_EXEMPT_STATES.includes(state as typeof PT_EXEMPT_STATES[number]);
+  return getPTStatus(state) === 'levied'
 }

@@ -10,6 +10,8 @@
  * Target: Restaurants, Cafés, QSRs, Cloud Kitchens, Caterers
  */
 
+import { isPTApplicable } from '@/lib/constants/india';
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -47,13 +49,6 @@ export const PROHIBITION_STATES = ['Bihar', 'Gujarat', 'Lakshadweep', 'Mizoram',
 export const PARTIAL_PROHIBITION_STATES = ['Manipur']; // Imphal valley prohibited, hill districts allowed
 
 export const ILP_REQUIRED_STATES = ['Arunachal Pradesh', 'Manipur', 'Mizoram', 'Nagaland'];
-
-export const PROFESSIONAL_TAX_STATES = [
-  'Andhra Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat',
-  'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra',
-  'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry',
-  'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'West Bengal'
-];
 
 export const POLICE_LICENSE_STATES = ['Delhi', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 'West Bengal'];
 
@@ -645,7 +640,7 @@ export function calculateApplicability(responses: ApplicabilityResponse): Applic
   const epfApplies = employeeCount >= 20;
   const esiApplies = employeeCount >= 10;
   const gratuityApplies = employeeCount >= 10;
-  const ptApplies = PROFESSIONAL_TAX_STATES.includes(primaryState);
+  const ptApplies = isPTApplicable(primaryState);
   const poshApplies = employsWomen && (womenCount === '10_plus' || employeeCount >= 10);
   
   const laborQuestionCount = calculateLaborQuestions(epfApplies, esiApplies, gratuityApplies, ptApplies, poshApplies);

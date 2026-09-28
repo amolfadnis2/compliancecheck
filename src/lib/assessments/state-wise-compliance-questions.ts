@@ -9,6 +9,8 @@
  * @assessment state_wise_compliance
  */
 
+import { INDIAN_STATES, getPTStatus, type IndianState } from '@/lib/constants/india';
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -55,23 +57,19 @@ export interface UserDetails {
 // CONSTANTS
 // ============================================================================
 
-export const TOP_10_STATES = [
-  { value: 'maharashtra', label: 'Maharashtra' },
-  { value: 'karnataka', label: 'Karnataka' },
-  { value: 'delhi', label: 'Delhi' },
-  { value: 'uttar_pradesh', label: 'Uttar Pradesh' },
-  { value: 'gujarat', label: 'Gujarat' },
-  { value: 'tamil_nadu', label: 'Tamil Nadu' },
-  { value: 'telangana', label: 'Telangana' },
-  { value: 'haryana', label: 'Haryana' },
-  { value: 'kerala', label: 'Kerala' },
-  { value: 'rajasthan', label: 'Rajasthan' },
-  { value: 'west_bengal', label: 'West Bengal' },
-  { value: 'andhra_pradesh', label: 'Andhra Pradesh' },
-  { value: 'madhya_pradesh', label: 'Madhya Pradesh' },
-  { value: 'punjab', label: 'Punjab' },
-  { value: 'other', label: 'Other State' },
-];
+/** Stored option value for a state name, e.g. 'Uttar Pradesh' -> 'uttar_pradesh'. */
+export function toStateValue(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+}
+
+// Every state and UT from the shared list (CLAUDE.md §9/§11). Values keep the
+// snake_case format used by earlier versions so stored responses still resolve.
+export const STATE_OPTIONS = INDIAN_STATES.map(name => ({ value: toStateValue(name), label: name as string }));
+
+/** State name for a stored value; undefined for legacy values like 'other'. */
+export function getStateName(value: string): IndianState | undefined {
+  return INDIAN_STATES.find(name => toStateValue(name) === value);
+}
 
 export const INDUSTRY_TYPES = [
   { value: 'it_software', label: 'IT / Software / SaaS' },
@@ -116,8 +114,6 @@ export const TURNOVER_RANGES = [
   { value: '50Cr_plus', label: 'Above Rs.50 crore' },
 ];
 
-export const PT_APPLICABLE_STATES = ['maharashtra', 'karnataka', 'tamil_nadu', 'telangana', 'gujarat', 'kerala', 'west_bengal'];
-export const PT_EXEMPT_STATES = ['delhi', 'haryana', 'uttar_pradesh', 'rajasthan'];
 export const LWF_APPLICABLE_STATES = ['maharashtra', 'karnataka', 'gujarat', 'kerala', 'telangana', 'uttar_pradesh', 'west_bengal'];
 export const LIQUOR_PROHIBITION_STATES = ['gujarat', 'bihar', 'mizoram', 'nagaland', 'lakshadweep'];
 
@@ -155,7 +151,7 @@ export const PHASE1_QUESTIONS: Question[] = [
     category: 'Business Basics',
     required: true,
     phase: 1,
-    options: TOP_10_STATES,
+    options: STATE_OPTIONS,
     helpText: 'State determines Professional Tax, LWF, and Shops & Establishments requirements.',
   },
   {
@@ -167,7 +163,7 @@ export const PHASE1_QUESTIONS: Question[] = [
     phase: 1,
     options: [
       { value: 'same_as_registered', label: 'Same as registered state only' },
-      ...TOP_10_STATES,
+      ...STATE_OPTIONS,
     ],
     helpText: 'Multi-state operations may trigger additional compliance in each state.',
   },
@@ -541,7 +537,6 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     applicabilityCodes: ['PROFESSIONAL_TAX'],
-    states: PT_APPLICABLE_STATES,
     helpText: 'PT applies in MH, KA, TN, TS, GJ, KL, WB. Delhi, UP, HR, RJ are exempt.',
   },
   {
@@ -554,7 +549,6 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     applicabilityCodes: ['PROFESSIONAL_TAX'],
-    states: PT_APPLICABLE_STATES,
     helpText: 'Maximum Rs.2,500/year per employee across all states.',
   },
   {
@@ -567,7 +561,6 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     applicabilityCodes: ['PROFESSIONAL_TAX'],
-    states: PT_APPLICABLE_STATES,
     helpText: 'Filing frequency varies: monthly (KA), quarterly (GJ), annual (others).',
   },
   // SHOPS & ESTABLISHMENTS QUESTIONS (3 questions)
@@ -1075,8 +1068,8 @@ export interface ApplicabilityResponses {
 
 // Helper function to convert state value to proper label
 function getStateLabelInternal(stateValue: string): string {
-  const state = TOP_10_STATES.find(s => s.value === stateValue);
-  return state ? state.label : stateValue.split('_').map(word => 
+  if (stateValue === 'other') return 'your state';
+  return getStateName(stateValue) ?? stateValue.split('_').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
 }
@@ -1262,14 +1255,24 @@ export function determineApplicability(responses: ApplicabilityResponses): Appli
   });
 
   // Professional Tax
-  const hasPTState = operatingStates.some(s => PT_APPLICABLE_STATES.includes(s));
-  const ptStates = operatingStates.filter(s => PT_APPLICABLE_STATES.includes(s));
+  // Legacy 'other' answers have no state name, so they resolve to 'verify'
+  const ptStatusOf = (value: string) => {
+    const name = getStateName(value);
+    return name ? getPTStatus(name) : 'verify';
+  };
+  const ptStates = operatingStates.filter(s => ptStatusOf(s) === 'levied');
+  const ptVerifyStates = operatingStates.filter(s => ptStatusOf(s) === 'verify');
+  const hasPTState = ptStates.length > 0;
   results.push({
     code: 'PROFESSIONAL_TAX',
     name: 'Professional Tax',
     category: 'state_specific',
     applies: hasPTState,
-    reason: hasPTState ? `Applicable in: ${formatStateList(ptStates)}` : `Not applicable - Your states are PT-exempt`,
+    reason: hasPTState
+      ? `Applicable in: ${formatStateList(ptStates)}`
+      : ptVerifyStates.length > 0
+        ? `Confirm with the ${formatStateList(ptVerifyStates)} commercial tax department whether Professional Tax applies`
+        : 'Not applicable - Your states do not levy Professional Tax',
     threshold: 'State-specific thresholds',
     keyRequirements: ['Register for PT', 'Deduct per slabs', 'File returns', 'Max Rs.2,500/year'],
     penaltyRange: 'Interest + penalty varies by state',
