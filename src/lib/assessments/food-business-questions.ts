@@ -113,7 +113,7 @@ const FSSAI_QUESTIONS: Question[] = [
     category: 'FSSAI',
     weight: 10,
     complianceAnswer: 'yes',
-    helpText: 'FSSAI licence is mandatory for all food businesses. Basic registration for <Rs.12L turnover, State licence for Rs.12L-Rs.20Cr, Central licence for >Rs.20Cr.',
+    helpText: 'FSSAI licence is mandatory for all food businesses. Basic registration up to Rs.1.5 Cr turnover, State licence up to Rs.50 Cr, Central licence above Rs.50 Cr (FSSAI 2026 amendment, effective 1 April 2026).',
     applicabilityCode: 'FSSAI',
   },
   {

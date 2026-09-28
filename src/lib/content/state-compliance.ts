@@ -9,7 +9,7 @@
  * can be enriched over time.
  */
 
-import { INDIAN_STATES, isPTApplicable } from '@/lib/constants/india'
+import { INDIAN_STATES, getPTStatus } from '@/lib/constants/india'
 
 export interface StateCompliance {
   state: string
@@ -112,15 +112,18 @@ const STATE_DETAILS: Record<string, Partial<StateCompliance>> = {
 }
 
 function baseline(state: string): StateCompliance {
-  const ptApplicable = isPTApplicable(state)
+  const ptStatus = getPTStatus(state)
+  const ptApplicable = ptStatus === 'levied'
   return {
     state,
     slug: stateSlug(state),
     professionalTax: {
       applicable: ptApplicable,
-      note: ptApplicable
+      note: ptStatus === 'levied'
         ? `Professional Tax is levied in ${state}. Employers must register, deduct tax per the state's salary slabs, and file periodic returns.`
-        : `${state} does not levy Professional Tax, so no Professional Tax registration or deduction is required.`,
+        : ptStatus === 'verify'
+          ? `Sources differ on whether ${state} currently levies Professional Tax on salaries. Confirm with the ${state} commercial tax department before setting up payroll deductions.`
+          : `${state} does not levy Professional Tax, so no Professional Tax registration or deduction is required.`,
     },
     labourWelfareFund: {
       applicable: true,
@@ -130,9 +133,11 @@ function baseline(state: string): StateCompliance {
       note: `Most commercial establishments in ${state} must register under the applicable Shops and Establishments Act and renew as required.`,
     },
     highlights: [
-      ptApplicable
+      ptStatus === 'levied'
         ? 'Professional Tax registration and periodic returns are required.'
-        : 'No Professional Tax in this state.',
+        : ptStatus === 'verify'
+          ? 'Confirm Professional Tax applicability with the state commercial tax department.'
+          : 'No Professional Tax in this state.',
       'Shops & Establishment registration applies to most commercial premises.',
     ],
   }

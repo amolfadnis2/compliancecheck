@@ -18,7 +18,9 @@ import {
 } from 'lucide-react';
 import {
   PHASE1_QUESTIONS,
-  TOP_10_STATES,
+  getNextPhase1Index,
+  getPreviousPhase1Index,
+  STATE_OPTIONS,
   Question,
   ApplicabilityResult,
   UserDetails,
@@ -41,7 +43,7 @@ function formatStateNames(reason: string): string {
   if (!reason) return reason;
   // Replace any lowercase state values with proper labels
   let formatted = reason;
-  TOP_10_STATES.forEach(state => {
+  STATE_OPTIONS.forEach(state => {
     // Match the value (case-insensitive) and replace with label
     const regex = new RegExp(`\\b${state.value}\\b`, 'gi');
     formatted = formatted.replace(regex, state.label);
@@ -132,8 +134,9 @@ export default function StateWiseComplianceAssessment() {
     const newResponses = { ...phase1Responses, [questionId]: answer };
     setPhase1Responses(newResponses);
     setTimeout(() => {
-      if (phase1Index < PHASE1_QUESTIONS.length - 1) {
-        setPhase1Index(phase1Index + 1);
+      const nextIndex = getNextPhase1Index(phase1Index, newResponses);
+      if (nextIndex !== -1) {
+        setPhase1Index(nextIndex);
       } else {
         const results = determineApplicability(newResponses);
         setApplicabilityResults(results);
@@ -348,6 +351,10 @@ export default function StateWiseComplianceAssessment() {
               <CheckCircle className="h-4 w-4 text-green-600" />
               Industry-Specific (FSSAI, Fintech, Factory, Pollution)
             </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Premises &amp; Sector Licences (Fire NOC, Trade Licence, Liquor, Clinic)
+            </li>
           </ul>
         </div>
       </CardContent>
@@ -356,18 +363,8 @@ export default function StateWiseComplianceAssessment() {
 
   const renderPhase1Question = () => {
     const question = PHASE1_QUESTIONS[phase1Index];
-    // Skip conditional questions if condition not met
-    if (question.id === 'APP_08' && phase1Responses['APP_07'] !== 'yes') {
-      setTimeout(() => {
-        if (phase1Index < PHASE1_QUESTIONS.length - 1) setPhase1Index(phase1Index + 1);
-      }, 0);
-      return (
-        <div className="max-w-2xl mx-auto flex justify-center py-8 text-sm text-gray-500">
-          Skipping — not applicable to your business profile
-        </div>
-      );
-    }
-    
+    const previousIndex = getPreviousPhase1Index(phase1Index, phase1Responses);
+
     return (
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
@@ -453,8 +450,8 @@ export default function StateWiseComplianceAssessment() {
           <div className="flex justify-between pt-4">
             <Button 
               variant="ghost" 
-              onClick={() => phase1Index > 0 && setPhase1Index(phase1Index - 1)} 
-              disabled={phase1Index === 0}
+              onClick={() => previousIndex !== -1 && setPhase1Index(previousIndex)} 
+              disabled={previousIndex === -1}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />Back
             </Button>

@@ -32,7 +32,7 @@ export const FOOD_COMPLIANCE_RULES: Record<string, FoodComplianceRule> = {
     penalty: 'Up to Rs.5-10 lakh fine and/or imprisonment up to 6 months',
     actionIfNonCompliant: [
       'Apply immediately via FoSCoS portal (foscos.fssai.gov.in)',
-      'Choose license type based on turnover: Basic (<Rs.12L), State (Rs.12L-20Cr), Central (>Rs.20Cr)',
+      'Choose license type based on turnover: Basic (up to Rs.1.5 Cr), State (up to Rs.50 Cr), Central (above Rs.50 Cr)',
       'Prepare required documents: ID proof, address proof, food safety plan',
       'Pay applicable fee and await inspection',
     ],

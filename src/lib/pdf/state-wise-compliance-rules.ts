@@ -1,6 +1,6 @@
 /**
  * State-Wise Compliance Rules for PDF Report Generation
- * Comprehensive rules for all 39 Phase 2 questions with:
+ * Comprehensive rules for all Phase 2 questions with:
  * - Legal references (Act/Section)
  * - Penalties for non-compliance
  * - Deadlines
@@ -672,9 +672,9 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     penalty: 'Up to Rs.10 Lakh fine + imprisonment up to 6 months; business closure',
     actionIfNonCompliant: [
       'Determine license type based on annual turnover:',
-      'Basic Registration: Turnover up to Rs.12 Lakh (free registration)',
-      'State License: Turnover Rs.12 Lakh - Rs.20 Crore',
-      'Central License: Turnover above Rs.20 Crore or operating in multiple states',
+      'Registration: Turnover up to Rs.1.5 Crore (FSSAI 2026 amendment, effective 1 April 2026)',
+      'State License: Turnover Rs.1.5 Crore - Rs.50 Crore',
+      'Central License: Turnover above Rs.50 Crore, or importers and other Central-category businesses',
       'Apply on FoSCoS portal (foscos.fssai.gov.in)',
       'Submit Food Safety Management System (FSMS) plan',
       'Undergo inspection if required for license category',
@@ -759,7 +759,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     deadline: 'Before commencing manufacturing operations',
     penalty: 'Up to Rs.2 Lakh fine + imprisonment up to 2 years; closure order',
     actionIfNonCompliant: [
-      'Factory defined as: 10+ workers with power OR 20+ workers without power',
+      'Factory defined as: 20+ workers with power OR 40+ workers without power (OSH Code 2020, in force from 21 November 2025)',
       'Obtain factory plan approval from Chief Inspector of Factories',
       'Apply for factory license on state portal/Shram Suvidha',
       'Appoint Occupier (owner/lessee responsible for factory)',
@@ -834,6 +834,150 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     ],
     actionIfCompliant: 'Reports filed on time. Maintain documentation for inspections. Consider ISO 14001 certification.',
   },
+
+  // ==========================================================================
+  // PREMISES & SECTOR LICENCES
+  // ==========================================================================
+
+  FIRE_01: {
+    questionId: 'FIRE_01',
+    category: 'Fire Safety',
+    requirement: 'Valid Fire NOC for Premises',
+    governmentRef: 'State Fire Services Act and Rules | National Building Code 2016, Part 4 (Fire and Life Safety)',
+    officialLink: 'State fire and emergency services department portal',
+    deadline: 'Before occupying or opening the premises to the public',
+    penalty: 'Sealing of premises and fines under the state fire services act; insurance claims may be rejected',
+    actionIfNonCompliant: [
+      'Check your state fire rules for your occupancy type, floor area and building height',
+      'In a shared building or mall, get a copy of the building-level fire NOC and confirm it covers your unit',
+      'Install fire extinguishers, alarms, exit signage and emergency lighting as required',
+      'Apply to the state or municipal fire department with building plans and occupancy details',
+      'Arrange the fire department inspection and fix any observations',
+    ],
+    actionIfCompliant: 'Fire NOC in place. Track its renewal date and keep a copy at the premises.',
+  },
+
+  FIRE_02: {
+    questionId: 'FIRE_02',
+    category: 'Fire Safety',
+    requirement: 'Fire NOC Renewal and Equipment Maintenance',
+    governmentRef: 'State Fire Services Act and Rules | National Building Code 2016, Part 4',
+    officialLink: 'State fire and emergency services department portal',
+    deadline: 'Before the NOC expiry date (renewal cycle varies by state)',
+    penalty: 'Lapsed NOC treated as no NOC: sealing and fines; liability in case of a fire incident',
+    actionIfNonCompliant: [
+      'Apply for renewal before the expiry date shown on your NOC',
+      'Get extinguishers refilled and serviced; keep the service tags current',
+      'Test alarms, sprinklers and emergency lighting and record the results',
+      'Hold fire drills and keep attendance records',
+      'Train staff on evacuation routes and extinguisher use',
+    ],
+    actionIfCompliant: 'Renewals and maintenance up to date. Keep drill and service records ready for inspection.',
+  },
+
+  TRADE_01: {
+    questionId: 'TRADE_01',
+    category: 'Local Licences',
+    requirement: 'Municipal Trade Licence',
+    governmentRef: 'State Municipal Corporation Act / Municipalities Act and local bye-laws',
+    officialLink: 'Your municipal corporation or local body portal',
+    deadline: 'Before starting business at the premises; renewed annually in most cities',
+    penalty: 'Fines, and sealing of premises for continued non-compliance',
+    actionIfNonCompliant: [
+      'Check whether your municipal corporation requires a trade licence for your business type',
+      'Apply online on the municipal portal with address proof, ownership or rent agreement and ID proof',
+      'Make sure the address matches your property tax or rent documents exactly',
+      'Pay the licence fee and complete any inspection',
+      'Display the licence at the premises',
+    ],
+    actionIfCompliant: 'Trade licence valid. Renew before the municipal deadline each year.',
+  },
+
+  LIQUOR_01: {
+    questionId: 'LIQUOR_01',
+    category: 'Excise',
+    requirement: 'State Excise (Liquor) Licence',
+    governmentRef: 'State Excise Act and Rules',
+    officialLink: 'State excise department portal',
+    deadline: 'Before serving alcohol; renewed annually',
+    penalty: 'Sealing of premises, fines and prosecution under the state excise act',
+    actionIfNonCompliant: [
+      'Stop serving alcohol until a licence is issued',
+      'Identify the right licence category for your premises (bar, restaurant, hotel, club)',
+      'Apply to the state excise department with the fire NOC, trade licence and FSSAI licence',
+      'Follow the permitted serving hours and dry days',
+    ],
+    actionIfCompliant: 'Excise licence valid. Renew before the financial year deadline and keep sale records.',
+  },
+
+  CLINIC_01: {
+    questionId: 'CLINIC_01',
+    category: 'Healthcare Licences',
+    requirement: 'Clinical Establishment Registration',
+    governmentRef: 'Clinical Establishments (Registration and Regulation) Act 2010, or the state healthcare establishments act',
+    officialLink: 'https://clinicalestablishments.mohfw.gov.in',
+    deadline: 'Before starting the clinic or hospital',
+    penalty: 'Fines under the applicable act; continued operation without registration can lead to closure',
+    actionIfNonCompliant: [
+      'Check whether your state follows the central 2010 Act or its own act',
+      'Apply to the district or state registering authority',
+      'Keep practitioner council registrations, premises documents and staff details ready',
+      'Display the registration certificate at the facility',
+    ],
+    actionIfCompliant: 'Registration in place. Renew as required and update the authority on changes to services or premises.',
+  },
+
+  CLINIC_02: {
+    questionId: 'CLINIC_02',
+    category: 'Healthcare Licences',
+    requirement: 'Biomedical Waste Authorisation',
+    governmentRef: 'Bio-Medical Waste Management Rules 2016',
+    officialLink: 'State Pollution Control Board portal',
+    deadline: 'Before generating biomedical waste',
+    penalty: 'Penalties under the Environment (Protection) Act 1986',
+    actionIfNonCompliant: [
+      'Apply to the State Pollution Control Board for authorisation',
+      'Sign an agreement with a common biomedical waste treatment facility',
+      'Segregate waste at source into colour-coded bins',
+      'Keep daily waste records and file the annual report',
+      'Train staff on handling and segregation',
+    ],
+    actionIfCompliant: 'Authorisation and treatment agreement in place. File the annual report and keep daily records.',
+  },
+
+  PCPNDT_01: {
+    questionId: 'PCPNDT_01',
+    category: 'Healthcare Licences',
+    requirement: 'PC-PNDT Registration for Ultrasound',
+    governmentRef: 'Pre-Conception and Pre-Natal Diagnostic Techniques Act 1994',
+    officialLink: 'District Appropriate Authority (PC-PNDT)',
+    deadline: 'Before installing or using ultrasound equipment',
+    penalty: 'Imprisonment and fines; sealing and seizure of the machine',
+    actionIfNonCompliant: [
+      'Stop using the ultrasound machine until registered',
+      'Apply to the district Appropriate Authority with machine and operator details',
+      'Maintain Form F for every scan and submit monthly reports',
+      'Display the registration certificate and the notice that sex determination is not done',
+    ],
+    actionIfCompliant: 'Registration valid. Keep Form F records complete and file monthly reports on time.',
+  },
+
+  AERB_01: {
+    questionId: 'AERB_01',
+    category: 'Healthcare Licences',
+    requirement: 'AERB Licence for X-ray Equipment',
+    governmentRef: 'Atomic Energy (Radiation Protection) Rules 2004',
+    officialLink: 'https://elora.aerb.gov.in',
+    deadline: 'Before operating X-ray equipment',
+    penalty: 'Sealing of the facility without further notice',
+    actionIfNonCompliant: [
+      'Register the institution on AERB eLORA',
+      'Get a licence for each X-ray, CT or mammography unit',
+      'Appoint a qualified Radiation Safety Officer',
+      'Carry out quality assurance tests and keep the reports',
+    ],
+    actionIfCompliant: 'AERB licences valid. Keep QA reports current and renew before expiry.',
+  },
 };
 
 // ==========================================================================
@@ -856,6 +1000,10 @@ export const STATE_WISE_CATEGORY_LABELS: Record<string, string> = {
   FINTECH: 'Fintech Regulatory',
   FACTORY: 'Factory Compliance',
   PCB: 'Pollution Control',
+  FIRE: 'Fire Safety',
+  TRADE: 'Local Licences',
+  LIQUOR: 'Excise',
+  CLINIC: 'Healthcare Licences',
 };
 
 // ==========================================================================

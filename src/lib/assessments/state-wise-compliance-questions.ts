@@ -2,12 +2,14 @@
  * ComplianceCheck - State-Wise Comprehensive Compliance Check
  * 
  * Two-Phase Assessment:
- * - Phase 1: Applicability Questions (20 questions) - Determines what applies
+ * - Phase 1: Applicability Questions (20 core + 3 conditional) - Determines what applies
  * - Phase 2: Compliance Questions (variable, 20-60) - Assesses compliance status
  * 
  * @version 1.0
  * @assessment state_wise_compliance
  */
+
+import { INDIAN_STATES, getPTStatus, type IndianState } from '@/lib/constants/india';
 
 // ============================================================================
 // TYPES
@@ -55,31 +57,32 @@ export interface UserDetails {
 // CONSTANTS
 // ============================================================================
 
-export const TOP_10_STATES = [
-  { value: 'maharashtra', label: 'Maharashtra' },
-  { value: 'karnataka', label: 'Karnataka' },
-  { value: 'delhi', label: 'Delhi' },
-  { value: 'uttar_pradesh', label: 'Uttar Pradesh' },
-  { value: 'gujarat', label: 'Gujarat' },
-  { value: 'tamil_nadu', label: 'Tamil Nadu' },
-  { value: 'telangana', label: 'Telangana' },
-  { value: 'haryana', label: 'Haryana' },
-  { value: 'kerala', label: 'Kerala' },
-  { value: 'rajasthan', label: 'Rajasthan' },
-  { value: 'west_bengal', label: 'West Bengal' },
-  { value: 'andhra_pradesh', label: 'Andhra Pradesh' },
-  { value: 'madhya_pradesh', label: 'Madhya Pradesh' },
-  { value: 'punjab', label: 'Punjab' },
-  { value: 'other', label: 'Other State' },
-];
+/** Stored option value for a state name, e.g. 'Uttar Pradesh' -> 'uttar_pradesh'. */
+export function toStateValue(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+}
+
+// Every state and UT from the shared list (CLAUDE.md §9/§11). Values keep the
+// snake_case format used by earlier versions so stored responses still resolve.
+export const STATE_OPTIONS = INDIAN_STATES.map(name => ({ value: toStateValue(name), label: name as string }));
+
+/** State name for a stored value; undefined for legacy values like 'other'. */
+export function getStateName(value: string): IndianState | undefined {
+  return INDIAN_STATES.find(name => toStateValue(name) === value);
+}
 
 export const INDUSTRY_TYPES = [
   { value: 'it_software', label: 'IT / Software / SaaS' },
   { value: 'ecommerce', label: 'E-commerce / D2C' },
   { value: 'fintech', label: 'Fintech / Payments' },
   { value: 'healthtech', label: 'Healthtech / Medtech' },
+  { value: 'clinic', label: 'Clinic / Diagnostic Centre' },
+  { value: 'hospital', label: 'Hospital / Nursing Home' },
   { value: 'edtech', label: 'Edtech' },
   { value: 'food_beverage', label: 'Food & Beverage / Cloud Kitchen' },
+  { value: 'hospitality', label: 'Hotel / Guest House' },
+  { value: 'wellness', label: 'Salon / Gym / Spa' },
+  { value: 'education_centre', label: 'School / Coaching Centre' },
   { value: 'manufacturing', label: 'Manufacturing / Hardware' },
   { value: 'logistics', label: 'Logistics / Delivery' },
   { value: 'retail', label: 'Retail / Offline Stores' },
@@ -111,9 +114,13 @@ export const TURNOVER_RANGES = [
   { value: '50Cr_plus', label: 'Above Rs.50 crore' },
 ];
 
-export const PT_APPLICABLE_STATES = ['maharashtra', 'karnataka', 'tamil_nadu', 'telangana', 'gujarat', 'kerala', 'west_bengal'];
-export const PT_EXEMPT_STATES = ['delhi', 'haryana', 'uttar_pradesh', 'rajasthan'];
 export const LWF_APPLICABLE_STATES = ['maharashtra', 'karnataka', 'gujarat', 'kerala', 'telangana', 'uttar_pradesh', 'west_bengal'];
+export const LIQUOR_PROHIBITION_STATES = ['gujarat', 'bihar', 'mizoram', 'nagaland', 'lakshadweep'];
+
+const HEALTHCARE_INDUSTRIES = ['clinic', 'hospital'];
+const ALCOHOL_INDUSTRIES = ['food_beverage', 'hospitality'];
+// Premises types where a fire NOC is commonly required regardless of building height
+const FIRE_NOC_INDUSTRIES = ['food_beverage', 'hospitality', 'clinic', 'hospital', 'education_centre', 'manufacturing'];
 
 // ============================================================================
 // PHASE 1: APPLICABILITY QUESTIONS (20 Questions)
@@ -144,7 +151,7 @@ export const PHASE1_QUESTIONS: Question[] = [
     category: 'Business Basics',
     required: true,
     phase: 1,
-    options: TOP_10_STATES,
+    options: STATE_OPTIONS,
     helpText: 'State determines Professional Tax, LWF, and Shops & Establishments requirements.',
   },
   {
@@ -156,7 +163,7 @@ export const PHASE1_QUESTIONS: Question[] = [
     phase: 1,
     options: [
       { value: 'same_as_registered', label: 'Same as registered state only' },
-      ...TOP_10_STATES,
+      ...STATE_OPTIONS,
     ],
     helpText: 'Multi-state operations may trigger additional compliance in each state.',
   },
@@ -299,7 +306,7 @@ export const PHASE1_QUESTIONS: Question[] = [
     category: 'Operations',
     required: true,
     phase: 1,
-    helpText: 'Factory Act applies to units with 10+ workers (with power) or 20+ (without power).',
+    helpText: 'A factory licence under the OSH Code 2020 applies to units with 20+ workers (with power) or 40+ (without power).',
   },
   {
     id: 'APP_18',
@@ -334,7 +341,78 @@ export const PHASE1_QUESTIONS: Question[] = [
     phase: 1,
     helpText: 'E-Way Bill mandatory for goods movement above Rs.50,000.',
   },
+  // Conditional questions — see shouldSkipPhase1Question()
+  {
+    id: 'APP_21',
+    text: 'Where do you operate from?',
+    type: 'single_choice',
+    category: 'Premises',
+    required: true,
+    phase: 1,
+    options: [
+      { value: 'ground_standalone', label: 'Ground floor or standalone premises' },
+      { value: 'upto_15m', label: 'A building up to 15 metres (about 4-5 floors)' },
+      { value: 'above_15m', label: 'A building above 15 metres (high-rise)' },
+      { value: 'mall_complex', label: 'A mall or commercial complex' },
+    ],
+    helpText: 'Building height and type decide fire NOC requirements. The National Building Code treats buildings above 15 m as high-rise.',
+  },
+  {
+    id: 'APP_22',
+    text: 'Do you serve alcohol?',
+    type: 'yes_no',
+    category: 'Premises',
+    required: true,
+    phase: 1,
+    helpText: 'Serving alcohol needs a state excise licence, and is not permitted in prohibition states.',
+  },
+  {
+    id: 'APP_23',
+    text: 'Do you operate X-ray or ultrasound equipment?',
+    type: 'single_choice',
+    category: 'Premises',
+    required: true,
+    phase: 1,
+    options: [
+      { value: 'xray', label: 'X-ray (including CT or mammography)' },
+      { value: 'ultrasound', label: 'Ultrasound / sonography' },
+      { value: 'both', label: 'Both' },
+      { value: 'neither', label: 'Neither' },
+    ],
+    helpText: 'X-ray equipment needs an AERB licence; ultrasound needs PC-PNDT registration.',
+  },
 ];
+
+// ============================================================================
+// CONDITIONAL PHASE 1 NAVIGATION
+// ============================================================================
+
+export function shouldSkipPhase1Question(id: string, responses: ApplicabilityResponses): boolean {
+  const industry = responses.APP_04 as string;
+  switch (id) {
+    case 'APP_08': return responses.APP_07 !== 'yes';
+    case 'APP_21': return responses.APP_16 !== 'yes';
+    case 'APP_22': return !ALCOHOL_INDUSTRIES.includes(industry);
+    case 'APP_23': return !HEALTHCARE_INDUSTRIES.includes(industry);
+    default: return false;
+  }
+}
+
+/** Index of the next question to show after `from`, or -1 when Phase 1 is done. */
+export function getNextPhase1Index(from: number, responses: ApplicabilityResponses): number {
+  for (let i = from + 1; i < PHASE1_QUESTIONS.length; i++) {
+    if (!shouldSkipPhase1Question(PHASE1_QUESTIONS[i].id, responses)) return i;
+  }
+  return -1;
+}
+
+/** Index of the previous question to show before `from`, or -1 at the start. */
+export function getPreviousPhase1Index(from: number, responses: ApplicabilityResponses): number {
+  for (let i = from - 1; i >= 0; i--) {
+    if (!shouldSkipPhase1Question(PHASE1_QUESTIONS[i].id, responses)) return i;
+  }
+  return -1;
+}
 
 // ============================================================================
 // PHASE 2: COMPLIANCE QUESTIONS (39 Questions - filtered by applicability)
@@ -459,7 +537,6 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     applicabilityCodes: ['PROFESSIONAL_TAX'],
-    states: PT_APPLICABLE_STATES,
     helpText: 'PT applies in MH, KA, TN, TS, GJ, KL, WB. Delhi, UP, HR, RJ are exempt.',
   },
   {
@@ -472,7 +549,6 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     applicabilityCodes: ['PROFESSIONAL_TAX'],
-    states: PT_APPLICABLE_STATES,
     helpText: 'Maximum Rs.2,500/year per employee across all states.',
   },
   {
@@ -485,7 +561,6 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     applicabilityCodes: ['PROFESSIONAL_TAX'],
-    states: PT_APPLICABLE_STATES,
     helpText: 'Filing frequency varies: monthly (KA), quarterly (GJ), annual (others).',
   },
   // SHOPS & ESTABLISHMENTS QUESTIONS (3 questions)
@@ -771,7 +846,7 @@ export const PHASE2_QUESTIONS: Question[] = [
     phase: 2,
     applicabilityCodes: ['FSSAI'],
     industries: ['food_beverage'],
-    helpText: 'Basic (<Rs.12L), State (Rs.12L-20Cr), Central (>Rs.20Cr or multi-state).',
+    helpText: 'Registration up to Rs.1.5 Cr turnover, State Licence up to Rs.50 Cr, Central Licence above Rs.50 Cr (FSSAI 2026 amendment).',
   },
   {
     id: 'FSSAI_02',
@@ -830,7 +905,7 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     phase: 2,
     applicabilityCodes: ['FACTORY_ACT'],
-    helpText: 'License required for 10+ workers (with power) or 20+ (without power).',
+    helpText: 'Licence required for 20+ workers (with power) or 40+ (without power) under the OSH Code 2020.',
   },
   {
     id: 'FACTORY_02',
@@ -881,6 +956,106 @@ export const PHASE2_QUESTIONS: Question[] = [
     complianceAnswer: 'yes',
     helpText: 'Frequency depends on pollution category: Red (monthly), Orange (quarterly).',
   },
+  // FIRE SAFETY (2 questions)
+  {
+    id: 'FIRE_01',
+    text: 'Do you hold a valid fire NOC for your premises?',
+    type: 'yes_no',
+    category: 'Fire Safety',
+    required: true,
+    weight: 10,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['FIRE_NOC'],
+    helpText: 'Issued by the state or municipal fire department. In a shared building, the building-level NOC must cover your unit.',
+  },
+  {
+    id: 'FIRE_02',
+    text: 'Is your fire NOC renewed on time, with extinguishers serviced and fire drills held?',
+    type: 'yes_no',
+    category: 'Fire Safety',
+    required: true,
+    weight: 7,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['FIRE_NOC'],
+    helpText: 'Renewal cycles vary by state. Inspectors check equipment service tags and drill records.',
+  },
+  // LOCAL LICENCES (1 question)
+  {
+    id: 'TRADE_01',
+    text: 'Do you hold a valid municipal trade licence, renewed for the current year?',
+    type: 'yes_no',
+    category: 'Local Licences',
+    required: true,
+    weight: 7,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['TRADE_LICENCE'],
+    helpText: 'Issued by your municipal corporation or local body. Usually renewed every year.',
+  },
+  // EXCISE (1 question)
+  {
+    id: 'LIQUOR_01',
+    text: 'Do you hold a valid excise (liquor) licence, renewed for the current year?',
+    type: 'yes_no',
+    category: 'Excise',
+    required: true,
+    weight: 10,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['LIQUOR_LICENCE'],
+    helpText: 'Issued by the state excise department. Serving without one can lead to sealing of the premises.',
+  },
+  // HEALTHCARE LICENCES (4 questions)
+  {
+    id: 'CLINIC_01',
+    text: 'Is your clinic or hospital registered under the Clinical Establishments Act or your state healthcare establishments act?',
+    type: 'yes_no',
+    category: 'Healthcare Licences',
+    required: true,
+    weight: 10,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['CLINICAL_ESTABLISHMENT'],
+    helpText: 'Some states use the central Clinical Establishments Act 2010; others have their own act.',
+  },
+  {
+    id: 'CLINIC_02',
+    text: 'Do you hold biomedical waste authorisation and an agreement with a common treatment facility?',
+    type: 'yes_no',
+    category: 'Healthcare Licences',
+    required: true,
+    weight: 9,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['BIOMEDICAL_WASTE'],
+    helpText: 'Required under the Bio-Medical Waste Management Rules 2016 for every facility that generates biomedical waste.',
+  },
+  {
+    id: 'PCPNDT_01',
+    text: 'Is your ultrasound facility registered under the PC-PNDT Act, with Form F kept for every scan?',
+    type: 'yes_no',
+    category: 'Healthcare Licences',
+    required: true,
+    weight: 10,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['PCPNDT'],
+    helpText: 'Registration with the district Appropriate Authority is required before installing an ultrasound machine.',
+  },
+  {
+    id: 'AERB_01',
+    text: 'Do you hold an AERB licence (through eLORA) for every X-ray unit?',
+    type: 'yes_no',
+    category: 'Healthcare Licences',
+    required: true,
+    weight: 10,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['AERB'],
+    helpText: 'AERB can seal X-ray facilities operating without a licence.',
+  },
 ];
 
 // ============================================================================
@@ -893,8 +1068,8 @@ export interface ApplicabilityResponses {
 
 // Helper function to convert state value to proper label
 function getStateLabelInternal(stateValue: string): string {
-  const state = TOP_10_STATES.find(s => s.value === stateValue);
-  return state ? state.label : stateValue.split('_').map(word => 
+  if (stateValue === 'other') return 'your state';
+  return getStateName(stateValue) ?? stateValue.split('_').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
 }
@@ -904,16 +1079,23 @@ function formatStateList(states: string[]): string {
   return states.map(s => getStateLabelInternal(s)).join(', ');
 }
 
+/**
+ * States the business operates in. The multi-select stores APP_03 as an array,
+ * so "same_as_registered" must be swapped for the registered state (APP_02)
+ * whether it arrives as a string or inside the array.
+ */
+export function getOperatingStates(responses: ApplicabilityResponses): string[] {
+  const registered = responses.APP_02 as string;
+  const raw = responses.APP_03 as string | string[] | undefined;
+  const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  const states = values.map(v => (v === 'same_as_registered' ? registered : v)).filter(Boolean);
+  return states.length > 0 ? Array.from(new Set(states)) : [registered];
+}
+
 export function determineApplicability(responses: ApplicabilityResponses): ApplicabilityResult[] {
   const results: ApplicabilityResult[] = [];
   
-  const state = responses.APP_02 as string;
-  const operatingStatesRaw = responses.APP_03 as string | string[];
-  const operatingStates = Array.isArray(operatingStatesRaw) 
-    ? operatingStatesRaw 
-    : operatingStatesRaw?.includes('same_as_registered') 
-      ? [state] 
-      : [operatingStatesRaw || state];
+  const operatingStates = getOperatingStates(responses);
   const industry = responses.APP_04 as string;
   const isDPIIT = responses.APP_05 === 'yes';
   const employeeRange = responses.APP_06 as string;
@@ -933,6 +1115,10 @@ export function determineApplicability(responses: ApplicabilityResponses): Appli
   const pollutionCategory = responses.APP_18 as string;
   const processesPersonalData = responses.APP_19 === 'yes';
   const transportsGoods = responses.APP_20 === 'yes';
+  const premisesType = responses.APP_21 as string;
+  const isHealthcare = HEALTHCARE_INDUSTRIES.includes(industry);
+  const servesAlcohol = ALCOHOL_INDUSTRIES.includes(industry) && responses.APP_22 === 'yes';
+  const imagingEquipment = isHealthcare ? (responses.APP_23 as string) : undefined;
 
   const getEmployeeCount = (range: string): number => {
     const found = EMPLOYEE_RANGES.find(r => r.value === range);
@@ -1069,14 +1255,24 @@ export function determineApplicability(responses: ApplicabilityResponses): Appli
   });
 
   // Professional Tax
-  const hasPTState = operatingStates.some(s => PT_APPLICABLE_STATES.includes(s));
-  const ptStates = operatingStates.filter(s => PT_APPLICABLE_STATES.includes(s));
+  // Legacy 'other' answers have no state name, so they resolve to 'verify'
+  const ptStatusOf = (value: string) => {
+    const name = getStateName(value);
+    return name ? getPTStatus(name) : 'verify';
+  };
+  const ptStates = operatingStates.filter(s => ptStatusOf(s) === 'levied');
+  const ptVerifyStates = operatingStates.filter(s => ptStatusOf(s) === 'verify');
+  const hasPTState = ptStates.length > 0;
   results.push({
     code: 'PROFESSIONAL_TAX',
     name: 'Professional Tax',
     category: 'state_specific',
     applies: hasPTState,
-    reason: hasPTState ? `Applicable in: ${formatStateList(ptStates)}` : `Not applicable - Your states are PT-exempt`,
+    reason: hasPTState
+      ? `Applicable in: ${formatStateList(ptStates)}`
+      : ptVerifyStates.length > 0
+        ? `Confirm with the ${formatStateList(ptVerifyStates)} commercial tax department whether Professional Tax applies`
+        : 'Not applicable - Your states do not levy Professional Tax',
     threshold: 'State-specific thresholds',
     keyRequirements: ['Register for PT', 'Deduct per slabs', 'File returns', 'Max Rs.2,500/year'],
     penaltyRange: 'Interest + penalty varies by state',
@@ -1193,14 +1389,15 @@ export function determineApplicability(responses: ApplicabilityResponses): Appli
 
   // FSSAI
   const isFoodIndustry = industry === 'food_beverage';
+  const fssaiTier = getFssaiTier(turnoverRange);
   results.push({
     code: 'FSSAI',
     name: 'FSSAI Food License',
     category: 'industry_specific',
     applies: isFoodIndustry,
-    reason: isFoodIndustry ? 'Applicable - Food & Beverage business' : 'Not applicable - Not a food business',
+    reason: isFoodIndustry ? `Applicable - Food & Beverage business. You need: ${fssaiTier}` : 'Not applicable - Not a food business',
     threshold: 'Any food business',
-    keyRequirements: ['Basic/State/Central license per turnover', 'Display license number'],
+    keyRequirements: [fssaiTier, 'Display license number'],
     penaltyRange: 'Up to Rs.5 lakh + 6 months imprisonment',
     priority: isFoodIndustry ? 'critical' : 'low',
   });
@@ -1226,7 +1423,7 @@ export function determineApplicability(responses: ApplicabilityResponses): Appli
     category: 'industry_specific',
     applies: hasFactory,
     reason: hasFactory ? 'Applicable - You have a manufacturing facility' : 'Not applicable - No factory',
-    threshold: '10 workers (with power) or 20 (without)',
+    threshold: '20 workers (with power) or 40 (without) under the OSH Code 2020',
     keyRequirements: ['Factory registration', 'Occupier/Manager appointment', 'Working hours compliance'],
     penaltyRange: 'Up to Rs.10 lakh + 7 years imprisonment',
     priority: hasFactory ? 'critical' : 'low',
@@ -1246,12 +1443,142 @@ export function determineApplicability(responses: ApplicabilityResponses): Appli
     priority: needsPCB ? 'high' : 'low',
   });
 
+  // Fire NOC — thresholds are set by each state, so a "not applicable" result
+  // still tells the user to confirm locally.
+  const isHighRise = premisesType === 'above_15m';
+  const isMallOrComplex = premisesType === 'mall_complex';
+  const fireIndustry = FIRE_NOC_INDUSTRIES.includes(industry) || hasFactory;
+  const needsFireNoc = hasPhysicalOffice && (isHighRise || isMallOrComplex || fireIndustry);
+  let fireReason: string;
+  if (!hasPhysicalOffice) {
+    fireReason = 'Not applicable - No physical premises';
+  } else if (isHighRise) {
+    fireReason = 'Applicable - Your building is above 15 m (high-rise under the National Building Code)';
+  } else if (isMallOrComplex) {
+    fireReason = 'Applicable - Malls and commercial complexes need a fire NOC; make sure it covers your unit';
+  } else if (fireIndustry) {
+    fireReason = 'Applicable - Commonly required for your type of premises; exact thresholds vary by state';
+  } else {
+    fireReason = 'Not flagged for your premises, but fire NOC thresholds vary by state - confirm with your state fire department';
+  }
+  results.push({
+    code: 'FIRE_NOC',
+    name: 'Fire NOC',
+    category: 'state_specific',
+    applies: needsFireNoc,
+    reason: fireReason,
+    threshold: 'Set by state fire rules; buildings above 15 m, public premises, hospitals, hotels, restaurants, schools and factories',
+    keyRequirements: ['Apply to the state/municipal fire department', 'Install and service fire equipment', 'Renew as per state cycle'],
+    penaltyRange: 'Sealing of premises + fines under state fire services act',
+    priority: needsFireNoc ? 'critical' : 'low',
+  });
+
+  // Municipal trade licence
+  results.push({
+    code: 'TRADE_LICENCE',
+    name: 'Municipal Trade Licence',
+    category: 'state_specific',
+    applies: hasPhysicalOffice,
+    reason: hasPhysicalOffice
+      ? 'Applicable - Most municipal corporations require a trade licence for commercial premises (some exempt pure offices - check with your city)'
+      : 'Not applicable - No physical premises',
+    threshold: 'Commercial premises within municipal limits',
+    keyRequirements: ['Apply to your municipal corporation', 'Renew annually', 'Display at premises'],
+    penaltyRange: 'Fines and sealing under municipal law',
+    priority: hasPhysicalOffice ? 'medium' : 'low',
+  });
+
+  // Liquor licence
+  const prohibitedStates = operatingStates.filter(s => LIQUOR_PROHIBITION_STATES.includes(s));
+  const liquorAllowed = operatingStates.some(s => !LIQUOR_PROHIBITION_STATES.includes(s));
+  const needsLiquorLicence = servesAlcohol && liquorAllowed;
+  results.push({
+    code: 'LIQUOR_LICENCE',
+    name: 'Excise (Liquor) Licence',
+    category: 'industry_specific',
+    applies: needsLiquorLicence,
+    reason: !servesAlcohol
+      ? 'Not applicable - You do not serve alcohol'
+      : needsLiquorLicence
+        ? `Applicable - You serve alcohol${prohibitedStates.length ? ` (not permitted in ${formatStateList(prohibitedStates)})` : ''}`
+        : `Not permitted - ${formatStateList(prohibitedStates)} prohibits the sale of liquor`,
+    threshold: 'Any premises serving alcohol',
+    keyRequirements: ['Obtain state excise licence', 'Renew annually', 'Follow permitted hours'],
+    penaltyRange: 'Sealing of premises + fines and prosecution under state excise act',
+    priority: needsLiquorLicence ? 'critical' : 'low',
+  });
+
+  // Healthcare establishments
+  results.push({
+    code: 'CLINICAL_ESTABLISHMENT',
+    name: 'Clinical Establishment Registration',
+    category: 'industry_specific',
+    applies: isHealthcare,
+    reason: isHealthcare
+      ? 'Applicable - Clinics and hospitals must register under the Clinical Establishments Act 2010 or your state healthcare establishments act'
+      : 'Not applicable - Not a clinic or hospital',
+    threshold: 'Any clinic, diagnostic centre or hospital',
+    keyRequirements: ['Register with the state/district registering authority', 'Display registration', 'Renew as required'],
+    penaltyRange: 'Fines and closure under the applicable act',
+    priority: isHealthcare ? 'critical' : 'low',
+  });
+
+  results.push({
+    code: 'BIOMEDICAL_WASTE',
+    name: 'Biomedical Waste Authorisation',
+    category: 'industry_specific',
+    applies: isHealthcare,
+    reason: isHealthcare
+      ? 'Applicable - Bio-Medical Waste Management Rules 2016 apply to every facility generating biomedical waste'
+      : 'Not applicable - Not a clinic or hospital',
+    threshold: 'Any facility generating biomedical waste',
+    keyRequirements: ['Authorisation from State Pollution Control Board', 'Agreement with a common treatment facility', 'Segregation and records'],
+    penaltyRange: 'Penalties under the Environment (Protection) Act',
+    priority: isHealthcare ? 'critical' : 'low',
+  });
+
+  const hasUltrasound = imagingEquipment === 'ultrasound' || imagingEquipment === 'both';
+  results.push({
+    code: 'PCPNDT',
+    name: 'PC-PNDT Registration (Ultrasound)',
+    category: 'industry_specific',
+    applies: hasUltrasound,
+    reason: hasUltrasound ? 'Applicable - You operate ultrasound equipment' : 'Not applicable - No ultrasound equipment',
+    threshold: 'Any ultrasound or sonography equipment',
+    keyRequirements: ['Register with the district Appropriate Authority', 'Maintain Form F for every scan', 'Display registration and notice'],
+    penaltyRange: 'Imprisonment and fines; machine sealing',
+    priority: hasUltrasound ? 'critical' : 'low',
+  });
+
+  const hasXray = imagingEquipment === 'xray' || imagingEquipment === 'both';
+  results.push({
+    code: 'AERB',
+    name: 'AERB Licence (X-ray)',
+    category: 'industry_specific',
+    applies: hasXray,
+    reason: hasXray ? 'Applicable - You operate X-ray equipment' : 'Not applicable - No X-ray equipment',
+    threshold: 'Any X-ray, CT or mammography equipment',
+    keyRequirements: ['Licence each unit through AERB eLORA', 'Appoint a Radiation Safety Officer', 'Periodic quality assurance'],
+    penaltyRange: 'Sealing of the facility under the Atomic Energy Act',
+    priority: hasXray ? 'critical' : 'low',
+  });
+
   return results.sort((a, b) => {
     const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 }
 
+
+// FSSAI tiers per the FSS (Licensing & Registration) Amendment Regulations 2026,
+// effective 1 April 2026: Registration up to Rs.1.5 Cr, State Licence up to Rs.50 Cr.
+export function getFssaiTier(turnoverRange: string): string {
+  if (['under_20L', '20L_40L', '40L_1Cr'].includes(turnoverRange)) return 'FSSAI Registration (turnover up to Rs.1.5 crore)';
+  if (turnoverRange === '1Cr_5Cr') return 'FSSAI Registration up to Rs.1.5 crore turnover; State Licence above that';
+  if (['5Cr_10Cr', '10Cr_50Cr'].includes(turnoverRange)) return 'FSSAI State Licence (turnover Rs.1.5-50 crore)';
+  if (turnoverRange === '50Cr_plus') return 'FSSAI Central Licence (turnover above Rs.50 crore)';
+  return 'FSSAI Registration, State or Central Licence depending on turnover';
+}
 
 // ============================================================================
 // FILTER PHASE 2 QUESTIONS BASED ON APPLICABILITY
@@ -1265,13 +1592,7 @@ export function getFilteredPhase2Questions(
     .filter(r => r.applies)
     .map(r => r.code);
 
-  const state = responses.APP_02 as string;
-  const operatingStatesRaw = responses.APP_03 as string | string[];
-  const operatingStates = Array.isArray(operatingStatesRaw) 
-    ? operatingStatesRaw 
-    : operatingStatesRaw?.includes('same_as_registered') 
-      ? [state] 
-      : [operatingStatesRaw || state];
+  const operatingStates = getOperatingStates(responses);
   const industry = responses.APP_04 as string;
   const employeeRange = responses.APP_06 as string;
   const employeeCount = EMPLOYEE_RANGES.find(r => r.value === employeeRange)?.midpoint || 0;
@@ -1424,6 +1745,7 @@ export const ASSESSMENT_METADATA = {
     'State-Specific (Professional Tax, LWF, Shops & Establishments)',
     'Tax & Business (GST, MSME, DPDP)',
     'Industry-Specific (FSSAI, Fintech, Factory, Pollution)',
+    'Premises & Sector Licences (Fire NOC, Trade Licence, Liquor, Clinic)',
     'Labour Code Readiness',
   ],
 };
