@@ -36,6 +36,7 @@ export default function AdminAssessmentsPage() {
   // Table controls
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [sortKey, setSortKey] = useState<SortKey>('created_at')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page, setPage] = useState(1)
@@ -75,6 +76,13 @@ export default function AdminAssessmentsPage() {
     return Array.from(types).sort()
   }, [data])
 
+  // Get unique statuses for filter dropdown
+  const statuses = useMemo(() => {
+    if (!data) return []
+    const values = new Set(data.assessments.map(a => a.status))
+    return Array.from(values).sort()
+  }, [data])
+
   // Filter, search, sort
   const filtered = useMemo(() => {
     if (!data) return []
@@ -83,6 +91,11 @@ export default function AdminAssessmentsPage() {
     // Type filter
     if (typeFilter !== 'all') {
       rows = rows.filter(a => a.assessment_type === typeFilter)
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      rows = rows.filter(a => a.status === statusFilter)
     }
 
     // Search
@@ -123,7 +136,7 @@ export default function AdminAssessmentsPage() {
     })
 
     return rows
-  }, [data, typeFilter, search, sortKey, sortDir])
+  }, [data, typeFilter, statusFilter, search, sortKey, sortDir])
 
   const totalPages = Math.ceil(filtered.length / pageSize)
   const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize)
@@ -273,6 +286,14 @@ export default function AdminAssessmentsPage() {
           </select>
           <ChevronDown className="absolute right-2 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
         </div>
+        <div className="relative">
+          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+            className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500">
+            <option value="all">All statuses</option>
+            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <ChevronDown className="absolute right-2 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
+        </div>
       </div>
 
       {/* Data Table */}
@@ -299,6 +320,7 @@ export default function AdminAssessmentsPage() {
                 ))}
                 <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Industry</th>
                 <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Employees</th>
+                <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -318,12 +340,21 @@ export default function AdminAssessmentsPage() {
                   <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400 max-w-[120px] truncate">{a.state || '-'}</td>
                   <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400 max-w-[140px] truncate">{a.industry || '-'}</td>
                   <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400">{a.employee_count || '-'}</td>
+                  <td className="px-4 py-2.5">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                      a.status === 'completed'
+                        ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                    }`}>
+                      {a.status}
+                    </span>
+                  </td>
                 </tr>
               ))}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
-                    {search || typeFilter !== 'all' ? 'No matching assessments found' : 'No assessments for this period'}
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
+                    {search || typeFilter !== 'all' || statusFilter !== 'all' ? 'No matching assessments found' : 'No assessments for this period'}
                   </td>
                 </tr>
               )}
