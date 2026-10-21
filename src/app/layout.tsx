@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://compliancecheck.co.in'),
   title: "ComplianceCheck - Pay-as-you-go Compliance Assessments for Indian SMEs",
-  description: "Instant compliance reports for Indian SMEs. Labour Codes 2025, DPDP Act 2023, POSH Act, Food Business & more. Pay-as-you-go. Free during beta.",
+  description: "Instant compliance reports for Indian SMEs — Labour Codes, DPDP Act, POSH, food business & more. Free summary; full reports from ₹499.",
   keywords: [
     "compliance assessment India",
     "labour code compliance",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "ComplianceCheck - Instant Compliance Assessments for Indian Businesses",
-    description: "Pay-as-you-go compliance assessments. Get gap analysis, action items & PDF reports in 15 minutes. Free during beta.",
+    description: "Pay-as-you-go compliance assessments. Get gap analysis, action items & PDF reports in 15 minutes.",
     url: 'https://compliancecheck.co.in',
     siteName: 'ComplianceCheck',
     locale: 'en_IN',
@@ -48,8 +48,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ComplianceCheck - Compliance Assessments for Indian SMEs',
-    description: 'Get instant compliance reports. No subscriptions. Free during beta.',
     images: ['/og-image.png']
   },
   robots: {
