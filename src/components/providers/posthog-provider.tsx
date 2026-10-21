@@ -13,7 +13,42 @@ if (typeof window !== 'undefined') {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
     capture_pageview: false,
     capture_pageleave: true,
+    // Session recording and surveys are switched on after the browser is idle
+    // or the user first interacts (see DeferredFeatures). Pageviews and other
+    // events are captured from init as before.
+    disable_session_recording: true,
+    disable_surveys: true,
   })
+}
+
+// Re-enable recording + surveys on first idle period or user interaction.
+// set_config re-runs each feature's start-up, and project settings (sampling,
+// linked flags, survey targeting) still decide whether they actually run.
+function DeferredFeatures() {
+  useEffect(() => {
+    let done = false
+    const events = ['pointerdown', 'keydown', 'scroll'] as const
+    const enable = () => {
+      if (done) return
+      done = true
+      cleanup()
+      posthog.set_config({ disable_session_recording: false, disable_surveys: false })
+    }
+    const idleId =
+      'requestIdleCallback' in window
+        ? window.requestIdleCallback(enable, { timeout: 5000 })
+        : undefined
+    const timeoutId = idleId === undefined ? window.setTimeout(enable, 3000) : undefined
+    events.forEach((e) => window.addEventListener(e, enable, { once: true, passive: true }))
+    function cleanup() {
+      if (idleId !== undefined) window.cancelIdleCallback(idleId)
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId)
+      events.forEach((e) => window.removeEventListener(e, enable))
+    }
+    return cleanup
+  }, [])
+
+  return null
 }
 
 // Page view tracker component - uses useSearchParams which requires Suspense
@@ -72,6 +107,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     <PHProvider client={posthog}>
       <PostHogPageView />
       <AuthIdentifier />
+      <DeferredFeatures />
       {children}
     </PHProvider>
   )
