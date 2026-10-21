@@ -6,7 +6,7 @@
  * machine-readable facts. Render the output with <JsonLd data={...} />.
  */
 
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL, absoluteUrl } from './site'
+import { AUTHOR_BIO_PATH, AUTHOR_NAME, CONTACT_EMAIL, SITE_NAME, SITE_URL, absoluteUrl } from './site'
 
 const organization = {
   '@type': 'Organization',
@@ -121,7 +121,6 @@ export function articleSchema(params: {
   url: string
   datePublished: string
   dateModified?: string
-  author?: string
   image?: string
 }) {
   return {
@@ -133,7 +132,7 @@ export function articleSchema(params: {
     mainEntityOfPage: { '@type': 'WebPage', '@id': absoluteUrl(params.url) },
     datePublished: params.datePublished,
     dateModified: params.dateModified ?? params.datePublished,
-    author: { '@type': 'Organization', name: params.author ?? SITE_NAME },
+    author: { '@type': 'Person', name: AUTHOR_NAME, url: absoluteUrl(AUTHOR_BIO_PATH) },
     publisher: {
       '@type': 'Organization',
       name: SITE_NAME,
