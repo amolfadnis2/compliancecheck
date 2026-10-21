@@ -4,7 +4,7 @@ import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { JsonLd } from "@/lib/seo/JsonLd";
-import { organizationSchema } from "@/lib/seo/schema";
+import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -73,6 +73,7 @@ export default function RootLayout({
       <head>
         {/* Structured Data for SEO */}
         <JsonLd data={organizationSchema()} />
+        <JsonLd data={websiteSchema()} />
         {/* RSS feed for syndication / readers */}
         <link
           rel="alternate"

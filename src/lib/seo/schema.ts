@@ -6,7 +6,7 @@
  * machine-readable facts. Render the output with <JsonLd data={...} />.
  */
 
-import { SITE_NAME, SITE_URL, absoluteUrl } from './site'
+import { CONTACT_EMAIL, SITE_NAME, SITE_URL, absoluteUrl } from './site'
 
 const organization = {
   '@type': 'Organization',
@@ -14,8 +14,30 @@ const organization = {
   url: SITE_URL,
 }
 
-/** Org/WebApplication block for the site root. */
+/** Organization block, emitted sitewide from the root layout. */
 export function organizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    ...organization,
+    email: CONTACT_EMAIL,
+    areaServed: { '@type': 'Country', name: 'India' },
+  }
+}
+
+/** WebSite block, emitted sitewide from the root layout. */
+export function websiteSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: SITE_URL,
+    inLanguage: 'en-IN',
+    publisher: organization,
+  }
+}
+
+/** WebApplication block for the homepage only. */
+export function webApplicationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
