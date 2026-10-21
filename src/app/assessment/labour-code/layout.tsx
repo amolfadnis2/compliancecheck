@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: 'Labour Code Readiness Assessment | 4 New Labour Codes 2025 | ComplianceCheck',
   description: "Prepare for India's 4 new Labour Codes. Get implementation cost estimates, gap analysis, and an action plan before the deadline.",
   alternates: {

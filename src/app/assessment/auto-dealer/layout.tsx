@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: 'Auto Dealer Compliance Assessment | Dealer License, GST, Labour, Environment | ComplianceCheck',
   description: 'Complete compliance assessment for automobile dealers in India. Dealer license, GST, labour laws, environmental norms, consumer protection, and service center compliance.',
   alternates: {

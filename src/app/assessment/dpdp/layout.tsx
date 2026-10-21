@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: 'DPDP Act 2023 Gap Assessment | Data Protection Compliance | ComplianceCheck',
   description: 'Comprehensive DPDP Act 2023 compliance assessment. 6-phase evaluation with maturity scoring, gap analysis, and a prioritised remediation roadmap.',
   alternates: {

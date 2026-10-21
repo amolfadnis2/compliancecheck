@@ -35,13 +35,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/terms`, lastModified: currentDate, changeFrequency: 'yearly', priority: 0.5 },
   ]
 
-  // Assessment + landing pages, from the single source of truth.
-  const assessmentPages: MetadataRoute.Sitemap = ASSESSMENT_META.flatMap((meta) => {
+  // Landing pages, from the single source of truth. The /assessment/* app
+  // pages are noindex (they duplicate the landing pages) so they are omitted.
+  const assessmentPages: MetadataRoute.Sitemap = ASSESSMENT_META.map((meta) => {
     const d = describeAssessment(meta)
-    return [
-      { url: `${SITE_URL}${d.assessmentPath}`, lastModified: currentDate, changeFrequency: 'monthly' as const, priority: 0.8 },
-      { url: `${SITE_URL}${d.landingPath}`, lastModified: currentDate, changeFrequency: 'monthly' as const, priority: 0.85 },
-    ]
+    return { url: `${SITE_URL}${d.landingPath}`, lastModified: currentDate, changeFrequency: 'monthly' as const, priority: 0.85 }
   })
 
   // Blog posts.

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import styles from './assessment-landing.module.css'
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: 'Statutory Health Check | PF, ESI, PT, Gratuity & Bonus Compliance | ComplianceCheck',
   description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance. Get instant compliance score and action items. ₹999 post-beta.',
   openGraph: {
