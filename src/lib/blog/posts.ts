@@ -81,3 +81,24 @@ export function getPost(slug: string): Post | null {
   if (post.draft) return null
   return post
 }
+
+/**
+ * Related posts for a post: those sharing the most tags first (newest first on
+ * ties), topped up with the most recent posts. Excludes the post itself.
+ */
+export function getRelatedPosts(slug: string, tags: string[] = [], limit = 4): PostMeta[] {
+  const tagSet = new Set(tags)
+  const others = getAllPosts().filter((p) => p.slug !== slug) // newest first
+  const shared = (p: PostMeta) => (p.tags ?? []).filter((t) => tagSet.has(t)).length
+  const byTags = others
+    .map((p) => ({ p, score: shared(p) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score) // stable sort keeps newest-first within a score
+    .map(({ p }) => p)
+  const picked = byTags.slice(0, limit)
+  for (const p of others) {
+    if (picked.length >= limit) break
+    if (!picked.includes(p)) picked.push(p)
+  }
+  return picked
+}

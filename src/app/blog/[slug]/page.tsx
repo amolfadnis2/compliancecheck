@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
-import { getPost, getAllPostSlugs } from '@/lib/blog/posts'
+import { getPost, getAllPostSlugs, getRelatedPosts } from '@/lib/blog/posts'
 import { mdxComponents } from '@/components/blog/mdx-components'
 import { ContentShell } from '@/components/site/ContentShell'
 import { ShareButtons } from '@/components/site/ShareButtons'
@@ -58,6 +59,7 @@ export default function BlogPostPage({ params }: Params) {
   if (!post) notFound()
 
   const url = absoluteUrl(`/blog/${post.slug}`)
+  const related = getRelatedPosts(post.slug, post.tags)
 
   return (
     <ContentShell>
@@ -124,6 +126,27 @@ export default function BlogPostPage({ params }: Params) {
         )}
 
         {post.relatedAssessment && <AssessmentCTA type={post.relatedAssessment} />}
+
+        {related.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mt-10 mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Related guides
+            </h2>
+            <ul className="space-y-4">
+              {related.map((item) => (
+                <li key={item.slug}>
+                  <Link
+                    href={`/blog/${item.slug}`}
+                    className="font-semibold text-primary hover:underline"
+                  >
+                    {item.title}
+                  </Link>
+                  <p className="mt-1 leading-7 text-gray-700 dark:text-gray-300">{item.description}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="mt-10 border-t border-neutral-200 dark:border-gray-800 pt-6">
           <ShareButtons url={url} title={post.title} />
