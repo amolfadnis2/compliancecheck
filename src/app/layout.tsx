@@ -5,6 +5,7 @@ import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { JsonLd } from "@/lib/seo/JsonLd";
 import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
+import { DEFAULT_OPEN_GRAPH } from "@/lib/seo/site";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,25 +28,7 @@ export const metadata: Metadata = {
     "gratuity calculator",
     "CTC calculator"
   ],
-  alternates: {
-    canonical: '/',
-  },
-  openGraph: {
-    title: "ComplianceCheck - Instant Compliance Assessments for Indian Businesses",
-    description: "Pay-as-you-go compliance assessments. Get gap analysis, action items & PDF reports in 15 minutes.",
-    url: 'https://compliancecheck.co.in',
-    siteName: 'ComplianceCheck',
-    locale: 'en_IN',
-    type: 'website',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'ComplianceCheck - Pay-as-you-go Assessments for Indian SMEs'
-      }
-    ]
-  },
+  openGraph: DEFAULT_OPEN_GRAPH,
   twitter: {
     card: 'summary_large_image',
     images: ['/og-image.png']
