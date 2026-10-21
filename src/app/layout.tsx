@@ -13,21 +13,6 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://compliancecheck.co.in'),
   title: "ComplianceCheck - Pay-as-you-go Compliance Assessments for Indian SMEs",
   description: "Instant compliance reports for Indian SMEs — Labour Codes, DPDP Act, POSH, food business & more. Free summary; full reports from ₹499.",
-  keywords: [
-    "compliance assessment India",
-    "labour code compliance",
-    "DPDP Act compliance",
-    "POSH Act compliance",
-    "food business license India",
-    "SME compliance India",
-    "statutory compliance check",
-    "PF ESI compliance",
-    "professional tax compliance",
-    "Indian business compliance",
-    "HR compliance India",
-    "gratuity calculator",
-    "CTC calculator"
-  ],
   openGraph: DEFAULT_OPEN_GRAPH,
   twitter: {
     card: 'summary_large_image',
