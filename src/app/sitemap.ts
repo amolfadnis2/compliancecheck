@@ -50,7 +50,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }))
 
-  // Programmatic state guides.
+  // Programmatic state guides (index + one page per state).
   const stateGuidePages: MetadataRoute.Sitemap = getAllStateSlugs().map((slug) => ({
     url: `${SITE_URL}/guides/${slug}`,
     lastModified: currentDate,
@@ -58,5 +58,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...assessmentPages, ...blogPages, ...stateGuidePages]
+  return [
+    ...staticPages,
+    ...assessmentPages,
+    ...blogPages,
+    { url: `${SITE_URL}/guides`, changeFrequency: 'monthly', priority: 0.7 },
+    ...stateGuidePages,
+  ]
 }
