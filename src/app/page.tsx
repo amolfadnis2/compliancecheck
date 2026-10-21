@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import { JsonLd } from '@/lib/seo/JsonLd'
+import { faqSchema } from '@/lib/seo/schema'
+import { HOME_FAQS } from '@/lib/content/home-faq'
 import HomePageClient from './HomePageClient'
 
 export const metadata: Metadata = {
@@ -6,5 +9,10 @@ export const metadata: Metadata = {
 }
 
 export default function HomePage() {
-  return <HomePageClient />
+  return (
+    <>
+      <JsonLd data={faqSchema(HOME_FAQS)} />
+      <HomePageClient />
+    </>
+  )
 }
