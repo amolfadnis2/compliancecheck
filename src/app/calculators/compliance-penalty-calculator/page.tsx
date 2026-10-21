@@ -3,6 +3,8 @@ import { FAQ_ITEMS } from '@/lib/calculators/penalty-exposure/faq-content'
 import { JsonLd } from '@/lib/seo/JsonLd'
 import { faqSchema } from '@/lib/seo/schema'
 import PenaltyCalculatorClient from './PenaltyCalculatorClient'
+import { RelatedGuides } from '@/components/site/CalculatorGuide'
+import { PENALTY_CALCULATOR_RELATED_SLUGS } from '@/lib/calculators/guide-content'
 
 export const metadata: Metadata = {
   title: 'Free Compliance Penalty Calculator India 2026 — DPDP, Labour Codes, PF/ESI',
@@ -73,6 +75,9 @@ export default function CompliancePenaltyCalculatorPage() {
       <JsonLd data={webAppSchema} />
       <JsonLd data={faqSchema(FAQ_ITEMS)} />
       <PenaltyCalculatorClient />
+      <div className="mx-auto max-w-3xl px-4 pb-12">
+        <RelatedGuides slugs={PENALTY_CALCULATOR_RELATED_SLUGS} />
+      </div>
     </>
   )
 }

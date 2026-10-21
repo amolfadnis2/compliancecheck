@@ -148,6 +148,7 @@ export default function GratuityCalculatorPage() {
       />
 
       <div className="max-w-2xl mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Gratuity Calculator India (2026 Labour Code)</h1>
 
         {/* Progress Bar */}
         <div className="mb-8">
