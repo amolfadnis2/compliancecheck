@@ -42,7 +42,7 @@ describe('PF PostHog events', () => {
   it('fires every dictionary event with calc_version and params_version', () => {
     fireAll()
     const names = new Set(sent.map((s) => s.event))
-    expect([...names].sort()).toEqual(Object.values(PF_EVENTS).sort())
+    expect(Array.from(names).sort()).toEqual(Object.values(PF_EVENTS).sort())
     for (const s of sent) {
       expect(s.props.calc_version).toBe('1.0.0')
       expect(s.props.params_version).toBe('2026-10-22')

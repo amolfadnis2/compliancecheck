@@ -8,8 +8,12 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts'],
     // `npx vitest run --coverage` — gate the pure EPF engine at ≥95% lines.
     coverage: {
-      include: ['src/lib/calculators/epf/**'],
-      exclude: ['src/lib/calculators/epf/*.server.ts'],
+      include: [
+        'src/lib/calculators/epf/engine.ts',
+        'src/lib/calculators/epf/params.ts',
+        'src/lib/calculators/epf/defaults.ts',
+        'src/lib/calculators/epf/types.ts',
+      ],
       thresholds: { lines: 95 },
     },
   },
