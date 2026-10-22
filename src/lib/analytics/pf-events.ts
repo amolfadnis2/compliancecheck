@@ -83,6 +83,7 @@ function send(event: PfEventName, props: Record<string, unknown> = {}) {
 export const pfEvents = {
   viewed: (p: { entry_source: string; has_shared_state: boolean; utm?: Record<string, string> }) =>
     send(PF_EVENTS.VIEWED, { entry_source: p.entry_source, has_shared_state: p.has_shared_state, ...(p.utm ?? {}) }),
+  inputsChanged: (p: PfInputsChangedProps) => send(PF_EVENTS.INPUTS_CHANGED, { ...p }),
   calculationCompleted: (p: PfCalculationCompletedProps) => send(PF_EVENTS.CALCULATION_COMPLETED, { ...p }),
   scenarioToggled: (p: { scenario: string; custom_rate: number | null }) => send(PF_EVENTS.SCENARIO_TOGGLED, p),
   viewToggled: (p: { view: 'nominal' | 'real' }) => send(PF_EVENTS.VIEW_TOGGLED, p),
