@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { FALLBACK_LOADED, FALLBACK_PARAMS } from '@/lib/calculators/epf/defaults'
 import { project } from '@/lib/calculators/epf'
-import { DEFAULT_STATE, coerceState, decodeState, encodeState, startMonthAfter, toProjectInput } from '@/lib/calculators/epf/url-state'
+import { DEFAULT_STATE, encodeState, startMonthAfter, toProjectInput } from '@/lib/calculators/epf/url-state'
+import { coerceState, decodeState } from '@/lib/calculators/epf/url-state-schema'
 import {
   callouts, chartPoints, compact, corpusBand, factsFrom, fmtDate, headline, headlineText, inr, lakh, resultsSummary,
   salaryBand, sessionInputs, sourceRows, stats, tableRow, yearTableCsv,

@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import { z } from 'zod'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createPfShare, insertPfLead, insertPfSession } from '@/lib/calculators/epf/server'
-import { pfStateSchema } from '@/lib/calculators/epf/url-state'
+import { pfStateSchema } from '@/lib/calculators/epf/url-state-schema'
 
 function clientIp(): string | null {
   const h = headers()

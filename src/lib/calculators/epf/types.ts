@@ -1,12 +1,10 @@
 /**
- * EPF forecast engine — input/output types, zod schemas and typed error codes.
+ * EPF forecast engine — input/output types and typed error codes.
  *
- * Pure module: no React, DOM or Supabase imports. Statutory values are never
+ * Pure module: no React, DOM, Supabase or zod imports. Statutory values are never
  * declared here; they arrive at runtime as a StatutoryParams object (loaded
  * from Supabase, or the fallback in ./defaults.ts).
  */
-
-import { z } from 'zod'
 
 export const ENGINE_VERSION = '1.0.0'
 
@@ -58,60 +56,45 @@ export interface StatutoryParams {
 export const SCENARIO_KEYS = ['conservative', 'base', 'optimistic', 'custom'] as const
 export type Scenario = (typeof SCENARIO_KEYS)[number]
 
-export const epfInputSchema = z
-  .object({
-    age: z.number(),
-    retirementAge: z.number(),
-    /** First projected month (calendar year / month 1-12). */
-    startY: z.number().int().min(2000).max(2200),
-    startM: z.number().int().min(1).max(12),
-    basic: z.number(),
-    allowances: z.number().min(0).default(0),
-    hikePct: z.number().min(0).max(100),
-    stepUpMonth: z.number().int().min(1).max(12),
-    opening: z.number().min(0).default(0),
-    basis: z.enum(['capped', 'actual']),
-    contributionRate: z.union([z.literal(0.12), z.literal(0.1)]).default(0.12),
-    epsMember: z.boolean(),
-    pastEpsYears: z.number().min(0).max(40).default(0),
-    labourCode: z.boolean().default(false),
-    vpfPct: z.number().min(0).max(100).default(0),
-    interestTiming: z.enum(['next_month', 'same_month']),
-    scenario: z.enum(SCENARIO_KEYS),
-    customRate: z.number(),
-    inflationPct: z.number().min(0).max(100).default(0),
-    taxRegime: z.enum(['new', 'old']),
-    slabPct: z.number().min(0).max(100).default(0),
-    rounding: z.enum(['rupee', 'paise']).default('rupee'),
-    epsCeilingReading: z.enum(['25000', '15000']),
-    /** Explicit FY → rate overrides (percent). */
-    ratePath: z.record(z.string(), z.number()).optional(),
-    /** Use declared historical rates where available (default true). */
-    useHistorical: z.boolean().optional(),
-  })
-  .superRefine((inp, ctx) => {
-    // Same rules and messages as the approved prototype's validate().
-    if (!(inp.age >= 18 && inp.age <= 57)) {
-      ctx.addIssue({ code: 'custom', path: ['age'], message: 'Enter an age between 18 and 57.', params: { errorCode: 'INVALID_AGE' } })
-    }
-    if (!(inp.retirementAge > inp.age && inp.retirementAge <= 60)) {
-      ctx.addIssue({ code: 'custom', path: ['retirementAge'], message: 'Retirement age must be above your age and at most 60.', params: { errorCode: 'INVALID_RETIREMENT_AGE' } })
-    }
-    if (!(inp.basic > 0)) {
-      ctx.addIssue({ code: 'custom', path: ['basic'], message: 'Enter your monthly Basic + DA.', params: { errorCode: 'INVALID_BASIC' } })
-    }
-    if (inp.scenario === 'custom' && !(inp.customRate >= 5 && inp.customRate <= 12)) {
-      ctx.addIssue({ code: 'custom', path: ['customRate'], message: 'Use a rate between 5% and 12%.', params: { errorCode: 'INVALID_CUSTOM_RATE' } })
-    }
-  })
-
-/** Validated UI input. */
-export type EpfInput = z.output<typeof epfInputSchema>
 /**
- * Engine input. The engine itself is permissive (goldens exercise edge
- * values such as basic = 0); the schema is applied at the UI/URL boundary.
+ * Engine input. The engine itself is permissive (goldens exercise edge values
+ * such as basic = 0); business rules live in ./rules.ts and the zod schema in
+ * ./schema.ts (server/URL boundary) — kept apart so the client bundle has no zod.
  */
-export type ProjectInput = Omit<z.input<typeof epfInputSchema>, never>
+export interface ProjectInput {
+  age: number
+  retirementAge: number
+  /** First projected month (calendar year / month 1-12). */
+  startY: number
+  startM: number
+  basic: number
+  allowances?: number
+  hikePct: number
+  stepUpMonth: number
+  opening?: number
+  basis: 'capped' | 'actual'
+  contributionRate?: 0.12 | 0.1
+  epsMember: boolean
+  pastEpsYears?: number
+  labourCode?: boolean
+  vpfPct?: number
+  interestTiming: 'next_month' | 'same_month'
+  scenario: Scenario
+  customRate: number
+  inflationPct?: number
+  taxRegime: 'new' | 'old'
+  slabPct?: number
+  rounding?: 'rupee' | 'paise'
+  epsCeilingReading: '25000' | '15000'
+  /** Explicit FY → rate overrides (percent). */
+  ratePath?: Record<string, number>
+  /** Use declared historical rates where available (default true). */
+  useHistorical?: boolean
+}
+
+/** Validated input with defaults applied. */
+export type EpfInput = ProjectInput &
+  Required<Pick<ProjectInput, 'allowances' | 'opening' | 'contributionRate' | 'pastEpsYears' | 'labourCode' | 'vpfPct' | 'inflationPct' | 'slabPct' | 'rounding'>>
 
 // ---------------------------------------------------------------------------
 // Errors

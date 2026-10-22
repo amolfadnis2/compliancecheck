@@ -77,7 +77,11 @@ export function pfCommonProps() {
 }
 
 function send(event: PfEventName, props: Record<string, unknown> = {}) {
-  trackEvent(event, sanitize({ ...props, ...pfCommonProps() }))
+  const payload = sanitize({ ...props, ...pfCommonProps() })
+  trackEvent(event, payload)
+  // E2E seam: tests/pf-calculator.spec.ts sets window.__pfEvents = [] before load.
+  const sink = typeof window !== 'undefined' ? (window as unknown as { __pfEvents?: unknown[] }).__pfEvents : undefined
+  if (Array.isArray(sink)) sink.push({ event, properties: payload })
 }
 
 export const pfEvents = {

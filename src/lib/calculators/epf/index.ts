@@ -9,8 +9,9 @@ export {
   fyOf,
   rateFor,
   pfWageOf,
-  validateInput,
   r0,
   r2,
 } from './engine'
 export { FALLBACK_PARAMS } from './defaults'
+export { inputRuleErrors } from './rules'
+// zod-based validateInput lives in './schema' (server/tests only; keeps zod out of the client bundle).

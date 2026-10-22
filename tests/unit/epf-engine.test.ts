@@ -9,7 +9,6 @@ import {
   fyOf,
   rateFor,
   pfWageOf,
-  validateInput,
   r0,
   r2,
   FALLBACK_PARAMS,
@@ -17,6 +16,7 @@ import {
   type ProjectInput,
   type StatutoryParams,
 } from '@/lib/calculators/epf'
+import { validateInput } from '@/lib/calculators/epf/schema'
 
 const P = FALLBACK_PARAMS
 

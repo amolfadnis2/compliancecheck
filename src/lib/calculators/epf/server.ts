@@ -12,7 +12,8 @@ import { createClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { ENGINE_VERSION } from './types'
 import { LEAD_PURPOSES, PF_LEAD_CONSENT, TEAM_SIZE_BANDS } from './consent'
-import { coerceState, pfStateSchema, type PfState } from './url-state'
+import type { PfState } from './url-state'
+import { coerceState, pfStateSchema } from './url-state-schema'
 
 function serviceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL

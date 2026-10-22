@@ -66,9 +66,14 @@ const fromPostHog = (key: string): unknown =>
 export function usePfFlags(): PfFlags {
   const [flags, setFlags] = useState<PfFlags>(() => resolvePfFlags())
   useEffect(() => {
-    setFlags(resolvePfFlags(fromPostHog))
+    // Only re-render when a flag value actually changes.
+    const update = () => {
+      const next = resolvePfFlags(fromPostHog)
+      setFlags((prev) => ((Object.keys(next) as (keyof PfFlags)[]).every((k) => prev[k] === next[k]) ? prev : next))
+    }
+    update()
     if (typeof window === 'undefined' || !posthog.__loaded) return
-    const off = posthog.onFeatureFlags(() => setFlags(resolvePfFlags(fromPostHog)))
+    const off = posthog.onFeatureFlags(update)
     return typeof off === 'function' ? off : undefined
   }, [])
   return flags

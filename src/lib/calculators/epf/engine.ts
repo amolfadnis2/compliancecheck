@@ -8,11 +8,7 @@
 
 import {
   EpfEngineError,
-  epfInputSchema,
   type CeilingSegment,
-  type EpfErrorCode,
-  type EpfFieldError,
-  type EpfValidationResult,
   type EpsPensionResult,
   type FirstMonth,
   type ProjectInput,
@@ -52,6 +48,13 @@ function segmentOn(day: string, schedule: CeilingSegment[]): CeilingSegment {
 export function cappedWage(wage: number, y: number, m: number, schedule: CeilingSegment[]): number {
   const dim = daysIn(y, m)
   let total = 0
+  const first = segmentOn(iso(y, m, 1), schedule)
+  if (first === segmentOn(iso(y, m, dim), schedule)) {
+    // One ceiling all month (segments are contiguous): same per-day sum, without a lookup per day.
+    const v = Math.min(wage, first.v)
+    for (let d = 1; d <= dim; d++) total += v
+    return total / dim
+  }
   for (let d = 1; d <= dim; d++) {
     total += Math.min(wage, segmentOn(iso(y, m, d), schedule).v)
   }
@@ -368,23 +371,4 @@ export function xirrMonthly(cf: number[]): number | null {
     else lo = mid
   }
   return Math.pow(1 + (lo + hi) / 2, 12) - 1
-}
-
-// ---------------------------------------------------------------------------
-// Validation
-// ---------------------------------------------------------------------------
-
-/** Validate UI input; returns field-level errors with typed codes. */
-export function validateInput(raw: unknown): EpfValidationResult {
-  const parsed = epfInputSchema.safeParse(raw)
-  if (parsed.success) return { ok: true, value: parsed.data }
-  const errors: EpfFieldError[] = parsed.error.issues.map((issue) => {
-    const params = (issue as { params?: { errorCode?: EpfErrorCode } }).params
-    return {
-      code: params?.errorCode ?? 'INVALID_INPUT',
-      field: issue.path.map(String).join('.') || 'input',
-      message: issue.message,
-    }
-  })
-  return { ok: false, errors }
 }

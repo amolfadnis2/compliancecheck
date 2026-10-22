@@ -13,6 +13,8 @@ export default defineConfig({
         'src/lib/calculators/epf/params.ts',
         'src/lib/calculators/epf/defaults.ts',
         'src/lib/calculators/epf/types.ts',
+        'src/lib/calculators/epf/rules.ts',
+        'src/lib/calculators/epf/schema.ts',
       ],
       thresholds: { lines: 95 },
     },

@@ -7,7 +7,7 @@ import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { project, validateInput, ENGINE_VERSION, type EpfFieldError, type ProjectionResult } from '@/lib/calculators/epf'
+import { project, inputRuleErrors, ENGINE_VERSION, type EpfFieldError, type ProjectionResult } from '@/lib/calculators/epf'
 import type { LoadedEpfParams } from '@/lib/calculators/epf/params'
 import { encodeState, toProjectInput, type PfState } from '@/lib/calculators/epf/url-state'
 import {
@@ -35,8 +35,11 @@ import {
 import { createInputsChangedTracker, pfEvents, setPfEventContext } from '@/lib/analytics/pf-events'
 import { usePfFlags } from '@/lib/feature-flags/pf'
 import dynamic from 'next/dynamic'
-import { PfLeadDialog, type LeadPurpose } from './PfLeadDialog'
+import type { LeadPurpose } from './PfLeadDialog'
 import { logCalcSession, savePfCalc, sharePfCalc } from './actions'
+
+// The lead dialog (Radix Dialog) is only needed once someone asks for the PDF/pack.
+const PfLeadDialog = dynamic(() => import('./PfLeadDialog').then((m) => m.PfLeadDialog), { ssr: false })
 
 // recharts is ~100 kB; load it after the page is interactive. The table below is the text alternative.
 const PfChart = dynamic(() => import('./PfChart').then((m) => m.PfChart), {
@@ -92,7 +95,7 @@ function Segmented<T extends string>({
               }`}
             >
               {o.label}
-              {o.sub && <small className={`block text-xs font-normal ${on ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'}`}>{o.sub}</small>}
+              {o.sub && <small className={`block text-xs font-normal ${on ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>{o.sub}</small>}
             </button>
           )
         })}
@@ -111,6 +114,8 @@ const parseMoney = (s: string) => {
   return Number.isFinite(v) ? v : 0
 }
 const fmtMoney = (n: number) => (n ? Math.round(n).toLocaleString('en-IN') : '0')
+
+const sameState = (a: PfState, b: PfState) => (Object.keys(a) as (keyof PfState)[]).every((k) => a[k] === b[k])
 
 // ---------------------------------------------------------------------------
 // Main component
@@ -170,10 +175,12 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
   // Validate with the engine schema; on success it becomes the committed state.
   const lastErrorKey = useRef('')
   useEffect(() => {
-    const v = validateInput(toProjectInput(candidate, start))
+    const errs = inputRuleErrors(toProjectInput(candidate, start))
+    const v = errs.length ? { ok: false as const, errors: errs } : { ok: true as const }
     if (v.ok) {
-      setErrors([])
-      setValid(candidate)
+      setErrors((e) => (e.length ? [] : e))
+      // Keep the same object when nothing changed, so projections aren't recomputed.
+      setValid((prev) => (sameState(prev, candidate) ? prev : candidate))
       lastErrorKey.current = ''
     } else {
       setErrors(v.errors)
@@ -356,6 +363,8 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
   const [savePrompt, setSavePrompt] = useState(false)
   const [lead, setLead] = useState<{ open: boolean; purpose: LeadPurpose }>({ open: false, purpose: 'pdf_report' })
   const [busy, setBusy] = useState<string | null>(null)
+  const leadMounted = useRef(false)
+  if (lead.open) leadMounted.current = true
 
   const createShare = async () => {
     setBusy('share')
@@ -851,7 +860,7 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
         </Card>
       </section>
 
-      <PfLeadDialog
+      {leadMounted.current && <PfLeadDialog
         open={lead.open}
         purpose={lead.purpose}
         gate={flags.pf_pdf_gate === 'required' ? 'required' : 'optional'}
@@ -859,7 +868,7 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
         ceilingLabel={inr(facts.ceiling)}
         onOpenChange={(open) => setLead((l) => ({ ...l, open }))}
         onDone={onLeadDone}
-      />
+      />}
     </div>
   )
 }

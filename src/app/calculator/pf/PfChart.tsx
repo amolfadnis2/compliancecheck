@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useTheme } from 'next-themes'
 import { compact, type ChartPoint } from '@/lib/calculators/epf/view'
@@ -9,18 +8,6 @@ import { compact, type ChartPoint } from '@/lib/calculators/epf/view'
 export const SERIES = {
   light: { own: '#1E40AF', er: '#60A5FA', int: '#15803D', grid: '#E5E7EB', text: '#6B7280' },
   dark: { own: '#60A5FA', er: '#BFDBFE', int: '#22C55E', grid: '#334155', text: '#94A3B8' },
-}
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
-    const on = () => setReduced(mq.matches)
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [])
-  return reduced
 }
 
 interface TipProps {
@@ -46,8 +33,9 @@ function ChartTooltip({ active, payload }: TipProps) {
 export function PfChart({ points }: { points: ChartPoint[] }) {
   const { resolvedTheme } = useTheme()
   const c = resolvedTheme === 'dark' ? SERIES.dark : SERIES.light
-  const reduced = usePrefersReducedMotion()
-  const anim = !reduced
+  // No draw-in animation (as in the prototype): it re-renders every frame, costs
+  // main-thread time on mobile, and respects prefers-reduced-motion by default.
+  const anim = false
 
   return (
     <div role="img" aria-label="Stacked area chart of PF balance by year. The same data is in the year-by-year table." className="h-[300px] w-full">
