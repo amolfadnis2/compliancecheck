@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: 'POSH Act 2013 Compliance | ICC Audit & Workplace Safety | ComplianceCheck',
   description: 'Complete POSH Act compliance assessment. ICC constitution audit, policy review, complaint mechanism check, and annual report requirements.',
   alternates: {

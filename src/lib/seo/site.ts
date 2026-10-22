@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 /**
  * Central site-level SEO constants.
  *
@@ -15,8 +17,34 @@ export const SITE_TAGLINE =
 // this constant — mixed addresses (zohomail, wrong domains) have shipped before.
 export const CONTACT_EMAIL = 'contact@compliancecheck.co.in'
 
+// Byline + BlogPosting author for every blog post.
+export const AUTHOR_NAME = 'Amol Fadnis'
+export const AUTHOR_BIO_PATH = '/about'
+
 /** Build an absolute URL from a path (e.g. "/blog" -> full URL). */
 export function absoluteUrl(path = '/'): string {
   if (path.startsWith('http')) return path
+  // Canonical form of the homepage has no trailing slash.
+  if (path === '/' || path === '') return SITE_URL
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
+}
+
+/**
+ * Sitewide default Open Graph block (no `url`: each page sets its own). Pages
+ * that override `openGraph` replace this object entirely, so spread it.
+ */
+export const DEFAULT_OPEN_GRAPH: NonNullable<Metadata['openGraph']> = {
+  title: "ComplianceCheck - Instant Compliance Assessments for Indian Businesses",
+  description: "Pay-as-you-go compliance assessments. Get gap analysis, action items & PDF reports in 15 minutes.",
+  siteName: 'ComplianceCheck',
+  locale: 'en_IN',
+  type: 'website',
+  images: [
+    {
+      url: '/og-image.png',
+      width: 1200,
+      height: 630,
+      alt: 'ComplianceCheck - Pay-as-you-go Assessments for Indian SMEs'
+    }
+  ]
 }

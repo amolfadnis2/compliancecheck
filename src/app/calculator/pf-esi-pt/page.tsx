@@ -84,6 +84,7 @@ export default function PayrollStatutoryCalculatorPage() {
       />
 
       <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">PF, ESI &amp; Professional Tax Calculator for Employers</h1>
         <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to home
         </Link>

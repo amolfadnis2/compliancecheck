@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { CalculatorGuide } from '@/components/site/CalculatorGuide'
 
 export const metadata: Metadata = {
   title: 'CTC Calculator | Cost to Company Calculator India | ComplianceCheck',
@@ -16,5 +17,10 @@ export const metadata: Metadata = {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children
+  return (
+    <>
+      {children}
+      <CalculatorGuide id="ctc" />
+    </>
+  )
 }

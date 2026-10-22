@@ -99,6 +99,9 @@ export default function StateWiseCompliancePage() {
               <div key={i} className={styles.coverageCard} style={{ padding: '20px' }}><h3 style={{ fontSize: '15px', marginBottom: '8px' }}>{item.title}</h3><p style={{ fontSize: '13px' }}>{item.desc}</p></div>
             ))}
           </div>
+          <p style={{ textAlign: 'center', marginTop: '32px' }}>
+            <Link href="/guides" style={{ color: accentColor, fontWeight: 600 }}>Browse all state compliance guides →</Link>
+          </p>
         </div>
       </section>
 

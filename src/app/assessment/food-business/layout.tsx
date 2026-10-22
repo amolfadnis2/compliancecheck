@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: 'Restaurant & Food Business Compliance | FSSAI, Fire NOC, Liquor License | ComplianceCheck',
   description: 'Complete compliance assessment for restaurants, cloud kitchens, and food businesses. FSSAI, Fire NOC, Liquor License, GST, and Labour compliance.',
   alternates: {

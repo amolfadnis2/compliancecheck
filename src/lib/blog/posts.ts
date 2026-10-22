@@ -85,24 +85,28 @@ export function getPost(slug: string): Post | null {
 }
 
 /**
- * Up to `limit` posts for the "Also read" block. Uses the curated `related`
- * slugs first, then tops up with the posts sharing the most tags.
+ * Up to `limit` posts for the "Also read" block: the curated `related` slugs
+ * first, then the posts sharing the most tags (newest first on ties), then the
+ * most recent posts. Excludes the post itself.
  */
-export function getRelatedPosts(post: PostMeta, limit = 3): PostMeta[] {
-  const all = getAllPosts().filter((p) => p.slug !== post.slug)
+export function getRelatedPosts(post: PostMeta, limit = 4): PostMeta[] {
+  const all = getAllPosts().filter((p) => p.slug !== post.slug) // newest first
   const bySlug = new Map(all.map((p) => [p.slug, p]))
   const picked = (post.related ?? [])
     .map((slug) => bySlug.get(slug))
     .filter((p): p is PostMeta => p !== undefined)
     .slice(0, limit)
-  if (picked.length >= limit) return picked
 
   const tags = new Set(post.tags ?? [])
-  const rest = all
+  const byTags = all
     .filter((p) => !picked.includes(p))
     .map((p) => ({ p, shared: (p.tags ?? []).filter((t) => tags.has(t)).length }))
     .filter((x) => x.shared > 0)
-    .sort((a, b) => b.shared - a.shared)
+    .sort((a, b) => b.shared - a.shared) // stable sort keeps newest-first within a score
     .map((x) => x.p)
-  return [...picked, ...rest].slice(0, limit)
+  for (const p of [...byTags, ...all]) {
+    if (picked.length >= limit) break
+    if (!picked.includes(p)) picked.push(p)
+  }
+  return picked
 }

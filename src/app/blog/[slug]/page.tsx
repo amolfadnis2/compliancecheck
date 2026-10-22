@@ -10,7 +10,7 @@ import { ShareButtons } from '@/components/site/ShareButtons'
 import { AssessmentCTA } from '@/components/site/AssessmentCTA'
 import { JsonLd } from '@/lib/seo/JsonLd'
 import { articleSchema, breadcrumbSchema, faqSchema } from '@/lib/seo/schema'
-import { absoluteUrl } from '@/lib/seo/site'
+import { AUTHOR_BIO_PATH, AUTHOR_NAME, absoluteUrl } from '@/lib/seo/site'
 
 interface Params {
   params: { slug: string }
@@ -70,7 +70,6 @@ export default function BlogPostPage({ params }: Params) {
           url: `/blog/${post.slug}`,
           datePublished: post.date,
           dateModified: post.lastReviewed,
-          author: post.author,
         })}
       />
       <JsonLd
@@ -89,7 +88,9 @@ export default function BlogPostPage({ params }: Params) {
           </h1>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{post.description}</p>
           <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-400">
-            <span>{post.author ?? 'ComplianceCheck Team'}</span>
+            <Link href={AUTHOR_BIO_PATH} className="hover:underline">
+              {AUTHOR_NAME}
+            </Link>
             <span>·</span>
             <span>Published {formatDate(post.date)}</span>
             {post.lastReviewed && post.lastReviewed !== post.date && (
@@ -132,7 +133,7 @@ export default function BlogPostPage({ params }: Params) {
             <h2 id="also-read" className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
               Also read
             </h2>
-            <ul className="grid gap-4 sm:grid-cols-3">
+            <ul className="grid gap-4 sm:grid-cols-2">
               {relatedPosts.map((related) => (
                 <li key={related.slug}>
                   <Link
