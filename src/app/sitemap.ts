@@ -4,6 +4,7 @@ import { getAllPosts } from '@/lib/blog/posts'
 import { getAllStateSlugs } from '@/lib/content/state-compliance'
 import { SITE_URL } from '@/lib/seo/site'
 import { PAYROLL_RULES_LAST_REVIEWED } from '@/lib/calculators/payroll-statutory-calculator'
+import { loadEpfParams } from '@/lib/calculators/epf/params.server'
 
 /**
  * Next.js 14 Dynamic Sitemap Generator (/sitemap.xml)
@@ -15,7 +16,10 @@ import { PAYROLL_RULES_LAST_REVIEWED } from '@/lib/calculators/payroll-statutory
  * Excluded: auth, API, admin, and dynamic result pages (see robots.ts).
  */
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // PF calculator: lastModified = when its statutory params were last verified.
+  const epf = await loadEpfParams()
+
   // lastModified is only set where a real content date exists (blog frontmatter,
   // calculator rules review date). Never use the build time.
   const staticPages: MetadataRoute.Sitemap = [
@@ -25,6 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Calculators - high-traffic free tools
     { url: `${SITE_URL}/calculator/ctc`, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculator/gratuity`, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${SITE_URL}/calculator/pf`, lastModified: epf.verifiedAt, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculator/pf-esi-pt`, lastModified: PAYROLL_RULES_LAST_REVIEWED, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator`, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator/methodology`, changeFrequency: 'monthly', priority: 0.8 },

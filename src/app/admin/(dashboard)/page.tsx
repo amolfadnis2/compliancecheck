@@ -10,6 +10,7 @@ import {
   ChevronDown, RefreshCw, AlertCircle,
 } from 'lucide-react'
 import type { DashboardData, DateRange } from '@/types/admin'
+import { EpfParamsRefresh } from '@/app/admin/components/epf-params-refresh'
 
 const CHART_COLORS = ['#1E40AF', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2']
 const SCORE_COLORS = ['#DC2626', '#D97706', '#EAB308', '#059669', '#1E40AF']
@@ -195,6 +196,7 @@ export default function AdminDashboardPage() {
           >
             <RefreshCw className={`h-4 w-4 text-gray-600 dark:text-gray-400 ${loading ? 'animate-spin' : ''}`} />
           </button>
+          <EpfParamsRefresh />
         </div>
       </div>
 

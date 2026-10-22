@@ -47,7 +47,10 @@ export default function LoginPage() {
       }
 
       analytics.userLoggedIn({ method: 'email' })
-      router.push('/dashboard')
+      // ?next= lets tools (e.g. the PF calculator's Save) send users back.
+      // Same-origin paths only — never an absolute or protocol-relative URL.
+      const next = new URLSearchParams(window.location.search).get('next')
+      router.push(next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard')
       router.refresh()
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')

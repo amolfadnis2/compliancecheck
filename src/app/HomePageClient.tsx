@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Calculator,
   Gift,
+  PiggyBank,
   Menu,
   X,
   Car,
@@ -168,6 +169,15 @@ const freeTools = [
     icon: Gift,
     gradient: 'from-emerald-500 to-emerald-600',
     tags: ['5+ years eligibility', 'New Labour Code ready']
+  },
+  {
+    id: 'pf-calculator',
+    title: 'PF calculator with salary hikes',
+    description: 'See your EPF corpus, pension and real return. Updated for the ₹25,000 ceiling.',
+    href: '/calculator/pf',
+    icon: PiggyBank,
+    gradient: 'from-emerald-500 to-emerald-600',
+    tags: ['For employees', 'EPS pension + EDLI']
   },
   {
     id: 'pf-esi-pt-calculator',

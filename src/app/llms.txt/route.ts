@@ -50,6 +50,7 @@ function buildLlmsTxt(): string {
   )
   lines.push(
     `- [Gratuity Calculator](${SITE_URL}/calculator/gratuity): Estimate gratuity payout under the Payment of Gratuity Act and the new Labour Code formula.`,
+    `- [PF Calculator with Salary Hikes](${SITE_URL}/calculator/pf): For employees. Forecast your EPF corpus by retirement with yearly salary hikes, the ₹25,000 wage ceiling, EPS pension, EDLI cover, taxable interest and your real return. Free, no login.`,
   )
   lines.push(
     `- [PF, ESI & Professional Tax Calculator](${SITE_URL}/calculator/pf-esi-pt): Check whether EPF and ESI apply to your business and see the monthly employee and employer contribution and Professional Tax per employee, by state. Free, no login.`,

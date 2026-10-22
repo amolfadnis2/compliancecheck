@@ -38,6 +38,14 @@ export interface CalculatorGuideContent {
   faqs: { question: string; answer: string }[]
   /** Blog post slugs; missing slugs are skipped at render time. */
   relatedSlugs: string[]
+  /** Other calculators worth linking to from this one. */
+  relatedTools?: { href: string; label: string; description: string }[]
+}
+
+const PF_CALCULATOR_LINK = {
+  href: '/calculator/pf',
+  label: 'PF calculator with salary hikes',
+  description: 'See what your EPF grows to by retirement, your EPS pension and your real return as your salary rises.',
 }
 
 // getStatesWithoutPT() tests a monthly slab, so it also returns states that
@@ -131,6 +139,7 @@ function gratuityGuide(): CalculatorGuideContent {
       'fixed-term-employment-gratuity-after-one-year',
       'gratuity-vs-superannuation-vs-nps-how-they-actually-differ',
     ],
+    relatedTools: [PF_CALCULATOR_LINK],
   }
 }
 
@@ -203,6 +212,7 @@ function ctcGuide(): CalculatorGuideContent {
       'how-the-labour-codes-change-your-employees-take-home-pay',
       'the-50-wages-rule-how-the-code-on-wages-rewrites-your-salary-structure',
     ],
+    relatedTools: [PF_CALCULATOR_LINK],
   }
 }
 

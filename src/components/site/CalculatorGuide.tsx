@@ -87,6 +87,22 @@ export function CalculatorGuide({ id }: { id: CalculatorGuideId }) {
           </dl>
         </section>
 
+        {guide.relatedTools && guide.relatedTools.length > 0 && (
+          <section>
+            <h2 className={sectionTitle}>Related calculators</h2>
+            <ul className="space-y-3">
+              {guide.relatedTools.map((tool) => (
+                <li key={tool.href}>
+                  <Link href={tool.href} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                    {tool.label}
+                  </Link>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{tool.description}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <RelatedGuides slugs={guide.relatedSlugs} />
       </div>
     </div>

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PF Calculator with Salary Hike 2026 — EPF, EPS Pension &amp; ₹25,000 Ceiling | ComplianceCheck</title>
+<meta name="description" content="Forecast your EPF corpus with yearly salary hikes, the ₹25,000 wage ceiling, EPS pension and your real return. Updated for 8.25% (FY 2025-26).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F9FAFB; --surface:#FFFFFF; --surface-2:#F3F4F6; --border:#E5E7EB; --border-strong:#D1D5DB;
+  --text:#111827; --muted:#4B5563; --faint:#6B7280;
+  --brand:#1E40AF; --brand-soft:#DBEAFE;
+  --accent:#15803D; --accent-hover:#166534; --accent-soft:#DCFCE7; --accent-text:#FFFFFF;
+  --warn:#92400E; --warn-soft:#FEF3C7; --warn-border:#FDE68A;
+  --danger:#B91C1C; --danger-soft:#FEE2E2;
+  --c-own:#1E40AF; --c-er:#60A5FA; --c-int:#15803D;
+  --focus:#2563EB;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F172A; --surface:#1E293B; --surface-2:#273449; --border:#334155; --border-strong:#475569;
+    --text:#F1F5F9; --muted:#CBD5E1; --faint:#94A3B8;
+    --brand:#93C5FD; --brand-soft:#1E3A8A;
+    --accent:#22C55E; --accent-hover:#16A34A; --accent-soft:#14532D; --accent-text:#052E16;
+    --warn:#FCD34D; --warn-soft:#422006; --warn-border:#78350F;
+    --danger:#FCA5A5; --danger-soft:#450A0A;
+    --c-own:#60A5FA; --c-er:#BFDBFE; --c-int:#22C55E; --focus:#93C5FD;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F172A; --surface:#1E293B; --surface-2:#273449; --border:#334155; --border-strong:#475569;
+  --text:#F1F5F9; --muted:#CBD5E1; --faint:#94A3B8;
+  --brand:#93C5FD; --brand-soft:#1E3A8A;
+  --accent:#22C55E; --accent-hover:#16A34A; --accent-soft:#14532D; --accent-text:#052E16;
+  --warn:#FCD34D; --warn-soft:#422006; --warn-border:#78350F;
+  --danger:#FCA5A5; --danger-soft:#450A0A;
+  --c-own:#60A5FA; --c-er:#BFDBFE; --c-int:#22C55E; --focus:#93C5FD;
+  color-scheme: dark;
+}
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+body{ margin:0; background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--surface); }
+a{ color:var(--brand); }
+:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; border-radius:6px; }
+.num{ font-variant-numeric: tabular-nums; }
+
+/* header (site pattern: brand + rounded badge) */
+.site-header{ background:var(--surface); border-bottom:1px solid var(--border); }
+.site-header .in{ max-width:1180px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.logo{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; color:var(--text); text-decoration:none; }
+.logo-mark{ width:32px; height:32px; border-radius:8px; background:var(--brand); display:grid; place-items:center; color:#fff; }
+:root[data-theme="dark"] .logo-mark{ color:#0F172A; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .logo-mark{ color:#0F172A; } }
+.crumb{ color:var(--faint); font-size:14px; }
+@media (max-width:640px){ .crumb{ display:none; } .badge{ font-size:13px; padding:3px 10px; } }
+.badge{ margin-left:auto; padding:4px 12px; font-size:14px; font-weight:500; border:2px solid var(--accent); color:var(--accent); border-radius:999px; }
+.theme-btn{ background:none; border:1px solid var(--border-strong); color:var(--muted); border-radius:8px; height:36px; padding:0 10px; font:inherit; font-size:14px; cursor:pointer; }
+
+.review-note{ max-width:1180px; margin:16px auto 0; padding:0 20px; }
+.review-note p{ margin:0; padding:10px 14px; background:var(--brand-soft); color:var(--text); border-radius:8px; font-size:14px; }
+
+main{ max-width:1180px; margin:0 auto; padding:24px 20px 64px; }
+h1{ font-size:30px; line-height:1.2; margin:0 0 6px; letter-spacing:-0.01em; }
+.lede{ color:var(--muted); margin:0 0 24px; max-width:68ch; }
+h2{ font-size:19px; margin:0 0 12px; }
+h3{ font-size:15px; margin:0 0 6px; }
+
+.grid{ display:grid; grid-template-columns: 360px 1fr; gap:24px; align-items:start; }
+@media (max-width: 920px){ .grid{ grid-template-columns:1fr; } }
+
+/* inputs panel */
+.panel{ background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+.inputs{ padding:20px; position:sticky; top:calc(16px + env(safe-area-inset-top,0px)); }
+@media (max-width: 920px){ .inputs{ position:static; } }
+.field{ margin-bottom:16px; }
+.field label, .field .lbl{ display:block; font-size:14px; font-weight:500; margin-bottom:6px; }
+.field .hint{ font-size:13px; color:var(--faint); margin-top:4px; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+input[type=number], input[type=text], select{ width:100%; height:44px; padding:0 12px; font:inherit; font-size:16px; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:8px; }
+.money{ position:relative; }
+.money span{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--faint); }
+.money input{ padding-left:28px; }
+.slider-row{ display:flex; align-items:center; gap:12px; }
+.slider-row input[type=range]{ flex:1; accent-color:var(--accent); height:44px; }
+.slider-row output{ min-width:56px; text-align:right; font-weight:600; }
+.seg{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.seg.two{ grid-template-columns:1fr 1fr; }
+.seg button{ min-height:44px; border:2px solid var(--border-strong); background:var(--surface); color:var(--text); border-radius:8px; font:inherit; font-size:14px; font-weight:500; cursor:pointer; padding:4px 6px; line-height:1.2; }
+.seg button small{ display:block; font-weight:400; color:var(--faint); font-size:12px; }
+.seg button[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:var(--accent-text); }
+.seg button[aria-pressed="true"] small{ color:inherit; opacity:.85; }
+details.adv{ border-top:1px solid var(--border); margin-top:8px; padding-top:12px; }
+details.adv summary{ cursor:pointer; font-weight:600; font-size:15px; min-height:44px; display:flex; align-items:center; }
+.check{ display:flex; gap:10px; align-items:flex-start; font-size:14px; margin-bottom:14px; }
+.check input{ width:20px; height:20px; margin-top:1px; accent-color:var(--accent); flex:none; }
+.err{ color:var(--danger); font-size:13px; margin-top:4px; }
+
+/* results */
+.results{ display:flex; flex-direction:column; gap:20px; min-width:0; }
+.summary{ padding:24px; }
+.summary .headline{ font-size:22px; line-height:1.45; margin:0; max-width:60ch; }
+.summary .headline strong{ color:var(--accent); }
+.stats{ display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--border); margin-top:20px; }
+@media (max-width: 640px){ .stats{ grid-template-columns:1fr 1fr; } }
+.stat{ padding:14px 12px 0 0; }
+.stat .v{ font-size:22px; font-weight:700; }
+.stat .k{ font-size:13px; color:var(--muted); }
+.scen{ display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
+.scen button{ border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text); border-radius:8px; padding:8px 12px; font:inherit; font-size:14px; cursor:pointer; min-height:44px; text-align:left; }
+.scen button[aria-pressed="true"]{ border:2px solid var(--accent); background:var(--accent-soft); }
+.scen b{ display:block; }
+
+.callout{ padding:12px 14px; border-radius:8px; font-size:14px; border:1px solid var(--warn-border); background:var(--warn-soft); color:var(--text); }
+.callout strong{ color:var(--warn); }
+.callouts{ display:flex; flex-direction:column; gap:10px; }
+
+.chart-card{ padding:20px; }
+.chart-head{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.chart-head .seg{ width:auto; grid-template-columns:auto auto; }
+.chart-head .seg button{ padding:4px 14px; }
+.legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:8px; }
+.legend i{ display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+.chart-wrap{ position:relative; }
+svg.chart{ width:100%; height:auto; display:block; }
+svg.chart text{ fill:var(--faint); font-size:11px; font-family:inherit; }
+.tip{ position:absolute; pointer-events:none; background:var(--surface); border:1px solid var(--border-strong); border-radius:8px; padding:8px 10px; font-size:13px; box-shadow:0 4px 14px rgba(0,0,0,.12); min-width:180px; display:none; }
+.tip .t{ font-weight:600; margin-bottom:4px; }
+.tip div{ display:flex; justify-content:space-between; gap:12px; }
+
+.cards3{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+@media (max-width: 760px){ .cards3{ grid-template-columns:1fr; } }
+.mini{ padding:18px; }
+.mini .v{ font-size:24px; font-weight:700; margin:4px 0; }
+.mini p{ margin:0; font-size:14px; color:var(--muted); }
+
+.table-card{ padding:20px; }
+.table-scroll{ overflow-x:auto; max-height:460px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; }
+table{ border-collapse:collapse; width:100%; font-size:14px; }
+th, td{ padding:9px 12px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--border); }
+th:first-child, td:first-child{ text-align:left; }
+thead th{ position:sticky; top:0; background:var(--surface-2); font-weight:600; font-size:13px; color:var(--muted); z-index:1; }
+tbody tr:hover{ background:var(--surface-2); }
+
+.section{ margin-top:32px; }
+.method{ padding:20px; font-size:15px; color:var(--muted); }
+.method p{ margin:0 0 10px; max-width:80ch; }
+.method ul{ margin:0 0 10px; padding-left:20px; max-width:80ch; }
+.src-table td, .src-table th{ white-space:normal; text-align:left; }
+
+.review{ padding:20px; }
+.tests li{ list-style:none; display:grid; grid-template-columns:54px 1fr; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.tests{ padding:0; margin:0; }
+.pill{ font-size:12px; font-weight:600; border-radius:999px; padding:2px 8px; text-align:center; height:fit-content; }
+.pill.ok{ background:var(--accent-soft); color:var(--accent); }
+.pill.no{ background:var(--danger-soft); color:var(--danger); }
+.tests .exp{ color:var(--faint); }
+.log{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12.5px; background:var(--surface-2); border-radius:8px; padding:12px; max-height:320px; overflow:auto; white-space:pre-wrap; word-break:break-word; margin:0; }
+.two-col{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media (max-width: 860px){ .two-col{ grid-template-columns:1fr; } }
+.faq details{ border-bottom:1px solid var(--border); padding:6px 0; }
+.faq summary{ cursor:pointer; font-weight:500; min-height:44px; display:flex; align-items:center; }
+.faq p{ margin:0 0 12px; color:var(--muted); max-width:75ch; }
+.links{ display:flex; gap:12px; flex-wrap:wrap; }
+.links a{ display:inline-flex; align-items:center; min-height:44px; padding:0 16px; border:2px solid var(--border-strong); border-radius:8px; text-decoration:none; color:var(--text); font-weight:500; }
+footer{ max-width:1180px; margin:0 auto; padding:0 20px 40px; font-size:13px; color:var(--faint); }
+@media (prefers-reduced-motion: no-preference){ .summary .headline{ transition: opacity .2s; } }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="in">
+    <a class="logo" href="#top" aria-label="ComplianceCheck home">
+      <span class="logo-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      ComplianceCheck
+    </a>
+    <span class="crumb">Free tools / PF calculator</span>
+    <span class="badge">Free calculator</span>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle dark mode">Theme</button>
+  </div>
+</header>
+
+<div class="review-note"><p><strong>Review prototype.</strong> The calculation engine is final-spec and self-tested below. Supabase writes and PostHog events are simulated and shown in the “What gets logged” panel at the bottom, exactly as they would be sent.</p></div>
+
+<main id="top">
+  <h1>PF calculator with salary hikes</h1>
+  <p class="lede">See what your EPF grows to by retirement as your salary rises each year. Updated for the ₹25,000 wage ceiling (from 17 Sep 2026) and the 8.25% rate for FY 2025-26.</p>
+
+  <div class="grid">
+    <form class="panel inputs" id="form" novalidate aria-label="Calculator inputs">
+      <div class="row2">
+        <div class="field"><label for="age">Your age</label><input type="number" id="age" inputmode="numeric" min="18" max="57" value="28"></div>
+        <div class="field"><label for="retirementAge">Retire at</label><input type="number" id="retirementAge" inputmode="numeric" min="45" max="60" value="58"></div>
+      </div>
+      <div class="field">
+        <label for="basic">Monthly Basic + DA</label>
+        <div class="money"><span aria-hidden="true">₹</span><input type="text" id="basic" inputmode="numeric" value="40,000" aria-describedby="basicHint"></div>
+        <div class="hint" id="basicHint">PF is calculated on this, not your full CTC.</div>
+      </div>
+      <div class="field">
+        <label for="hike">Salary hike each year</label>
+        <div class="slider-row"><input type="range" id="hike" min="0" max="20" step="0.5" value="8"><output for="hike" id="hikeOut" class="num">8%</output></div>
+      </div>
+      <div class="field">
+        <label for="stepUpMonth">Appraisal month</label>
+        <select id="stepUpMonth">
+          <option value="4" selected>April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option><option value="1">January</option><option value="2">February</option><option value="3">March</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="opening">Current PF balance</label>
+        <div class="money"><span aria-hidden="true">₹</span><input type="text" id="opening" inputmode="numeric" value="2,00,000"></div>
+        <div class="hint">From your EPFO passbook. Enter 0 if you’re just starting.</div>
+      </div>
+      <div class="field">
+        <label for="vpf">Voluntary PF (VPF)</label>
+        <div class="slider-row"><input type="range" id="vpf" min="0" max="50" step="1" value="0"><output for="vpf" id="vpfOut" class="num">0%</output></div>
+        <div class="hint">Extra % of Basic + DA, on top of the mandatory 12%.</div>
+      </div>
+      <div class="field">
+        <span class="lbl" id="scenLbl">Interest rate for future years</span>
+        <div class="seg" role="group" aria-labelledby="scenLbl" id="scenSeg">
+          <button type="button" data-v="conservative" aria-pressed="false">7.50%<small>Low</small></button>
+          <button type="button" data-v="base" aria-pressed="true">8.25%<small>Current</small></button>
+          <button type="button" data-v="optimistic" aria-pressed="false">8.50%<small>High</small></button>
+          <button type="button" data-v="custom" aria-pressed="false">Custom<small>Your rate</small></button>
+        </div>
+        <div class="field" id="customWrap" hidden style="margin:10px 0 0"><label for="customRate">Custom rate (%)</label><input type="number" id="customRate" step="0.05" min="5" max="12" value="8.00"></div>
+      </div>
+      <div class="field">
+        <label for="inflation">Inflation, for today’s-money values</label>
+        <div class="slider-row"><input type="range" id="inflation" min="0" max="10" step="0.5" value="6"><output for="inflation" id="inflOut" class="num">6%</output></div>
+      </div>
+
+      <details class="adv" id="adv">
+        <summary>More options</summary>
+        <div class="field" style="margin-top:8px">
+          <span class="lbl" id="basisLbl">Your employer pays PF on</span>
+          <div class="seg two" role="group" aria-labelledby="basisLbl" id="basisSeg">
+            <button type="button" data-v="capped" aria-pressed="true">Capped wage<small>Up to ₹25,000</small></button>
+            <button type="button" data-v="actual" aria-pressed="false">Full Basic<small>No cap</small></button>
+          </div>
+          <div class="hint">Check your payslip: if PF is ₹3,000 a month with Basic above ₹25,000, it’s capped.</div>
+        </div>
+        <label class="check"><input type="checkbox" id="epsMember" checked><span>I’m in the Employees’ Pension Scheme (EPS). Most people are; new joiners with wages above the ceiling are not.</span></label>
+        <div class="field"><label for="pastEps">EPS service so far (years)</label><input type="number" id="pastEps" min="0" max="40" step="0.5" value="4"></div>
+        <label class="check"><input type="checkbox" id="reduced"><span>My employer contributes 10%, not 12% (certain notified industries and units under an approved IBC plan)</span></label>
+        <label class="check"><input type="checkbox" id="labourCode"><span>Apply the Labour Code 50% wage rule. Allowances above half your pay are added back to PF wages.</span></label>
+        <div class="field" id="allowWrap" hidden><label for="allowances">Other monthly allowances (HRA, special, etc.)</label><div class="money"><span aria-hidden="true">₹</span><input type="text" id="allowances" inputmode="numeric" value="60,000"></div></div>
+        <div class="field">
+          <label for="epsReading">EPS wage ceiling after 17 Sep 2026</label>
+          <select id="epsReading"><option value="25000" selected>₹25,000 (PIB release, 23 Sep 2026)</option><option value="15000">₹15,000 (one reading of G.S.R. 890(E))</option></select>
+          <div class="hint">The 15 Oct 2026 notification is being read two ways. This changes your pension estimate and the EPF/EPS split.</div>
+        </div>
+        <div class="field">
+          <label for="timing">Monthly contribution earns interest from</label>
+          <select id="timing"><option value="next_month" selected>The following month (conservative)</option><option value="same_month">The same month</option></select>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="regime">Tax regime</label><select id="regime"><option value="new" selected>New</option><option value="old">Old</option></select></div>
+          <div class="field"><label for="slab">Tax slab</label><select id="slab"><option>0</option><option>5</option><option>10</option><option>15</option><option>20</option><option selected>30</option></select></div>
+        </div>
+      </details>
+    </form>
+
+    <section class="results" aria-label="Results">
+      <div class="panel summary">
+        <p class="headline" id="headline" aria-live="polite"></p>
+        <div class="stats" id="stats"></div>
+        <div class="scen" id="scenCompare" aria-label="Compare interest rate scenarios"></div>
+      </div>
+      <div class="callouts" id="callouts" aria-live="polite"></div>
+
+      <div class="panel chart-card">
+        <div class="chart-head">
+          <h2 style="margin:0">How your PF builds up</h2>
+          <div class="seg" role="group" aria-label="Value basis" id="realSeg">
+            <button type="button" data-v="nominal" aria-pressed="true">Future ₹</button>
+            <button type="button" data-v="real" aria-pressed="false">Today’s ₹</button>
+          </div>
+        </div>
+        <div class="legend"><span><i style="background:var(--c-own)"></i>Your contributions</span><span><i style="background:var(--c-er)"></i>Employer’s share to PF</span><span><i style="background:var(--c-int)"></i>Interest earned</span></div>
+        <div class="chart-wrap" id="chartWrap"><svg class="chart" id="chart" viewBox="0 0 760 300" role="img" aria-label="Stacked area chart of PF balance by year. The same data is in the year-by-year table."></svg><div class="tip" id="tip"></div></div>
+      </div>
+
+      <div class="cards3">
+        <div class="panel mini"><h3>Pension from EPS</h3><div class="v num" id="pensionV"></div><p id="pensionN"></p></div>
+        <div class="panel mini"><h3>Life cover (EDLI)</h3><div class="v num" id="edliV"></div><p>Paid to your nominee by EPFO if you die in service. No premium from you.</p></div>
+        <div class="panel mini"><h3>Employer’s monthly cost</h3><div class="v num" id="empV"></div><p id="empN"></p></div>
+      </div>
+
+      <div class="panel table-card">
+        <h2>Year by year</h2>
+        <div class="table-scroll" tabindex="0" aria-label="Year by year table, scrollable">
+          <table id="table"><thead><tr><th scope="col">Year</th><th scope="col">Age</th><th scope="col">Rate</th><th scope="col">PF wage / month</th><th scope="col">You (incl. VPF)</th><th scope="col">Employer to PF</th><th scope="col">To EPS</th><th scope="col">Interest</th><th scope="col">Balance</th><th scope="col">In today’s ₹</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="section">
+    <h2>How this is calculated</h2>
+    <div class="panel method">
+      <p>The calculator steps through every month until you retire. Each month, you put in 12% of your PF wage (plus any VPF). Your employer’s 12% is split: 8.33% of wages up to the ceiling goes to your pension (EPS), and the rest goes to your PF.</p>
+      <ul>
+        <li>Your salary rises by the hike % in your appraisal month each year. If your employer caps PF at ₹25,000, raises above that don’t increase your PF.</li>
+        <li>Interest is worked out monthly on your running balance but added only on 31 March, as EPFO does. That’s why the effective return comes out slightly under the declared rate.</li>
+        <li>Past years use declared rates (8.25% for FY 2025-26). Future years use the rate you choose. EPFO declares the rate every year, so it isn’t guaranteed.</li>
+        <li><em>Return on your money</em> is the yearly rate at which only what you put in (opening balance plus your contributions) grows into the final corpus. It’s higher than the PF rate because your employer’s share comes free. In the old regime, it counts your 80C tax saving.</li>
+        <li>Interest on your own contributions above ₹2.5 lakh a year is taxable. We track that portion separately and show the tax at your slab.</li>
+        <li>EPS pension = pensionable salary × years of service ÷ 70, capped at the ceiling for each period, with 2 bonus years if you serve 20+ years to 58. Minimum ₹1,000 a month. The EPS 2026 paragraph text is still being confirmed, so treat this as an estimate.</li>
+      </ul>
+      <table class="src-table" style="margin-top:12px"><thead><tr><th>Value</th><th>Used here</th><th>Source</th></tr></thead><tbody id="srcBody"></tbody></table>
+    </div>
+  </section>
+
+  <section class="section faq">
+    <h2>Questions people ask</h2>
+    <div class="panel" style="padding:8px 20px">
+      <details><summary>Does a salary hike always increase my PF?</summary><p>Only if your employer pays PF on your full Basic + DA. Many employers cap it at the wage ceiling, now ₹25,000. Then your contribution stays at ₹3,000 a month however much your salary rises.</p></details>
+      <details><summary>What is the EPF interest rate for 2025-26?</summary><p>8.25%. The Central Board of Trustees recommended it on 2 March 2026, and EPFO issued crediting instructions on 1 July 2026.</p></details>
+      <details><summary>What changed on 17 September 2026?</summary><p>The EPF wage ceiling rose from ₹15,000 to ₹25,000 a month. Mandatory contributions for anyone earning up to ₹25,000 now apply to their full wage, and the maximum mandatory employee PF rose from ₹1,800 to ₹3,000 a month.</p></details>
+      <details><summary>Is my PF interest taxable?</summary><p>Interest on your own contributions above ₹2.5 lakh a year (₹5 lakh if your employer doesn’t contribute) is taxable each year. Interest on the rest stays tax-free.</p></details>
+      <details><summary>How does the Labour Code 50% rule affect PF?</summary><p>If allowances that don’t count as wages make up more than half your pay, the excess is added back to your PF wage. Low-Basic salary structures will see PF go up.</p></details>
+      <details><summary>Where does the employer’s 8.33% go?</summary><p>To the Employees’ Pension Scheme. It doesn’t show in your PF balance, but it buys a monthly pension from age 58 once you have 10 years of service.</p></details>
+    </div>
+    <div class="links" style="margin-top:16px"><a href="#top">Gratuity calculator</a><a href="#top">CTC to in-hand calculator</a><a href="#top">Check your company’s PF compliance</a></div>
+  </section>
+
+  <section class="section">
+    <h2>For review: tests and what gets logged</h2>
+    <div class="two-col">
+      <div class="panel review">
+        <h3 id="testSum">Engine tests</h3>
+        <ul class="tests" id="tests"></ul>
+      </div>
+      <div class="panel review">
+        <h3>What gets logged</h3>
+        <p style="font-size:14px;color:var(--muted);margin:0 0 10px">PostHog events (debounced, no raw salary or PII) and the anonymous Supabase <code>pf_calc_sessions</code> row that would be inserted.</p>
+        <pre class="log" id="log" aria-live="off"></pre>
+        <h3 style="margin-top:14px">Supabase row preview</h3>
+        <pre class="log" id="row"></pre>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>Estimates for planning only. Actual PF credits depend on your employer’s filings and the rate EPFO declares each year. Engine v1.0 · params 2026-10-22.</footer>
+
+<script>
+// ===== EPF forecast engine (pure, no DOM) =====
+const PARAMS = {
+  pfCeiling: [{from:'1900-01-01', to:'2026-09-16', v:15000, src:'EPF Scheme (pre-change)'},
+              {from:'2026-09-17', to:null, v:25000, src:'S.O. 5109(E), 17 Sep 2026'}],
+  epsCeilingAlt: [{from:'1900-01-01', to:null, v:15000, src:'G.S.R. 890(E) reading'}],
+  epsRate: 0.0833, edliRate: 0.005, adminRate: 0.005,
+  edliMin: 250000, edliMax: 700000, edliBonusCap: 175000,
+  taxThreshold: 250000, employerCap: 750000, epsMinPension: 1000, sec80C: 150000
+};
+const RATES = {'2015-16':8.80,'2016-17':8.65,'2017-18':8.55,'2018-19':8.65,'2019-20':8.50,
+  '2020-21':8.50,'2021-22':8.10,'2022-23':8.15,'2023-24':8.25,'2024-25':8.25,'2025-26':8.25};
+const SCENARIOS = {conservative:7.5, base:8.25, optimistic:8.5};
+
+const r2 = x => Math.round(x*100 + (x>=0?1e-7:-1e-7))/100;
+const r0 = x => Math.round(x + (x>=0?1e-9:-1e-9));
+const fyOf = (y,m) => m>=4 ? `${y}-${String((y+1)%100).padStart(2,'0')}` : `${y-1}-${String(y%100).padStart(2,'0')}`;
+const daysIn = (y,m) => new Date(y, m, 0).getDate();
+const iso = (y,m,d) => `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+// Wage subject to a date-effective ceiling, prorated by days within a month
+function cappedWage(wage, y, m, schedule){
+  const dim = daysIn(y,m); let total = 0;
+  for (let d=1; d<=dim; d++){
+    const day = iso(y,m,d);
+    const seg = schedule.find(s => day >= s.from && (!s.to || day <= s.to));
+    total += Math.min(wage, seg.v);
+  }
+  return total/dim;
+}
+function ceilingOn(y,m,schedule){ const day=iso(y,m,daysIn(y,m)); return schedule.find(s=>day>=s.from&&(!s.to||day<=s.to)).v; }
+
+function rateFor(fy, inp){
+  if (inp.ratePath && inp.ratePath[fy] != null) return inp.ratePath[fy];
+  if (inp.useHistorical !== false && RATES[fy] != null) return RATES[fy];
+  return inp.scenario === 'custom' ? inp.customRate : SCENARIOS[inp.scenario || 'base'];
+}
+
+function pfWageOf(basic, allow, labourCode){
+  if (!labourCode) return basic;
+  const total = basic + allow;
+  return basic + Math.max(0, allow - 0.5*total);
+}
+
+function project(inp){
+  const t0 = (typeof performance!=='undefined'?performance.now():Date.now());
+  const pfSched = PARAMS.pfCeiling;
+  const epsSched = inp.epsCeilingReading === '15000' ? PARAMS.epsCeilingAlt : PARAMS.pfCeiling;
+  const rnd = inp.rounding === 'paise' ? r2 : r0;
+  const rate = inp.contributionRate || 0.12;
+  const months = Math.max(0, Math.round((inp.retirementAge - inp.age)*12));
+  let y = inp.startY, m = inp.startM;
+  let basic = inp.basic, allow = inp.allowances || 0;
+  let bal = inp.opening || 0, taxBal = 0, baseSum = 0, taxBaseSum = 0;
+  let fyEE = 0, fyEe=0, fyVpf=0, fyEr=0, fyEps=0, fyEmpCost=0, taxOnInterest = 0, fyTaxableInt=0;
+  const rows = [], cfCorpus = new Array(months+1).fill(0), cfOwn = new Array(months+1).fill(0);
+  cfCorpus[0] -= bal; cfOwn[0] -= bal;
+  let totEE=0, totVpf=0, totEr=0, totEps=0, totInt=0;
+  const epsWageHist = []; // pfWage (uncapped) for EPS-member months with date
+  const flags = {capFreeze:false, taxThresholdFY:null, employerCapFY:null, notEpsEligible:false};
+  let first = null, edliWageSum=0, edliBalSum=0, edliN=0, cumOwn = inp.opening||0, cumEr=0, cumInt=0;
+  const slab = (inp.slabPct||0)/100;
+  for (let i=0; i<months; i++){
+    if (i>0 && m === inp.stepUpMonth){ basic *= 1+inp.hikePct/100; allow *= 1+inp.hikePct/100; }
+    const ageNow = inp.age + i/12;
+    const pfWage = pfWageOf(basic, allow, inp.labourCode);
+    const cw = inp.basis === 'actual' ? pfWage : cappedWage(pfWage, y, m, pfSched);
+    if (inp.basis !== 'actual' && pfWage > ceilingOn(y,m,pfSched)) flags.capFreeze = true;
+    const ee = rnd(rate*cw);
+    const vpf = rnd((inp.vpfPct||0)/100 * pfWage);
+    const inEps = inp.epsMember && ageNow < 58;
+    const eps = inEps ? rnd(PARAMS.epsRate * cappedWage(pfWage, y, m, epsSched)) : 0;
+    const erTot = rnd(rate*cw);
+    const erEpf = r2(Math.max(0, erTot - eps));
+    const edli = r2(PARAMS.edliRate * cappedWage(pfWage, y, m, pfSched));
+    const admin = r2(PARAMS.adminRate * cw);
+    if (inEps) epsWageHist.push({y,m,w:pfWage});
+    if (!first) first = {pfWage, cw, ee, vpf, eps, erTot, erEpf, edli, admin, empCost: r2(erTot+edli+admin)};
+    const fy = fyOf(y,m), r = rateFor(fy, inp)/100;
+    const contribEE = ee + vpf;
+    const prev = fyEE; fyEE += contribEE;
+    const taxable = Math.max(0, fyEE-PARAMS.taxThreshold) - Math.max(0, prev-PARAMS.taxThreshold);
+    const saving80C = inp.taxRegime==='old' ? slab*(Math.min(fyEE,PARAMS.sec80C)-Math.min(prev,PARAMS.sec80C)) : 0;
+    if (inp.interestTiming === 'same_month'){ bal += contribEE + erEpf; taxBal += taxable; baseSum += bal; taxBaseSum += taxBal; }
+    else { baseSum += bal; taxBaseSum += taxBal; bal += contribEE + erEpf; taxBal += taxable; }
+    cfCorpus[i] -= contribEE + erEpf; cfOwn[i] -= contribEE - saving80C;
+    fyEe += ee; fyVpf += vpf; fyEr += erEpf; fyEps += eps; fyEmpCost += erTot+edli+admin;
+    cumOwn += contribEE; cumEr += erEpf;
+    if (i < 12){ edliWageSum += Math.min(pfWage, ceilingOn(y,m,pfSched)); edliBalSum += bal; edliN++; }
+    const last = i === months-1;
+    if (m === 3 || last){
+      const intr = r2(baseSum * r/12), tInt = r2(taxBaseSum * r/12);
+      bal = r2(bal + intr); taxBal += tInt; taxOnInterest += tInt*slab; cumInt += intr;
+      totInt += intr;
+      if (fyEE > PARAMS.taxThreshold && !flags.taxThresholdFY) flags.taxThresholdFY = fy;
+      if ((fyEr+fyEps) > PARAMS.employerCap && !flags.employerCapFY) flags.employerCapFY = fy;
+      const yrs = (i+1)/12, defl = Math.pow(1+(inp.inflationPct||0)/100, yrs);
+      rows.push({fy, age: Math.floor(ageNow), pfWage, ee:fyEe, vpf:fyVpf, erEpf:fyEr, eps:fyEps, interest:intr, rate:r*100,
+        closing: bal, real: bal/defl, cumOwn, cumEr, cumInt, taxableInt: tInt, empCost: fyEmpCost});
+      totEE += fyEe; totVpf += fyVpf; totEr += fyEr; totEps += fyEps;
+      baseSum = 0; taxBaseSum = 0; fyEE = 0; fyEe=0; fyVpf=0; fyEr=0; fyEps=0; fyEmpCost=0;
+    }
+    m++; if (m>12){ m=1; y++; }
+  }
+  cfCorpus[months] += bal; cfOwn[months] += bal;
+  const years = months/12, defl = Math.pow(1+(inp.inflationPct||0)/100, years);
+  const xirrCorpus = xirrMonthly(cfCorpus), xirrOwn = xirrMonthly(cfOwn);
+  const infl = (inp.inflationPct||0)/100;
+  const ownIn = (inp.opening||0) + totEE + totVpf;
+  // EPS pension
+  let pension = null, pensionNote = '';
+  if (!inp.epsMember){ pensionNote = 'Not an EPS member, so no pension. The full employer 12% goes to your PF.'; flags.notEpsEligible = true; }
+  else {
+    const last60 = epsWageHist.slice(-60);
+    const avg60 = last60.length ? last60.reduce((a,b)=>a+b.w,0)/last60.length : 0;
+    const periods = {};
+    const pastYrs = inp.pastEpsYears||0;
+    if (pastYrs>0) periods[15000] = (periods[15000]||0) + pastYrs;
+    for (const h of epsWageHist){ const c = ceilingOn(h.y,h.m,epsSched); periods[c] = (periods[c]||0) + 1/12; }
+    const res = epsPension({periods, avg60, atSuperannuation: inp.retirementAge >= 58});
+    pension = res.pension; pensionNote = res.note;
+  }
+  const edliCover = edliN ? edliBenefit(edliWageSum/edliN, edliBalSum/edliN) : null;
+  const engineMs = (typeof performance!=='undefined'?performance.now():Date.now()) - t0;
+  return { rows, months, years, corpus: bal, realCorpus: bal/defl, postTax: bal - taxOnInterest, taxOnInterest,
+    totals:{ee:totEE, vpf:totVpf, erEpf:totEr, eps:totEps, interest:totInt, own: ownIn},
+    xirrCorpus, xirrOwn, realXirr: xirrOwn==null?null:(1+xirrOwn)/(1+infl)-1,
+    moneyMultiple: ownIn>0 ? bal/ownIn : null, pension, pensionNote, edliCover, first, flags, engineMs };
+}
+
+function epsPension({periods, avg60, atSuperannuation}){
+  let service = Object.values(periods).reduce((a,b)=>a+b,0);
+  if (service < 9.5) return {pension:null, note:`${service.toFixed(1)} years of EPS service. You need 10 for a pension; below that you get a lump-sum withdrawal benefit instead.`};
+  const keys = Object.keys(periods).map(Number).sort((a,b)=>a-b);
+  let bonus = (atSuperannuation && service >= 20) ? 2 : 0;
+  let sum = 0;
+  keys.forEach((c,idx)=>{ let s = periods[c]; if (idx===keys.length-1) s += bonus; sum += Math.min(avg60, c)*s; });
+  let p = r2(sum/70);
+  if (p < PARAMS.epsMinPension) p = PARAMS.epsMinPension;
+  return {pension:p, note:`${service.toFixed(1)} years of service${bonus?' + 2 bonus years':''}, pensionable salary capped per ceiling period. Payable from age 58.`};
+}
+function edliBenefit(avgWage, avgBal){
+  const v = 35*avgWage + Math.min(0.5*avgBal, PARAMS.edliBonusCap);
+  return Math.min(PARAMS.edliMax, Math.max(PARAMS.edliMin, v));
+}
+function xirrMonthly(cf){
+  const npv = r => cf.reduce((a,c,t)=>a + c/Math.pow(1+r,t),0);
+  const d = r => cf.reduce((a,c,t)=>a - t*c/Math.pow(1+r,t+1),0);
+  const pos = cf.some(c=>c>0), neg = cf.some(c=>c<0); if (!pos||!neg) return null;
+  let r = 0.007;
+  for (let k=0;k<50;k++){ const f=npv(r), g=d(r); if (!isFinite(f)||!isFinite(g)||g===0) break; const nr=r-f/g; if (Math.abs(nr-r)<1e-12){ r=nr; return Math.pow(1+r,12)-1; } r=nr; if (r<=-0.99) break; }
+  let lo=-0.5, hi=0.5; if (npv(lo)*npv(hi)>0) return null;
+  for (let k=0;k<200;k++){ const mid=(lo+hi)/2; if (npv(lo)*npv(mid)<=0) hi=mid; else lo=mid; }
+  return Math.pow(1+(lo+hi)/2,12)-1;
+}
+
+const BASE = {age:30, retirementAge:31, startY:2027, startM:4, basic:0, allowances:0, hikePct:0, stepUpMonth:4, opening:0,
+  basis:'capped', contributionRate:0.12, epsMember:true, labourCode:false, vpfPct:0, interestTiming:'next_month',
+  scenario:'custom', customRate:8.25, inflationPct:6, taxRegime:'new', slabPct:0, pastEpsYears:0, rounding:'rupee', epsCeilingReading:'25000'};
+function goldenTests(){
+  const T = [];
+  const eq = (a,b)=>Math.abs(a-b)<0.005;
+  { const r = project({...BASE, opening:100000, retirementAge:32});
+    T.push({id:'G1', name:'₹1,00,000 opening, no contributions, 8.25%, 2 FYs', expect:'₹1,08,250 → ₹1,17,180.63', got:`₹${r.rows[0].closing.toFixed(2)} → ₹${r.corpus.toFixed(2)}`, pass: eq(r.rows[0].closing,108250)&&eq(r.corpus,117180.63)}); }
+  { const r = project({...BASE, startY:2025, basic:15000, useHistorical:true});
+    T.push({id:'G2', name:'Basic ₹15,000, ₹15k ceiling, 12 months, next-month interest', expect:'EE 1,800 · EPS 1,250 · ER 550 · interest 1,066.31 · corpus 29,266.31',
+      got:`EE ${r.first.ee} · EPS ${r.first.eps} · ER ${r.first.erEpf} · interest ${r.totals.interest.toFixed(2)} · corpus ${r.corpus.toFixed(2)}`,
+      pass: r.first.ee===1800&&r.first.eps===1250&&r.first.erEpf===550&&eq(r.totals.interest,1066.31)&&eq(r.corpus,29266.31)}); }
+  { const r = project({...BASE, startY:2025, basic:15000, interestTiming:'same_month'});
+    T.push({id:'G3', name:'Same as G2, same-month interest', expect:'interest ₹1,260.19', got:`interest ₹${r.totals.interest.toFixed(2)}`, pass: eq(r.totals.interest,1260.19)}); }
+  { const r = project({...BASE, startY:2026, startM:9, retirementAge:30+1/12, basic:20000, rounding:'paise'}); const f=r.first;
+    const tot = r2(f.ee+f.eps+f.erEpf+f.edli+f.admin);
+    T.push({id:'G4', name:'Sep 2026 split month, wage ₹20,000 (EPFO FAQ)', expect:'EE 2,080 · EPS 1,443.87 · ER 636.13 · EDLI 86.67 · admin 86.67 · total 4,333.34',
+      got:`EE ${f.ee.toFixed(2)} · EPS ${f.eps.toFixed(2)} · ER ${f.erEpf.toFixed(2)} · EDLI ${f.edli.toFixed(2)} · admin ${f.admin.toFixed(2)} · total ${tot.toFixed(2)}`,
+      pass: eq(f.ee,2080)&&eq(f.eps,1443.87)&&eq(f.erEpf,636.13)&&eq(f.edli,86.67)&&eq(f.admin,86.67)&&eq(tot,4333.34)}); }
+  { const w = pfWageOf(10000,12000,true), r = project({...BASE, basic:10000, allowances:12000, labourCode:true});
+    T.push({id:'G5', name:'Labour Code 50% rule: Basic ₹10,000 + allowances ₹12,000', expect:'PF wage ₹11,000 · EE ₹1,320', got:`PF wage ₹${w} · EE ₹${r.first.ee}`, pass: w===11000 && r.first.ee===1320}); }
+  { const p = epsPension({periods:{15000:25}, avg60:15000, atSuperannuation:true});
+    T.push({id:'G6', name:'EPS: ₹15,000 × (25 + 2 bonus) ÷ 70', expect:'₹5,785.71/month', got:`₹${p.pension}`, pass: eq(p.pension,5785.71)}); }
+  { const p = epsPension({periods:{15000:8}, avg60:15000, atSuperannuation:true});
+    T.push({id:'G7', name:'EPS: 8 years service', expect:'No pension', got: p.pension==null?'No pension':`₹${p.pension}`, pass: p.pension==null}); }
+  { const v = edliBenefit(15000, 500000);
+    T.push({id:'G8', name:'EDLI: avg wage ₹15,000, avg balance ₹5L', expect:'₹7,00,000 (cap)', got:`₹${v.toLocaleString('en-IN')}`, pass: v===700000}); }
+  { // G9 track every month EE
+    let ok = true; const inp = {...BASE, startY:2026, startM:11, retirementAge:33, basic:50000, hikePct:10};
+    const r = project(inp); ok = r.rows.every(row => Math.abs(row.ee - 3000*(row.fy==='2026-27'?5:12)) < 0.01 || row.fy==='2029-30');
+    T.push({id:'G9', name:'Basic ₹50,000 capped, 10% hikes, after 17 Sep 2026', expect:'EE stays ₹3,000/month', got: ok?'₹3,000/month every FY':'varies', pass: ok}); }
+  { const r = project({...BASE, basic:20000, retirementAge:60, age:30, hikePct:7});
+    T.push({id:'P1', name:'Corpus XIRR < declared 8.25% (crediting lag)', expect:'< 8.25%', got:`${(r.xirrCorpus*100).toFixed(3)}%`, pass: r.xirrCorpus < 0.0825 && r.xirrCorpus > 0.08}); }
+  return T;
+}
+
+
+</script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
+  const compact = n => { const a=Math.abs(n); if (a>=1e7) return '₹'+(n/1e7).toFixed(2)+' Cr'; if (a>=1e5) return '₹'+(n/1e5).toFixed(2)+' L'; return inr(n); };
+  const pct = (x,d=1) => x==null ? '—' : (x*100).toFixed(d)+'%';
+  const parseMoney = s => { const v = Number(String(s).replace(/[^0-9.]/g,'')); return isFinite(v)?v:0; };
+  const fmtMoneyInput = el => { const v=parseMoney(el.value); el.value = v ? Math.round(v).toLocaleString('en-IN') : '0'; };
+
+  // theme
+  try{ const t = localStorage.getItem('cc-theme'); if (t) document.documentElement.dataset.theme = t; }catch(e){}
+  $('themeBtn').addEventListener('click', ()=>{
+    const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const next = cur==='dark'?'light':'dark'; document.documentElement.dataset.theme = next;
+    try{ localStorage.setItem('cc-theme', next); }catch(e){}
+    render();
+  });
+
+  const state = { scenario:'base', basis:'capped', view:'nominal' };
+  function seg(id, key, onChange){
+    $(id).addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
+      [...$(id).querySelectorAll('button')].forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
+      state[key]=b.dataset.v; onChange && onChange(b.dataset.v); });
+  }
+  seg('scenSeg','scenario', v=>{ $('customWrap').hidden = v!=='custom'; track('pf_scenario_toggled',{scenario:v, custom_rate: v==='custom'?Number($('customRate').value):null}); recalc('scenario'); });
+  seg('basisSeg','basis', ()=>recalc('basis'));
+  seg('realSeg','view', v=>{ track('pf_view_toggled',{view:v}); render(); });
+
+  // ---- observability (simulated) ----
+  const logEl = $('log'); const anonId = 'anon_' + Math.random().toString(36).slice(2,10);
+  const lines = [];
+  function track(event, props){
+    const payload = { event, distinct_id: anonId, properties: { ...props, calc_version:'1.0.0', params_version:'2026-10-22', device: innerWidth<640?'mobile':'desktop' }, timestamp: new Date().toISOString() };
+    lines.unshift(JSON.stringify(payload));
+    if (lines.length>25) lines.pop();
+    logEl.textContent = lines.join('\n\n');
+  }
+  let pendingFields = new Set(), debounceT = null;
+  function trackInputs(field){
+    if (!field) return; pendingFields.add(field);
+    clearTimeout(debounceT);
+    debounceT = setTimeout(()=>{ const inp=readInputs();
+      track('pf_inputs_changed',{ fields_changed:[...pendingFields], salary_band: band(inp.basic), hike_pct: inp.hikePct, basis: inp.basis, vpf_on: inp.vpfPct>0, labour_code_mode: inp.labourCode });
+      pendingFields.clear();
+      track('pf_calculation_completed', lastSummary);
+      $('row').textContent = JSON.stringify(sessionRow(inp), null, 2);
+    }, 1000);
+  }
+  const band = b => b<15000?'<15k':b<25000?'15k-25k':b<50000?'25k-50k':b<100000?'50k-1L':'1L+';
+  const corpusBand = c => c<1e6?'<10L':c<5e6?'10L-50L':c<1e7?'50L-1Cr':c<5e7?'1Cr-5Cr':'5Cr+';
+
+  function readInputs(){
+    const now = new Date(); let sy=now.getFullYear(), sm=now.getMonth()+2; if (sm>12){ sm=1; sy++; }
+    return {
+      age: Number($('age').value), retirementAge: Number($('retirementAge').value),
+      startY: sy, startM: sm,
+      basic: parseMoney($('basic').value), allowances: parseMoney($('allowances').value),
+      hikePct: Number($('hike').value), stepUpMonth: Number($('stepUpMonth').value),
+      opening: parseMoney($('opening').value), vpfPct: Number($('vpf').value),
+      scenario: state.scenario, customRate: Number($('customRate').value), inflationPct: Number($('inflation').value),
+      basis: state.basis, epsMember: $('epsMember').checked, pastEpsYears: Number($('pastEps').value)||0,
+      contributionRate: $('reduced').checked ? 0.10 : 0.12, labourCode: $('labourCode').checked,
+      epsCeilingReading: $('epsReading').value, interestTiming: $('timing').value,
+      taxRegime: $('regime').value, slabPct: Number($('slab').value), rounding:'rupee'
+    };
+  }
+  function validate(inp){
+    const errs = [];
+    if (!(inp.age>=18 && inp.age<=57)) errs.push(['age','Enter an age between 18 and 57.']);
+    if (!(inp.retirementAge>inp.age && inp.retirementAge<=60)) errs.push(['retirementAge','Retirement age must be above your age and at most 60.']);
+    if (inp.basic<=0) errs.push(['basic','Enter your monthly Basic + DA.']);
+    if (inp.scenario==='custom' && !(inp.customRate>=5 && inp.customRate<=12)) errs.push(['customRate','Use a rate between 5% and 12%.']);
+    return errs;
+  }
+  function sessionRow(inp){
+    return { id:'(uuid)', user_id:null, anon_id:anonId, engine_version:'1.0.0', params_snapshot_id:'2026-10-22',
+      salary_band: band(inp.basic),
+      inputs: { age:inp.age, retirement_age:inp.retirementAge, hike_pct:inp.hikePct, step_up_month:inp.stepUpMonth, vpf_pct:inp.vpfPct, scenario:inp.scenario, basis:inp.basis, eps_member:inp.epsMember, labour_code:inp.labourCode, eps_ceiling_reading:inp.epsCeilingReading, tax_regime:inp.taxRegime, note:'exact salary and balance stored only when a logged-in user saves' },
+      results_summary: lastSummary, expires_at:'(now + 180 days)' };
+  }
+
+  let res = null, lastSummary = {}, scenRes = {};
+  function recalc(field){
+    document.querySelectorAll('.err').forEach(e=>e.remove());
+    const inp = readInputs(); const errs = validate(inp);
+    if (errs.length){
+      errs.forEach(([id,msg])=>{ const el=$(id); el.setAttribute('aria-invalid','true'); const d=document.createElement('div'); d.className='err'; d.id=id+'Err'; d.textContent=msg; el.closest('.field').appendChild(d); el.setAttribute('aria-describedby', id+'Err'); });
+      track('pf_calc_error',{error_code:'validation', field: errs.map(e=>e[0]).join(',')});
+      return;
+    }
+    ['age','retirementAge','basic','customRate'].forEach(id=>$(id).removeAttribute('aria-invalid'));
+    res = project(inp);
+    scenRes = {};
+    ['conservative','base','optimistic'].forEach(s=>{ scenRes[s] = project({...inp, scenario:s}).corpus; });
+    if (inp.scenario==='custom') scenRes.custom = res.corpus;
+    lastSummary = { years: res.years, corpus_band: corpusBand(res.corpus), xirr_corpus: +(res.xirrCorpus*100).toFixed(2), xirr_own: res.xirrOwn==null?null:+(res.xirrOwn*100).toFixed(2), pension_eligible: res.pension!=null, tax_threshold_hit: !!res.flags.taxThresholdFY, cap_freeze: res.flags.capFreeze, engine_ms: +res.engineMs.toFixed(1) };
+    render(inp);
+    trackInputs(field);
+  }
+
+  function render(inp){
+    if (!res) return; inp = inp || readInputs();
+    const ageEnd = inp.retirementAge;
+    $('headline').innerHTML = `By ${ageEnd}, your PF could grow to <strong>${compact(res.corpus)}</strong>, which is ${compact(res.realCorpus)} in today’s money. Every ₹1 you put in becomes <strong>₹${res.moneyMultiple.toFixed(1)}</strong>, a return of ${pct(res.xirrOwn)} a year on your own money.`;
+    const stats = [
+      [pct(res.xirrCorpus,2), 'Effective PF return'],
+      [pct(res.realXirr), 'Your return after inflation'],
+      [compact(res.totals.own), 'Total you put in'],
+      [compact(res.totals.interest), 'Interest earned']
+    ];
+    $('stats').innerHTML = stats.map(([v,k])=>`<div class="stat"><div class="v num">${v}</div><div class="k">${k}</div></div>`).join('');
+    const labels = {conservative:'At 7.50%', base:'At 8.25%', optimistic:'At 8.50%', custom:`At ${Number(inp.customRate).toFixed(2)}%`};
+    $('scenCompare').innerHTML = Object.keys(scenRes).map(s=>`<button type="button" data-v="${s}" aria-pressed="${s===state.scenario}"><span>${labels[s]}</span><b class="num">${compact(scenRes[s])}</b></button>`).join('');
+    $('scenCompare').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ $('scenSeg').querySelector(`[data-v="${b.dataset.v}"]`).click(); }));
+
+    const c = [];
+    if (res.flags.capFreeze) c.push(`<strong>Your salary hikes won’t raise your statutory PF.</strong> Your employer caps PF at the ₹25,000 ceiling, so you and your employer each put in ${inr(res.first.ee - res.first.vpf)} a month however much your Basic rises. Switch to “Full Basic” under More options to see the difference, or add VPF.`);
+    if (res.flags.taxThresholdFY) c.push(`<strong>Part of your interest becomes taxable from FY ${res.flags.taxThresholdFY}.</strong> Your own contributions cross ₹2.5 lakh a year. Estimated tax on that interest by retirement: ${compact(res.taxOnInterest)}, leaving ${compact(res.postTax)}.`);
+    if (res.flags.employerCapFY) c.push(`<strong>Employer contributions exceed ₹7.5 lakh a year from FY ${res.flags.employerCapFY}.</strong> The excess, plus returns on it, is taxed as a perquisite. That isn’t deducted in this estimate.`);
+    if (inp.retirementAge > 58) c.push(`<strong>EPS stops at 58.</strong> From then until ${inp.retirementAge}, your employer’s full 12% goes to your PF.`);
+    $('callouts').innerHTML = c.map(x=>`<div class="callout">${x}</div>`).join('');
+
+    $('pensionV').textContent = res.pension!=null ? inr(res.pension)+' / month' : 'None';
+    $('pensionN').textContent = res.pensionNote;
+    $('edliV').textContent = res.edliCover!=null ? inr(res.edliCover) : '—';
+    $('empV').textContent = inr(res.first.empCost);
+    $('empN').textContent = `${inr(res.first.erTot)} PF/EPS + ${inr(res.first.edli)} EDLI + ${inr(res.first.admin)} admin today. That’s ${compact(res.first.empCost*12)} a year, before hikes.`;
+
+    const real = state.view==='real';
+    $('table').querySelector('tbody').innerHTML = res.rows.map(r=>`<tr><td>FY ${r.fy}</td><td class="num">${r.age}</td><td class="num">${r.rate.toFixed(2)}%</td><td class="num">${inr(r.pfWage)}</td><td class="num">${inr(r.ee+r.vpf)}</td><td class="num">${inr(r.erEpf)}</td><td class="num">${inr(r.eps)}</td><td class="num">${inr(r.interest)}</td><td class="num">${inr(r.closing)}</td><td class="num">${inr(r.real)}</td></tr>`).join('');
+    drawChart(res.rows, inp, real);
+    renderSources(inp);
+  }
+
+  function drawChart(rows, inp, real){
+    const svg = $('chart'), W=760, H=300, L=64, R=12, T=12, B=30;
+    const cs = getComputedStyle(document.documentElement);
+    const col = k => cs.getPropertyValue(k).trim();
+    const pts = rows.map((r,i)=>{ const f = r.closing ? (real ? r.real/r.closing : 1) : 1; return { own:r.cumOwn*f, er:r.cumEr*f, int:Math.max(0,(r.closing - r.cumOwn - r.cumEr))*f, total:r.closing*f, r }; });
+    const max = Math.max(1, ...pts.map(p=>p.total));
+    const nice = (()=>{ const p = Math.pow(10, Math.floor(Math.log10(max))); const s=[1,2,2.5,5,10].find(m=>m*p*4>=max)*p; return s; })();
+    const ymax = nice*4;
+    const x = i => L + (rows.length<=1?0:(i/(rows.length-1))*(W-L-R));
+    const y = v => T + (1 - v/ymax)*(H-T-B);
+    let g = '';
+    for (let k=0;k<=4;k++){ const v=nice*k, yy=y(v); g += `<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="${col('--border')}" />`; g += `<text x="${L-8}" y="${yy+4}" text-anchor="end">${compact(v).replace('₹','₹')}</text>`; }
+    const step = Math.max(1, Math.ceil(rows.length/8));
+    rows.forEach((r,i)=>{ if (i%step===0 || i===rows.length-1) g += `<text x="${x(i)}" y="${H-10}" text-anchor="middle">${r.age}</text>`; });
+    g += `<text x="${W-R}" y="${H-10+0}" text-anchor="end" dy="0" style="display:none"></text>`;
+    const area = (lo, hi, fill) => { let d = `M${x(0)},${y(hi(pts[0]))}`; pts.forEach((p,i)=> d+=` L${x(i)},${y(hi(p))}`); for (let i=pts.length-1;i>=0;i--) d+=` L${x(i)},${y(lo(pts[i]))}`; return `<path d="${d} Z" fill="${fill}" />`; };
+    g += area(()=>0, p=>p.own, col('--c-own'));
+    g += area(p=>p.own, p=>p.own+p.er, col('--c-er'));
+    g += area(p=>p.own+p.er, p=>p.total, col('--c-int'));
+    g += `<line id="cursor" y1="${T}" y2="${H-B}" stroke="${col('--text')}" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>`;
+    g += `<rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent" id="hit"/>`;
+    g += `<text x="${L}" y="${H-0}" style="display:none"></text>`;
+    svg.innerHTML = g;
+    const tip = $('tip'), wrap = $('chartWrap'), cur = svg.querySelector('#cursor');
+    svg.querySelector('#hit').addEventListener('mousemove', ev=>{
+      const rect = svg.getBoundingClientRect(); const sx = (ev.clientX-rect.left)*(W/rect.width);
+      const i = Math.max(0, Math.min(rows.length-1, Math.round((sx-L)/(W-L-R)*(rows.length-1))));
+      const p = pts[i]; cur.setAttribute('x1',x(i)); cur.setAttribute('x2',x(i)); cur.style.display='';
+      tip.innerHTML = `<div class="t">FY ${p.r.fy} · age ${p.r.age}</div><div><span>Balance</span><b class="num">${compact(p.total)}</b></div><div><span>You put in</span><span class="num">${compact(p.own)}</span></div><div><span>Employer</span><span class="num">${compact(p.er)}</span></div><div><span>Interest</span><span class="num">${compact(p.int)}</span></div>`;
+      tip.style.display='block';
+      const px = x(i)/W*rect.width; tip.style.left = Math.min(rect.width - tip.offsetWidth - 4, Math.max(4, px + 12)) + 'px'; tip.style.top = '8px';
+    });
+    svg.querySelector('#hit').addEventListener('mouseleave', ()=>{ tip.style.display='none'; cur.style.display='none'; });
+  }
+
+  function renderSources(inp){
+    const eps = inp.epsCeilingReading==='15000' ? '₹15,000' : '₹25,000';
+    const rows = [
+      ['EPF interest rate FY 2025-26','8.25%','CBT 239th meeting, 2 Mar 2026; EPFO crediting circular, 01.07.2026'],
+      ['Past rates FY 2015-16 to 2024-25','8.10% to 8.80%','EPFO declared rates'],
+      ['PF wage ceiling','₹15,000 to 16 Sep 2026; ₹25,000 from 17 Sep 2026','Gazette S.O. 5109(E), 17 Sep 2026'],
+      ['EPS wage ceiling (selected)', eps, 'PIB, 23 Sep 2026 / G.S.R. 890(E), 15 Oct 2026 (under clarification)'],
+      ['EPS share of employer 12%','8.33%','EPS 2026'],
+      ['EDLI / admin charges','0.50% / 0.50%','S.O. 3581(E), 1 Jul 2026; EPFO FAQs Sep 2026'],
+      ['EDLI cover','₹2.5 lakh to ₹7 lakh','EDLI scheme'],
+      ['Taxable interest threshold','₹2.5 lakh of own contributions a year','Income-tax rules (Rule 9D)'],
+      ['Future rate (your choice)', inp.scenario==='custom'? Number(inp.customRate).toFixed(2)+'%' : ({conservative:'7.50%',base:'8.25%',optimistic:'8.50%'})[inp.scenario], 'Assumption']
+    ];
+    $('srcBody').innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  }
+
+  // tests
+  const T = goldenTests(); const passed = T.filter(t=>t.pass).length;
+  $('testSum').textContent = `Engine tests: ${passed} of ${T.length} passing`;
+  $('tests').innerHTML = T.map(t=>`<li><span class="pill ${t.pass?'ok':'no'}">${t.pass?'Pass':'Fail'}</span><span><b>${t.id}</b> ${t.name}<br><span class="exp">Expected ${t.expect}</span><br>Got ${t.got}</span></li>`).join('');
+
+  // wiring
+  const bindings = [['age','input'],['retirementAge','input'],['basic','input'],['hike','input'],['stepUpMonth','change'],['opening','input'],['vpf','input'],['customRate','input'],['inflation','input'],['epsMember','change'],['pastEps','input'],['reduced','change'],['labourCode','change'],['allowances','input'],['epsReading','change'],['timing','change'],['regime','change'],['slab','change']];
+  bindings.forEach(([id,ev])=>$(id).addEventListener(ev, ()=>{
+    if (id==='hike') $('hikeOut').textContent = $('hike').value+'%';
+    if (id==='vpf') $('vpfOut').textContent = $('vpf').value+'%';
+    if (id==='inflation') $('inflOut').textContent = $('inflation').value+'%';
+    if (id==='labourCode') $('allowWrap').hidden = !$('labourCode').checked;
+    recalc(id);
+  }));
+  ['basic','opening','allowances'].forEach(id=>$(id).addEventListener('blur', ()=>fmtMoneyInput($(id))));
+  $('adv').addEventListener('toggle', ()=>{ if ($('adv').open) track('pf_advanced_opened',{}); });
+  document.querySelectorAll('.links a').forEach(a=>a.addEventListener('click',()=>track('pf_cross_link_clicked',{target:a.textContent.trim()})));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>render());
+
+  track('pf_calculator_viewed',{ entry_source:'direct', has_shared_state:false });
+  recalc(null);
+  track('pf_calculation_completed', lastSummary);
+  $('row').textContent = JSON.stringify(sessionRow(readInputs()), null, 2);
+})();
+</script>
+</body>
+</html>
