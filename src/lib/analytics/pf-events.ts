@@ -115,7 +115,7 @@ export function createInputsChangedTracker(waitMs = 1000, sendFn: (p: PfInputsCh
       snapshot = snap
       if (timer) clearTimeout(timer)
       timer = setTimeout(() => {
-        if (snapshot) sendFn({ fields_changed: [...fields], ...snapshot })
+        if (snapshot) sendFn({ fields_changed: Array.from(fields), ...snapshot })
         fields.clear()
         timer = null
       }, waitMs)
