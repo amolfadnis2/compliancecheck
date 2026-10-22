@@ -59,7 +59,7 @@ export default function BlogPostPage({ params }: Params) {
   if (!post) notFound()
 
   const url = absoluteUrl(`/blog/${post.slug}`)
-  const related = getRelatedPosts(post.slug, post.tags)
+  const relatedPosts = getRelatedPosts(post)
 
   return (
     <ContentShell>
@@ -128,21 +128,25 @@ export default function BlogPostPage({ params }: Params) {
 
         {post.relatedAssessment && <AssessmentCTA type={post.relatedAssessment} />}
 
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="mt-10 mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Related guides
+        {relatedPosts.length > 0 && (
+          <section className="mt-10" aria-labelledby="also-read">
+            <h2 id="also-read" className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Also read
             </h2>
-            <ul className="space-y-4">
-              {related.map((item) => (
-                <li key={item.slug}>
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {relatedPosts.map((related) => (
+                <li key={related.slug}>
                   <Link
-                    href={`/blog/${item.slug}`}
-                    className="font-semibold text-primary hover:underline"
+                    href={`/blog/${related.slug}`}
+                    className="group block h-full rounded-lg border border-neutral-200 dark:border-gray-800 p-4 hover:border-primary"
                   >
-                    {item.title}
+                    <h3 className="font-semibold leading-snug text-gray-900 dark:text-gray-100 group-hover:text-primary">
+                      {related.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-3 text-sm text-gray-600 dark:text-gray-400">
+                      {related.description}
+                    </p>
                   </Link>
-                  <p className="mt-1 leading-7 text-gray-700 dark:text-gray-300">{item.description}</p>
                 </li>
               ))}
             </ul>

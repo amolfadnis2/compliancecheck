@@ -11,6 +11,7 @@
  *   author: "ComplianceCheck Team"
  *   tags: ["labour-code", "compliance"]
  *   relatedAssessment: "labour_code"   # optional AssessmentType for the CTA
+ *   related: ["other-post-slug"]        # optional; shown as "Also read"
  *   draft: false                        # optional; drafts are excluded
  *   ---
  */
@@ -33,6 +34,7 @@ export interface PostFrontmatter {
   author?: string
   tags?: string[]
   relatedAssessment?: AssessmentType
+  related?: string[]
   draft?: boolean
   faq?: FaqItem[]
 }
@@ -83,20 +85,26 @@ export function getPost(slug: string): Post | null {
 }
 
 /**
- * Related posts for a post: those sharing the most tags first (newest first on
- * ties), topped up with the most recent posts. Excludes the post itself.
+ * Up to `limit` posts for the "Also read" block: the curated `related` slugs
+ * first, then the posts sharing the most tags (newest first on ties), then the
+ * most recent posts. Excludes the post itself.
  */
-export function getRelatedPosts(slug: string, tags: string[] = [], limit = 4): PostMeta[] {
-  const tagSet = new Set(tags)
-  const others = getAllPosts().filter((p) => p.slug !== slug) // newest first
-  const shared = (p: PostMeta) => (p.tags ?? []).filter((t) => tagSet.has(t)).length
-  const byTags = others
-    .map((p) => ({ p, score: shared(p) }))
-    .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score) // stable sort keeps newest-first within a score
-    .map(({ p }) => p)
-  const picked = byTags.slice(0, limit)
-  for (const p of others) {
+export function getRelatedPosts(post: PostMeta, limit = 4): PostMeta[] {
+  const all = getAllPosts().filter((p) => p.slug !== post.slug) // newest first
+  const bySlug = new Map(all.map((p) => [p.slug, p]))
+  const picked = (post.related ?? [])
+    .map((slug) => bySlug.get(slug))
+    .filter((p): p is PostMeta => p !== undefined)
+    .slice(0, limit)
+
+  const tags = new Set(post.tags ?? [])
+  const byTags = all
+    .filter((p) => !picked.includes(p))
+    .map((p) => ({ p, shared: (p.tags ?? []).filter((t) => tags.has(t)).length }))
+    .filter((x) => x.shared > 0)
+    .sort((a, b) => b.shared - a.shared) // stable sort keeps newest-first within a score
+    .map((x) => x.p)
+  for (const p of [...byTags, ...all]) {
     if (picked.length >= limit) break
     if (!picked.includes(p)) picked.push(p)
   }
