@@ -61,6 +61,10 @@ export interface PfFacts {
   taxThresholdNoEmployer: number
   employerCap: number
   epsMinPension: number
+  sec80c: number
+  edliMin: number
+  edliMax: number
+  edliBonusCap: number
   epsAlt: number
   epsPrimarySrc: string
   epsAltSrc: string
@@ -87,6 +91,10 @@ export function factsFrom(params: StatutoryParams, rateRows: EpfRateRow[]): PfFa
     taxThresholdNoEmployer: params.taxThresholdNoEmployer,
     employerCap: params.employerCap,
     epsMinPension: params.epsMinPension,
+    sec80c: params.sec80C,
+    edliMin: params.edliMin,
+    edliMax: params.edliMax,
+    edliBonusCap: params.edliBonusCap,
     epsAlt: params.epsCeilingAlt[params.epsCeilingAlt.length - 1].v,
     epsPrimarySrc: eps[eps.length - 1].src ?? '',
     epsAltSrc: params.epsCeilingAlt[params.epsCeilingAlt.length - 1].src ?? '',

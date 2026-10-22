@@ -45,5 +45,21 @@ export function pfFaq(f: PfFacts): FaqItem[] {
       question: `Where does the employer’s ${f.epsShare} go?`,
       answer: 'To the Employees’ Pension Scheme. It doesn’t show in your PF balance, but it buys a monthly pension from age 58 once you have 10 years of service.',
     },
+    {
+      question: 'How is the EPS pension calculated?',
+      answer: `Pension = pensionable salary × years of service ÷ 70, with pensionable salary capped at the wage ceiling for each period of service. Serving 20 years or more to age 58 adds 2 bonus years. The minimum pension is ${inr(f.epsMinPension)} a month, and you need 10 years of service to get one.`,
+    },
+    {
+      question: 'Do I get a tax deduction for PF under Section 80C?',
+      answer: `Only in the old tax regime. Your own PF and VPF contributions count towards the ${lakh(f.sec80c)} Section 80C limit, which this calculator includes in your return when you choose the old regime. The new regime has no 80C deduction.`,
+    },
+    {
+      question: 'Should I put money into VPF?',
+      answer: `Voluntary PF earns the same rate as EPF (${ratePct(f.latestRate)} for ${f.latestFy}) with no employer match. It counts towards your own contributions, so interest on the part above ${lakh(f.taxThreshold)} a year is taxable. Use the VPF slider to see the effect on your corpus.`,
+    },
+    {
+      question: 'What life cover does EDLI give me?',
+      answer: `If you die in service, EPFO pays your nominee 35 times your average monthly wage plus half your average PF balance (that part capped at ${lakh(f.edliBonusCap)}). The total is at least ${lakh(f.edliMin)} and at most ${lakh(f.edliMax)}. Your employer pays for it; nothing comes out of your salary.`,
+    },
   ]
 }

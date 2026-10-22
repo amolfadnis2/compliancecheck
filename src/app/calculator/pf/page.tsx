@@ -1,4 +1,9 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
+import { JsonLd } from '@/lib/seo/JsonLd'
+import { breadcrumbSchema, faqSchema } from '@/lib/seo/schema'
+import { SITE_NAME, absoluteUrl } from '@/lib/seo/site'
 import { loadEpfParams } from '@/lib/calculators/epf/params.server'
 import { loadPfShare } from '@/lib/calculators/epf/server'
 import { decodeState } from '@/lib/calculators/epf/url-state'
@@ -9,6 +14,40 @@ import { PfCalculator } from './PfCalculator'
 import { PfCrossLinks } from './PfCrossLinks'
 
 type SearchParams = Record<string, string | string[] | undefined>
+
+const PATH = '/calculator/pf'
+
+/** Title/description are built from params so the ceiling and rate never go stale. */
+export async function generateMetadata(): Promise<Metadata> {
+  const { params, rateRows } = await loadEpfParams()
+  const f = factsFrom(params, rateRows)
+  const title = `PF Calculator with Salary Hike ${f.ceilingFrom.slice(0, 4)} — EPF, EPS Pension & ${inr(f.ceiling)} Ceiling | ComplianceCheck`
+  const description = `Free PF calculator for employees: forecast your EPF corpus with yearly salary hikes, the ${inr(f.ceiling)} wage ceiling, EPS pension, EDLI cover and your real return. Updated for ${ratePct(f.latestRate)} (FY ${f.latestFy}).`
+  return {
+    title,
+    description,
+    alternates: { canonical: absoluteUrl(PATH) },
+    openGraph: { title, description, type: 'website', url: absoluteUrl(PATH), siteName: SITE_NAME, locale: 'en_IN' },
+    twitter: { card: 'summary_large_image', title, description },
+  }
+}
+
+function webAppSchema(description: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'PF calculator with salary hikes',
+    url: absoluteUrl(PATH),
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web',
+    isAccessibleForFree: true,
+    inLanguage: 'en-IN',
+    description,
+    audience: { '@type': 'Audience', audienceType: 'Salaried employees in India' },
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+    provider: { '@type': 'Organization', name: SITE_NAME, url: absoluteUrl('/') },
+  }
+}
 
 /** First projected month = the month after today, in IST. */
 function startInIst(now = new Date()) {
@@ -38,12 +77,24 @@ export default async function PfCalculatorPage({ searchParams }: { searchParams:
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+      <JsonLd
+        data={[
+          webAppSchema(`Forecast your EPF corpus with yearly salary hikes, the ${inr(facts.ceiling)} wage ceiling, EPS pension, EDLI cover and your real return.`),
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Free tools', path: '/#free-tools' },
+            { name: 'PF calculator', path: PATH },
+          ]),
+          // FAQPage no longer earns Google rich results, but answer engines still read it.
+          faqSchema(faq),
+        ]}
+      />
       <AssessmentHeader title="ComplianceCheck" subtitle="PF Calculator" badgeText="FREE Tool" badgeVariant="free" />
 
       <main id="main" className="mx-auto max-w-[1180px] px-4 pb-16 pt-6 sm:px-5">
         <nav aria-label="Breadcrumb" className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-          <a href="/" className="hover:underline">Home</a> <span aria-hidden="true">/</span>{' '}
-          <a href="/#free-tools" className="hover:underline">Free tools</a> <span aria-hidden="true">/</span>{' '}
+          <Link href="/" className="hover:underline">Home</Link> <span aria-hidden="true">/</span>{' '}
+          <Link href="/#free-tools" className="hover:underline">Free tools</Link> <span aria-hidden="true">/</span>{' '}
           <span aria-current="page">PF calculator</span>
         </nav>
         <h1 className="mb-1.5 text-3xl font-bold leading-tight tracking-tight">PF calculator with salary hikes</h1>
