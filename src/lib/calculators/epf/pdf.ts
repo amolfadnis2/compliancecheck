@@ -7,7 +7,7 @@ import { jsPDF } from 'jspdf'
 import { cleanText } from '@/lib/pdf/unified-report-generator'
 import { ENGINE_VERSION, type ProjectionResult } from './types'
 import type { PfState } from './url-state'
-import { TABLE_HEADERS, compact, inr, pct, tableRow, type Callout, type SourceRow } from './view'
+import { compact, inr, pct, tableRow, type Callout, type SourceRow } from './view'
 
 const W = 210
 const H = 297
@@ -19,6 +19,8 @@ const TEXT: [number, number, number] = [31, 41, 55]
 const MUTED: [number, number, number] = [107, 114, 128]
 const LIGHT: [number, number, number] = [243, 244, 246]
 
+// Short labels that fit A4 columns; same order as TABLE_HEADERS on the page.
+const PDF_HEADERS = ['Year', 'Age', 'Rate', 'PF wage/mo', 'You + VPF', 'Employer', 'To EPS', 'Interest', 'Balance', "Today's Rs."]
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 export interface PfPdfInput {
@@ -150,10 +152,10 @@ export function buildPfPdf(input: PfPdfInput): jsPDF {
   ])
 
   if (input.chartPng) {
-    heading('How your PF builds up')
     const h = CW * (300 / 760)
-    ensure(h + 8)
-    doc.addImage(input.chartPng, 'PNG', ML, y, CW, h)
+    ensure(h + 20) // keep the heading with the chart
+    heading('How your PF builds up')
+    doc.addImage(input.chartPng, 'JPEG', ML, y, CW, h)
     y += h + 3
     para('Blue: your contributions. Light blue: employer’s share to PF. Green: interest earned. The year-by-year table has the same data.', 8)
   }
@@ -168,8 +170,8 @@ export function buildPfPdf(input: PfPdfInput): jsPDF {
     doc.setFontSize(6.8)
     doc.setTextColor(...MUTED)
     let x = ML
-    TABLE_HEADERS.forEach((hd, i) => {
-      doc.text(t(hd.replace('In today’s ₹', "Today's Rs.")), i === 0 ? x + 1 : x + colW[i] - 1, y, { align: i === 0 ? 'left' : 'right' })
+    PDF_HEADERS.forEach((hd, i) => {
+      doc.text(t(hd), i === 0 ? x + 1 : x + colW[i] - 1, y, { align: i === 0 ? 'left' : 'right' })
       x += colW[i]
     })
     y += 5
@@ -218,8 +220,12 @@ export function buildPfPdf(input: PfPdfInput): jsPDF {
   return doc
 }
 
-/** Rasterise the chart's SVG to a PNG data URL for the PDF. Null if anything fails. */
-export async function svgToPng(svg: SVGSVGElement, width = 1520, height = 600): Promise<string | null> {
+/**
+ * Rasterise the chart's SVG to a JPEG data URL for the PDF (JPEG keeps the
+ * file small). `recolor` maps on-screen fills (e.g. dark-mode series) to the
+ * PDF's light palette. Null if anything fails.
+ */
+export async function svgToImage(svg: SVGSVGElement, recolor: Record<string, string> = {}, width = 1520, height = 600): Promise<string | null> {
   try {
     const clone = svg.cloneNode(true) as SVGSVGElement
     clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
@@ -227,6 +233,14 @@ export async function svgToPng(svg: SVGSVGElement, width = 1520, height = 600): 
     clone.setAttribute('height', String(svg.clientHeight || 300))
     // Resolve CSS variables / currentColor in the PDF's light palette.
     clone.querySelectorAll('text').forEach((n) => n.setAttribute('fill', '#6B7280'))
+    clone.querySelectorAll('[fill]').forEach((n) => {
+      const to = recolor[(n.getAttribute('fill') ?? '').toUpperCase()]
+      if (to) n.setAttribute('fill', to)
+    })
+    clone.querySelectorAll('[stroke]').forEach((n) => {
+      const to = recolor[(n.getAttribute('stroke') ?? '').toUpperCase()]
+      if (to) n.setAttribute('stroke', to)
+    })
     const xml = new XMLSerializer().serializeToString(clone)
     const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml)
     const img = new Image()
@@ -243,7 +257,7 @@ export async function svgToPng(svg: SVGSVGElement, width = 1520, height = 600): 
     ctx.fillStyle = '#FFFFFF'
     ctx.fillRect(0, 0, width, height)
     ctx.drawImage(img, 0, 0, width, height)
-    return canvas.toDataURL('image/png')
+    return canvas.toDataURL('image/jpeg', 0.85)
   } catch {
     return null
   }

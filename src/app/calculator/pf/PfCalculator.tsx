@@ -34,9 +34,15 @@ import {
 } from '@/lib/calculators/epf/view'
 import { createInputsChangedTracker, pfEvents, setPfEventContext } from '@/lib/analytics/pf-events'
 import { usePfFlags } from '@/lib/feature-flags/pf'
-import { PfChart } from './PfChart'
+import dynamic from 'next/dynamic'
 import { PfLeadDialog, type LeadPurpose } from './PfLeadDialog'
 import { logCalcSession, savePfCalc, sharePfCalc } from './actions'
+
+// recharts is ~100 kB; load it after the page is interactive. The table below is the text alternative.
+const PfChart = dynamic(() => import('./PfChart').then((m) => m.PfChart), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full animate-pulse rounded-lg bg-gray-100 motion-reduce:animate-none dark:bg-gray-900" aria-hidden="true" />,
+})
 
 // ---------------------------------------------------------------------------
 // Small building blocks
@@ -403,9 +409,10 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
       setBusy('pdf')
       const t0 = performance.now()
       try {
-        const { buildPfPdf, svgToPng } = await import('@/lib/calculators/epf/pdf')
+        const [{ buildPfPdf, svgToImage }, { SERIES }] = await Promise.all([import('@/lib/calculators/epf/pdf'), import('./PfChart')])
         const svg = chartRef.current?.querySelector('svg.recharts-surface') as SVGSVGElement | null
-        const chartPng = svg ? await svgToPng(svg) : null
+        const toLight = Object.fromEntries((Object.keys(SERIES.dark) as (keyof typeof SERIES.dark)[]).map((k) => [SERIES.dark[k].toUpperCase(), SERIES.light[k]]))
+        const chartPng = svg ? await svgToImage(svg, toLight) : null
         const doc = buildPfPdf({
           state: valid,
           result: res,
@@ -488,7 +495,7 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
   )
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[360px_1fr]">
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
       {/* ------------------------------ Inputs ------------------------------ */}
       <form className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 lg:sticky lg:top-20" noValidate
         aria-label="Calculator inputs" onSubmit={(e) => e.preventDefault()}>
@@ -674,7 +681,9 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
                 <span><i className="mr-1.5 inline-block h-3 w-3 rounded-sm bg-blue-400 align-[-1px] dark:bg-blue-200" />Employer’s share to PF</span>
                 <span><i className="mr-1.5 inline-block h-3 w-3 rounded-sm bg-green-700 align-[-1px] dark:bg-green-500" />Interest earned</span>
               </div>
-              <PfChart ref={chartRef} points={points} />
+              <div ref={chartRef}>
+                <PfChart points={points} />
+              </div>
             </Card>
 
             <div className="grid gap-4 md:grid-cols-3">

@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useTheme } from 'next-themes'
 import { compact, type ChartPoint } from '@/lib/calculators/epf/view'
@@ -43,14 +43,14 @@ function ChartTooltip({ active, payload }: TipProps) {
 }
 
 /** Stacked area of PF balance by year. The year table is its text alternative. */
-export const PfChart = forwardRef<HTMLDivElement, { points: ChartPoint[] }>(function PfChart({ points }, ref) {
+export function PfChart({ points }: { points: ChartPoint[] }) {
   const { resolvedTheme } = useTheme()
   const c = resolvedTheme === 'dark' ? SERIES.dark : SERIES.light
   const reduced = usePrefersReducedMotion()
   const anim = !reduced
 
   return (
-    <div ref={ref} role="img" aria-label="Stacked area chart of PF balance by year. The same data is in the year-by-year table." className="h-[300px] w-full">
+    <div role="img" aria-label="Stacked area chart of PF balance by year. The same data is in the year-by-year table." className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={points} margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
           <CartesianGrid stroke={c.grid} vertical={false} />
@@ -64,4 +64,4 @@ export const PfChart = forwardRef<HTMLDivElement, { points: ChartPoint[] }>(func
       </ResponsiveContainer>
     </div>
   )
-})
+}
