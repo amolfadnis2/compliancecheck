@@ -6,6 +6,7 @@ import { useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { identifyUser, resetUser } from '@/lib/analytics/tracking'
+import { pfBeforeSend } from '@/lib/analytics/pf-url-sanitizer'
 
 // Initialize PostHog only on client side
 if (typeof window !== 'undefined') {
@@ -18,6 +19,8 @@ if (typeof window !== 'undefined') {
     // events are captured from init as before.
     disable_session_recording: true,
     disable_surveys: true,
+    // Strip PF calculator state (exact salary/balance) from URLs on every event.
+    before_send: pfBeforeSend,
   })
 }
 

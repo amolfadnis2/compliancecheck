@@ -495,7 +495,7 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
   )
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+    <div className="ph-no-capture grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
       {/* ------------------------------ Inputs ------------------------------ */}
       <form className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 lg:sticky lg:top-20" noValidate
         aria-label="Calculator inputs" onSubmit={(e) => e.preventDefault()}>
