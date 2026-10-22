@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
-import { getPost, getAllPostSlugs } from '@/lib/blog/posts'
+import { getPost, getAllPostSlugs, getRelatedPosts } from '@/lib/blog/posts'
 import { mdxComponents } from '@/components/blog/mdx-components'
 import { ContentShell } from '@/components/site/ContentShell'
 import { ShareButtons } from '@/components/site/ShareButtons'
@@ -58,6 +59,7 @@ export default function BlogPostPage({ params }: Params) {
   if (!post) notFound()
 
   const url = absoluteUrl(`/blog/${post.slug}`)
+  const relatedPosts = getRelatedPosts(post)
 
   return (
     <ContentShell>
@@ -124,6 +126,31 @@ export default function BlogPostPage({ params }: Params) {
         )}
 
         {post.relatedAssessment && <AssessmentCTA type={post.relatedAssessment} />}
+
+        {relatedPosts.length > 0 && (
+          <section className="mt-10" aria-labelledby="also-read">
+            <h2 id="also-read" className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Also read
+            </h2>
+            <ul className="grid gap-4 sm:grid-cols-3">
+              {relatedPosts.map((related) => (
+                <li key={related.slug}>
+                  <Link
+                    href={`/blog/${related.slug}`}
+                    className="group block h-full rounded-lg border border-neutral-200 dark:border-gray-800 p-4 hover:border-primary"
+                  >
+                    <h3 className="font-semibold leading-snug text-gray-900 dark:text-gray-100 group-hover:text-primary">
+                      {related.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-3 text-sm text-gray-600 dark:text-gray-400">
+                      {related.description}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="mt-10 border-t border-neutral-200 dark:border-gray-800 pt-6">
           <ShareButtons url={url} title={post.title} />
