@@ -58,7 +58,17 @@ describe('URL state', () => {
 
 describe('view helpers', () => {
   const facts = factsFrom(FALLBACK_PARAMS, FALLBACK_LOADED.rateRows)
-  const res = project(toProjectInput(DEFAULT_STATE, start), FALLBACK_PARAMS)
+  // The prototype's default employer basis was 'capped'; the page now defaults to Full Basic.
+  const CAPPED = { ...DEFAULT_STATE, basis: 'capped' as const }
+  const res = project(toProjectInput(CAPPED, start), FALLBACK_PARAMS)
+
+  it('defaults to Full Basic (no cap freeze), with the capped view one toggle away', () => {
+    expect(DEFAULT_STATE.basis).toBe('actual')
+    const full = project(toProjectInput(DEFAULT_STATE, start), FALLBACK_PARAMS)
+    expect(full.flags.capFreeze).toBe(false)
+    expect(full.corpus).toBeGreaterThan(res.corpus)
+    expect(callouts(full, DEFAULT_STATE, facts).map((x) => x.id)).not.toContain('cap_freeze')
+  })
 
   it('formats Indian numbers', () => {
     expect(inr(1234567)).toBe('₹12,34,567')
@@ -78,11 +88,11 @@ describe('view helpers', () => {
     const h = headline(res, 58)
     expect(headlineText(h)).toBe('By 58, your PF could grow to ₹79.51 L, which is ₹13.84 L in today’s money. Every ₹1 you put in becomes ₹6.2, a return of 9.1% a year on your own money.')
     expect(stats(res).map((s) => s.label)).toEqual(['Effective PF return', 'Your return after inflation', 'Total you put in', 'Interest earned'])
-    const c = callouts(res, DEFAULT_STATE, facts)
+    const c = callouts(res, CAPPED, facts)
     expect(c.map((x) => x.id)).toEqual(['cap_freeze'])
     expect(c[0].body).toContain('₹25,000 ceiling')
     expect(c[0].body).toContain('₹3,000 a month')
-    expect(callouts(res, { ...DEFAULT_STATE, retirementAge: 60 }, facts).map((x) => x.id)).toContain('eps_stops')
+    expect(callouts(res, { ...CAPPED, retirementAge: 60 }, facts).map((x) => x.id)).toContain('eps_stops')
   })
 
   it('renders table rows, chart points and CSV', () => {

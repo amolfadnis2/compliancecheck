@@ -159,7 +159,7 @@ export function callouts(res: ProjectionResult, state: PfState, facts: PfFacts):
     out.push({
       id: 'cap_freeze',
       title: 'Your salary hikes won’t raise your statutory PF.',
-      body: `Your employer caps PF at the ${inr(facts.ceiling)} ceiling, so you and your employer each put in ${inr(res.first.ee - res.first.vpf)} a month however much your Basic rises. Switch to “Full Basic” under More options to see the difference, or add VPF.`,
+      body: `Your employer caps PF at the ${inr(facts.ceiling)} ceiling, so you and your employer each put in ${inr(res.first.ee - res.first.vpf)} a month however much your Basic rises. Switch to “Full Basic” above to see the difference, or add VPF.`,
     })
   }
   if (res.flags.taxThresholdFY) {
