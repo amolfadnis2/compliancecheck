@@ -39,11 +39,14 @@ test.describe('PF calculator', () => {
     await expect(page.getByTestId('pf-year-table').locator('tbody tr')).toHaveCount(31)
     await expect(page.getByTestId('pf-last-updated')).toContainText('Last updated')
     await expect(page.getByRole('cell', { name: 'Future rate (your choice)' })).toBeVisible()
-    expect(await callouts(page)).toEqual(['cap_freeze'])
+    // Full Basic is the default and sits outside More options.
+    await expect(page.getByRole('button', { name: /Full Basic/ })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('button', { name: /Full Basic/ })).toBeVisible()
+    expect(await callouts(page)).not.toContain('cap_freeze')
   })
 
   test('hike and appraisal month update the table', async ({ page }) => {
-    await open(page, '?bs=actual')
+    await open(page)
     const before = await tableRow(page, 1).innerText()
     await page.getByLabel('Salary hike each year').fill('15')
     await expect(tableRow(page, 1)).not.toHaveText(before)
@@ -54,12 +57,12 @@ test.describe('PF calculator', () => {
 
   test('capped vs full Basic shows and hides the cap-freeze callout', async ({ page }) => {
     await open(page)
-    expect(await callouts(page)).toContain('cap_freeze')
-    await openMoreOptions(page)
-    await page.getByRole('button', { name: /Full Basic/ }).click()
     await expect(page.locator('[data-callout="cap_freeze"]')).toHaveCount(0)
     await page.getByRole('button', { name: /Capped wage/ }).click()
     await expect(page.locator('[data-callout="cap_freeze"]')).toHaveCount(1)
+    await expect(page).toHaveURL(/bs=capped/)
+    await page.getByRole('button', { name: /Full Basic/ }).click()
+    await expect(page.locator('[data-callout="cap_freeze"]')).toHaveCount(0)
   })
 
   test('EPS ceiling reading changes the pension', async ({ page }) => {
@@ -143,7 +146,7 @@ test.describe('PF calculator', () => {
     // More options opens from the keyboard.
     await page.locator('summary', { hasText: 'More options' }).focus()
     await page.keyboard.press('Enter')
-    await expect(page.getByRole('button', { name: /Full Basic/ })).toBeVisible()
+    await expect(page.getByLabel('EPS service so far (years)')).toBeVisible()
   })
 
   test('inline validation is announced and linked', async ({ page }) => {

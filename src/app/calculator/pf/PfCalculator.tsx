@@ -513,6 +513,19 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
           {numberField('retirementAge', 'Retire at', 45, 60)}
         </div>
         {moneyField('basic', 'Monthly Basic + DA', 'PF is calculated on this, not your full CTC.')}
+        <div>
+          <Segmented
+            label="Your employer pays PF on"
+            columns={2}
+            value={form.basis}
+            onChange={(v) => setField('basis', v)}
+            options={[
+              { value: 'actual', label: 'Full Basic', sub: 'No cap' },
+              { value: 'capped', label: 'Capped wage', sub: `Up to ${inr(facts.ceiling)}` },
+            ]}
+          />
+          <p className={hintCls}>Check your payslip: if PF is {inr(facts.maxEe)} a month with Basic above {inr(facts.ceiling)}, it’s capped.</p>
+        </div>
         {slider('hikePct', 'Salary hike each year', 0, 20, 0.5)}
         <div>
           <label htmlFor={`${uid}-month`} className={labelCls}>Appraisal month</label>
@@ -554,19 +567,6 @@ export function PfCalculator({ initialState, start, loaded, hasSharedState, isLo
           }}>
           <summary className="flex min-h-[44px] cursor-pointer items-center font-semibold">More options</summary>
           <div className="mt-2 space-y-4">
-            <div>
-              <Segmented
-                label="Your employer pays PF on"
-                columns={2}
-                value={form.basis}
-                onChange={(v) => setField('basis', v)}
-                options={[
-                  { value: 'capped', label: 'Capped wage', sub: `Up to ${inr(facts.ceiling)}` },
-                  { value: 'actual', label: 'Full Basic', sub: 'No cap' },
-                ]}
-              />
-              <p className={hintCls}>Check your payslip: if PF is {inr(facts.maxEe)} a month with Basic above {inr(facts.ceiling)}, it’s capped.</p>
-            </div>
             <label className="flex min-h-[44px] items-start gap-3 text-sm">
               <input type="checkbox" className="mt-0.5 h-5 w-5 flex-none accent-green-700" checked={form.epsMember} onChange={(e) => setField('epsMember', e.target.checked)} />
               <span>I’m in the Employees’ Pension Scheme (EPS). Most people are; new joiners with wages above the ceiling are not.</span>

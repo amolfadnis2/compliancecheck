@@ -44,7 +44,7 @@ export const DEFAULT_STATE: PfState = {
   scenario: 'base',
   customRate: 8,
   inflationPct: 6,
-  basis: 'capped',
+  basis: 'actual',
   epsMember: true,
   pastEpsYears: 4,
   reduced: false,
