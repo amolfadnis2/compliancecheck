@@ -10,6 +10,7 @@ import { decodeState } from '@/lib/calculators/epf/url-state-schema'
 import { factsFrom, fmtDate, inr, ratePct } from '@/lib/calculators/epf/view'
 import { pfFaq } from '@/lib/calculators/epf/faq'
 import { createClient } from '@/lib/supabase/server'
+import { RelatedGuides } from '@/components/site/CalculatorGuide'
 import { PfCalculator } from './PfCalculator'
 import { PfCrossLinks } from './PfCrossLinks'
 
@@ -121,6 +122,15 @@ export default async function PfCalculatorPage({ searchParams }: { searchParams:
             <PfCrossLinks />
           </div>
         </section>
+
+        <RelatedGuides
+          slugs={[
+            'pf-calculator-how-much-epf-will-you-retire-with',
+            'epf-scheme-2026-what-actually-changed-for-employers',
+            'edli-vs-term-life-what-your-pf-already-covers',
+            'ctc-vs-in-hand-salary-where-your-money-actually-goes',
+          ]}
+        />
 
         <p className="mt-10 text-sm text-gray-600 dark:text-gray-400">
           Estimates for planning only. Actual PF credits depend on your employer’s filings and the rate EPFO declares each year. Future interest rates are assumptions, not guarantees.
