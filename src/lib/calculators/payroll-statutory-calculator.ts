@@ -3,8 +3,9 @@
  *
  * Rules-based, per-employee monthly statutory cost:
  * 1. EPF: mandatory at 20+ employees. 12% employee + 12% employer on PF wages
- *    (Basic + DA), statutory wage ceiling Rs.15,000. EPS 8.33% and EDLI 0.5%
- *    are always on wages capped at Rs.15,000; admin charges 0.5% of PF wages.
+ *    (Basic + DA), statutory wage ceiling Rs.25,000 (from 17 Sep 2026). EPS 8.33%
+ *    and EDLI 0.5% are always on wages capped at Rs.25,000; admin charges 0.5%
+ *    of PF wages.
  * 2. ESI: establishment covered at 10+ employees (in ESIC-notified areas);
  *    employee covered while gross wages <= Rs.21,000. 0.75% employee, 3.25%
  *    employer, rounded up to the next rupee.
@@ -16,7 +17,7 @@
 
 import { EPF_CONSTANTS, ESI_CONSTANTS, PROFESSIONAL_TAX } from '@/lib/calculators/ctc-calculator'
 
-export const PAYROLL_RULES_LAST_REVIEWED = '2026-09-27'
+export const PAYROLL_RULES_LAST_REVIEWED = '2026-10-24'
 
 export const PAYROLL_THRESHOLDS = {
   PF_MIN_EMPLOYEES: 20,
@@ -48,7 +49,7 @@ export interface PayrollStatutoryInput {
   monthlyBasicDA: number
   monthlyGross: number
   gender?: 'male' | 'female'   // Maharashtra PT only
-  pfOnActualBasic?: boolean    // default: restrict PF to the Rs.15,000 ceiling
+  pfOnActualBasic?: boolean    // default: restrict PF to the Rs.25,000 ceiling
 }
 
 export interface PayrollStatutoryResult {
@@ -103,7 +104,7 @@ export function calculatePayrollStatutory(input: PayrollStatutoryInput): Payroll
     : `EPF is not yet mandatory: you have ${employeeCount} employees (threshold: ${PAYROLL_THRESHOLDS.PF_MIN_EMPLOYEES}). You can register voluntarily.`
 
   if (pfApplicable && monthlyBasicDA > EPF_CONSTANTS.WAGE_CEILING && !pfOnActualBasic) {
-    notes.push('PF is calculated on the Rs.15,000 statutory ceiling. Contributing on actual Basic + DA is optional and needs a joint request by employer and employee.')
+    notes.push(`PF is calculated on the Rs.${EPF_CONSTANTS.WAGE_CEILING.toLocaleString('en-IN')} statutory ceiling. Contributing on actual Basic + DA is optional and needs a joint request by employer and employee.`)
   }
   if (pfApplicable) {
     notes.push('EPF admin charges have a minimum of Rs.500 per month for the establishment as a whole.')

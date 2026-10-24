@@ -169,7 +169,7 @@ export const LABOUR_CODE_COMPLIANCE_RULES: Record<string, LabourCodeComplianceRu
     deadline: 'Within 1 month of crossing 20 employees or joining date of eligible employee',
     penalty: '1% monthly damage + 12% p.a. interest on delayed contributions; prosecution for willful default',
     actionIfNonCompliant: [
-      'Identify all employees earning up to Rs.15,000/month basic + DA',
+      'Identify all employees earning up to Rs.25,000/month basic + DA',
       'Register missing employees on EPFO Unified Portal',
       'Generate and verify Universal Account Numbers (UANs)',
       'Deposit arrear contributions with interest',

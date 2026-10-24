@@ -161,7 +161,7 @@ export default function MethodologyPage() {
           </h2>
           <ul className="mt-3 space-y-2 text-sm text-amber-700 dark:text-amber-400 list-disc list-inside">
             <li>Gap rates are aggregate estimates from industry surveys; your company may have zero or far greater exposure.</li>
-            <li>Salary assumptions (₹25,000 average monthly wage, EPF ceiling ₹15,000) are used for EPF/ESI calculations.</li>
+            <li>Salary assumptions (₹25,000 average monthly wage, EPF ceiling ₹25,000) are used for EPF/ESI calculations.</li>
             <li>DPDP Act enforcement is still evolving; the maximum penalty figures are statutory ceilings per the Schedule, not typical first-violation fines.</li>
             <li>State-specific variations (professional tax, shops &amp; establishments, state labour welfare fund) are not captured.</li>
             <li>This is not legal advice. Rates current as of April 2026.</li>
@@ -208,14 +208,14 @@ const FORMULA_SECTIONS = [
     title: "EPF — Typical Annual Risk",
     ref: 'EPF Act 1952, Section 7Q (interest) + Section 14B (damages), amended June 14, 2024',
     description:
-      'We calculate a monthly contribution base using the number of employees × EPF wage ceiling (₹15,000) × 24% combined rate. For one missed cycle, damages = 1% per month + 1% interest = 2% of contribution. Annual typical = 2% × monthly contribution × gap rate (35%) × 12.',
+      'We calculate a monthly contribution base using the number of employees × EPF wage ceiling (₹25,000) × 24% combined rate. For one missed cycle, damages = 1% per month + 1% interest = 2% of contribution. Annual typical = 2% × monthly contribution × gap rate (35%) × 12.',
     formula:
-      'monthly_contribution = employee_count × 15,000 × 0.24\n' +
+      'monthly_contribution = employee_count × 25,000 × 0.24\n' +
       'one_cycle_damages = monthly_contribution × 0.02\n' +
       'typical_annual = one_cycle_damages × 0.35 × 12\n' +
       'max = annual_contribution × 1.0  (100% damages cap)',
     assumptions: [
-      'Average monthly wage assumed ₹25,000; EPF contribution ceiling ₹15,000.',
+      'Average monthly wage assumed ₹25,000; EPF contribution ceiling ₹25,000 (raised from ₹15,000 on 17 Sep 2026).',
       'Post-June 2024 damages rate of 1%/month (amended from 5-25% sliding scale).',
       'Karnataka HC January 2026 order: damages cannot be reduced below 25% for defaults >6 months.',
     ],

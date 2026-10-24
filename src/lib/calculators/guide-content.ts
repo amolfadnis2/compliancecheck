@@ -211,6 +211,7 @@ function ctcGuide(): CalculatorGuideContent {
       'ctc-vs-in-hand-salary-where-your-money-actually-goes',
       'how-the-labour-codes-change-your-employees-take-home-pay',
       'the-50-wages-rule-how-the-code-on-wages-rewrites-your-salary-structure',
+      'pf-calculator-how-much-epf-will-you-retire-with',
     ],
     relatedTools: [PF_CALCULATOR_LINK],
   }
@@ -274,6 +275,7 @@ function pfEsiPtGuide(): CalculatorGuideContent {
       'pf-esi-applicability-employer-guide',
       'epf-vs-esic-what-each-one-actually-covers',
       'professional-tax-state-wise-guide',
+      'pf-calculator-how-much-epf-will-you-retire-with',
     ],
   }
 }

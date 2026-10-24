@@ -311,7 +311,7 @@ export const FOOD_COMPLIANCE_RULES: Record<string, FoodComplianceRule> = {
     actionIfNonCompliant: [
       'Register on EPFO Unified Portal',
       'Obtain Establishment Code Number',
-      'Register all eligible employees (earning up to Rs.15,000/month basic + DA)',
+      'Register all eligible employees (earning up to Rs.25,000/month basic + DA)',
       'Submit Form 5A within 15 days of registration',
     ],
     actionIfCompliant: 'Ensure annual renewal of DSC for portal access.',

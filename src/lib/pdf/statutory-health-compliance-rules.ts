@@ -21,7 +21,7 @@ export const STATUTORY_HEALTH_COMPLIANCE_RULES: Record<string, ComplianceRule> =
     actionIfNonCompliant: [
       'Register immediately on EPFO Unified Portal (unifiedportal-emp.epfindia.gov.in)',
       'Obtain Establishment Code Number',
-      'Register all eligible employees (earning up to Rs.15,000/month basic + DA)',
+      'Register all eligible employees (earning up to Rs.25,000/month basic + DA)',
       'Submit Form 5A (Return of Ownership) within 15 days of registration'
     ],
     actionIfCompliant: 'Your EPFO registration is in order. Ensure annual renewal of Digital Signature Certificate (DSC) for continued portal access.',

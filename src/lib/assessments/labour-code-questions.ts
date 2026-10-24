@@ -183,7 +183,7 @@ export const LABOUR_CODE_QUESTIONS: Question[] = [
   // ===== CODE ON SOCIAL SECURITY (8 questions) =====
   {
     id: 'ss_1',
-    text: 'Are all eligible employees (earning ≤₹15,000/month) enrolled in EPF?',
+    text: 'Are all eligible employees (earning ≤₹25,000/month) enrolled in EPF?',
     type: 'yes_no',
     category: 'social_security',
     weight: 10,
@@ -709,7 +709,7 @@ export function generateLabourCodeActionItems(
   if (applicableIds.has('ss_1') && responses['ss_1'] === 'no') {
     actionItems.push({
       priority: 'high',
-      text: 'Enrol all eligible employees (≤₹15,000/month) in EPF immediately.',
+      text: 'Enrol all eligible employees (≤₹25,000/month) in EPF immediately.',
       category: 'social_security',
     });
   }

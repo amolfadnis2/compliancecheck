@@ -23,6 +23,7 @@ import {
   PAYROLL_RULES_LAST_REVIEWED,
   type PayrollStatutoryResult,
 } from '@/lib/calculators/payroll-statutory-calculator'
+import { EPF_CONSTANTS } from '@/lib/calculators/ctc-calculator'
 
 const inr = (n: number) => `${RUPEE}${n.toLocaleString('en-IN')}`
 
@@ -179,7 +180,7 @@ export default function PayrollStatutoryCalculatorPage() {
                 onCheckedChange={(v) => setPfOnActualBasic(v === true)}
               />
               <Label htmlFor="pfOnActualBasic" className="text-sm font-normal leading-snug">
-                We pay PF on actual Basic + DA (above the {RUPEE}15,000 ceiling)
+                We pay PF on actual Basic + DA (above the {RUPEE}{EPF_CONSTANTS.WAGE_CEILING.toLocaleString('en-IN')} ceiling)
               </Label>
             </div>
 
