@@ -27,7 +27,7 @@ export const COMPLIANCE_GAP_RATES = {
 
 // Assumed average monthly wage for probability-weighted calculations
 const AVG_MONTHLY_WAGE = 25_000
-const EPF_WAGE_CEILING = 15_000
+const EPF_WAGE_CEILING = 25_000 // from 17 Sep 2026 (was 15,000)
 const ESI_GROSS_CEILING = 21_000
 
 export function calculateEPFRisk(input: BusinessInput): { typical: number; max: number } {

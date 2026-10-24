@@ -244,7 +244,7 @@ export const PHASE1_QUESTIONS: Question[] = [
       { value: '21k_25k', label: 'Rs.21,000 - Rs.25,000/month' },
       { value: 'above_25k', label: 'Above Rs.25,000/month' },
     ],
-    helpText: 'ESI applies to employees earning up to Rs.21,000/month. EPF has Rs.15,000 ceiling for mandatory coverage.',
+    helpText: 'ESI applies to employees earning up to Rs.21,000/month. EPF has Rs.25,000 ceiling for mandatory coverage.',
   },
   {
     id: 'APP_12',
@@ -379,7 +379,7 @@ export const PHASE2_QUESTIONS: Question[] = [
     phase: 2,
     applicabilityCodes: ['EPF'],
     minEmployees: 20,
-    helpText: 'Rate is 12% each on Basic + DA, capped at Rs.15,000 for voluntary above.',
+    helpText: 'Rate is 12% each on Basic + DA, capped at Rs.25,000 for voluntary above.',
   },
   // ESI QUESTIONS (3 questions)
   {

@@ -31,7 +31,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     actionIfNonCompliant: [
       'Register immediately on EPFO Unified Portal (unifiedportal-emp.epfindia.gov.in)',
       'Obtain Establishment Code Number by submitting Form 5A',
-      'Register all eligible employees (earning up to Rs.15,000/month basic + DA)',
+      'Register all eligible employees (earning up to Rs.25,000/month basic + DA)',
       'Apply for Digital Signature Certificate (DSC) for authorized signatory',
       'Submit establishment details including PAN, registered address, nature of business',
     ],
@@ -71,7 +71,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
       'Correct rate: Employee 12%, Employer 12% (8.33% EPS + 3.67% EPF), Admin 0.5%, EDLI 0.5%',
       'Recalculate for all employees and deposit differential with interest',
       'Update payroll software configuration',
-      'For employees earning above Rs.15,000, offer voluntary higher contribution',
+      'For employees earning above Rs.25,000, offer voluntary higher contribution',
     ],
     actionIfCompliant: 'Contribution rates correct. Monitor for wage revisions that may change contribution calculations.',
   },

@@ -28,21 +28,21 @@ describe('calculatePayrollStatutory — EPF', () => {
     expect(r.pf.employerTotal).toBe(1300)
   })
 
-  it('caps PF wages at Rs.15,000 by default', () => {
+  it('caps PF wages at Rs.25,000 by default', () => {
     const r = calculatePayrollStatutory({ ...base, monthlyBasicDA: 30000, monthlyGross: 50000 })
-    expect(r.pf.pfWage).toBe(15000)
-    expect(r.pf.employee).toBe(1800)
-    expect(r.pf.employerEPS).toBe(1250)
-    expect(r.pf.employerEPF).toBe(550)
+    expect(r.pf.pfWage).toBe(25000)
+    expect(r.pf.employee).toBe(3000)
+    expect(r.pf.employerEPS).toBe(2083)
+    expect(r.pf.employerEPF).toBe(917)
   })
 
   it('keeps EPS and EDLI capped when contributing on actual basic', () => {
     const r = calculatePayrollStatutory({ ...base, monthlyBasicDA: 30000, monthlyGross: 50000, pfOnActualBasic: true })
     expect(r.pf.pfWage).toBe(30000)
     expect(r.pf.employee).toBe(3600)
-    expect(r.pf.employerEPS).toBe(1250)
-    expect(r.pf.employerEPF).toBe(2350)
-    expect(r.pf.employerEDLI).toBe(75)
+    expect(r.pf.employerEPS).toBe(2083)
+    expect(r.pf.employerEPF).toBe(1517)
+    expect(r.pf.employerEDLI).toBe(125)
     expect(r.pf.employerAdmin).toBe(150)
   })
 })

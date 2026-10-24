@@ -110,8 +110,8 @@ export const PHASE2_STATUTORY_QUESTIONS: AutoDealerQuestion[] = [
   {
     id: 'AD_P2_005B',
     phase: 2,
-    text: 'Have Universal Account Numbers (UANs) been generated and activated for all eligible employees (earning <=Rs.15,000/month basic+DA)?',
-    helpText: 'UANs must be generated for every eligible employee including technicians, washers, and casual workers earning up to Rs.15,000/month. Employees with UANs from previous employers must have their accounts seeded via KYC. Monthly ECR must reflect all UANs.',
+    text: 'Have Universal Account Numbers (UANs) been generated and activated for all eligible employees (earning <=Rs.25,000/month basic+DA)?',
+    helpText: 'UANs must be generated for every eligible employee including technicians, washers, and casual workers earning up to Rs.25,000/month. Employees with UANs from previous employers must have their accounts seeded via KYC. Monthly ECR must reflect all UANs.',
     type: 'yes_no',
     weight: 7,
     complianceArea: 'epf',

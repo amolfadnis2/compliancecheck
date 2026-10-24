@@ -6,7 +6,7 @@
  * 1. Basic + DA must be minimum 50% of CTC (Labour Code requirement)
  * 2. State-specific Professional Tax slabs
  * 3. Dual tax regime comparison (New vs Old)
- * 4. EPF calculation with ₹15,000 wage ceiling for EPS
+ * 4. EPF calculation with ₹25,000 wage ceiling for EPS (from 17 Sep 2026)
  * 5. ESI for gross ≤ ₹21,000
  */
 
@@ -109,7 +109,7 @@ export const EPF_CONSTANTS = {
   EMPLOYER_RATE: 0.12,
   EPS_RATE: 0.0833,
   EDLI_RATE: 0.005,
-  WAGE_CEILING: 15000,
+  WAGE_CEILING: 25000, // S.O. 5109(E), from 17 Sep 2026 (was 15,000)
 } as const
 
 export const ESI_CONSTANTS = {

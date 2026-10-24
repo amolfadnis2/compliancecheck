@@ -184,7 +184,7 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     actionIfNonCompliant: [
       'Register on EPFO Unified Portal (unifiedportal-emp.epfindia.gov.in)',
       'Obtain establishment code by submitting Form 5A',
-      'Register all eligible employees (earning up to Rs. 15,000/month basic + DA)',
+      'Register all eligible employees (earning up to Rs. 25,000/month basic + DA)',
       'Generate UAN for each employee',
       'Calculate contributions: Employer 12% + Employee 12% of (Basic + DA)',
       'File Electronic Challan cum Return (ECR) by 15th',
