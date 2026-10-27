@@ -25,7 +25,7 @@ function buildLlmsTxt(): string {
   )
   lines.push('')
   lines.push(
-    'All assessments are India-specific. Pricing is one-time per report (no subscription); several assessments are free during beta.',
+    'All assessments are India-specific. Every assessment includes a free summary; the full report is a one-time payment per assessment (no subscription). Calculators are free.',
   )
   lines.push('')
 

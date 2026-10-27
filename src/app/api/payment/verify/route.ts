@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import crypto from 'crypto'
+import { isValidCheckoutSignature } from '@/lib/payment/razorpay-signature'
+import { captureServerEvent } from '@/lib/analytics/server'
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
+import type { AssessmentType } from '@/lib/constants/assessment-types'
 
 export async function POST(request: Request) {
   try {
@@ -26,12 +29,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const expectedSignature = crypto
-      .createHmac('sha256', razorpaySecret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex')
-
-    if (expectedSignature !== razorpay_signature) {
+    if (!isValidCheckoutSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpaySecret)) {
       return NextResponse.json({ error: 'Invalid payment signature' }, { status: 400 })
     }
 
@@ -47,7 +45,7 @@ export async function POST(request: Request) {
     // or a single cheap payment could be replayed to unlock any assessment.
     const { data: entitlement, error: lookupError } = await supabase
       .from('assessment_entitlements')
-      .select('assessment_id, assessment_type, status')
+      .select('assessment_id, assessment_type, status, amount_paise')
       .eq('razorpay_order_id', razorpay_order_id)
       .maybeSingle()
 
@@ -58,6 +56,11 @@ export async function POST(request: Request) {
     if (entitlement.assessment_id !== assessmentId || entitlement.assessment_type !== assessmentType) {
       console.error('verify: order/assessment mismatch', razorpay_order_id, assessmentId, assessmentType)
       return NextResponse.json({ error: 'Order does not match this assessment' }, { status: 400 })
+    }
+
+    // Idempotent: the Razorpay webhook may have already marked this order paid.
+    if (entitlement.status === 'paid') {
+      return NextResponse.json({ success: true, assessmentId })
     }
 
     const { error } = await supabase
@@ -76,6 +79,14 @@ export async function POST(request: Request) {
       console.error('Entitlement update error:', error)
       return NextResponse.json({ error: 'Failed to record payment' }, { status: 500 })
     }
+
+    await captureServerEvent(ANALYTICS_EVENTS.PAYMENT_SUCCEEDED, email || assessmentId, {
+      assessment_type: assessmentType as AssessmentType,
+      assessment_id: assessmentId,
+      amount_inr: Math.round((entitlement.amount_paise ?? 0) / 100),
+      payment_method: 'razorpay',
+      source: 'server',
+    })
 
     return NextResponse.json({ success: true, assessmentId })
   } catch (error) {

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types';
+
+// assessments.user_id is NOT NULL; used when the user upsert fails.
+const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -55,18 +59,17 @@ export async function POST(request: NextRequest) {
       console.error('User creation/lookup error:', userErr);
     }
 
+    // Only real `assessments` columns — company/state/industry/email live in
+    // responses (unknown columns made every insert fail). `answers` mirrors
+    // phase2 so the shared report adapters find the compliance answers.
     const assessmentData = {
-      user_id: userId,
-      company_name: userDetails.companyName,
-      employee_count: phase1Responses?.APP_06 || null,
-      state: phase1Responses?.APP_02 || null,
-      industry: phase1Responses?.APP_04 || null,
-      email: userDetails.email,
-      assessment_type: 'state_wise_compliance',
+      user_id: userId ?? ANONYMOUS_USER_ID,
+      assessment_type: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
       status: 'completed',
       responses: { 
         phase1: phase1Responses, 
         phase2: phase2Responses, 
+        answers: phase2Responses,
         applicabilityResults, 
         applicabilitySummary,
         userDetails,

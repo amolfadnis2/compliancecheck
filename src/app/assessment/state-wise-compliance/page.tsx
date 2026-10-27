@@ -29,7 +29,7 @@ import {
   generateApplicabilitySummary,
 } from '@/lib/assessments/state-wise-compliance-questions';
 import { useAssessmentTracking } from '@/lib/analytics';
-import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types';
+import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress';
 
 type AssessmentPhase = 'user_details' | 'phase1' | 'applicability_results' | 'phase2' | 'submitting';
@@ -258,9 +258,11 @@ export default function StateWiseComplianceAssessment() {
       <CardHeader>
         <div className="flex items-center gap-2 mb-2">
           <span className="bg-green-800 text-white text-xs font-bold px-2 py-1 rounded shadow-md">
-            FREE BETA
+            FREE SUMMARY
           </span>
-          <span className="text-gray-600 line-through text-sm">Rs.1,499</span>
+          <span className="text-gray-600 text-sm">
+            Full report Rs.{Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE].amountPaise / 100).toLocaleString('en-IN')}
+          </span>
         </div>
         <CardTitle className="text-2xl">State-Wise Comprehensive Compliance Check</CardTitle>
         <CardDescription>

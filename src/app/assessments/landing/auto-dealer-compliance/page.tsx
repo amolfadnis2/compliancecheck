@@ -3,10 +3,11 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'Auto Dealer Compliance Assessment | Dealer License, GST, Labour, Environment | ComplianceCheck',
-  description: 'Complete compliance assessment for automobile dealers in India. Dealer license, GST, labour laws, environmental norms, consumer protection, and service center compliance. ₹1,499 post-beta.',
+  description: 'Complete compliance assessment for automobile dealers in India. Dealer license, GST, labour laws, environmental norms, consumer protection, and service center compliance. Free summary; full report ₹2,999.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/auto-dealer-compliance',
   },
@@ -94,7 +95,7 @@ export default function AutoDealerCompliancePage() {
             <div className={styles.statItem}><h3>35-50</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>20 min</h3><p>To Complete</p></div>
             <div className={styles.statItem}><h3>8</h3><p>Compliance Areas</p></div>
-            <div className={styles.statItem}><h3>₹1,499</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹2,999</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -238,12 +239,11 @@ export default function AutoDealerCompliancePage() {
       <section className={styles.pricing} style={{ background: 'white' }}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹1,499</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {[
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.AUTO_DEALER}
+            accentColor={accentColor}
+            ctaHref="/assessment/auto-dealer"
+            features={[
                 'Complete 8-area dealer compliance check',
                 'OEM and dealer-type smart filtering',
                 'License requirement checklist',
@@ -251,14 +251,8 @@ export default function AutoDealerCompliancePage() {
                 'Environmental compliance checklist',
                 'Government portal & application links',
                 'Professional PDF report',
-              ].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/auto-dealer" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
-            </Link>
-          </div>
+              ]}
+          />
         </div>
       </section>
 

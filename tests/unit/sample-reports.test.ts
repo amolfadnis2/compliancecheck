@@ -22,6 +22,9 @@ describe('sample reports', () => {
     expect(hasSampleReport(ASSESSMENT_TYPES.STATUTORY_HEALTH)).toBe(true)
     expect(hasSampleReport(ASSESSMENT_TYPES.DPDP)).toBe(true)
     expect(hasSampleReport(ASSESSMENT_TYPES.POSH)).toBe(true)
+    expect(hasSampleReport(ASSESSMENT_TYPES.LABOUR_CODE)).toBe(true)
+    expect(hasSampleReport(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE)).toBe(true)
+    expect(hasSampleReport(ASSESSMENT_TYPES.FOOD_BUSINESS)).toBe(true)
   })
 
   /**

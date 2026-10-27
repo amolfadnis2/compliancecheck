@@ -229,7 +229,7 @@ export default function StatutoryHealthCheckPage() {
       <section className={styles.finalCta}>
         <div className={styles.container}>
           <h2>Ready to Check Your Compliance Status?</h2>
-          <p>Takes only 10 minutes. No credit card required during beta.</p>
+          <p>Takes only 10 minutes. Your score and top gaps are free; pay only to unlock the full report.</p>
           <Link href="/assessment/statutory-health" className={styles.btnWhite}>Start Free Assessment →</Link>
         </div>
       </section>

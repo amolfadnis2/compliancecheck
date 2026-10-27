@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, type AssessmentType } from '@/lib/constants/assessment-types'
 import { 
   Building2, 
   ClipboardCheck, 
@@ -17,6 +18,9 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+const fullPriceLabel = (type: AssessmentType) =>
+  `₹${Math.round(ASSESSMENT_PRICES[type].amountPaise / 100).toLocaleString('en-IN')}`
 
 export default function HowItWorksPage() {
   return (
@@ -532,9 +536,9 @@ export default function HowItWorksPage() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                      Free During Beta
+                      Free summary
                     </span>
-                    <span className="text-lg font-bold text-gray-900">₹999</span>
+                    <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.STATUTORY_HEALTH)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-green-700 transition-colors">
                     Statutory Health Check
@@ -565,7 +569,7 @@ export default function HowItWorksPage() {
                     <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
                       ⏰ Nov 2025 Deadline
                     </span>
-                    <span className="text-lg font-bold text-gray-900">₹1,999</span>
+                    <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.LABOUR_CODE)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
                     Labour Code Readiness Assessment
@@ -595,7 +599,7 @@ export default function HowItWorksPage() {
                     <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
                       🔒 Data Protection
                     </span>
-                    <span className="text-lg font-bold text-gray-900">₹2,499</span>
+                    <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.DPDP)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-700 transition-colors">
                     DPDP Act 2023 Gap Assessment
@@ -625,7 +629,7 @@ export default function HowItWorksPage() {
                     <span className="px-3 py-1 bg-teal-100 text-teal-700 text-xs font-semibold rounded-full">
                       📍 36 States & UTs
                     </span>
-                    <span className="text-lg font-bold text-gray-900">₹1,499</span>
+                    <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-teal-700 transition-colors">
                     State-Wise Compliance Check
@@ -655,7 +659,7 @@ export default function HowItWorksPage() {
                     <span className="px-3 py-1 bg-rose-100 text-rose-700 text-xs font-semibold rounded-full">
                       🍽️ Food Business
                     </span>
-                    <span className="text-lg font-bold text-gray-900">₹999</span>
+                    <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.FOOD_BUSINESS)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-rose-600 transition-colors">
                     Restaurant & Food Business Compliance
@@ -685,7 +689,7 @@ export default function HowItWorksPage() {
                     <span className="px-3 py-1 bg-violet-100 text-violet-700 text-xs font-semibold rounded-full">
                       🛡️ Mandatory 10+ Employees
                     </span>
-                    <span className="text-lg font-bold text-gray-900">₹1,999</span>
+                    <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.POSH)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-violet-700 transition-colors">
                     POSH Act 2013 Compliance
@@ -715,7 +719,7 @@ export default function HowItWorksPage() {
                     <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
                       🚗 Auto Dealers
                     </span>
-                    <span className="text-lg font-bold text-gray-900">₹1,499</span>
+                    <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.AUTO_DEALER)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
                     Auto Dealer Compliance Assessment
@@ -739,7 +743,7 @@ export default function HowItWorksPage() {
 
           <div className="text-center mt-10">
             <p className="text-gray-500 text-sm">
-              All assessments are <strong>free during beta</strong>. Prices shown apply post-beta launch.
+              Every assessment includes a <strong>free compliance summary</strong>. Prices shown are one-time, for the full report. No subscription.
             </p>
           </div>
         </div>

@@ -8,15 +8,16 @@ import { STATUTORY_HEALTH_QUESTIONS, CATEGORY_INFO } from '@/lib/assessments/sta
 import { LABOUR_CODE_CATEGORIES, calculateLabourCodeScore, generateLabourCodeActionItems, getComplianceStatus } from '@/lib/assessments/labour-code-questions'
 import { DPDP_CATEGORIES, calculateDPDPScore, generateDPDPActionItems, getDPDPComplianceStatus, getDaysUntilDeadline } from '@/lib/assessments/dpdp-questions'
 import { DownloadWithFeedback } from '@/components/results/download-with-feedback'
-import { LocalStorageResultsPage } from '@/components/results/local-storage-results'
+import { LocalStorageResultsPage, type LocalAssessmentData } from '@/components/results/local-storage-results'
 import { GatedResults } from '@/components/results/gated-results'
 import { getGateConfig } from '@/lib/results/gate-config'
-import { ReportViewTracker } from '@/components/results/report-view-tracker'
+import { ReportViewTracker, PaidReportViewTracker } from '@/components/results/report-view-tracker'
 import { ASSESSMENT_TYPES, isPaymentLive, isValidAssessmentType, getAssessmentDisplayName, ASSESSMENT_PRICES, type AssessmentType } from '@/lib/constants/assessment-types'
 import { AssessmentSummary } from '@/components/results/assessment-summary'
 import { buildSummaryData } from '@/lib/payment/summary-registry'
 import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
 import { getEntitlement } from '@/lib/payment/entitlement'
+import { ASSESSMENT_META } from '@/lib/seo/assessment-meta'
 
 // Type definitions
 interface ActionItem {
@@ -92,14 +93,12 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
   const { type } = await searchParams
   
   const assessmentType = type || ASSESSMENT_TYPES.STATUTORY_HEALTH
-  const isFoodBusiness = assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS
 
   // Handle temporary/local IDs (when DB not configured or fallback)
-  // Also use LocalStorageResults for Food Business assessments
-  if (id.startsWith('temp_') || id.startsWith('local_') || isFoodBusiness) {
+  if (id.startsWith('temp_') || id.startsWith('local_')) {
     // Paid assessments with a local_ ID means the DB write failed silently.
     // Show a retry page — routing to the free OTP gate would bypass the paywall.
-    if (!isFoodBusiness && isValidAssessmentType(assessmentType) && isPaymentLive(assessmentType)) {
+    if (isValidAssessmentType(assessmentType) && isPaymentLive(assessmentType)) {
       return <AssessmentSaveFailedPage assessmentType={assessmentType} />
     }
     const { source, reason } = getGateConfig(assessmentType)
@@ -139,18 +138,13 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
 
   const { source, reason } = getGateConfig(effectiveType)
 
-  // DB-backed food-business rows render through the localStorage results page,
-  // matching the pre-fetch branch above.
-  if (effectiveType === ASSESSMENT_TYPES.FOOD_BUSINESS) {
-    return (
-      <GatedResults source={source} reason={reason}>
-        <LocalStorageResultsPage id={id} assessmentType={effectiveType} />
-      </GatedResults>
+  // The full, per-type detailed report view. Food Business renders through the
+  // shared results page fed from the stored row (not localStorage), so a paid
+  // report opens on any device.
+  const fullView = effectiveType === ASSESSMENT_TYPES.FOOD_BUSINESS ? (
+      <LocalStorageResultsPage id={id} assessmentType={effectiveType} initialData={toFoodBusinessView(assessment)} />
     )
-  }
-
-  // The full, per-type detailed report view.
-  const fullView = effectiveType === ASSESSMENT_TYPES.DPDP ? <DPDPResultsView assessment={assessment} />
+    : effectiveType === ASSESSMENT_TYPES.DPDP ? <DPDPResultsView assessment={assessment} />
     : effectiveType === ASSESSMENT_TYPES.LABOUR_CODE ? <LabourCodeResultsView assessment={assessment} />
     : effectiveType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE ? <StateWiseResultsView assessment={assessment} />
     : <StatutoryHealthResultsView assessment={assessment} />
@@ -168,7 +162,12 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
       if (status === 'none') {
         return <AssessmentSummary assessmentId={id} summary={buildSummary(effectiveType, assessment, id)} />
       }
-      return fullView
+      return (
+        <>
+          <PaidReportViewTracker assessmentType={effectiveType} assessmentId={id} entitlement={status} />
+          {fullView}
+        </>
+      )
     } catch (err) {
       console.error('[results] paywall gate threw:', err)
       // Fall through to the free/OTP flow on any error.
@@ -181,6 +180,23 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
       {fullView}
     </GatedResults>
   )
+}
+
+// Food Business rows keep the answers and contact details nested in
+// `responses` (see food-business-submit); map them to the shape the shared
+// results page reads.
+function toFoodBusinessView(assessment: AssessmentData & { created_at?: string }): LocalAssessmentData {
+  const responses = (assessment.responses ?? {}) as { userDetails?: Record<string, string>; answers?: Record<string, string> }
+  return {
+    id: assessment.id,
+    assessment_type: assessment.assessment_type,
+    status: assessment.status,
+    responses: { userDetails: responses.userDetails, answers: responses.answers },
+    overall_score: assessment.overall_score ?? 0,
+    category_scores: assessment.category_scores as unknown as LocalAssessmentData['category_scores'],
+    userDetails: responses.userDetails,
+    created_at: assessment.completed_at ?? assessment.created_at ?? new Date().toISOString(),
+  }
 }
 
 // Build the teaser for a given assessment. Statutory Health keeps its bespoke,
@@ -1134,9 +1150,8 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
 // local_ fallback URL. We cannot show the payment gate (no DB row = no entitlement
 // to associate the payment with), so ask them to retry the submission instead.
 function AssessmentSaveFailedPage({ assessmentType }: { assessmentType: string }) {
-  const href = assessmentType === ASSESSMENT_TYPES.DPDP ? '/assessment/dpdp'
-    : assessmentType === ASSESSMENT_TYPES.STATUTORY_HEALTH ? '/assessment/statutory-health'
-    : '/'
+  const meta = ASSESSMENT_META.find((m) => m.type === assessmentType)
+  const href = meta ? `/assessment/${meta.assessmentRoute}` : '/'
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">

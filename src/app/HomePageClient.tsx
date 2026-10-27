@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Footer } from '@/components/site/footer';
 import { HOME_FAQS } from '@/lib/content/home-faq';
+import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, isPaymentLive, type AssessmentType } from '@/lib/constants/assessment-types';
 import {
   Heart,
   Scale,
@@ -29,17 +30,16 @@ const TRUST_SIGNALS = [
   { stat: '15 min', label: 'average to complete' },
 ];
 
+const fullPriceLabel = (type: AssessmentType) =>
+  `₹${Math.round(ASSESSMENT_PRICES[type].amountPaise / 100).toLocaleString('en-IN')}`;
+
 // Assessment card data
 const assessments: {
   id: string;
   title: string;
   description: string;
   questions: number;
-  /**
-   * Must match ASSESSMENT_PRICES in @/lib/constants/assessment-types — that is
-   * what /api/payment/create-order actually charges. Update both together when
-   * a price changes or a paywall goes live.
-   */
+  /** Derived from ASSESSMENT_PRICES — what /api/payment/create-order charges. */
   fullPrice: string;
   isLive: boolean;
   href: string;
@@ -53,8 +53,8 @@ const assessments: {
     title: 'Statutory Health Check',
     description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance.',
     questions: 12,
-    fullPrice: '₹499',
-    isLive: true,
+    fullPrice: fullPriceLabel(ASSESSMENT_TYPES.STATUTORY_HEALTH),
+    isLive: isPaymentLive(ASSESSMENT_TYPES.STATUTORY_HEALTH),
     href: '/assessments/landing/statutory-health-check',
     icon: Heart,
     gradient: 'from-blue-500 to-blue-600',
@@ -66,8 +66,8 @@ const assessments: {
     title: 'Labour Code Readiness',
     description: 'Assessment for all 4 new Labour Codes (Nov 2025). Gap analysis & action items.',
     questions: 30,
-    fullPrice: '₹999',
-    isLive: false,
+    fullPrice: fullPriceLabel(ASSESSMENT_TYPES.LABOUR_CODE),
+    isLive: isPaymentLive(ASSESSMENT_TYPES.LABOUR_CODE),
     href: '/assessments/landing/labour-code-readiness',
     icon: Scale,
     gradient: 'from-teal-500 to-teal-600',
@@ -79,8 +79,8 @@ const assessments: {
     title: 'DPDP Gap Assessment',
     description: 'Data protection compliance for DPDP Act 2023 (effective May 2027). Maturity scoring.',
     questions: 45,
-    fullPrice: '₹2,499',
-    isLive: true,
+    fullPrice: fullPriceLabel(ASSESSMENT_TYPES.DPDP),
+    isLive: isPaymentLive(ASSESSMENT_TYPES.DPDP),
     href: '/assessments/landing/dpdp-gap-assessment',
     icon: Shield,
     gradient: 'from-blue-600 to-cyan-600',
@@ -92,8 +92,8 @@ const assessments: {
     title: 'Which Laws Apply to My Business?',
     description: "Find out exactly what's required in your state — Professional Tax slabs, Labour Welfare Fund rates, S&E deadlines, and more.",
     questions: 10,
-    fullPrice: '₹499',
-    isLive: false,
+    fullPrice: fullPriceLabel(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE),
+    isLive: isPaymentLive(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE),
     href: '/assessments/landing/state-wise-compliance',
     icon: MapPin,
     gradient: 'from-indigo-600 to-purple-600',
@@ -105,8 +105,8 @@ const assessments: {
     title: 'Restaurant & Food Business',
     description: 'FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.',
     questions: 26,
-    fullPrice: '₹999',
-    isLive: false,
+    fullPrice: fullPriceLabel(ASSESSMENT_TYPES.FOOD_BUSINESS),
+    isLive: isPaymentLive(ASSESSMENT_TYPES.FOOD_BUSINESS),
     href: '/assessments/landing/restaurant-food-business',
     icon: Utensils,
     gradient: 'from-cyan-500 to-teal-600',
@@ -118,8 +118,8 @@ const assessments: {
     title: 'POSH Act 2013 Compliance',
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
     questions: 40,
-    fullPrice: '₹1,999',
-    isLive: true,
+    fullPrice: fullPriceLabel(ASSESSMENT_TYPES.POSH),
+    isLive: isPaymentLive(ASSESSMENT_TYPES.POSH),
     href: '/assessments/landing/posh-act-compliance',
     icon: AlertTriangle,
     gradient: 'from-purple-500 to-pink-600',
@@ -131,8 +131,8 @@ const assessments: {
     title: 'Auto Dealership Compliance',
     description: '2-Wheeler & 4-Wheeler Dealers — Labour, CMVR, EHS, IRDAI MISP, ELV, GST 2.0, DPDP. 6-phase, up to 100 questions.',
     questions: 100,
-    fullPrice: '₹2,999',
-    isLive: false,
+    fullPrice: fullPriceLabel(ASSESSMENT_TYPES.AUTO_DEALER),
+    isLive: isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER),
     href: '/assessments/landing/auto-dealer-compliance',
     icon: Car,
     gradient: 'from-blue-700 to-sky-500',

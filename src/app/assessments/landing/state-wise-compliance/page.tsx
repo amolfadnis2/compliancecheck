@@ -3,10 +3,11 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'State-Wise Compliance Check | Professional Tax, LWF, S&E Act | ComplianceCheck',
-  description: 'Find out exactly what compliance requirements apply in your state. Professional Tax, Labour Welfare Fund, Shops & Establishments Act, and more. ₹1,499 post-beta.',
+  description: 'Find out exactly what compliance requirements apply in your state. Professional Tax, Labour Welfare Fund, Shops & Establishments Act, and more. Free summary; full report ₹499.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/state-wise-compliance',
   },
@@ -77,7 +78,7 @@ export default function StateWiseCompliancePage() {
             <div className={styles.statItem}><h3>36</h3><p>States & UTs</p></div>
             <div className={styles.statItem}><h3>20+</h3><p>Compliance Areas</p></div>
             <div className={styles.statItem}><h3>100+</h3><p>Rules Mapped</p></div>
-            <div className={styles.statItem}><h3>₹1,499</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹499</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -170,19 +171,12 @@ export default function StateWiseCompliancePage() {
       <section className={styles.pricing} style={{ background: '#F0FDFA' }}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹1,499</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {['Complete state compliance check', 'Applicability matrix', 'Rate tables & slabs', 'Filing deadline calendar', 'Registration checklist', 'Form references', 'Professional PDF report'].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/state-wise-compliance" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Check My State →
-            </Link>
-          </div>
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}
+            accentColor={accentColor}
+            ctaHref="/assessment/state-wise-compliance"
+            features={['Complete state compliance check', 'Applicability matrix', 'Rate tables & slabs', 'Filing deadline calendar', 'Registration checklist', 'Form references', 'Professional PDF report']}
+          />
         </div>
       </section>
 

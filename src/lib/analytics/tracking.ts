@@ -17,6 +17,12 @@ import {
   FeatureGateHitProps,
   PricingPageViewedProps,
   CheckoutStartedProps,
+  PaywallViewedProps,
+  CheckoutAbandonedProps,
+  PaymentSucceededProps,
+  PaymentFailedProps,
+  PromoRedeemedProps,
+  PaidReportViewedProps,
   SubscriptionUpgradedProps,
   SubscriptionCancelledProps,
   UserSignedUpProps,
@@ -143,6 +149,34 @@ export const trackCheckoutStarted = (props: CheckoutStartedProps) => {
   safeCapture(ANALYTICS_EVENTS.CHECKOUT_STARTED, props);
 };
 
+export const trackPaywallViewed = (props: PaywallViewedProps) => {
+  safeCapture(ANALYTICS_EVENTS.PAYWALL_VIEWED, props);
+};
+
+export const trackCheckoutAbandoned = (props: CheckoutAbandonedProps) => {
+  safeCapture(ANALYTICS_EVENTS.CHECKOUT_ABANDONED, props);
+};
+
+export const trackPaymentSucceeded = (props: PaymentSucceededProps) => {
+  safeCapture(ANALYTICS_EVENTS.PAYMENT_SUCCEEDED, {
+    ...props,
+    // PostHog revenue property — waivers record 0 so comped unlocks don't inflate revenue
+    revenue: props.payment_method === 'waiver' ? 0 : props.amount_inr,
+  });
+};
+
+export const trackPaymentFailed = (props: PaymentFailedProps) => {
+  safeCapture(ANALYTICS_EVENTS.PAYMENT_FAILED, props);
+};
+
+export const trackPromoRedeemed = (props: PromoRedeemedProps) => {
+  safeCapture(ANALYTICS_EVENTS.PROMO_REDEEMED, props);
+};
+
+export const trackPaidReportViewed = (props: PaidReportViewedProps) => {
+  safeCapture(ANALYTICS_EVENTS.PAID_REPORT_VIEWED, props);
+};
+
 export const trackSubscriptionUpgraded = (props: SubscriptionUpgradedProps) => {
   safeCapture(ANALYTICS_EVENTS.SUBSCRIPTION_UPGRADED, {
     ...props,
@@ -218,6 +252,12 @@ export const analytics = {
   featureGateHit: trackFeatureGateHit,
   pricingPageViewed: trackPricingPageViewed,
   checkoutStarted: trackCheckoutStarted,
+  paywallViewed: trackPaywallViewed,
+  checkoutAbandoned: trackCheckoutAbandoned,
+  paymentSucceeded: trackPaymentSucceeded,
+  paymentFailed: trackPaymentFailed,
+  promoRedeemed: trackPromoRedeemed,
+  paidReportViewed: trackPaidReportViewed,
   subscriptionUpgraded: trackSubscriptionUpgraded,
   subscriptionCancelled: trackSubscriptionCancelled,
   

@@ -4,6 +4,9 @@ import { z } from 'zod'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { checkRateLimit } from '@/lib/rate-limit'
 
+// assessments.user_id is NOT NULL; used when the user upsert fails.
+const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000'
+
 // Lazy-init Supabase — module-level init breaks Netlify build when env vars are absent
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _supabase: any = null
@@ -140,7 +143,7 @@ export async function POST(request: Request) {
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')
       .insert({
-        user_id: user?.id ?? null,
+        user_id: user?.id ?? ANONYMOUS_USER_ID,
         assessment_type: ASSESSMENT_TYPES.FOOD_BUSINESS,
         status: 'completed',
         responses: {
@@ -159,6 +162,7 @@ export async function POST(request: Request) {
       .single()
 
     if (assessmentError) {
+      console.error('Food business assessment insert error:', assessmentError)
       // DB save failed — fall back to local ID so frontend can use localStorage
       const fallbackId = `local_${Date.now()}`
       return NextResponse.json({ success: true, assessmentId: fallbackId, source: 'fallback' })

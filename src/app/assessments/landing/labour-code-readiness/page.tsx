@@ -3,10 +3,11 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'Labour Code Readiness Assessment | Nov 2025 Deadline | ComplianceCheck',
-  description: "Prepare for India's 4 new Labour Codes effective November 2025. Get implementation cost estimates, gap analysis, and action plan. ₹1,999 post-beta.",
+  description: "Prepare for India's 4 new Labour Codes effective November 2025. Get implementation cost estimates, gap analysis, and action plan. Free summary; full report ₹999.",
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/labour-code-readiness',
   },
@@ -91,7 +92,7 @@ export default function LabourCodeReadinessPage() {
             <div className={styles.statItem}><h3>30</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>15-20</h3><p>After Filtering</p></div>
             <div className={styles.statItem}><h3>4</h3><p>Labour Codes</p></div>
-            <div className={styles.statItem}><h3>₹1,999</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹999</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -173,19 +174,12 @@ export default function LabourCodeReadinessPage() {
       <section className={styles.pricing} style={{ background: '#FFFBEB' }}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹1,999</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {['Complete 4-code assessment', 'Smart question filtering', 'Implementation cost estimates', 'Code-wise gap analysis', 'Timeline & milestones', 'Policy change recommendations', 'Professional PDF report'].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
-            </Link>
-          </div>
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.LABOUR_CODE}
+            accentColor={accentColor}
+            ctaHref="/assessment/labour-code"
+            features={['Complete 4-code assessment', 'Smart question filtering', 'Implementation cost estimates', 'Code-wise gap analysis', 'Timeline & milestones', 'Policy change recommendations', 'Professional PDF report']}
+          />
         </div>
       </section>
 

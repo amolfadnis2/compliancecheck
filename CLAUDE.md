@@ -47,6 +47,7 @@ RESEND_API_KEY=
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
+RAZORPAY_WEBHOOK_SECRET=        # /api/payment/webhook — backstop when the buyer closes the tab before /verify
 ```
 
 ---
@@ -228,7 +229,7 @@ fullName → email → phone → companyName → state → employeeCount → ind
 ```
 Use `INDIAN_STATES`, `EMPLOYEE_COUNT_OPTIONS`, `INDUSTRY_OPTIONS` from `@/lib/constants/india`. Never hardcode dropdown lists.
 
-**Exception — DPDP and Gratuity Calculator:** these two flows intentionally do **not** collect `fullName`/`email`/`phone`/`companyName` before showing value, per the 2026-07 growth-plan fix (`docs/Fixes as on 9 July.md`, fix #1 and #4). DPDP's Step 0 still collects `state`/`employeeCount`/`industry`/`revenue` and the 4 data-processing yes/no questions — these genuinely personalise which assessment questions are shown, so they stay — but contact info is deferred to a later gate. **Which gate depends on payment state:** DPDP's payment went live at ₹2,499 in the same 2026-07 batch (`docs/superpowers/plans/2026-07-09-dpdp-payment-live.md`), so for DB-backed rows the results page's `isPaymentLive('dpdp')` branch now intercepts *before* the free flow — email is captured by `<PaymentGate>`'s own email field at checkout, not by `<GatedResults>`/`<EmailGate>`. The OTP gate still exists and still runs for the `local_`/`temp_` fallback path (DB write failures, Supabase unconfigured), so it is not dead code, but it is no longer DPDP's primary identity gate. One known consequence: a user who completes DPDP but never pays now leaves no email at all (no free-teaser lead capture) — this was not an explicit decision in either plan and is flagged as an open question, not a resolved one. The Gratuity Calculator drops the gate entirely: calculator inputs and results show immediately, matching the homepage's "No signup required. Free forever." promise for calculators. Do not extend this exception to any other assessment type without an explicit decision — every other assessment (`statutory_health`, `labour_code`, `state_wise_compliance`, `food_business`, `posh`, `auto_dealer`) still follows the full 7-field Step 0 above.
+**Exception — DPDP and Gratuity Calculator:** these two flows intentionally do **not** collect `fullName`/`email`/`phone`/`companyName` before showing value, per the 2026-07 growth-plan fix (`docs/Fixes as on 9 July.md`, fix #1 and #4). DPDP's Step 0 still collects `state`/`employeeCount`/`industry`/`revenue` and the 4 data-processing yes/no questions — these genuinely personalise which assessment questions are shown, so they stay — but contact info is deferred to a later gate. **Which gate depends on payment state:** DPDP's payment went live at ₹2,499 in the same 2026-07 batch (`docs/superpowers/plans/2026-07-09-dpdp-payment-live.md`), so for DB-backed rows the results page's `isPaymentLive('dpdp')` branch now intercepts *before* the free flow — email is captured by `<PaymentGate>`'s own email field at checkout, not by `<GatedResults>`/`<EmailGate>`. The `local_`/`temp_` fallback path (DB write failures) now shows a "couldn't save — try again" page for every paid type instead of the OTP gate, so `<GatedResults>`/`<EmailGate>` only run for an assessment whose `live` flag is off. One known consequence: a user who completes DPDP but never pays now leaves no email at all (no free-teaser lead capture) — this was not an explicit decision in either plan and is flagged as an open question, not a resolved one. The Gratuity Calculator drops the gate entirely: calculator inputs and results show immediately, matching the homepage's "No signup required. Free forever." promise for calculators. Do not extend this exception to any other assessment type without an explicit decision — every other assessment (`statutory_health`, `labour_code`, `state_wise_compliance`, `food_business`, `posh`, `auto_dealer`) still follows the full 7-field Step 0 above.
 
 ### Yes/No Buttons
 ```typescript
@@ -266,6 +267,12 @@ Always `h-3`. Always `aria-label`. Always `[&>div]:bg-green-600`. Both applicabi
 ### PDF Generation
 All assessments use `generateUnifiedReportBlob` from `src/lib/pdf/unified-report-generator.ts` via the `report-data-adapter.ts` adapters. Never create a new standalone PDF generator.
 
+### Payments (all 7 assessments are paid and live since 2026-10-27)
+- Price + live switch: `ASSESSMENT_PRICES` in `@/lib/constants/assessment-types`. Copy (home cards, landing pricing cards, how-it-works, schema.org Offers) derives from it — never hardcode a price.
+- Flow: free `<AssessmentSummary>` teaser → `<PaymentGate>` (email + Razorpay or promo) → `/api/payment/create-order` → `/verify` (+ `/webhook` backstop) → `assessment_entitlements` row `paid`/`waived` → full report + gated PDF.
+- `assessment_entitlements` has **no** anon RLS policies on purpose (`20261027000000`): it is the paywall, and only service-role API routes may read or write it. This is the one exception to §8.
+- Funnel events (`paywall_viewed`, `checkout_started`, `payment_succeeded`, `payment_failed`, `checkout_abandoned`, `promo_redeemed`, `paid_report_viewed`) go through `analytics.*`; revenue events are also captured server-side via `@/lib/analytics/server`.
+
 ### Database Persistence
 Every assessment submit handler MUST:
 1. Write to Supabase (not just localStorage)
@@ -290,6 +297,7 @@ Historical list (confirmed gone):
 - `src/app/api/assessment/[id]/pdf/route.tsx`
 - `src/lib/analytics/useAssessmentAnalytics.ts` (zero importers — deleted 2026-06-12)
 - `src/components/results/statutory-health-summary.tsx` (replaced by the shared `src/components/results/assessment-summary.tsx` + `UnifiedSummaryData` — deleted)
+- `src/app/api/assessment/auto-dealer/pay/route.ts` (zero callers; superseded by `/api/payment/create-order` — deleted 2026-10-27)
 
 ---
 
@@ -314,15 +322,15 @@ The auto-dealer assessment is **intentionally different** from all other assessm
 
 Do not attempt to standardise these divergences — they are architectural decisions, not bugs.
 
-**Payment is now converged onto the unified stack** (framework open-item O-2). When
-`isPaymentLive('auto_dealer')` is true, the checkout uses the shared
+**Payment is now converged onto the unified stack** (framework open-item O-2). Payment is
+live (`isPaymentLive('auto_dealer')` is true since 2026-10-27), so the checkout uses the shared
 `<PaymentGate>` → `/api/payment/create-order` + `/verify`, and paid/waived state
 lives in `assessment_entitlements` (not the inline `payment_status` column). The
 gated PDF route (`report.pdf/route.ts`) reads entitlement via `getEntitlement()`
 and returns **402** for the binary PDF when unpaid. The single flat price is
-**₹2,999** (framework O-1). At `live:false` (today) it falls back to the legacy
-inline `payment_status` and the "free in beta" flow, so behaviour is unchanged
-until the flag is flipped. Everything else above (multi-phase, OTP, server-side
+**₹2,999** (framework O-1). The legacy inline `payment_status` / "free in beta"
+branch only runs if the flag is turned back off; the old `/api/assessment/auto-dealer/pay`
+order route has been deleted. Everything else above (multi-phase, OTP, server-side
 jsPDF) remains auto-dealer-specific.
 
 ---

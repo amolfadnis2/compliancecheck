@@ -3,10 +3,11 @@ import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'Restaurant & Food Business Compliance | FSSAI, Fire NOC, Liquor License | ComplianceCheck',
-  description: 'Complete compliance assessment for restaurants, cloud kitchens, and food businesses. FSSAI, Fire NOC, Liquor License, GST, and Labour compliance. ₹999 post-beta.',
+  description: 'Complete compliance assessment for restaurants, cloud kitchens, and food businesses. FSSAI, Fire NOC, Liquor License, GST, and Labour compliance. Free summary; full report ₹999.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/restaurant-food-business',
   },
@@ -78,7 +79,7 @@ export default function RestaurantFoodBusinessPage() {
             <div className={styles.statItem}><h3>25-67</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>15 min</h3><p>To Complete</p></div>
             <div className={styles.statItem}><h3>8</h3><p>Compliance Areas</p></div>
-            <div className={styles.statItem}><h3>₹999</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹999</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -182,19 +183,12 @@ export default function RestaurantFoodBusinessPage() {
       <section className={styles.pricing} style={{ background: 'white' }}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹999</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {['Complete 8-area assessment', 'Business-type smart filtering', 'License requirement checklist', 'Gap analysis with priorities', 'Application process guide', 'Renewal calendar', 'Professional PDF report'].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/food-business" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
-            </Link>
-          </div>
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.FOOD_BUSINESS}
+            accentColor={accentColor}
+            ctaHref="/assessment/food-business"
+            features={['Complete 8-area assessment', 'Business-type smart filtering', 'License requirement checklist', 'Gap analysis with priorities', 'Application process guide', 'Renewal calendar', 'Professional PDF report']}
+          />
         </div>
       </section>
 

@@ -131,12 +131,39 @@ export interface PricingPageViewedProps {
   assessment_type?: AssessmentType;
 }
 
-export interface CheckoutStartedProps {
-  plan: 'pro' | 'enterprise';
-  billing_cycle: 'monthly' | 'annual';
-  source: string;
-  current_tier: UserTier;
-  assessment_type?: AssessmentType;
+// One-time assessment report purchase (the per-assessment paywall).
+export interface PaymentFunnelProps {
+  assessment_type: AssessmentType;
+  assessment_id: string;
+  amount_inr: number;
+}
+
+export type PaywallViewedProps = PaymentFunnelProps;
+
+export type CheckoutStartedProps = PaymentFunnelProps;
+
+export type CheckoutAbandonedProps = PaymentFunnelProps;
+
+export interface PaymentSucceededProps extends PaymentFunnelProps {
+  payment_method: 'razorpay' | 'waiver';
+  /** 'client' = browser after verify; 'server' = verify/webhook backstop. */
+  source?: 'client' | 'server' | 'webhook';
+}
+
+export interface PaymentFailedProps extends PaymentFunnelProps {
+  stage: 'create_order' | 'checkout' | 'verify';
+  error?: string;
+}
+
+export interface PromoRedeemedProps extends PaymentFunnelProps {
+  succeeded: boolean;
+  error?: string;
+}
+
+export interface PaidReportViewedProps {
+  assessment_type: AssessmentType;
+  assessment_id: string;
+  entitlement: 'paid' | 'waived';
 }
 
 export interface SubscriptionUpgradedProps {
@@ -225,6 +252,12 @@ export const ANALYTICS_EVENTS = {
   FEATURE_GATE_HIT: 'feature_gate_hit',
   PRICING_PAGE_VIEWED: 'pricing_page_viewed',
   CHECKOUT_STARTED: 'checkout_started',
+  PAYWALL_VIEWED: 'paywall_viewed',
+  CHECKOUT_ABANDONED: 'checkout_abandoned',
+  PAYMENT_SUCCEEDED: 'payment_succeeded',
+  PAYMENT_FAILED: 'payment_failed',
+  PROMO_REDEEMED: 'promo_redeemed',
+  PAID_REPORT_VIEWED: 'paid_report_viewed',
   SUBSCRIPTION_UPGRADED: 'subscription_upgraded',
   SUBSCRIPTION_CANCELLED: 'subscription_cancelled',
   

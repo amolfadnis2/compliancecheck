@@ -13,6 +13,9 @@ export const SAMPLE_REPORT_SLUGS: Record<string, AssessmentType> = {
   'statutory-health': ASSESSMENT_TYPES.STATUTORY_HEALTH,
   'dpdp': ASSESSMENT_TYPES.DPDP,
   'posh': ASSESSMENT_TYPES.POSH,
+  'labour-code': ASSESSMENT_TYPES.LABOUR_CODE,
+  'state-wise-compliance': ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
+  'food-business': ASSESSMENT_TYPES.FOOD_BUSINESS,
 }
 
 export function hasSampleReport(type: AssessmentType): boolean {
