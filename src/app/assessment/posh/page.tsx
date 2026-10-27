@@ -49,6 +49,10 @@ import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { POSHProgressSection } from '@/components/assessment/posh-progress-section'
 import { EmailGate } from '@/components/identity/EmailGate'
 import { PaymentGate } from '@/components/results/payment-gate'
+import { AssessmentSummary } from '@/components/results/assessment-summary'
+import { toSummary, withPeerAverages } from '@/lib/payment/summary-data'
+import { usePeerAverages } from '@/lib/benchmarks/use-peer-averages'
+import { POSH_CONFIG } from '@/lib/pdf/report-configs'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
 import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { analytics } from '@/lib/analytics/tracking'
@@ -214,6 +218,7 @@ export default function POSHAssessmentPage() {
   // Persisted POSH assessment id (from posh-submit) — used to key the unified
   // payment entitlement and to gate the emailed report server-side.
   const [poshAssessmentId, setPoshAssessmentId] = useState<string | null>(null)
+  const peerAverages = usePeerAverages(ASSESSMENT_TYPES.POSH, poshAssessmentId)
   
   // Timing
   const [startTime] = useState(Date.now())
@@ -1393,6 +1398,47 @@ export default function POSHAssessmentPage() {
     // LCC redirect — no email/payment gate needed for "not applicable" result
     if (results.profile?.redirectToLCC) {
       return renderLCCInfo()
+    }
+
+    // Paid flow (payment live + saved row): the shared summary page every paid
+    // assessment uses — score, critical gaps, top 3 actions, categories vs
+    // peers, legal references and checkout (which captures email + WhatsApp,
+    // so no separate email OTP step). Unlocks into the full results below.
+    if (isPaymentLive(ASSESSMENT_TYPES.POSH) && poshAssessmentId && !paymentCleared) {
+      const categoryName = (id: string) =>
+        results.categoryScores.find((c) => c.category === id)?.categoryName ?? id
+      const summary = withPeerAverages(
+        toSummary(
+          {
+            overallScore: results.overallScore,
+            categoryScores: results.categoryScores.map((c) => ({
+              category: c.categoryName,
+              key: c.categoryName,
+              score: c.percentage,
+            })),
+            actionItems: results.actionItems.map((a) => ({ ...a, category: categoryName(a.category) })),
+            legislation: POSH_CONFIG.legislation,
+            companyName: companyDetails?.companyName,
+          },
+          {
+            assessmentType: ASSESSMENT_TYPES.POSH,
+            priceINR: Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.POSH].amountPaise / 100),
+          }
+        ),
+        peerAverages
+      )
+      return (
+        <AssessmentSummary
+          assessmentId={poshAssessmentId}
+          summary={summary}
+          defaultEmail={companyDetails?.email}
+          defaultPhone={companyDetails?.phone}
+          onPaid={() => {
+            setGateCleared(true)
+            setPaymentCleared(true)
+          }}
+        />
+      )
     }
 
     // Determine what the report CTA section should render.

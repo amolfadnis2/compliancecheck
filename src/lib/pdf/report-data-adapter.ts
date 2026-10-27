@@ -304,6 +304,7 @@ function buildReportFromAnswers(
     const score = Math.round(rawPercentage(value) ?? 0)
     return {
       category: labelFor(key),
+      key,
       score,
       status: categoryStatus(score),
       questionCount: counts[key]?.total ?? 0,
@@ -446,6 +447,7 @@ export function adaptPOSHResult(
     penaltyExposure: result.penaltyExposure,
     categoryScores: result.categoryScores.map((cat) => ({
       ...cat,
+      key: cat.category,
       category: POSH_CATEGORY_LABELS[cat.category] || cat.category,
     })),
     actionItems: result.actionItems.map((item) => ({

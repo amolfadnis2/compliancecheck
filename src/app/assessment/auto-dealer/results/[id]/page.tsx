@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { analytics } from '@/lib/analytics/tracking'
-import { ASSESSMENT_TYPES, isPaymentLive, ASSESSMENT_PRICES } from '@/lib/constants/assessment-types'
-import { PaymentGate as SharedPaymentGate } from '@/components/results/payment-gate'
+import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
+import { AssessmentSummary } from '@/components/results/assessment-summary'
+import { toAutoDealerSummary } from '@/lib/payment/auto-dealer-summary'
+import { withPeerAverages } from '@/lib/payment/summary-data'
+import { usePeerAverages } from '@/lib/benchmarks/use-peer-averages'
 import {
   ArrowLeft, Loader2, AlertCircle, CheckCircle, AlertTriangle, XCircle,
   Download, Mail, Lock, ChevronDown, ChevronUp, ExternalLink,
@@ -388,6 +391,8 @@ function PaymentGate({ tier, questionCount, onPaid }: PaymentGateProps) {
 
 interface ResultsData {
   email: string
+  /** Mobile from Step 0 — prefills the WhatsApp field at checkout. */
+  phone?: string | null
   companyName: string | null
   fullName: string | null
   labourRegime: string
@@ -421,6 +426,7 @@ export default function ResultsPage() {
   const [isEmailing, setIsEmailing] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>('gaps')
+  const peerAverages = usePeerAverages(ASSESSMENT_TYPES.AUTO_DEALER, assessmentId)
 
   // Load results — first try Supabase, fall back to localStorage
   useEffect(() => {
@@ -441,7 +447,7 @@ export default function ResultsPage() {
 
       if (res.ok) {
         const json = await res.json() as {
-          email: string; companyName: string | null; fullName: string | null;
+          email: string; phone?: string | null; companyName: string | null; fullName: string | null;
           labourRegime: string; responses: Responses; phaseScores: PhaseScore[];
           overallScore: OverallScore; gapAnalysis: GapItem[];
           applicabilityChecks: ApplicabilityCheckResult[];
@@ -658,6 +664,31 @@ export default function ResultsPage() {
 
   // Show payment gate if not paid
   if (!paid) {
+    // Payment live: the shared summary page every paid assessment shows
+    // (score, critical gaps, top 3 actions, phases vs peers, legal references,
+    // checkout). The OTP email gate above stays — auto-dealer-specific (sec 14).
+    if (isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER)) {
+      const summary = withPeerAverages(
+        toAutoDealerSummary({
+          overallScore: overallScore.score,
+          phaseScores,
+          gapAnalysis,
+          applicabilityChecks,
+          companyName: data.companyName,
+        }),
+        peerAverages
+      )
+      return (
+        <AssessmentSummary
+          assessmentId={assessmentId}
+          summary={summary}
+          defaultEmail={data.email}
+          defaultPhone={data.phone ?? undefined}
+          onPaid={() => { setPaid(true); loadResults() }}
+        />
+      )
+    }
+
     return (
       <div className="min-h-screen bg-gray-50">
         <AssessmentHeader title="Auto Dealership Compliance Assessment" subtitle="Results" />
@@ -687,27 +718,13 @@ export default function ResultsPage() {
             </Card>
           </div>
 
-          {isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER) ? (
-            // Converged onto the shared entitlement flow: real Razorpay checkout
-            // via /api/payment/create-order + /verify, writing to
-            // assessment_entitlements. Flat ₹2,999 (framework O-1). On success we
-            // refetch so the server-gated report unlocks.
-            <SharedPaymentGate
-              assessmentId={assessmentId}
-              assessmentType={ASSESSMENT_TYPES.AUTO_DEALER}
-              priceINR={Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.AUTO_DEALER].amountPaise / 100)}
-              title="Unlock your full compliance report"
-              description={`${data.totalQuestions} questions assessed`}
-              onPaid={() => { setPaid(true); loadResults() }}
-            />
-          ) : (
-            <PaymentGate
-              assessmentId={assessmentId}
-              tier={data.priceTier}
-              questionCount={data.totalQuestions}
-              onPaid={() => { setPaid(true) }}
-            />
-          )}
+          {/* Legacy "free in beta" flow — only runs if the live flag is turned off. */}
+          <PaymentGate
+            assessmentId={assessmentId}
+            tier={data.priceTier}
+            questionCount={data.totalQuestions}
+            onPaid={() => { setPaid(true) }}
+          />
         </main>
       </div>
     )

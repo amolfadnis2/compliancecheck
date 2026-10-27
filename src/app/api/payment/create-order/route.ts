@@ -3,6 +3,7 @@ import Razorpay from 'razorpay'
 import { createClient } from '@supabase/supabase-js'
 import { ASSESSMENT_PRICES, isValidAssessmentType, type AssessmentType } from '@/lib/constants/assessment-types'
 import { assessmentTableFor } from '@/lib/payment/assessment-table'
+import { normalizeIndianMobile } from '@/lib/identity/phone'
 
 let _razorpay: Razorpay | null = null
 function getRazorpay() {
@@ -26,6 +27,8 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const { assessmentId, assessmentType, email } = body
+    // Optional WhatsApp number for report delivery; stored only when valid.
+    const phone = normalizeIndianMobile(body.phone)
 
     if (!assessmentId || !assessmentType || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -80,6 +83,7 @@ export async function POST(request: Request) {
         payment_method: 'razorpay',
         razorpay_order_id: order.id,
         email,
+        ...(phone ? { phone } : {}),
       },
       { onConflict: 'assessment_id,assessment_type' }
     )

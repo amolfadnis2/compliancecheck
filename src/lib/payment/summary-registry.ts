@@ -26,7 +26,8 @@ function priceINRFor(type: string): number {
 
 /**
  * Build the teaser for a DB-backed assessment (Statutory Health, Labour Code,
- * DPDP, State-Wise, Food Business).
+ * DPDP, State-Wise, Food Business). Peer averages are overlaid separately by
+ * the caller (`withPeerAverages`) since they need a database read.
  */
 export function buildSummaryData(type: AssessmentType, data: AssessmentData): UnifiedSummaryData {
   const report = buildReportData(type, data)
@@ -35,6 +36,7 @@ export function buildSummaryData(type: AssessmentType, data: AssessmentData): Un
       overallScore: report.overallScore,
       categoryScores: report.categoryScores,
       actionItems: report.actionItems,
+      legislation: report.config.legislation,
       companyName: report.userDetails.companyName,
     },
     { assessmentType: type, priceINR: priceINRFor(type) }

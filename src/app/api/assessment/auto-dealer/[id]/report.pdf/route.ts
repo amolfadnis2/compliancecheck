@@ -97,6 +97,7 @@ export async function GET(
     if (acceptJson) {
       return NextResponse.json({
         email: a.user_email,
+        phone: a.phone,
         companyName: a.company_name,
         fullName: a.full_name,
         labourRegime: a.labour_regime,

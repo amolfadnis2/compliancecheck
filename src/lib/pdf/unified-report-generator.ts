@@ -49,6 +49,8 @@ export interface UnifiedUserDetails {
 
 export interface UnifiedCategoryScore {
   category: string;
+  /** Stable category key as stored in the assessment row (peer benchmarks match on it). */
+  key?: string;
   score: number;
   status: 'compliant' | 'needs_attention' | 'non_compliant';
   questionCount: number;

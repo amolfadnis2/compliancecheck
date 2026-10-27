@@ -4,6 +4,7 @@ import { ASSESSMENT_PRICES, isValidAssessmentType, type AssessmentType } from '@
 import { assessmentTableFor } from '@/lib/payment/assessment-table'
 import { captureServerEvent } from '@/lib/analytics/server'
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
+import { normalizeIndianMobile } from '@/lib/identity/phone'
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +14,8 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const { assessmentId, assessmentType, code, email } = body
+    // Optional WhatsApp number for report delivery; stored only when valid.
+    const phone = normalizeIndianMobile(body.phone)
 
     if (!assessmentId || !assessmentType || !code || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -85,6 +88,7 @@ export async function POST(request: Request) {
           payment_method: 'waiver',
           promo_code: normalizedCode,
           email,
+          ...(phone ? { phone } : {}),
           paid_at: new Date().toISOString(),
         },
         { onConflict: 'assessment_id,assessment_type' }
