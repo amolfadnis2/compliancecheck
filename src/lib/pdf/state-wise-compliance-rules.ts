@@ -188,7 +188,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     category: 'Professional Tax',
     requirement: 'Professional Tax Registration',
     governmentRef: 'Article 276 of Constitution of India | State-specific PT Acts',
-    officialLink: 'https://mahagst.gov.in (MH) | https://gst.kar.nic.in (KA)',
+    officialLink: 'Your State Commercial Tax / GST department portal (e.g. mahagst.gov.in for Maharashtra, gst.kar.nic.in for Karnataka)',
     deadline: 'Within 30 days of starting operations in applicable state',
     penalty: 'Varies by state: Rs.5 to Rs.5,000 per month of non-registration + interest',
     actionIfNonCompliant: [
@@ -226,7 +226,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     category: 'Professional Tax',
     requirement: 'PT Return Filing',
     governmentRef: 'State PT Acts - Return filing provisions',
-    officialLink: 'https://mahagst.gov.in (MH) | https://gst.kar.nic.in (KA)',
+    officialLink: 'Your State Commercial Tax / GST department portal (e.g. mahagst.gov.in for Maharashtra, gst.kar.nic.in for Karnataka)',
     deadline: 'Maharashtra: 30th of following month | Karnataka: 20th | Gujarat: 15th | Others vary',
     penalty: 'Late filing fee + interest 1-2% per month + penalty up to 25% of tax due',
     actionIfNonCompliant: [

@@ -7,17 +7,24 @@ import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Download, Mail, FileText, CheckCircle } from 'lucide-react'
 import type { AssessmentType } from '@/lib/analytics'
+import { WhatsAppShareButton } from '@/components/results/whatsapp-share-button'
+import { isValidAssessmentType } from '@/lib/constants/assessment-types'
 
 interface DownloadWithFeedbackProps {
   assessmentId?: string
   assessmentType?: string
   complianceScore?: number // Optional: pass score for better tracking
+  // Owner contact, for "Send on WhatsApp" (asked for when not provided)
+  ownerEmail?: string
+  ownerPhone?: string
 }
 
 export function DownloadWithFeedback({ 
   assessmentId, 
   assessmentType = 'statutory_health',
-  complianceScore 
+  complianceScore,
+  ownerEmail,
+  ownerPhone,
 }: DownloadWithFeedbackProps) {
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackCompleted, setFeedbackCompleted] = useState(false)
@@ -110,15 +117,30 @@ export function DownloadWithFeedback({
     )
   }
 
+  // Every paid report can also be sent on WhatsApp (saved assessments only).
+  const whatsapp = isValidAssessmentType(assessmentType) ? (
+    <div className="mt-3">
+      <WhatsAppShareButton
+        assessmentId={id}
+        assessmentType={assessmentType}
+        email={ownerEmail}
+        defaultPhone={ownerPhone}
+      />
+    </div>
+  ) : null
+
   // After feedback completed (or skipped), show full download buttons
   if (feedbackCompleted) {
     return (
-      <OriginalDownloadButtons 
-        assessmentId={id} 
-        assessmentType={assessmentType} 
-        autoTrigger={pendingAction}
-        complianceScore={score}
-      />
+      <>
+        <OriginalDownloadButtons 
+          assessmentId={id} 
+          assessmentType={assessmentType} 
+          autoTrigger={pendingAction}
+          complianceScore={score}
+        />
+        {whatsapp}
+      </>
     )
   }
 
@@ -163,6 +185,7 @@ export function DownloadWithFeedback({
           Email Report
         </Button>
       </div>
+      {whatsapp}
     </div>
   )
 }

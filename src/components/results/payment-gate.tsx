@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { analytics } from '@/lib/analytics/tracking'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
 import { getSampleReportPath } from '@/lib/pdf/sample-report-paths'
+import { normalizeIndianMobile } from '@/lib/identity/phone'
 
 // Minimal type for the client-side Razorpay Checkout widget
 interface RazorpayOptions {
@@ -17,7 +18,7 @@ interface RazorpayOptions {
   order_id: string
   name: string
   description: string
-  prefill?: { email?: string }
+  prefill?: { email?: string; contact?: string }
   handler: (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) => void
   modal?: { ondismiss?: () => void }
 }
@@ -56,6 +57,9 @@ interface PaymentGateProps {
   // Omitting them falls back to beta (calls onPaid directly).
   assessmentId?: string
   assessmentType?: AssessmentType
+  // Contact details already captured (e.g. Step 0) — prefilled, still editable.
+  defaultEmail?: string
+  defaultPhone?: string
 }
 
 export function PaymentGate({
@@ -71,8 +75,12 @@ export function PaymentGate({
   onPaid,
   assessmentId,
   assessmentType,
+  defaultEmail,
+  defaultPhone,
 }: PaymentGateProps) {
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(defaultEmail ?? '')
+  // Optional: where the detailed report is sent on WhatsApp.
+  const [phone, setPhone] = useState(defaultPhone ?? '')
   const [promoCode, setPromoCode] = useState('')
   const [showPromo, setShowPromo] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -99,6 +107,20 @@ export function PaymentGate({
 
   const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
+  // Blank is fine (WhatsApp is optional); anything typed must be a valid mobile.
+  const normalizedPhone = normalizeIndianMobile(phone)
+  const validateContact = (): boolean => {
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address')
+      return false
+    }
+    if (phone.trim() && !normalizedPhone) {
+      setError('Please enter a valid 10-digit Indian mobile number, or leave it blank')
+      return false
+    }
+    return true
+  }
+
   const handlePayClick = async () => {
     if (!funnel) {
       // Beta stub: not a real checkout, so record a feature-gate hit rather
@@ -108,10 +130,7 @@ export function PaymentGate({
       return
     }
 
-    if (!validateEmail(email)) {
-      setError('Please enter a valid email address')
-      return
-    }
+    if (!validateContact()) return
 
     analytics.checkoutStarted(funnel)
 
@@ -122,7 +141,7 @@ export function PaymentGate({
       const orderRes = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assessmentId, assessmentType, email }),
+        body: JSON.stringify({ assessmentId, assessmentType, email, phone: normalizedPhone ?? undefined }),
       })
       const orderData = await orderRes.json()
 
@@ -144,7 +163,7 @@ export function PaymentGate({
         order_id: orderData.orderId,
         name: 'ComplianceCheck',
         description: 'Compliance Assessment Report',
-        prefill: { email },
+        prefill: normalizedPhone ? { email, contact: `+${normalizedPhone}` } : { email },
         handler: async (response) => {
           try {
             const verifyRes = await fetch('/api/payment/verify', {
@@ -157,6 +176,7 @@ export function PaymentGate({
                 assessmentId,
                 assessmentType,
                 email,
+                phone: normalizedPhone ?? undefined,
               }),
             })
             if (verifyRes.ok) {
@@ -193,10 +213,7 @@ export function PaymentGate({
 
   const handlePromoApply = async () => {
     if (!funnel) return
-    if (!validateEmail(email)) {
-      setError('Please enter a valid email address')
-      return
-    }
+    if (!validateContact()) return
     if (!promoCode.trim()) {
       setError('Please enter a promo code')
       return
@@ -209,7 +226,7 @@ export function PaymentGate({
       const res = await fetch('/api/payment/redeem-waiver', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assessmentId, assessmentType, code: promoCode, email }),
+        body: JSON.stringify({ assessmentId, assessmentType, code: promoCode, email, phone: normalizedPhone ?? undefined }),
       })
       const data = await res.json()
 
@@ -264,11 +281,24 @@ export function PaymentGate({
           <div className="space-y-2">
             <Input
               type="email"
-              placeholder="Your email (for receipt)"
+              placeholder="Email (report + receipt)"
+              aria-label="Email for your report and receipt"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
             />
+            <Input
+              type="tel"
+              inputMode="tel"
+              placeholder="WhatsApp number (optional)"
+              aria-label="WhatsApp number to receive your report (optional)"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              disabled={loading}
+            />
+            <p className="text-xs text-gray-500">
+              Your detailed report is emailed to you. Add a WhatsApp number to send it there in one tap.
+            </p>
           </div>
         )}
 

@@ -49,6 +49,11 @@ import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { POSHProgressSection } from '@/components/assessment/posh-progress-section'
 import { EmailGate } from '@/components/identity/EmailGate'
 import { PaymentGate } from '@/components/results/payment-gate'
+import { AssessmentSummary } from '@/components/results/assessment-summary'
+import { WhatsAppShareButton } from '@/components/results/whatsapp-share-button'
+import { toSummary, withPeerAverages } from '@/lib/payment/summary-data'
+import { usePeerAverages } from '@/lib/benchmarks/use-peer-averages'
+import { POSH_CONFIG } from '@/lib/pdf/report-configs'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
 import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { analytics } from '@/lib/analytics/tracking'
@@ -214,6 +219,7 @@ export default function POSHAssessmentPage() {
   // Persisted POSH assessment id (from posh-submit) — used to key the unified
   // payment entitlement and to gate the emailed report server-side.
   const [poshAssessmentId, setPoshAssessmentId] = useState<string | null>(null)
+  const peerAverages = usePeerAverages(ASSESSMENT_TYPES.POSH, poshAssessmentId)
   
   // Timing
   const [startTime] = useState(Date.now())
@@ -974,7 +980,9 @@ export default function POSHAssessmentPage() {
         body: JSON.stringify({
           email: companyDetails.email,
           assessmentId: poshAssessmentId ?? undefined,
-          pdfBase64,
+          // Saved + paid: let the server render the attachment so it matches
+          // the download (lib/report/paid-report); local fallback sends ours.
+          pdfBase64: poshAssessmentId && isPaymentLive(ASSESSMENT_TYPES.POSH) ? undefined : pdfBase64,
           companyName: companyDetails.companyName,
           score: results.overallScore,
           assessmentType: 'posh',
@@ -1395,6 +1403,47 @@ export default function POSHAssessmentPage() {
       return renderLCCInfo()
     }
 
+    // Paid flow (payment live + saved row): the shared summary page every paid
+    // assessment uses — score, critical gaps, top 3 actions, categories vs
+    // peers, legal references and checkout (which captures email + WhatsApp,
+    // so no separate email OTP step). Unlocks into the full results below.
+    if (isPaymentLive(ASSESSMENT_TYPES.POSH) && poshAssessmentId && !paymentCleared) {
+      const categoryName = (id: string) =>
+        results.categoryScores.find((c) => c.category === id)?.categoryName ?? id
+      const summary = withPeerAverages(
+        toSummary(
+          {
+            overallScore: results.overallScore,
+            categoryScores: results.categoryScores.map((c) => ({
+              category: c.categoryName,
+              key: c.categoryName,
+              score: c.percentage,
+            })),
+            actionItems: results.actionItems.map((a) => ({ ...a, category: categoryName(a.category) })),
+            legislation: POSH_CONFIG.legislation,
+            companyName: companyDetails?.companyName,
+          },
+          {
+            assessmentType: ASSESSMENT_TYPES.POSH,
+            priceINR: Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.POSH].amountPaise / 100),
+          }
+        ),
+        peerAverages
+      )
+      return (
+        <AssessmentSummary
+          assessmentId={poshAssessmentId}
+          summary={summary}
+          defaultEmail={companyDetails?.email}
+          defaultPhone={companyDetails?.phone}
+          onPaid={() => {
+            setGateCleared(true)
+            setPaymentCleared(true)
+          }}
+        />
+      )
+    }
+
     // Determine what the report CTA section should render.
     // Score, breakdown, and top-3 preview are ALWAYS shown so the user
     // sees value from the 20+ minutes they just invested before being asked
@@ -1476,6 +1525,16 @@ export default function POSHAssessmentPage() {
               )}
             </Button>
           </div>
+          {poshAssessmentId && (
+            <div className="mt-3">
+              <WhatsAppShareButton
+                assessmentId={poshAssessmentId}
+                assessmentType={ASSESSMENT_TYPES.POSH}
+                email={companyDetails?.email}
+                defaultPhone={companyDetails?.phone}
+              />
+            </div>
+          )}
           {emailSuccess && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 mt-4">
               <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />

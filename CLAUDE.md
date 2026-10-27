@@ -48,6 +48,7 @@ RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 RAZORPAY_WEBHOOK_SECRET=        # /api/payment/webhook — backstop when the buyer closes the tab before /verify
+REPORT_SHARE_SECRET=            # signs the 30-day report links sent on WhatsApp / in the report email
 ```
 
 ---
@@ -263,14 +264,21 @@ Always `h-3`. Always `aria-label`. Always `[&>div]:bg-green-600`. Both applicabi
 - `<AssessmentHeader>` from `@/components/assessment/assessment-header`
 - `<EmailGate>` from `@/components/identity/EmailGate` (gates results behind email)
 - `<FeedbackForm>` accessible via results page after completion
+- `<AssessmentSummary>` from `@/components/results/assessment-summary` — the one pre-payment summary page for all 7 types (score, critical gaps, top 3 action headlines, category scores vs peers, legal references, checkout). Feed it `UnifiedSummaryData` via `buildSummaryData` / `toSummary` (POSH) / `toAutoDealerSummary`, overlaid with `withPeerAverages`. Never put remediation steps, section-level citations or penalties in the summary.
+- `<WhatsAppShareButton>` from `@/components/results/whatsapp-share-button` on every paid report view (built into `<DownloadWithFeedback>`)
 
 ### PDF Generation
-All assessments use `generateUnifiedReportBlob` from `src/lib/pdf/unified-report-generator.ts` via the `report-data-adapter.ts` adapters. Never create a new standalone PDF generator.
+All assessments use `generateUnifiedReportBlob` from `src/lib/pdf/unified-report-generator.ts` via the `report-data-adapter.ts` adapters (Auto Dealer excepted, §14: `src/lib/pdf/auto-dealer-report.ts`). Never create a new standalone PDF generator. Every report has: action plan (0-30 / 31-90 / 90+ days), a portal link per action, peer-average column, legal references appendix.
+- Every scorable question needs a rule with `governmentRef`, `actionIfNonCompliant` and `officialLink` (a single URL, or the office to approach as text) — `tests/unit/report-adapters.test.ts` enforces this.
+- Server-side PDF for any type: `generatePaidReportPdf` in `src/lib/report/paid-report.ts` (ownership + entitlement checked) — used by the email and share routes.
 
 ### Payments (all 7 assessments are paid and live since 2026-10-27)
 - Price + live switch: `ASSESSMENT_PRICES` in `@/lib/constants/assessment-types`. Copy (home cards, landing pricing cards, how-it-works, schema.org Offers) derives from it — never hardcode a price.
 - Flow: free `<AssessmentSummary>` teaser → `<PaymentGate>` (email + Razorpay or promo) → `/api/payment/create-order` → `/verify` (+ `/webhook` backstop) → `assessment_entitlements` row `paid`/`waived` → full report + gated PDF.
 - `assessment_entitlements` has **no** anon RLS policies on purpose (`20261027000000`): it is the paywall, and only service-role API routes may read or write it. This is the one exception to §8.
+- `<PaymentGate>` asks for email (required) and a WhatsApp number (optional, stored normalised as `91XXXXXXXXXX` in `assessment_entitlements.phone`).
+- Delivery: email via `/api/email/send-report` (server-rendered PDF + share link); WhatsApp via `wa.me` with a signed link from `/api/report/share-link` → `/api/report/share/<token>` (30 days, entitlement re-checked on each open). No WhatsApp Business API.
+- When payment is live, POSH shows `<AssessmentSummary>` → `<PaymentGate>` with no separate OTP step (checkout captures the email), like the `/results/[id]` types. Auto Dealer keeps its OTP gate (§14).
 - Funnel events (`paywall_viewed`, `checkout_started`, `payment_succeeded`, `payment_failed`, `checkout_abandoned`, `promo_redeemed`, `paid_report_viewed`) go through `analytics.*`; revenue events are also captured server-side via `@/lib/analytics/server`.
 
 ### Database Persistence
@@ -394,5 +402,5 @@ src/
 
 ---
 
-*Last updated: 2026-05-07 by Claude Code (Phase 2 — Step 1)*  
+*Last updated: 2026-10-27 by Claude Code (consistent paid reports, summary page, email + WhatsApp delivery)*  
 *This file supersedes any conflicting instructions in other docs.*

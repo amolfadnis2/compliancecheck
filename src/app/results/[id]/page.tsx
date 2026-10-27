@@ -12,10 +12,11 @@ import { LocalStorageResultsPage, type LocalAssessmentData } from '@/components/
 import { GatedResults } from '@/components/results/gated-results'
 import { getGateConfig } from '@/lib/results/gate-config'
 import { ReportViewTracker, PaidReportViewTracker } from '@/components/results/report-view-tracker'
-import { ASSESSMENT_TYPES, isPaymentLive, isValidAssessmentType, getAssessmentDisplayName, ASSESSMENT_PRICES, type AssessmentType } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, isPaymentLive, isValidAssessmentType, type AssessmentType } from '@/lib/constants/assessment-types'
 import { AssessmentSummary } from '@/components/results/assessment-summary'
 import { buildSummaryData } from '@/lib/payment/summary-registry'
-import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
+import { withPeerAverages, type UnifiedSummaryData } from '@/lib/payment/summary-data'
+import { getPeerAverages } from '@/lib/benchmarks/peer-averages'
 import { getEntitlement } from '@/lib/payment/entitlement'
 import { ASSESSMENT_META } from '@/lib/seo/assessment-meta'
 
@@ -160,7 +161,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
     try {
       const status = await getEntitlement(id, effectiveType)
       if (status === 'none') {
-        return <AssessmentSummary assessmentId={id} summary={buildSummary(effectiveType, assessment, id)} />
+        return <AssessmentSummary assessmentId={id} summary={await buildSummary(effectiveType, assessment, id)} />
       }
       return (
         <>
@@ -199,15 +200,21 @@ function toFoodBusinessView(assessment: AssessmentData & { created_at?: string }
   }
 }
 
-// Build the teaser for a given assessment. Statutory Health keeps its bespoke,
-// question-derived builder (preserving the exact numbers on the one live
-// assessment); every other type flows through the shared summary registry which
-// reuses the PDF adapters so teaser numbers match the paid report.
-function buildSummary(assessmentType: AssessmentType, assessment: AssessmentData, id: string): UnifiedSummaryData {
-  if (assessmentType === ASSESSMENT_TYPES.STATUTORY_HEALTH) {
-    return buildStatutoryHealthSummary(assessment)
+// Owner contact for "Send on WhatsApp" on the paid report views. Only reached
+// once the report is paid (the buyer's own details from Step 0).
+function ownerContact(assessment: AssessmentData): { ownerEmail?: string; ownerPhone?: string } {
+  const ud = { ...(assessment.user_details ?? {}), ...(assessment.responses?.userDetails ?? {}) } as Record<string, string | undefined>
+  return {
+    ownerEmail: ud.email ?? ud.contactEmail,
+    ownerPhone: ud.phone ?? ud.phoneNumber ?? ud.contactPhone,
   }
-  return buildSummaryData(assessmentType, {
+}
+
+// Build the teaser for a given assessment. Every type flows through the shared
+// summary registry, which reuses the PDF adapters so the teaser numbers match
+// the paid report, then gets peer benchmarks overlaid.
+async function buildSummary(assessmentType: AssessmentType, assessment: AssessmentData, id: string): Promise<UnifiedSummaryData> {
+  const summary = buildSummaryData(assessmentType, {
     id,
     assessment_type: assessment.assessment_type,
     overall_score: assessment.overall_score,
@@ -215,103 +222,9 @@ function buildSummary(assessmentType: AssessmentType, assessment: AssessmentData
     responses: assessment.responses,
     user_details: assessment.user_details,
   })
-}
-
-// Builds teaser-only summary data for Statutory Health (no remediation text).
-// Full action item text intentionally excluded — only category names are passed
-// so the paywall is real and not just hidden UI.
-const STATUTORY_HEALTH_PRICE_INR = Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.STATUTORY_HEALTH].amountPaise / 100)
-
-function buildStatutoryHealthSummary(assessment: AssessmentData): UnifiedSummaryData {
-  const base = {
-    assessmentType: ASSESSMENT_TYPES.STATUTORY_HEALTH,
-    displayName: getAssessmentDisplayName(ASSESSMENT_TYPES.STATUTORY_HEALTH),
-    priceINR: STATUTORY_HEALTH_PRICE_INR,
-  }
-  try {
-    const responses = (assessment.responses ?? {}) as {
-      userDetails?: { fullName?: string; email?: string; companyName?: string }
-      answers?: Record<string, string>
-    }
-    const answers = responses.answers ?? {}
-
-    const categoryScores = Object.keys(CATEGORY_INFO).map((cat) => {
-      const qs = STATUTORY_HEALTH_QUESTIONS.filter((q) => q.category === cat)
-      let score = 0, max = 0
-      qs.forEach((q) => {
-        max += q.weight
-        const answer = answers[q.id]
-        if (q.complianceAnswer) {
-          if (answer === q.complianceAnswer) score += q.weight
-        } else {
-          score += q.weight
-        }
-      })
-      const percentage = max > 0 ? Math.round((score / max) * 100) : 0
-      const status =
-        percentage >= 70 ? 'compliant' :
-        percentage >= 40 ? 'needs-attention' : 'non-compliant'
-      return {
-        key: cat,
-        name: CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO].name,
-        percentage,
-        status: status as 'compliant' | 'needs-attention' | 'non-compliant',
-      }
-    })
-
-    const overallScore =
-      categoryScores.length > 0
-        ? Math.round(categoryScores.reduce((sum, c) => sum + c.percentage, 0) / categoryScores.length)
-        : (assessment.overall_score ?? 0)
-
-    const riskColor: 'green' | 'amber' | 'red' =
-      overallScore >= 70 ? 'green' : overallScore >= 40 ? 'amber' : 'red'
-    const riskLabel =
-      overallScore >= 70 ? 'Compliant' : overallScore >= 40 ? 'Needs Attention' : 'Non-Compliant'
-
-    const actionItems = assessment.action_items ?? []
-    const gapsCount = actionItems.length
-    const highPriorityCount = actionItems.filter((i) => i.priority === 'high' || i.priority === 'critical').length
-
-    // Only category names — no remediation text reaches the client
-    const topIssues = actionItems.slice(0, 3).map((i) => ({
-      priority: i.priority as string,
-      category: i.category ?? 'General',
-    }))
-
-    let penaltyRange: string
-    if (overallScore >= 70) penaltyRange = "Low exposure — you're in reasonable shape"
-    else if (overallScore >= 40) penaltyRange = 'Estimated Rs.1L-5L in penalties across defaults'
-    else penaltyRange = 'Significant exposure — up to Rs.25L+ across multiple defaults'
-
-    return {
-      ...base,
-      overallScore,
-      riskLabel,
-      riskColor,
-      categoryScores,
-      gapsCount,
-      highPriorityCount,
-      penaltyRange,
-      topIssues,
-      companyName: responses.userDetails?.companyName ?? '',
-    }
-  } catch {
-    // Safe fallback if assessment data has an unexpected shape
-    const score = assessment.overall_score ?? 0
-    return {
-      ...base,
-      overallScore: score,
-      riskLabel: score >= 70 ? 'Compliant' : score >= 40 ? 'Needs Attention' : 'Non-Compliant',
-      riskColor: score >= 70 ? 'green' : score >= 40 ? 'amber' : 'red',
-      categoryScores: [],
-      gapsCount: (assessment.action_items ?? []).length,
-      highPriorityCount: 0,
-      penaltyRange: 'Review your full results to understand your exposure',
-      topIssues: [],
-      companyName: '',
-    }
-  }
+  const industry = (assessment.responses as { userDetails?: { industry?: string } } | undefined)?.userDetails?.industry
+  const peers = await getPeerAverages(assessmentType, { excludeId: id, industry })
+  return withPeerAverages(summary, peers)
 }
 
 // Labour Code Results Component
@@ -451,7 +364,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
         {/* Download & Share */}
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadWithFeedback assessmentType="labour_code" />
+            <DownloadWithFeedback assessmentType="labour_code" {...ownerContact(assessment)} />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 
@@ -673,6 +586,7 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
             <DownloadWithFeedback 
               assessmentId={assessment.id}
               assessmentType={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}
+              {...ownerContact(assessment)}
             />
           </CardContent>
         </Card>
@@ -876,7 +790,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadWithFeedback assessmentType="statutory_health" />
+            <DownloadWithFeedback assessmentType="statutory_health" {...ownerContact(assessment)} />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 
@@ -1103,7 +1017,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
         {/* Download & Share */}
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadWithFeedback assessmentType="dpdp" />
+            <DownloadWithFeedback assessmentType="dpdp" {...ownerContact(assessment)} />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 

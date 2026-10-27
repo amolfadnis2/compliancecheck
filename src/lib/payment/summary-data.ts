@@ -5,8 +5,11 @@
  * `UnifiedSummaryData` shape that every assessment renders through the shared
  * <AssessmentSummary> component. `toSummary()` derives it from any already-scored
  * source — the unified report data (via `buildSummaryData`) or an in-memory
- * computed result (POSH) — deliberately dropping remediation text, citations and
- * deadlines so the teaser can be served publicly without leaking the paid report.
+ * computed result (POSH, Auto Dealer) — deliberately dropping remediation steps,
+ * section-level citations, penalties and deadlines so the teaser can be served
+ * publicly without leaking the paid report. What the teaser does show: the
+ * score, critical gaps, the top three action headlines, category scores against
+ * peers, and the Acts the assessment covers.
  */
 
 import { getAssessmentDisplayName, type AssessmentType } from '@/lib/constants/assessment-types'
@@ -16,6 +19,24 @@ export interface SummaryCategoryScore {
   name: string
   percentage: number
   status: 'compliant' | 'needs-attention' | 'non-compliant'
+  /** Average of other companies' scores in this category, when enough exist. */
+  peerAverage?: number
+}
+
+/** A top action as the teaser shows it: a short headline, no steps or citations. */
+export interface SummaryTopAction {
+  priority: string
+  category: string
+  headline: string
+}
+
+/** Who the peer averages compare against (absent: not enough peers yet). */
+export interface SummaryPeerInfo {
+  sampleSize: number
+  /** 'industry' when compared within the user's industry, else all companies. */
+  scope: 'industry' | 'all'
+  industry?: string
+  overallAverage: number
 }
 
 export interface UnifiedSummaryData {
@@ -27,10 +48,14 @@ export interface UnifiedSummaryData {
   riskColor: 'green' | 'amber' | 'red'
   categoryScores: SummaryCategoryScore[]
   gapsCount: number
+  /** Critical + high priority gaps — shown as "critical gaps". */
   highPriorityCount: number
   penaltyRange: string
-  /** Titles are intentionally excluded — only priority + category reach the client. */
-  topIssues: Array<{ priority: string; category: string }>
+  /** Top three actions as headlines only (no steps, penalties or sections). */
+  topActions: SummaryTopAction[]
+  /** Acts / regulations the assessment covers (names only). */
+  legalReferences: string[]
+  peers?: SummaryPeerInfo
   companyName: string
 }
 
@@ -41,8 +66,9 @@ export interface UnifiedSummaryData {
  */
 export interface SummarySource {
   overallScore: number
-  categoryScores: Array<{ category: string; score: number }>
-  actionItems: Array<{ priority: string; category: string }>
+  categoryScores: Array<{ category: string; score: number; key?: string }>
+  actionItems: Array<{ priority: string; category: string; title?: string }>
+  legislation?: string[]
   companyName?: string
 }
 
@@ -67,6 +93,15 @@ function penaltyRangeFor(score: number): string {
   return 'Significant exposure — up to Rs.25L+ across multiple defaults'
 }
 
+const PRIORITY_RANK: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
+
+const HEADLINE_MAX = 90
+
+function headline(title: string | undefined, category: string): string {
+  const text = (title ?? '').trim().replace(/\?$/, '') || category
+  return text.length > HEADLINE_MAX ? `${text.slice(0, HEADLINE_MAX - 3).trimEnd()}...` : text
+}
+
 function slugify(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'general'
 }
@@ -85,7 +120,7 @@ export function toSummary(
   const categoryScores: SummaryCategoryScore[] = (src.categoryScores ?? []).map((c) => {
     const percentage = Math.round(c.score ?? 0)
     return {
-      key: slugify(c.category ?? 'general'),
+      key: c.key ?? slugify(c.category ?? 'general'),
       name: c.category ?? 'General',
       percentage,
       status: categoryStatus(percentage),
@@ -98,10 +133,15 @@ export function toSummary(
     (i) => i.priority === 'high' || i.priority === 'critical'
   ).length
 
-  const topIssues = actionItems.slice(0, 3).map((i) => ({
-    priority: i.priority ?? 'low',
-    category: i.category ?? 'General',
-  }))
+  // Most urgent first; the sort is stable so source order breaks ties.
+  const topActions: SummaryTopAction[] = [...actionItems]
+    .sort((a, b) => (PRIORITY_RANK[a.priority] ?? 3) - (PRIORITY_RANK[b.priority] ?? 3))
+    .slice(0, 3)
+    .map((i) => ({
+      priority: i.priority ?? 'low',
+      category: i.category ?? 'General',
+      headline: headline(i.title, i.category ?? 'General'),
+    }))
 
   const companyName =
     src.companyName && src.companyName !== 'Not specified' ? src.companyName : ''
@@ -117,7 +157,31 @@ export function toSummary(
     gapsCount,
     highPriorityCount,
     penaltyRange: penaltyRangeFor(overallScore),
-    topIssues,
+    topActions,
+    legalReferences: src.legislation ?? [],
     companyName,
+  }
+}
+
+/**
+ * Overlay peer averages (see `lib/benchmarks/peer-averages`) onto a summary.
+ * Categories are matched by key; with no peer data the summary is unchanged.
+ */
+export function withPeerAverages(
+  summary: UnifiedSummaryData,
+  peers: { sampleSize: number; scope: 'industry' | 'all'; industry?: string; overallAverage: number; categories: Record<string, number> } | null
+): UnifiedSummaryData {
+  if (!peers) return summary
+  return {
+    ...summary,
+    categoryScores: summary.categoryScores.map((c) =>
+      peers.categories[c.key] !== undefined ? { ...c, peerAverage: peers.categories[c.key] } : c
+    ),
+    peers: {
+      sampleSize: peers.sampleSize,
+      scope: peers.scope,
+      industry: peers.industry,
+      overallAverage: peers.overallAverage,
+    },
   }
 }
