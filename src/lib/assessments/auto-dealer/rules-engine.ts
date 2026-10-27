@@ -247,6 +247,43 @@ interface AreaRule {
   triggerReason: string
 }
 
+/**
+ * Where to act on a gap in each compliance area — the regulator's portal, or
+ * (when there is no single national portal) the office to approach. Printed on
+ * every gap in the PDF report and in its action plan.
+ */
+export const AREA_OFFICIAL_LINKS: Record<ComplianceArea, string> = {
+  trade_certificate: 'https://parivahan.gov.in',
+  hsrp: 'https://parivahan.gov.in',
+  bncap_bis: 'https://www.bis.gov.in',
+  misp: 'https://irdai.gov.in',
+  dsa: 'https://www.rbi.org.in',
+  epf: 'https://unifiedportal-emp.epfindia.gov.in',
+  esi: 'https://www.esic.gov.in',
+  professional_tax: 'Your State Commercial Tax / GST department portal',
+  posh: 'https://shebox.wcd.gov.in',
+  maternity: 'https://labour.gov.in',
+  bonus: 'https://labour.gov.in',
+  gratuity: 'https://labour.gov.in',
+  wages: 'https://labour.gov.in',
+  s_and_e: 'Your State Labour Department portal',
+  gst: 'https://www.gst.gov.in',
+  tds_tcs: 'https://www.incometax.gov.in',
+  factories_osh: 'https://labour.gov.in',
+  contract_labour: 'https://labour.gov.in',
+  spcb: 'https://cpcb.nic.in',
+  hazardous_waste: 'https://cpcb.nic.in',
+  peso_fire: 'https://peso.gov.in',
+  battery_waste: 'https://cpcb.nic.in',
+  e_waste: 'https://cpcb.nic.in',
+  elv: 'https://cpcb.nic.in',
+  dpdp: 'https://www.meity.gov.in/data-protection-framework',
+  consumer_protection: 'https://consumerhelpline.gov.in',
+  companies_act: 'https://www.mca.gov.in',
+  csr: 'https://www.mca.gov.in',
+  lease: 'Your State Registration and Stamps department',
+}
+
 const AREA_RULES: AreaRule[] = [
   { area: 'epf',              label: 'EPF (Provident Fund)',            phase: 2, triggerFn: p => employeeGte(p, 20),        triggerReason: '>=20 employees' },
   { area: 'esi',              label: 'ESI',                             phase: 2, triggerFn: p => employeeGte(p, 10),        triggerReason: '>=10 employees' },

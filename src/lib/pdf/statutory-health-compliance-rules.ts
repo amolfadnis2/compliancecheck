@@ -224,3 +224,14 @@ export const STATUTORY_HEALTH_COMPLIANCE_RULES: Record<string, ComplianceRule> =
     actionIfCompliant: 'Well-maintained records. Submit annual return (Form D) to local Labour Commissioner by 31st January each year.'
   }
 };
+
+// Category keys as stored in `category_scores` (see CATEGORY_INFO in
+// statutory-health-questions.ts) -> the labels used on every rule above, so the
+// report's category table and its action items name categories the same way.
+export const STATUTORY_HEALTH_CATEGORY_LABELS: Record<string, string> = {
+  pf: 'Provident Fund',
+  esi: 'Employee State Insurance',
+  pt: 'Professional Tax',
+  gratuity: 'Gratuity',
+  bonus: 'Statutory Bonus',
+};

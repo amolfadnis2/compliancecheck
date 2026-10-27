@@ -13,14 +13,23 @@ import type {
   UnifiedCategoryScore,
   UnifiedActionItem,
   UnifiedCompliantItem,
+  ReportConfig,
 } from './unified-report-generator'
+import type { ComplianceRule } from '@/types/compliance'
 
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from './dpdp-compliance-rules'
 import { FOOD_COMPLIANCE_RULES, FOOD_CATEGORY_LABELS } from './food-business-compliance-rules'
 import { LABOUR_CODE_RULES } from '@/lib/assessments/labour-code-rules'
-import { LABOUR_CODE_CATEGORY_LABELS } from '@/types/compliance'
 import { STATE_WISE_COMPLIANCE_RULES, STATE_WISE_CATEGORY_LABELS } from './state-wise-compliance-rules'
-import { STATUTORY_HEALTH_COMPLIANCE_RULES } from './statutory-health-compliance-rules'
+import {
+  STATUTORY_HEALTH_COMPLIANCE_RULES,
+  STATUTORY_HEALTH_CATEGORY_LABELS,
+} from './statutory-health-compliance-rules'
+import { STATUTORY_HEALTH_QUESTIONS } from '@/lib/assessments/statutory-health-questions'
+import { LABOUR_CODE_QUESTIONS, LABOUR_CODE_CATEGORIES } from '@/lib/assessments/labour-code-questions'
+import { ALL_DPDP_QUESTIONS } from '@/lib/assessments/dpdp-questions'
+import { PHASE2_QUESTIONS } from '@/lib/assessments/state-wise-compliance-questions'
+import { ALL_FOOD_BUSINESS_QUESTIONS } from '@/lib/assessments/food-business-questions'
 import { RISK_LEVEL_INFO } from '@/lib/assessments/posh/posh-compliance-questions'
 import {
   POSH_STATE_LABELS,
@@ -90,365 +99,295 @@ function getPenaltyExposure(score: number, assessmentType: string): string {
   return 'Severe'
 }
 
-function determinePriority(score: number): 'high' | 'medium' | 'low' {
+// ============================================================================
+// SHARED ANSWER -> REPORT BUILDER
+// ============================================================================
+
+/**
+ * How one answer reads against its requirement:
+ * - compliant: requirement met
+ * - partial:   part-way there (e.g. "applied, pending", "sometimes delayed") —
+ *              still an action item, one priority step lower
+ * - unsure:    the respondent did not know — an action item to verify
+ * - gap:       requirement not met
+ * - skip:      not applicable / unanswered / not a compliance question
+ */
+export type AnswerStatus = 'compliant' | 'partial' | 'unsure' | 'gap' | 'skip'
+
+/** The subset of a question definition the adapters need. */
+interface QuestionMeta {
+  id: string
+  text: string
+  type: string
+  category: string
+  options?: Array<string | { value: string; label: string }>
+  complianceAnswer?: string
+  helpText?: string
+}
+
+const NOT_APPLICABLE_PATTERN = /not applicable|not required/i
+
+function optionValues(q: QuestionMeta): string[] {
+  return (q.options ?? []).map((o) => (typeof o === 'string' ? o : o.value))
+}
+
+function indexQuestions(questions: QuestionMeta[]): Record<string, QuestionMeta> {
+  const map: Record<string, QuestionMeta> = {}
+  for (const q of questions) map[q.id] = q
+  return map
+}
+
+/** yes/no: compliant when it matches the compliance answer (default 'yes'). */
+function classifyYesNo(q: QuestionMeta | undefined, answer: string): AnswerStatus {
+  return answer === (q?.complianceAnswer ?? 'yes') ? 'compliant' : 'gap'
+}
+
+// Each classifier mirrors the scoring function of its assessment so the
+// report's action plan agrees with the score the user was shown.
+
+// calculateStatutoryHealthScore — every question is yes/no.
+function classifyStatutoryHealth(q: QuestionMeta | undefined, answer: string): AnswerStatus {
+  return classifyYesNo(q, answer)
+}
+
+// calculateLabourCodeScore — MC: first option compliant, last option is
+// "Not applicable", anything between is a gap.
+function classifyLabourCode(q: QuestionMeta | undefined, answer: string): AnswerStatus {
+  if (q?.type !== 'multiple_choice') return classifyYesNo(q, answer)
+  const opts = optionValues(q)
+  if (answer === opts[0]) return 'compliant'
+  if (answer === opts[opts.length - 1] || NOT_APPLICABLE_PATTERN.test(answer)) return 'skip'
+  return 'gap'
+}
+
+// calculateDPDPScore — MC: the compliance answer scores full, the second
+// option scores half, the rest score zero.
+function classifyDPDP(q: QuestionMeta | undefined, answer: string): AnswerStatus {
+  if (q?.type !== 'multiple_choice') return classifyYesNo(q, answer)
+  if (answer === q.complianceAnswer) return 'compliant'
+  return optionValues(q).indexOf(answer) === 1 ? 'partial' : 'gap'
+}
+
+// calculateComplianceScore (state-wise) — single choice: 'na' counts as met,
+// 'sometimes'/'applied' half credit, 'unsure' half credit.
+function classifyStateWise(q: QuestionMeta | undefined, answer: string): AnswerStatus {
+  if (q?.type === 'single_choice') {
+    if (answer === 'na') return 'skip'
+    if (answer === q.complianceAnswer || answer === 'yes') return 'compliant'
+    if (answer === 'sometimes' || answer === 'applied') return 'partial'
+    if (answer === 'unsure') return 'unsure'
+    return 'gap'
+  }
+  if (q && !q.complianceAnswer) return 'compliant'
+  return classifyYesNo(q, answer)
+}
+
+// calculateFoodBusinessScore — MC: compliance answer full credit, later
+// options scale down linearly; "not required" options are not applicable.
+function classifyFoodBusiness(q: QuestionMeta | undefined, answer: string): AnswerStatus {
+  if (q?.type !== 'multiple_choice') return classifyYesNo(q, answer)
+  if (!q.complianceAnswer || answer === q.complianceAnswer) return 'compliant'
+  if (NOT_APPLICABLE_PATTERN.test(answer)) return 'skip'
+  const opts = optionValues(q)
+  const idx = opts.indexOf(answer)
+  return idx > 0 && idx < opts.length - 1 ? 'partial' : 'gap'
+}
+
+function priorityFromScore(score: number): 'high' | 'medium' | 'low' {
   if (score < 40) return 'high'
   if (score < 70) return 'medium'
   return 'low'
 }
 
-function getCategoryScoresFromRaw(
-  rawScores: AnyRecord,
-  categoryLabels?: Record<string, string>
-): UnifiedCategoryScore[] {
-  return Object.entries(rawScores).map(([key, value]) => {
-    const percentage = typeof value === 'number'
-      ? value
-      : typeof value === 'object' && value !== null
-        ? (value as AnyRecord).percentage ?? 0
-        : 0
-    const questionCount = typeof value === 'object' && value !== null
-      ? (value as AnyRecord).total ?? (value as AnyRecord).questionCount ?? 0
-      : 0
-    const compliantCount = typeof value === 'object' && value !== null
-      ? (value as AnyRecord).passed ?? (value as AnyRecord).compliantCount ?? 0
-      : 0
-
-    const label = categoryLabels?.[key] || key
-    return {
-      category: label,
-      score: Math.round(percentage),
-      status: percentage >= 90 ? 'compliant' as const
-        : percentage >= 70 ? 'needs_attention' as const
-        : 'non_compliant' as const,
-      questionCount: questionCount ?? 0,
-      compliantCount: compliantCount ?? 0,
-    }
-  })
+function lowerPriority(p: 'high' | 'medium' | 'low'): 'high' | 'medium' | 'low' {
+  return p === 'high' ? 'medium' : 'low'
 }
 
+function rawPercentage(value: unknown): number | null {
+  if (typeof value === 'number') return value
+  if (typeof value === 'object' && value !== null) {
+    const v = value as AnyRecord
+    if (typeof v.percentage === 'number') return v.percentage
+    const max = v.maxScore ?? v.max
+    if (typeof v.score === 'number' && typeof max === 'number' && max > 0) {
+      return (v.score / max) * 100
+    }
+  }
+  return null
+}
+
+function categoryStatus(percentage: number): UnifiedCategoryScore['status'] {
+  return percentage >= 90 ? 'compliant' : percentage >= 70 ? 'needs_attention' : 'non_compliant'
+}
+
+const STATUS_NOTE: Partial<Record<AnswerStatus, string>> = {
+  partial: 'Partially in place - complete the remaining steps below.',
+  unsure: 'You were not sure about this one - verify your status, then act on the steps below.',
+}
+
+interface AdapterSpec {
+  assessmentType: string
+  rules: Record<string, ComplianceRule>
+  questions: Record<string, QuestionMeta>
+  categoryLabels: Record<string, string>
+  classify: (q: QuestionMeta | undefined, answer: string) => AnswerStatus
+  config: ReportConfig
+}
+
+/**
+ * Turn stored answers into the unified report. Shared by every DB-backed
+ * assessment so they all produce the same report shape:
+ * - every non-compliant answer with a question definition becomes an action
+ *   item (rule text when a rule exists, the question itself otherwise);
+ * - per-category question/compliant counts are computed from the answers;
+ * - priority comes from the category score, one step lower for partials.
+ */
+function buildReportFromAnswers(
+  data: AssessmentData,
+  answers: AnyRecord,
+  spec: AdapterSpec
+): UnifiedReportData {
+  const overallScore = data.overall_score ?? 0
+  const rawScores: AnyRecord = data.category_scores || {}
+
+  const scoreFor = (key: string): number => rawPercentage(rawScores[key]) ?? overallScore
+  const labelFor = (key: string, rule?: ComplianceRule): string =>
+    spec.categoryLabels[key] ?? spec.categoryLabels[rule?.category ?? ''] ?? rule?.category ?? key
+
+  const counts: Record<string, { total: number; compliant: number }> = {}
+  const actionItems: UnifiedActionItem[] = []
+  const compliantItems: UnifiedCompliantItem[] = []
+
+  for (const [questionId, rawAnswer] of Object.entries(answers)) {
+    if (typeof rawAnswer !== 'string' || rawAnswer === '') continue
+    const q = spec.questions[questionId]
+    const rule = spec.rules[questionId]
+    // Neither a question nor a rule: profile/applicability data, not compliance.
+    if (!q && !rule) continue
+
+    const status = spec.classify(q, rawAnswer)
+    if (status === 'skip') continue
+
+    const key = q?.category ?? questionId.split('_')[0]
+    const category = labelFor(key, rule)
+    counts[key] ??= { total: 0, compliant: 0 }
+    counts[key].total++
+
+    const title = rule?.requirement ?? (q?.text ?? questionId).replace(/\?$/, '')
+    if (status === 'compliant') {
+      counts[key].compliant++
+      compliantItems.push({ questionId, category, text: title })
+      continue
+    }
+
+    const basePriority = priorityFromScore(scoreFor(key))
+    const note = STATUS_NOTE[status]
+    const remediation = rule?.actionIfNonCompliant ?? (q?.helpText ? [q.helpText] : [])
+    actionItems.push({
+      priority: status === 'partial' ? lowerPriority(basePriority) : basePriority,
+      category,
+      questionId,
+      title,
+      description: [note, rule?.governmentRef ?? q?.text].filter(Boolean).join(' '),
+      remediation,
+      governmentRef: rule?.governmentRef,
+      officialLink: rule?.officialLink,
+      penalty: rule?.penalty,
+      deadline: rule?.deadline,
+    })
+  }
+
+  const priorityRank = { high: 0, medium: 1, low: 2 }
+  actionItems.sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
+
+  const categoryScores: UnifiedCategoryScore[] = Object.entries(rawScores).map(([key, value]) => {
+    const score = Math.round(rawPercentage(value) ?? 0)
+    return {
+      category: labelFor(key),
+      score,
+      status: categoryStatus(score),
+      questionCount: counts[key]?.total ?? 0,
+      compliantCount: counts[key]?.compliant ?? 0,
+    }
+  })
+
+  return {
+    assessmentId: data.id || 'N/A',
+    overallScore,
+    riskLevel: getRiskLevel(overallScore),
+    penaltyExposure: getPenaltyExposure(overallScore, spec.assessmentType),
+    categoryScores,
+    actionItems,
+    compliantItems,
+    userDetails: extractUserDetails(data),
+    config: spec.config,
+  }
+}
+
+function getAnswers(data: AssessmentData): AnyRecord {
+  const responses = data.responses as AnyRecord | undefined
+  return responses?.main || responses?.answers || responses || {}
+}
+
+const labelsFrom = (entries: Array<{ id: string; name: string }>): Record<string, string> =>
+  Object.fromEntries(entries.map((e) => [e.id, e.name]))
+
 // ============================================================================
-// STATUTORY HEALTH ADAPTER
+// PER-ASSESSMENT ADAPTERS
 // ============================================================================
 
 export function adaptStatutoryHealth(data: AssessmentData): UnifiedReportData {
-  const answers = data.responses?.answers || data.responses || {}
-  const overallScore = data.overall_score ?? 50
-  const userDetails = extractUserDetails(data)
-  const categoryScores = getCategoryScoresFromRaw(data.category_scores || {})
-
-  const actionItems: UnifiedActionItem[] = []
-  const compliantItems: UnifiedCompliantItem[] = []
-
-  Object.entries(answers).forEach(([questionId, answer]) => {
-    const rule = STATUTORY_HEALTH_COMPLIANCE_RULES[questionId]
-    if (!rule) return
-
-    if (answer === 'yes') {
-      compliantItems.push({
-        questionId,
-        category: rule.category ?? '',
-        text: rule.requirement,
-      })
-    } else if (answer === 'no') {
-      actionItems.push({
-        priority: determinePriority(overallScore),
-        category: rule.category ?? '',
-        questionId,
-        title: rule.requirement,
-        description: rule.governmentRef,
-        remediation: rule.actionIfNonCompliant,
-        governmentRef: rule.governmentRef,
-        officialLink: rule.officialLink,
-        penalty: rule.penalty,
-        deadline: rule.deadline,
-      })
-    }
-  })
-
-  // Assign priorities based on category scores
-  assignPrioritiesFromCategoryScores(actionItems, data.category_scores || {})
-
-  return {
-    assessmentId: data.id || 'N/A',
-    overallScore,
-    riskLevel: getRiskLevel(overallScore),
-    penaltyExposure: getPenaltyExposure(overallScore, 'statutory_health'),
-    categoryScores,
-    actionItems,
-    compliantItems,
-    userDetails,
+  return buildReportFromAnswers(data, getAnswers(data), {
+    assessmentType: 'statutory_health',
+    rules: STATUTORY_HEALTH_COMPLIANCE_RULES,
+    questions: indexQuestions(STATUTORY_HEALTH_QUESTIONS),
+    categoryLabels: STATUTORY_HEALTH_CATEGORY_LABELS,
+    classify: classifyStatutoryHealth,
     config: STATUTORY_HEALTH_CONFIG,
-  }
+  })
 }
-
-// ============================================================================
-// LABOUR CODE ADAPTER
-// ============================================================================
 
 export function adaptLabourCode(data: AssessmentData): UnifiedReportData {
-  const answers = data.responses?.answers || data.responses || {}
-  const overallScore = data.overall_score ?? 50
-  const userDetails = extractUserDetails(data)
-  const categoryScores = getCategoryScoresFromRaw(
-    data.category_scores || {},
-    LABOUR_CODE_CATEGORY_LABELS
-  )
-
-  const actionItems: UnifiedActionItem[] = []
-  const compliantItems: UnifiedCompliantItem[] = []
-
-  Object.entries(answers).forEach(([questionId, answer]) => {
-    const rule = LABOUR_CODE_RULES[questionId]
-    if (!rule) return
-
-    const category = rule.category || LABOUR_CODE_CATEGORY_LABELS[questionId.split('_')[0]] || questionId.split('_')[0]
-
-    if (answer === 'yes') {
-      compliantItems.push({
-        questionId,
-        category,
-        text: rule.requirement,
-      })
-    } else if (answer === 'no') {
-      actionItems.push({
-        priority: determinePriority(overallScore),
-        category,
-        questionId,
-        title: rule.requirement,
-        description: rule.governmentRef,
-        remediation: rule.actionIfNonCompliant,
-        governmentRef: rule.governmentRef,
-        officialLink: rule.officialLink,
-        penalty: rule.penalty,
-        deadline: rule.deadline,
-      })
-    }
-  })
-
-  assignPrioritiesFromCategoryScores(actionItems, data.category_scores || {})
-
-  return {
-    assessmentId: data.id || 'N/A',
-    overallScore,
-    riskLevel: getRiskLevel(overallScore),
-    penaltyExposure: getPenaltyExposure(overallScore, 'labour_code'),
-    categoryScores,
-    actionItems,
-    compliantItems,
-    userDetails,
+  return buildReportFromAnswers(data, getAnswers(data), {
+    assessmentType: 'labour_code',
+    rules: LABOUR_CODE_RULES,
+    questions: indexQuestions(LABOUR_CODE_QUESTIONS),
+    categoryLabels: labelsFrom(LABOUR_CODE_CATEGORIES),
+    classify: classifyLabourCode,
     config: LABOUR_CODE_CONFIG,
-  }
+  })
 }
-
-// ============================================================================
-// DPDP ADAPTER
-// ============================================================================
 
 export function adaptDPDP(data: AssessmentData): UnifiedReportData {
-  const responsesWithMain = data.responses as AnyRecord | undefined
-  const answers = responsesWithMain?.main || data.responses?.answers || data.responses || {}
-  const overallScore = data.overall_score ?? 50
-  const userDetails = extractUserDetails(data)
-  const categoryScores = getCategoryScoresFromRaw(
-    data.category_scores || {},
-    DPDP_CATEGORY_LABELS
-  )
-
-  const actionItems: UnifiedActionItem[] = []
-  const compliantItems: UnifiedCompliantItem[] = []
-
-  Object.entries(answers).forEach(([questionId, answer]) => {
-    const rule = DPDP_COMPLIANCE_RULES[questionId]
-    if (!rule) return
-
-    if (answer === 'yes') {
-      compliantItems.push({
-        questionId,
-        category: rule.category ?? '',
-        text: rule.requirement,
-      })
-    } else if (answer === 'no') {
-      actionItems.push({
-        priority: determinePriority(overallScore),
-        category: rule.category ?? '',
-        questionId,
-        title: rule.requirement,
-        description: rule.governmentRef,
-        remediation: rule.actionIfNonCompliant,
-        governmentRef: rule.governmentRef,
-        officialLink: rule.officialLink,
-        penalty: rule.penalty,
-        deadline: rule.deadline,
-      })
-    }
-  })
-
-  assignPrioritiesFromCategoryScores(actionItems, data.category_scores || {})
-
-  return {
-    assessmentId: data.id || 'N/A',
-    overallScore,
-    riskLevel: getRiskLevel(overallScore),
-    penaltyExposure: getPenaltyExposure(overallScore, 'dpdp'),
-    categoryScores,
-    actionItems,
-    compliantItems,
-    userDetails,
+  return buildReportFromAnswers(data, getAnswers(data), {
+    assessmentType: 'dpdp',
+    rules: DPDP_COMPLIANCE_RULES,
+    questions: indexQuestions(ALL_DPDP_QUESTIONS.map((q) => ({ ...q, category: q.phase }))),
+    categoryLabels: DPDP_CATEGORY_LABELS,
+    classify: classifyDPDP,
     config: DPDP_CONFIG,
-  }
+  })
 }
-
-// ============================================================================
-// STATE-WISE COMPLIANCE ADAPTER
-// ============================================================================
 
 export function adaptStateWise(data: AssessmentData): UnifiedReportData {
-  const responsesWithMain = data.responses as AnyRecord | undefined
-  const answers = responsesWithMain?.main || data.responses?.answers || data.responses || {}
-  const overallScore = data.overall_score ?? 50
-  const userDetails = extractUserDetails(data)
-  const categoryScores = getCategoryScoresFromRaw(
-    data.category_scores || {},
-    STATE_WISE_CATEGORY_LABELS
-  )
-
-  const actionItems: UnifiedActionItem[] = []
-  const compliantItems: UnifiedCompliantItem[] = []
-
-  Object.entries(answers).forEach(([questionId, answer]) => {
-    const rule = STATE_WISE_COMPLIANCE_RULES[questionId]
-    if (!rule) return
-
-    if (answer === 'yes') {
-      compliantItems.push({
-        questionId,
-        category: rule.category ?? '',
-        text: rule.requirement,
-      })
-    } else if (answer === 'no') {
-      actionItems.push({
-        priority: determinePriority(overallScore),
-        category: rule.category ?? '',
-        questionId,
-        title: rule.requirement,
-        description: rule.governmentRef,
-        remediation: rule.actionIfNonCompliant,
-        governmentRef: rule.governmentRef,
-        officialLink: rule.officialLink,
-        penalty: rule.penalty,
-        deadline: rule.deadline,
-      })
-    }
-  })
-
-  assignPrioritiesFromCategoryScores(actionItems, data.category_scores || {})
-
-  return {
-    assessmentId: data.id || 'N/A',
-    overallScore,
-    riskLevel: getRiskLevel(overallScore),
-    penaltyExposure: getPenaltyExposure(overallScore, 'state_wise'),
-    categoryScores,
-    actionItems,
-    compliantItems,
-    userDetails,
+  return buildReportFromAnswers(data, getAnswers(data), {
+    assessmentType: 'state_wise',
+    rules: STATE_WISE_COMPLIANCE_RULES,
+    questions: indexQuestions(PHASE2_QUESTIONS),
+    categoryLabels: STATE_WISE_CATEGORY_LABELS,
+    classify: classifyStateWise,
     config: STATE_WISE_CONFIG,
-  }
+  })
 }
-
-// ============================================================================
-// FOOD BUSINESS ADAPTER
-// ============================================================================
 
 export function adaptFoodBusiness(data: AssessmentData): UnifiedReportData {
-  const responsesWithMain = data.responses as AnyRecord | undefined
-  const answers = responsesWithMain?.main || data.responses?.answers || data.responses || {}
-  const overallScore = data.overall_score ?? 50
-  const userDetails = extractUserDetails(data)
-  const categoryScores = getCategoryScoresFromRaw(
-    data.category_scores || {},
-    FOOD_CATEGORY_LABELS
-  )
-
-  const actionItems: UnifiedActionItem[] = []
-  const compliantItems: UnifiedCompliantItem[] = []
-
-  Object.entries(answers).forEach(([questionId, answer]) => {
-    const rule = FOOD_COMPLIANCE_RULES[questionId]
-    if (!rule) return
-
-    if (answer === 'yes') {
-      compliantItems.push({
-        questionId,
-        category: rule.category || FOOD_CATEGORY_LABELS[questionId.split('_')[0]] || 'General',
-        text: rule.requirement,
-      })
-    } else if (answer === 'no') {
-      const category = rule.category || FOOD_CATEGORY_LABELS[questionId.split('_')[0]] || 'General'
-      actionItems.push({
-        priority: determinePriority(overallScore),
-        category,
-        questionId,
-        title: rule.requirement,
-        description: rule.governmentRef,
-        remediation: rule.actionIfNonCompliant,
-        governmentRef: rule.governmentRef,
-        officialLink: rule.officialLink,
-        penalty: rule.penalty,
-        deadline: rule.deadline,
-      })
-    }
-  })
-
-  assignPrioritiesFromCategoryScores(actionItems, data.category_scores || {})
-
-  return {
-    assessmentId: data.id || 'N/A',
-    overallScore,
-    riskLevel: getRiskLevel(overallScore),
-    penaltyExposure: getPenaltyExposure(overallScore, 'food_business'),
-    categoryScores,
-    actionItems,
-    compliantItems,
-    userDetails,
+  return buildReportFromAnswers(data, getAnswers(data), {
+    assessmentType: 'food_business',
+    rules: FOOD_COMPLIANCE_RULES,
+    questions: indexQuestions(ALL_FOOD_BUSINESS_QUESTIONS),
+    categoryLabels: FOOD_CATEGORY_LABELS,
+    classify: classifyFoodBusiness,
     config: FOOD_BUSINESS_CONFIG,
-  }
-}
-
-// ============================================================================
-// PRIORITY ASSIGNMENT HELPER
-// ============================================================================
-
-/**
- * Refine action item priorities based on per-category scores.
- * Items in categories with low scores get higher priority.
- */
-function assignPrioritiesFromCategoryScores(
-  items: UnifiedActionItem[],
-  categoryScores: AnyRecord
-): void {
-  // Build a map of category key -> score percentage
-  const scoreMap: Record<string, number> = {}
-  Object.entries(categoryScores).forEach(([key, value]) => {
-    const pct = typeof value === 'number'
-      ? value
-      : typeof value === 'object' && value !== null
-        ? (value as AnyRecord).percentage ?? 0
-        : 0
-    scoreMap[key] = pct
-  })
-
-  // For each action item, try to find its category score and assign priority
-  items.forEach((item) => {
-    // Try matching by questionId prefix or category name
-    const prefix = item.questionId.split('_')[0]
-    const catScore = scoreMap[prefix] ?? scoreMap[item.category.toLowerCase()] ?? null
-
-    if (catScore !== null) {
-      if (catScore < 40) item.priority = 'high'
-      else if (catScore < 70) item.priority = 'medium'
-      else item.priority = 'low'
-    }
   })
 }
 
