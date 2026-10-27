@@ -9,6 +9,7 @@ import {
 } from '@/lib/pdf/auto-dealer-report'
 import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { getEntitlement } from '@/lib/payment/entitlement'
+import { getPeerAverages } from '@/lib/benchmarks/peer-averages'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _supabase: any = null
@@ -126,7 +127,8 @@ export async function GET(
       return NextResponse.json({ error: 'Payment required to download this report' }, { status: 402 })
     }
 
-    const pdfData = generateAutoDealerPdfForRow(a)
+    const peers = await getPeerAverages(ASSESSMENT_TYPES.AUTO_DEALER, { excludeId: assessmentId })
+    const pdfData = generateAutoDealerPdfForRow(a, peers?.categories)
 
     // Mark PDF generated
     await supabase

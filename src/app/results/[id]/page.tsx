@@ -200,6 +200,16 @@ function toFoodBusinessView(assessment: AssessmentData & { created_at?: string }
   }
 }
 
+// Owner contact for "Send on WhatsApp" on the paid report views. Only reached
+// once the report is paid (the buyer's own details from Step 0).
+function ownerContact(assessment: AssessmentData): { ownerEmail?: string; ownerPhone?: string } {
+  const ud = { ...(assessment.user_details ?? {}), ...(assessment.responses?.userDetails ?? {}) } as Record<string, string | undefined>
+  return {
+    ownerEmail: ud.email ?? ud.contactEmail,
+    ownerPhone: ud.phone ?? ud.phoneNumber ?? ud.contactPhone,
+  }
+}
+
 // Build the teaser for a given assessment. Every type flows through the shared
 // summary registry, which reuses the PDF adapters so the teaser numbers match
 // the paid report, then gets peer benchmarks overlaid.
@@ -354,7 +364,7 @@ function LabourCodeResultsView({ assessment }: { assessment: AssessmentData }) {
         {/* Download & Share */}
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadWithFeedback assessmentType="labour_code" />
+            <DownloadWithFeedback assessmentType="labour_code" {...ownerContact(assessment)} />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 
@@ -576,6 +586,7 @@ function StateWiseResultsView({ assessment }: { assessment: AssessmentData }) {
             <DownloadWithFeedback 
               assessmentId={assessment.id}
               assessmentType={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE}
+              {...ownerContact(assessment)}
             />
           </CardContent>
         </Card>
@@ -779,7 +790,7 @@ function StatutoryHealthResultsView({ assessment }: { assessment: AssessmentData
 
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadWithFeedback assessmentType="statutory_health" />
+            <DownloadWithFeedback assessmentType="statutory_health" {...ownerContact(assessment)} />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 
@@ -1006,7 +1017,7 @@ function DPDPResultsView({ assessment }: { assessment: AssessmentData }) {
         {/* Download & Share */}
         <Card className="print:hidden">
           <CardContent className="pt-6">
-            <DownloadWithFeedback assessmentType="dpdp" />
+            <DownloadWithFeedback assessmentType="dpdp" {...ownerContact(assessment)} />
             <p className="text-center text-sm text-gray-500 mt-4">
               Report generated on {new Date().toLocaleDateString('en-IN', { 
                 day: 'numeric', month: 'long', year: 'numeric' 

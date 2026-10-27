@@ -106,6 +106,14 @@ export interface ReportEmailedProps {
   user_tier: UserTier;
 }
 
+export interface ReportSharedProps {
+  assessment_type: AssessmentType;
+  channel: 'whatsapp';
+  assessment_id?: string;
+  /** Whether a number was known, so WhatsApp opened straight to that chat. */
+  has_phone: boolean;
+}
+
 export interface DocumentGeneratedProps {
   document_type: 'policy' | 'letter' | 'certificate' | 'consent_form';
   template_id: string;
@@ -246,6 +254,7 @@ export const ANALYTICS_EVENTS = {
   REPORT_VIEWED: 'report_viewed',
   REPORT_DOWNLOADED: 'report_downloaded',
   REPORT_EMAILED: 'report_emailed',
+  REPORT_SHARED: 'report_shared',
   DOCUMENT_GENERATED: 'document_generated',
   
   // Conversion funnel

@@ -17,6 +17,7 @@ import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ASSESSMENT_TYPES, type AssessmentType } from '@/lib/constants/assessment-types'
 import { assessmentTableFor } from '@/lib/payment/assessment-table'
+import type { UnifiedReportData } from '@/lib/pdf/unified-report-generator'
 
 export const MIN_PEERS = 20
 const MAX_ROWS = 2000
@@ -177,5 +178,16 @@ export async function getPeerAverages(
   } catch (err) {
     console.error('[benchmarks] peer averages unavailable:', err)
     return null
+  }
+}
+
+/** Fill the PDF's "Peer avg" column (matched on category key). */
+export function applyPeersToReport(report: UnifiedReportData, peers: PeerAverages | null): UnifiedReportData {
+  if (!peers) return report
+  return {
+    ...report,
+    categoryScores: report.categoryScores.map((c) =>
+      c.key !== undefined && peers.categories[c.key] !== undefined ? { ...c, peerAverage: peers.categories[c.key] } : c
+    ),
   }
 }

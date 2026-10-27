@@ -16,6 +16,7 @@ import { adaptPOSHRow } from './report-data-adapter'
 import { generateUnifiedReportBytes } from './unified-report-generator'
 import { getEntitlement } from '@/lib/payment/entitlement'
 import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
+import { applyPeersToReport, getPeerAverages } from '@/lib/benchmarks/peer-averages'
 
 export interface GeneratedPoshPdf {
   bytes: Uint8Array
@@ -58,7 +59,8 @@ export async function generatePoshAssessmentPdf(
     }
   }
 
-  const reportData = adaptPOSHRow(row)
+  const peers = await getPeerAverages(ASSESSMENT_TYPES.POSH, { excludeId: id })
+  const reportData = applyPeersToReport(adaptPOSHRow(row), peers)
   const bytes = generateUnifiedReportBytes(reportData)
 
   const dateStr = new Date().toISOString().split('T')[0]

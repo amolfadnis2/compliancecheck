@@ -70,3 +70,28 @@ export async function isEntitled(
 ): Promise<boolean> {
   return (await getEntitlement(assessmentId, assessmentType)) !== 'none'
 }
+
+/**
+ * Contact details the buyer gave at checkout (email always, WhatsApp number
+ * optional) — used to deliver the paid report. Null when not paid/waived.
+ */
+export async function getEntitlementContact(
+  assessmentId: string,
+  assessmentType: string
+): Promise<{ email: string | null; phone: string | null } | null> {
+  try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null
+    const { data, error } = await noStoreAdminClient()
+      .from('assessment_entitlements')
+      .select('email, phone')
+      .eq('assessment_id', assessmentId)
+      .eq('assessment_type', assessmentType)
+      .in('status', ['paid', 'waived'])
+      .maybeSingle()
+    if (error || !data) return null
+    return { email: data.email ?? null, phone: data.phone ?? null }
+  } catch (err) {
+    console.error('[entitlement] contact lookup failed:', err)
+    return null
+  }
+}

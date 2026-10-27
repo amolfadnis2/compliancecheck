@@ -1076,7 +1076,12 @@ export function LocalStorageResultsPage({ id, assessmentType, initialData }: Loc
                 </ul>
               </div>
               <div className="w-full md:w-auto">
-                <DownloadWithFeedback assessmentId={id} assessmentType={assessmentType} />
+                <DownloadWithFeedback
+                  assessmentId={id}
+                  assessmentType={assessmentType}
+                  ownerEmail={userDetails.email || userDetails.contactEmail}
+                  ownerPhone={userDetails.phone || userDetails.phoneNumber}
+                />
               </div>
             </div>
           </CardContent>

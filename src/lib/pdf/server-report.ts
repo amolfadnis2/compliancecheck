@@ -17,6 +17,7 @@ import type { AssessmentData } from './report-data-adapter'
 import { generateUnifiedReportBytes } from './unified-report-generator'
 import { getEntitlement } from '@/lib/payment/entitlement'
 import { isPaymentLive, isValidAssessmentType } from '@/lib/constants/assessment-types'
+import { applyPeersToReport, getPeerAverages } from '@/lib/benchmarks/peer-averages'
 
 export interface GeneratedAssessmentPdf {
   bytes: Uint8Array
@@ -126,7 +127,10 @@ export async function generateAssessmentPdf(
     }
   }
 
-  const reportData = buildReportData(assessmentType, data)
+  const peers = isValidAssessmentType(assessmentType)
+    ? await getPeerAverages(assessmentType, { excludeId: id, industry: data.userDetails?.industry })
+    : null
+  const reportData = applyPeersToReport(buildReportData(assessmentType, data), peers)
   const bytes = generateUnifiedReportBytes(reportData)
 
   const dateStr = new Date().toISOString().split('T')[0]

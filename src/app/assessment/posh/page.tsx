@@ -50,6 +50,7 @@ import { POSHProgressSection } from '@/components/assessment/posh-progress-secti
 import { EmailGate } from '@/components/identity/EmailGate'
 import { PaymentGate } from '@/components/results/payment-gate'
 import { AssessmentSummary } from '@/components/results/assessment-summary'
+import { WhatsAppShareButton } from '@/components/results/whatsapp-share-button'
 import { toSummary, withPeerAverages } from '@/lib/payment/summary-data'
 import { usePeerAverages } from '@/lib/benchmarks/use-peer-averages'
 import { POSH_CONFIG } from '@/lib/pdf/report-configs'
@@ -979,7 +980,9 @@ export default function POSHAssessmentPage() {
         body: JSON.stringify({
           email: companyDetails.email,
           assessmentId: poshAssessmentId ?? undefined,
-          pdfBase64,
+          // Saved + paid: let the server render the attachment so it matches
+          // the download (lib/report/paid-report); local fallback sends ours.
+          pdfBase64: poshAssessmentId && isPaymentLive(ASSESSMENT_TYPES.POSH) ? undefined : pdfBase64,
           companyName: companyDetails.companyName,
           score: results.overallScore,
           assessmentType: 'posh',
@@ -1522,6 +1525,16 @@ export default function POSHAssessmentPage() {
               )}
             </Button>
           </div>
+          {poshAssessmentId && (
+            <div className="mt-3">
+              <WhatsAppShareButton
+                assessmentId={poshAssessmentId}
+                assessmentType={ASSESSMENT_TYPES.POSH}
+                email={companyDetails?.email}
+                defaultPhone={companyDetails?.phone}
+              />
+            </div>
+          )}
           {emailSuccess && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 mt-4">
               <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />

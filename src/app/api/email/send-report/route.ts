@@ -372,6 +372,20 @@ function generateEmailHtml(
   `
 }
 
+// Add an "open / forward your report" block just before the closing </body>.
+function withShareLink(html: string, shareUrl: string | undefined): string {
+  if (!shareUrl) return html
+  const block = `
+      <div style="max-width: 600px; margin: 20px auto 0; padding: 16px 20px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; font-family: Arial, sans-serif;">
+        <p style="margin: 0 0 8px; color: #1E3A8A; font-size: 14px; font-weight: bold;">Your detailed report is attached.</p>
+        <p style="margin: 0 0 12px; color: #1E40AF; font-size: 13px;">
+          Need to share it with your CA or team? This secure link opens the same PDF for the next 30 days.
+        </p>
+        <a href="${shareUrl}" style="display: inline-block; background: #1D4ED8; color: #ffffff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 14px;">Open report</a>
+      </div>`
+  return html.includes('</body>') ? html.replace('</body>', `${block}\n</body>`) : html + block
+}
+
 // Simple in-memory rate limit: max 3 sends per assessmentId per hour
 const _sendRateLimit = new Map<string, number[]>()
 function checkSendRateLimit(assessmentId: string): boolean {
@@ -464,18 +478,34 @@ export async function POST(request: NextRequest) {
     let generatedFilename: string | null = null
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(assessmentId)
+    let shareUrl: string | undefined
     if (!attachmentBase64 && isUuid) {
-      const { generateAssessmentPdf } = await import('@/lib/pdf/server-report')
-      const gen = await generateAssessmentPdf(assessmentId, email)
+      // Every saved assessment (all seven types) renders its PDF server-side
+      // through one entry point, so the attachment matches the download.
+      let gen
+      if (isValidAssessmentType(assessmentType)) {
+        const { generatePaidReportPdf } = await import('@/lib/report/paid-report')
+        gen = await generatePaidReportPdf(assessmentType, assessmentId, email)
+      } else {
+        const { generateAssessmentPdf } = await import('@/lib/pdf/server-report')
+        gen = await generateAssessmentPdf(assessmentId, email)
+      }
       if ('error' in gen) {
         const statusCode = gen.error === 'not_found' ? 404 : gen.error === 'payment_required' ? 402 : 403
         return NextResponse.json({ success: false, error: gen.error }, { status: statusCode })
       }
       attachmentBase64 = Buffer.from(gen.bytes).toString('base64')
-      resolvedAssessmentType = resolvedAssessmentType || gen.assessmentType
+      resolvedAssessmentType = resolvedAssessmentType || ('assessmentType' in gen ? String(gen.assessmentType) : '')
       resolvedCompanyName = resolvedCompanyName || gen.companyName
       resolvedScore = score ?? gen.score
       generatedFilename = gen.filename
+
+      // A link to open or forward the report (e.g. to a CA) without the
+      // attachment. Optional: skipped if no signing secret is configured.
+      if (isValidAssessmentType(resolvedAssessmentType) && process.env.REPORT_SHARE_SECRET) {
+        const { signReportToken, reportShareUrl } = await import('@/lib/report/share-token')
+        shareUrl = reportShareUrl(signReportToken({ id: assessmentId, type: resolvedAssessmentType }), request.nextUrl.origin)
+      }
     }
 
     // Validate required fields
@@ -536,7 +566,10 @@ export async function POST(request: NextRequest) {
       from: process.env.EMAIL_FROM || 'ComplianceCheck <noreply@compliancecheck.co.in>',
       to: email,
       subject: `Your ${reportLabel} Report - ${resolvedCompanyName || 'Assessment Complete'}`,
-      html: generateEmailHtml(resolvedAssessmentType, reportLabel, resolvedCompanyName, resolvedScore, status, statusColour),
+      html: withShareLink(
+        generateEmailHtml(resolvedAssessmentType, reportLabel, resolvedCompanyName, resolvedScore, status, statusColour),
+        shareUrl
+      ),
       attachments: [
         {
           filename: filename,

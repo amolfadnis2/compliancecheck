@@ -69,7 +69,10 @@ export function computeAutoDealerResults(row: Pick<AutoDealerRow, 'responses' | 
 }
 
 /** Build the report PDF for a stored row. */
-export function generateAutoDealerPdfForRow(row: AutoDealerRow): Uint8Array {
+export function generateAutoDealerPdfForRow(
+  row: AutoDealerRow,
+  peerAverages?: Record<string, number>
+): Uint8Array {
   const r = computeAutoDealerResults(row)
   return generateAutoDealerPdf({
     assessmentId: row.id,
@@ -79,6 +82,7 @@ export function generateAutoDealerPdfForRow(row: AutoDealerRow): Uint8Array {
     labourRegime: row.labour_regime,
     profile: r.profile,
     phaseScores: r.phaseScores,
+    peerAverages,
     overallScore: r.overallScore,
     gapAnalysis: r.gapAnalysis,
     applicabilityChecks: r.applicabilityChecks,
@@ -207,6 +211,8 @@ export interface AutoDealerReportData {
   labourRegime: string
   profile: ApplicabilityProfile
   phaseScores: PhaseScore[]
+  /** Peer average score per phase (key: phase number), when enough peers exist. */
+  peerAverages?: Record<string, number>
   overallScore: OverallScore
   gapAnalysis: GapItem[]
   applicabilityChecks: ApplicabilityCheckResult[]
@@ -373,7 +379,8 @@ export function generateAutoDealerPdf(data: AutoDealerReportData): Uint8Array {
   doc.setTextColor(...C.white)
   doc.text('Phase', ML + 2, y + 5)
   doc.text('Score', ML + 88, y + 5)
-  doc.text('Compliant', ML + 112, y + 5)
+  doc.text('Peer avg', ML + 104, y + 5)
+  doc.text('Compliant', ML + 124, y + 5)
   doc.text('Status', ML + 148, y + 5)
   y += 9
 
@@ -395,7 +402,9 @@ export function generateAutoDealerPdf(data: AutoDealerReportData): Uint8Array {
     const nameLines = doc.splitTextToSize(phaseName, 82)
     doc.text(nameLines, ML + 2, y)
     doc.text(`${ps.score}%`, ML + 88, y)
-    doc.text(`${ps.compliantCount}/${ps.questionCount}`, ML + 112, y)
+    const peer = data.peerAverages?.[String(ps.phase)]
+    doc.text(peer !== undefined ? `${peer}%` : '-', ML + 104, y)
+    doc.text(`${ps.compliantCount}/${ps.questionCount}`, ML + 124, y)
 
     // Colored status badge
     doc.setFillColor(...sc2)

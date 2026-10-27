@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { analytics } from '@/lib/analytics/tracking'
 import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { AssessmentSummary } from '@/components/results/assessment-summary'
+import { WhatsAppShareButton } from '@/components/results/whatsapp-share-button'
 import { toAutoDealerSummary } from '@/lib/payment/auto-dealer-summary'
 import { withPeerAverages } from '@/lib/payment/summary-data'
 import { usePeerAverages } from '@/lib/benchmarks/use-peer-averages'
@@ -568,24 +569,17 @@ export default function ResultsPage() {
     setIsEmailing(true)
     setEmailSuccess(null)
     try {
-      const res = await fetch(`/api/assessment/auto-dealer/${assessmentId}/report.pdf`)
-      if (!res.ok) throw new Error('Failed to generate PDF')
-      const blob = await res.blob()
-      const pdfBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onloadend = () => resolve((reader.result as string).split(',')[1])
-        reader.onerror = reject
-        reader.readAsDataURL(blob)
-      })
+      // The email route renders the same server-side PDF as the download
+      // (lib/report/paid-report), checking ownership and payment itself.
       const emailRes = await fetch('/api/email/send-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: data.email,
-          pdfBase64,
+          assessmentId,
           companyName: data.companyName,
           score: data.overallScore.score,
-          assessmentType: 'auto_dealer',
+          assessmentType: ASSESSMENT_TYPES.AUTO_DEALER,
         }),
       })
       const json = await emailRes.json()
@@ -761,6 +755,13 @@ export default function ResultsPage() {
             }
           </Button>
         </div>
+
+        <WhatsAppShareButton
+          assessmentId={assessmentId}
+          assessmentType={ASSESSMENT_TYPES.AUTO_DEALER}
+          email={data.email}
+          defaultPhone={data.phone}
+        />
 
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>
