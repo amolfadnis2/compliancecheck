@@ -453,7 +453,7 @@ const QUESTION_SUMMARIES: Record<string, { compliant: string; nonCompliant: stri
 // TYPES
 // ============================================================================
 
-interface LocalAssessmentData {
+export interface LocalAssessmentData {
   id: string
   assessment_type: string
   status: string
@@ -470,6 +470,8 @@ interface LocalAssessmentData {
 interface LocalStorageResultsPageProps {
   id: string
   assessmentType: string
+  /** Server-provided row (paid, DB-backed reports). Skips the localStorage read. */
+  initialData?: LocalAssessmentData
 }
 
 // ============================================================================
@@ -597,9 +599,9 @@ function analyseResponses(answers: Record<string, string>): {
 // MAIN COMPONENT
 // ============================================================================
 
-export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResultsPageProps) {
-  const [loading, setLoading] = useState(true)
-  const [assessment, setAssessment] = useState<LocalAssessmentData | null>(null)
+export function LocalStorageResultsPage({ id, assessmentType, initialData }: LocalStorageResultsPageProps) {
+  const [loading, setLoading] = useState(!initialData)
+  const [assessment, setAssessment] = useState<LocalAssessmentData | null>(initialData ?? null)
   const isLabourCode = assessmentType === ASSESSMENT_TYPES.LABOUR_CODE
   const isDPDP = assessmentType === ASSESSMENT_TYPES.DPDP
   const isStateWise = assessmentType === ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE
@@ -607,6 +609,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
   const isFoodBusiness = assessmentType === ASSESSMENT_TYPES.FOOD_BUSINESS
 
   useEffect(() => {
+    if (initialData) return
     try {
       const storageKey = getLocalStorageKey(id)
       console.log('[LocalStorageResults] Loading from key:', storageKey)
@@ -624,7 +627,7 @@ export function LocalStorageResultsPage({ id, assessmentType }: LocalStorageResu
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, initialData])
 
   if (loading) {
     return (

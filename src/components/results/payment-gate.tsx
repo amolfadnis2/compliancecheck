@@ -22,9 +22,14 @@ interface RazorpayOptions {
   modal?: { ondismiss?: () => void }
 }
 
+interface RazorpayInstance {
+  open: () => void
+  on: (event: 'payment.failed', cb: (response: { error?: { description?: string } }) => void) => void
+}
+
 declare global {
   interface Window {
-    Razorpay: new (options: RazorpayOptions) => { open: () => void }
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance
   }
 }
 
@@ -78,15 +83,24 @@ export function PaymentGate({
   // deciding on a few thousand rupees should be able to read one first.
   const samplePath = assessmentType ? getSampleReportPath(assessmentType) : null
 
+  // Funnel props shared by every payment event from this gate.
+  const funnel = isLiveMode
+    ? { assessment_type: assessmentType!, assessment_id: assessmentId!, amount_inr: priceINR }
+    : null
+
   useEffect(() => {
-    analytics.pricingPageViewed({ source: 'assessment_complete', current_tier: 'free', assessment_type: assessmentType })
+    if (funnel) {
+      analytics.paywallViewed(funnel)
+    } else {
+      analytics.pricingPageViewed({ source: 'assessment_complete', current_tier: 'free', assessment_type: assessmentType })
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
   const handlePayClick = async () => {
-    if (!isLiveMode) {
+    if (!funnel) {
       // Beta stub: not a real checkout, so record a feature-gate hit rather
       // than polluting checkout conversion metrics
       analytics.featureGateHit({ feature: 'pdf_export', current_tier: 'free', attempted_action: 'view_paid_report', assessment_type: assessmentType })
@@ -94,12 +108,12 @@ export function PaymentGate({
       return
     }
 
-    analytics.checkoutStarted({ plan: 'pro', billing_cycle: 'monthly', source: 'payment_gate', current_tier: 'free', assessment_type: assessmentType })
-
     if (!validateEmail(email)) {
       setError('Please enter a valid email address')
       return
     }
+
+    analytics.checkoutStarted(funnel)
 
     setLoading(true)
     setError(null)
@@ -116,7 +130,10 @@ export function PaymentGate({
         onPaid()
         return
       }
-      if (!orderRes.ok) throw new Error(orderData.error || 'Failed to create order')
+      if (!orderRes.ok) {
+        analytics.paymentFailed({ ...funnel, stage: 'create_order', error: orderData.error })
+        throw new Error(orderData.error || 'Failed to create order')
+      }
 
       await loadRazorpayScript()
 
@@ -143,20 +160,29 @@ export function PaymentGate({
               }),
             })
             if (verifyRes.ok) {
+              analytics.paymentSucceeded({ ...funnel, payment_method: 'razorpay', source: 'client' })
               onPaid()
             } else {
               const err = await verifyRes.json()
+              analytics.paymentFailed({ ...funnel, stage: 'verify', error: err.error })
               setError(err.error || 'Payment verification failed. Contact support.')
             }
           } catch {
+            analytics.paymentFailed({ ...funnel, stage: 'verify' })
             setError('Payment verification failed. Contact support.')
           } finally {
             setLoading(false)
           }
         },
         modal: {
-          ondismiss: () => setLoading(false),
+          ondismiss: () => {
+            analytics.checkoutAbandoned(funnel)
+            setLoading(false)
+          },
         },
+      })
+      rzp.on('payment.failed', (response) => {
+        analytics.paymentFailed({ ...funnel, stage: 'checkout', error: response.error?.description })
       })
       rzp.open()
     } catch (err) {
@@ -166,6 +192,7 @@ export function PaymentGate({
   }
 
   const handlePromoApply = async () => {
+    if (!funnel) return
     if (!validateEmail(email)) {
       setError('Please enter a valid email address')
       return
@@ -188,8 +215,11 @@ export function PaymentGate({
 
       if (!res.ok) throw new Error(data.error || 'Invalid promo code')
 
+      analytics.promoRedeemed({ ...funnel, succeeded: true })
+      analytics.paymentSucceeded({ ...funnel, payment_method: 'waiver', source: 'client' })
       onPaid()
     } catch (err) {
+      analytics.promoRedeemed({ ...funnel, succeeded: false, error: err instanceof Error ? err.message : undefined })
       setError(err instanceof Error ? err.message : 'Invalid promo code')
     } finally {
       setLoading(false)

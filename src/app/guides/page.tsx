@@ -4,7 +4,7 @@ import { getAllStateSlugs, getStateBySlug } from '@/lib/content/state-compliance
 import { ContentShell } from '@/components/site/ContentShell'
 import { JsonLd } from '@/lib/seo/JsonLd'
 import { breadcrumbSchema } from '@/lib/seo/schema'
-import { absoluteUrl } from '@/lib/seo/site'
+import { absoluteUrl, DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 const url = absoluteUrl('/guides')
 
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     'Compliance guides for every Indian state and union territory: Professional Tax, Labour Welfare Fund, and Shops & Establishment registration.',
   alternates: { canonical: url },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'State-wise Compliance Guides | ComplianceCheck',
     description: 'Professional Tax, Labour Welfare Fund and Shops & Establishment rules, state by state.',
     url,

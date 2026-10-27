@@ -53,9 +53,9 @@ export const ASSESSMENT_META: AssessmentMeta[] = [
       'Readiness assessment for India\'s 4 new Labour Codes (Wages, Social Security, OSH, Industrial Relations), with implementation cost estimates.',
     faqs: [
       {
-        question: 'When do the new Labour Codes take effect in India?',
+        question: 'When did the new Labour Codes take effect in India?',
         answer:
-          'The 4 Labour Codes consolidate 29 existing labour laws and are expected to take effect from November 2025. Every employer should assess readiness across wages, working hours, leave, and social security.',
+          'The 4 Labour Codes consolidate 29 earlier labour laws and have applied since 21 November 2025. Every employer should check readiness across wages, working hours, leave, and social security.',
       },
       {
         question: 'What are the 4 new Labour Codes?',
@@ -149,11 +149,8 @@ export function getAssessmentMeta(type: AssessmentType): AssessmentMeta {
 
 /** Convenience: full display + pricing + routing record for a meta entry. */
 export function describeAssessment(meta: AssessmentMeta) {
-  // "Free" must mean free *right now*, not "not yet designated a paid tier".
-  // ASSESSMENT_PRICING is the long-term tier and still reads 'free' for
-  // Statutory Health even though its paywall is live at Rs.499 — driving copy
-  // and schema.org Offers off it advertised a price of 0 for a product that
-  // charges. The live payment flag is the only honest source here.
+  // "Free" must mean free *right now*: the live payment flag (what the paywall
+  // actually charges) drives copy and schema.org Offers, never the pricing tier.
   const isFree = !isPaymentLive(meta.type)
   return {
     name: getAssessmentDisplayName(meta.type),

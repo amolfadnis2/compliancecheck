@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   title: 'How It Works | Compliance Assessment Process | ComplianceCheck',
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
     'SME compliance tool'
   ],
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'How ComplianceCheck Works | Simple 4-Step Compliance Assessment',
     description: 'From answering simple questions to downloading your detailed compliance report — complete your assessment in under 10 minutes.',
     type: 'website',
@@ -25,6 +27,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'How ComplianceCheck Works',
     description: 'Complete your compliance assessment in 4 simple steps. Get instant results and professional PDF report.',
+    images: ['/og-image.png'],
   },
   alternates: {
     canonical: 'https://compliancecheck.co.in/how-it-works',

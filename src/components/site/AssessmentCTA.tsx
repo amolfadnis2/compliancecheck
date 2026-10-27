@@ -13,7 +13,7 @@ import { getSampleReportPath } from '@/lib/pdf/sample-report-paths'
 export function AssessmentCTA({ type }: { type: AssessmentType }) {
   const d = describeAssessment(getAssessmentMeta(type))
   const priceLabel = d.isFree
-    ? 'Free during early access'
+    ? 'Free'
     : `Free summary - full report ${formatPrice(d.pricePaise / 100)}`
   const samplePath = getSampleReportPath(type)
 

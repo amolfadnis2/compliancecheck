@@ -1,16 +1,19 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { LandingSchema } from '@/lib/seo/LandingSchema'
+import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
-  title: 'Labour Code Readiness Assessment | Nov 2025 Deadline | ComplianceCheck',
-  description: "Prepare for India's 4 new Labour Codes effective November 2025. Get implementation cost estimates, gap analysis, and action plan. ₹1,999 post-beta.",
+  title: 'Labour Code Readiness Assessment | 4 Labour Codes in Force | ComplianceCheck',
+  description: "India's 4 Labour Codes have applied since 21 Nov 2025. Check your readiness, get cost estimates and an action plan. Free summary; full report ₹999.",
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/labour-code-readiness',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Labour Code Readiness Assessment | ComplianceCheck',
     description: 'Are you ready for the 4 new Labour Codes? Assessment with cost estimates and implementation roadmap.',
     type: 'website',
@@ -31,7 +34,7 @@ export default function LabourCodeReadinessPage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessment/labour-code" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/labour-code" className={styles.navCta} style={{ background: accentColor }}>Start — Free Summary</Link>
           </div>
         </div>
       </nav>
@@ -42,11 +45,11 @@ export default function LabourCodeReadinessPage() {
           <div className={styles.heroGrid}>
             <div>
               <div className={styles.heroBadge} style={{ background: '#DC262615', border: '1px solid #DC262630', color: '#DC2626' }}>
-                ⏰ Deadline: November 2025
+                ⏰ In force since 21 November 2025
               </div>
               <h1 className={styles.heroTitle}>Labour Code Readiness Assessment</h1>
               <p className={styles.heroSubtitle}>
-                India&apos;s 4 new Labour Codes become effective November 2025. Assess your readiness, understand implementation costs, and get a prioritized action plan before the deadline.
+                India&apos;s 4 new Labour Codes have applied since 21 November 2025. Assess your readiness, understand implementation costs, and get a prioritized action plan to close the gaps.
               </p>
               <ul className={styles.heroFeatures}>
                 {["Code on Wages, 2019 compliance", "Code on Social Security, 2020 requirements", "Occupational Safety, Health & Working Conditions", "Industrial Relations Code readiness", "Implementation cost estimates"].map((feature, i) => (
@@ -54,13 +57,13 @@ export default function LabourCodeReadinessPage() {
                 ))}
               </ul>
               <Link href="/assessment/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
-                Start Free Assessment →
+                Start — Free Summary →
               </Link>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
                 <div className={styles.alertIcon} style={{ background: 'rgba(220, 38, 38, 0.1)' }}>⚠️</div>
                 <div className={styles.alertContent}>
-                  <h4 style={{ color: '#DC2626' }}>Major Changes Ahead</h4>
-                  <p>The new codes will consolidate 29 existing labour laws. Changes to wage structure, working hours, leave policy, and social security contributions will affect every employer.</p>
+                  <h4 style={{ color: '#DC2626' }}>Major Changes Now in Effect</h4>
+                  <p>The new codes consolidate 29 earlier labour laws. Changes to wage structure, working hours, leave policy, and social security contributions affect every employer.</p>
                 </div>
               </div>
             </div>
@@ -77,7 +80,7 @@ export default function LabourCodeReadinessPage() {
                 ))}
               </div>
               <div style={{ marginTop: '16px', padding: '12px 16px', background: 'rgba(220, 38, 38, 0.2)', borderRadius: '8px', textAlign: 'center', fontSize: '13px', color: '#FCA5A5' }}>
-                Effective: November 2025
+                In force since: 21 November 2025
               </div>
             </div>
           </div>
@@ -91,7 +94,7 @@ export default function LabourCodeReadinessPage() {
             <div className={styles.statItem}><h3>30</h3><p>Questions</p></div>
             <div className={styles.statItem}><h3>15-20</h3><p>After Filtering</p></div>
             <div className={styles.statItem}><h3>4</h3><p>Labour Codes</p></div>
-            <div className={styles.statItem}><h3>₹1,999</h3><p>Post-Beta Price</p></div>
+            <div className={styles.statItem}><h3>₹999</h3><p>Full Report</p></div>
           </div>
         </div>
       </section>
@@ -122,7 +125,7 @@ export default function LabourCodeReadinessPage() {
               { title: 'Company Profile', desc: 'Basic questions about your industry, employee count, and locations' },
               { title: 'Smart Filtering', desc: 'Questions automatically filtered based on your profile (30 → 15-20)' },
               { title: 'Gap Analysis', desc: 'Code-wise readiness score with implementation cost estimates' },
-              { title: 'Action Plan', desc: 'Prioritized timeline with steps to achieve compliance by Nov 2025' }
+              { title: 'Action Plan', desc: 'Prioritized timeline with steps to close each compliance gap' }
             ].map((step, i) => (
               <div key={i} className={styles.stepCard} style={{ background: 'white' }}>
                 <div className={styles.stepNumber} style={{ background: accentColor }}>{i + 1}</div>
@@ -160,7 +163,7 @@ export default function LabourCodeReadinessPage() {
             <div className={styles.sampleFeatures}>
               <h3>What You&apos;ll Get</h3>
               <ul className={styles.featureList}>
-                {[{ title: 'Readiness Score', desc: 'Overall and code-wise readiness percentage' }, { title: 'Cost Estimates', desc: 'Projected implementation costs for your company size' }, { title: 'Timeline Planning', desc: 'Month-wise milestones to meet Nov 2025 deadline' }, { title: 'Gap Analysis', desc: 'Specific areas requiring changes in each code' }, { title: 'Policy Changes', desc: 'List of HR policies needing updates' }, { title: 'Compliance Roadmap', desc: 'Step-by-step implementation guide' }].map((feature, i) => (
+                {[{ title: 'Readiness Score', desc: 'Overall and code-wise readiness percentage' }, { title: 'Cost Estimates', desc: 'Projected implementation costs for your company size' }, { title: 'Timeline Planning', desc: 'Month-wise milestones to close your compliance gaps' }, { title: 'Gap Analysis', desc: 'Specific areas requiring changes in each code' }, { title: 'Policy Changes', desc: 'List of HR policies needing updates' }, { title: 'Compliance Roadmap', desc: 'Step-by-step implementation guide' }].map((feature, i) => (
                   <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span><span><strong>{feature.title}</strong> — {feature.desc}</span></li>
                 ))}
               </ul>
@@ -173,28 +176,21 @@ export default function LabourCodeReadinessPage() {
       <section className={styles.pricing} style={{ background: '#FFFBEB' }}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}><h2>Simple, Transparent Pricing</h2><p>No subscriptions. Pay only when you need an assessment.</p></div>
-          <div className={styles.pricingCard} style={{ borderColor: accentColor, boxShadow: `0 4px 20px ${accentColor}20` }}>
-            <div className={styles.pricingBadge} style={{ background: `${accentColor}15`, color: accentColor }}>🎉 Free During Beta</div>
-            <div className={styles.pricingAmount}>₹1,999</div>
-            <div className={styles.pricingPeriod}>One-time assessment fee (post-beta)</div>
-            <ul className={styles.pricingFeatures}>
-              {['Complete 4-code assessment', 'Smart question filtering', 'Implementation cost estimates', 'Code-wise gap analysis', 'Timeline & milestones', 'Policy change recommendations', 'Professional PDF report'].map((feature, i) => (
-                <li key={i}><span style={{ color: accentColor, fontWeight: 700 }}>✓</span>{feature}</li>
-              ))}
-            </ul>
-            <Link href="/assessment/labour-code" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50`, width: '100%', justifyContent: 'center' }}>
-              Start Free Assessment →
-            </Link>
-          </div>
+          <LandingPricingCard
+            type={ASSESSMENT_TYPES.LABOUR_CODE}
+            accentColor={accentColor}
+            ctaHref="/assessment/labour-code"
+            features={['Complete 4-code assessment', 'Smart question filtering', 'Implementation cost estimates', 'Code-wise gap analysis', 'Timeline & milestones', 'Policy change recommendations', 'Professional PDF report']}
+          />
         </div>
       </section>
 
       {/* Final CTA */}
       <section className={styles.finalCta}>
         <div className={styles.container}>
-          <h2>November 2025 is Closer Than You Think</h2>
-          <p>Don&apos;t wait until the last minute. Assess your readiness today and plan your transition.</p>
-          <Link href="/assessment/labour-code" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <h2>The Labour Codes Already Apply to You</h2>
+          <p>Don&apos;t wait for an inspection. Assess your readiness today and plan your transition.</p>
+          <Link href="/assessment/labour-code" className={styles.btnWhite}>Start — Free Summary →</Link>
         </div>
       </section>
 
@@ -205,7 +201,7 @@ export default function LabourCodeReadinessPage() {
             <div className={styles.footerLinks}>
               <Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/blog">Guides</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link>
             </div>
-            <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
+            <div className={styles.footerCopy}>© {new Date().getFullYear()} ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
       </footer>

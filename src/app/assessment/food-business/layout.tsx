@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: true },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessment/food-business',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Restaurant & Food Business Compliance | ComplianceCheck',
     description: 'FSSAI, Fire NOC, Liquor License, and 8 compliance areas for food businesses. Assessment with gap analysis.',
     type: 'website',

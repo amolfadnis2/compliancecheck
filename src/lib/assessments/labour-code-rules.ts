@@ -48,7 +48,7 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     requirement: 'Basic wages must constitute at least 50% of total remuneration',
     governmentRef: 'Code on Wages 2019, Section 2(y) - Definition of Wages',
     officialLink: 'https://labour.gov.in/code-wages-2019',
-    deadline: 'Before Labour Code enforcement (expected November 2025)',
+    deadline: 'Immediately - the Labour Codes have applied since 21 November 2025',
     penalty: 'Non-compliance may result in reclassification of allowances as wages, leading to increased PF/Gratuity liability with retrospective effect',
     actionIfNonCompliant: [
       'Export current salary structure for all employees',

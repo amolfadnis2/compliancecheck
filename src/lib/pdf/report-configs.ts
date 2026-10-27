@@ -65,8 +65,8 @@ export const LABOUR_CODE_CONFIG: ReportConfig = {
     'Industrial Relations Code, 2020',
   ],
   deadlines: [
-    { item: 'Labour Code Implementation', date: 'Expected November 2025' },
-    { item: 'Salary Restructuring (50% Basic)', date: 'Before enforcement date' },
+    { item: 'Labour Code Implementation', date: 'In force since 21 November 2025' },
+    { item: 'Salary Restructuring (50% Basic)', date: 'Immediately (codes already in force)' },
     { item: 'New PF/Gratuity Calculations', date: 'From enforcement date' },
     { item: 'Updated Standing Orders', date: 'Within 6 months of enforcement' },
     { item: 'OSH Compliance', date: 'Immediate upon enforcement' },

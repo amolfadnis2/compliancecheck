@@ -31,11 +31,11 @@ export type PricingTier = 'free' | 'paid';
 
 export const ASSESSMENT_PRICING: Record<AssessmentType, PricingTier> = {
   [ASSESSMENT_TYPES.DPDP]: 'paid',
-  [ASSESSMENT_TYPES.LABOUR_CODE]: 'free',
+  [ASSESSMENT_TYPES.LABOUR_CODE]: 'paid',
   [ASSESSMENT_TYPES.POSH]: 'paid',
-  [ASSESSMENT_TYPES.STATUTORY_HEALTH]: 'free',
-  [ASSESSMENT_TYPES.FOOD_BUSINESS]: 'free',
-  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: 'free',
+  [ASSESSMENT_TYPES.STATUTORY_HEALTH]: 'paid',
+  [ASSESSMENT_TYPES.FOOD_BUSINESS]: 'paid',
+  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: 'paid',
   [ASSESSMENT_TYPES.AUTO_DEALER]: 'paid',
 };
 
@@ -52,12 +52,12 @@ export interface AssessmentPriceConfig {
 
 export const ASSESSMENT_PRICES: Record<AssessmentType, AssessmentPriceConfig> = {
   [ASSESSMENT_TYPES.STATUTORY_HEALTH]:      { amountPaise: 49900,  live: true },
-  [ASSESSMENT_TYPES.LABOUR_CODE]:           { amountPaise: 99900,  live: false },
+  [ASSESSMENT_TYPES.LABOUR_CODE]:           { amountPaise: 99900,  live: true },
   [ASSESSMENT_TYPES.DPDP]:                  { amountPaise: 249900, live: true },
-  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: { amountPaise: 49900,  live: false },
-  [ASSESSMENT_TYPES.FOOD_BUSINESS]:         { amountPaise: 99900,  live: false },
+  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: { amountPaise: 49900,  live: true },
+  [ASSESSMENT_TYPES.FOOD_BUSINESS]:         { amountPaise: 99900,  live: true },
   [ASSESSMENT_TYPES.POSH]:                  { amountPaise: 199900, live: true },
-  [ASSESSMENT_TYPES.AUTO_DEALER]:           { amountPaise: 299900, live: false },
+  [ASSESSMENT_TYPES.AUTO_DEALER]:           { amountPaise: 299900, live: true },
 };
 
 export function getAssessmentPricePaise(type: AssessmentType): number {

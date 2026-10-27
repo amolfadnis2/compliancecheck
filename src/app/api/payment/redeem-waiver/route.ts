@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { isValidAssessmentType, type AssessmentType } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_PRICES, isValidAssessmentType, type AssessmentType } from '@/lib/constants/assessment-types'
+import { assessmentTableFor } from '@/lib/payment/assessment-table'
+import { captureServerEvent } from '@/lib/analytics/server'
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 
 export async function POST(request: Request) {
   try {
@@ -51,6 +54,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Promo code is not valid for this assessment' }, { status: 400 })
     }
 
+    const { data: assessmentRow } = await supabase
+      .from(assessmentTableFor(assessmentType))
+      .select('id')
+      .eq('id', assessmentId)
+      .maybeSingle()
+    if (!assessmentRow) {
+      return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
+    }
+
+    // Already unlocked: don't burn a use or overwrite a real payment with a waiver.
+    const { data: existing } = await supabase
+      .from('assessment_entitlements')
+      .select('status')
+      .eq('assessment_id', assessmentId)
+      .eq('assessment_type', assessmentType)
+      .maybeSingle()
+    if (existing?.status === 'paid' || existing?.status === 'waived') {
+      return NextResponse.json({ success: true, assessmentId, alreadyPaid: true })
+    }
+
     const { error: entitlementError } = await supabase
       .from('assessment_entitlements')
       .upsert(
@@ -85,6 +108,14 @@ export async function POST(request: Request) {
         email,
       }),
     ])
+
+    await captureServerEvent(ANALYTICS_EVENTS.PAYMENT_SUCCEEDED, email, {
+      assessment_type: assessmentType as AssessmentType,
+      assessment_id: assessmentId,
+      amount_inr: Math.round(ASSESSMENT_PRICES[assessmentType as AssessmentType].amountPaise / 100),
+      payment_method: 'waiver',
+      source: 'server',
+    })
 
     return NextResponse.json({ success: true, assessmentId })
   } catch (error) {

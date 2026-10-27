@@ -13,7 +13,7 @@ import {
   STATUTORY_HEALTH_QUESTIONS,
   CATEGORY_INFO,
 } from '@/lib/assessments/statutory-health-questions'
-import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, getAssessmentPricePaise, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { useAssessmentTracking } from '@/lib/analytics'
 import { toast } from 'sonner'
 
@@ -441,7 +441,7 @@ export default function StatutoryHealthAssessmentPage() {
                     <p className="text-gray-600 text-sm">See your free summary, then unlock the full report</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600">₹499</div>
+                    <div className="text-2xl font-bold text-blue-600">₹{(getAssessmentPricePaise(ASSESSMENT_TYPES.STATUTORY_HEALTH) / 100).toLocaleString('en-IN')}</div>
                     <div className="text-sm text-gray-500">full report</div>
                   </div>
                 </div>

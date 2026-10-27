@@ -22,3 +22,25 @@ export function ReportViewTracker({ assessmentType, complianceScore, assessmentI
 
   return null
 }
+
+/** Fires once when a paid/waived detailed report is shown — the funnel's final step. */
+export function PaidReportViewTracker({
+  assessmentType,
+  assessmentId,
+  entitlement,
+}: {
+  assessmentType: string
+  assessmentId: string
+  entitlement: 'paid' | 'waived'
+}) {
+  useEffect(() => {
+    analytics.paidReportViewed({
+      assessment_type: assessmentType as AssessmentType,
+      assessment_id: assessmentId,
+      entitlement,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return null
+}

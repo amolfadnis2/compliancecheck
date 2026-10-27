@@ -1,6 +1,6 @@
 # Payments Framework — Design Doc
 
-> Status: **Design / approved for phased build**
+> Status: **Live for all 7 assessments (2026-10-27).** Sections 3 and 13 below describe the starting point and build plan and are kept for history. Added at go-live: `/api/payment/webhook` (needs `RAZORPAY_WEBHOOK_SECRET`), server-side PostHog revenue events, entitlement RLS lockdown (`20261027000000`), and the `assessments` type-constraint fix that State-Wise and Food Business needed to save at all (`20261027000001`). Open: Food Business detailed rules cover only 18 of 62 yes/no questions (`src/lib/pdf/food-business-compliance-rules.ts`); Auto Dealer has no public sample report (its generator lives in the route file).
 > Owner: ComplianceCheck
 > Goal: Go live with payments across all 7 assessments, with a free summary → pay → detailed report flow, an optional email-PDF action, and a server-validated promo-code "door" for testers.
 

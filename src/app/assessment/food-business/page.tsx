@@ -23,7 +23,7 @@ import {
 import { Controller } from 'react-hook-form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
-import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
+import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress'
 import { useAssessmentTracking, analytics } from '@/lib/analytics'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS } from '@/lib/constants/india'
@@ -44,6 +44,8 @@ import {
   calculateFoodBusinessScore,
   FOOD_BUSINESS_CATEGORIES,
 } from '@/lib/assessments/food-business-questions'
+
+const fullReportPrice = `Rs. ${Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.FOOD_BUSINESS].amountPaise / 100).toLocaleString('en-IN')}`
 
 // ============================================================================
 // SCHEMAS & TYPES
@@ -440,7 +442,7 @@ export default function FoodBusinessAssessmentPage() {
         <p className="text-sm text-gray-500">
           <span className="inline-flex items-center gap-1">
             <Shield className="h-4 w-4" />
-            FREE during beta • Usually Rs. 999
+            Free summary • Full report {fullReportPrice}
           </span>
         </p>
       </CardFooter>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessments/landing/posh-act-compliance',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'POSH Act 2013 Compliance | ComplianceCheck',
     description: 'Prevention of Sexual Harassment compliance assessment. ICC audit, policy review, and compliance roadmap.',
     type: 'website',
@@ -31,7 +33,7 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessment/posh" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/posh" className={styles.navCta} style={{ background: accentColor }}>Start — Free Summary</Link>
           </div>
         </div>
       </nav>
@@ -53,7 +55,7 @@ export default function POSHActCompliancePage() {
                 ))}
               </ul>
               <Link href="/assessment/posh" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
-                Start Free Assessment →
+                Start — Free Summary →
               </Link>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
                 <div className={styles.alertIcon} style={{ background: 'rgba(220, 38, 38, 0.1)' }}>⚠️</div>
@@ -212,7 +214,7 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <h2>Is Your Workplace POSH Compliant?</h2>
           <p>Don&apos;t wait for a complaint to discover gaps. Assess your compliance proactively.</p>
-          <Link href="/assessment/posh" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/posh" className={styles.btnWhite}>Start — Free Summary →</Link>
         </div>
       </section>
 
@@ -220,7 +222,7 @@ export default function POSHActCompliancePage() {
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/blog">Guides</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
-            <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
+            <div className={styles.footerCopy}>© {new Date().getFullYear()} ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
       </footer>

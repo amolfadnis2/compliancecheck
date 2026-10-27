@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+
+// Account pages (login, register, password reset) have no search value.
+export const metadata: Metadata = {
+  title: 'Your Account | ComplianceCheck',
+  robots: { index: false, follow: false },
+}
 
 export default function AuthLayout({
   children,

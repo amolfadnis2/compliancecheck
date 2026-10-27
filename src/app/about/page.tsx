@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft, ScrollText, IndianRupee, Lock } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Footer } from '@/components/site/footer'
-import { CONTACT_EMAIL } from '@/lib/seo/site'
+import { CONTACT_EMAIL, DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   title: 'About - ComplianceCheck',
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/about',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'About | ComplianceCheck',
     description:
       'Who is behind ComplianceCheck, why it exists, and how the compliance assessments for Indian SMEs are built.',

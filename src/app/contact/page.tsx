@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Mail, MapPin, Clock, ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Footer } from '@/components/site/footer'
-import { CONTACT_EMAIL } from '@/lib/seo/site'
+import { CONTACT_EMAIL, DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import { ContactForm } from './contact-form'
 
 export const metadata: Metadata = {
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/contact',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Contact Us | ComplianceCheck',
     description: 'Get in touch with ComplianceCheck for questions about compliance assessments, partnerships, or support.',
     type: 'website',

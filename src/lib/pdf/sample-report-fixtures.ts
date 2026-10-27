@@ -13,7 +13,15 @@
 
 import { ASSESSMENT_TYPES, type AssessmentType } from '@/lib/constants/assessment-types'
 import type { UnifiedReportData, UnifiedActionItem, UnifiedCompliantItem } from './unified-report-generator'
-import { adaptStatutoryHealth, adaptDPDP, adaptPOSHResult, type POSHResultInput } from './report-data-adapter'
+import {
+  adaptStatutoryHealth,
+  adaptDPDP,
+  adaptPOSHResult,
+  adaptLabourCode,
+  adaptStateWise,
+  adaptFoodBusiness,
+  type POSHResultInput,
+} from './report-data-adapter'
 import { calculateStatutoryHealthScore } from '@/lib/assessments/statutory-health-questions'
 import { calculateDPDPScore, getRelevantQuestions } from '@/lib/assessments/dpdp-questions'
 import {
@@ -24,6 +32,9 @@ import {
   type POSHQuestion,
 } from '@/lib/assessments/posh/posh-compliance-questions'
 import { getRuleByQuestionId } from '@/lib/assessments/posh/posh-compliance-rules'
+import { getFilteredQuestions, calculateLabourCodeScore } from '@/lib/assessments/labour-code-questions'
+import { PHASE2_QUESTIONS, EMPLOYEE_RANGES, calculateComplianceScore } from '@/lib/assessments/state-wise-compliance-questions'
+import { ALL_FOOD_BUSINESS_QUESTIONS, calculateFoodBusinessScore } from '@/lib/assessments/food-business-questions'
 
 // ============================================================================
 // THE FICTIONAL COMPANY
@@ -242,6 +253,94 @@ function buildPOSHSample(): UnifiedReportData {
 }
 
 // ============================================================================
+// YES/NO ASSESSMENTS (Labour Code, State-Wise, Food Business)
+// ============================================================================
+
+/**
+ * Two of every three yes/no questions are answered compliantly, the first of
+ * each three is not. Every category gets real gaps
+ * without hardcoding answers that would rot as questions change.
+ */
+function sampleYesNoAnswers(
+  questions: { id: string; type: string; complianceAnswer?: string }[]
+): Record<string, string> {
+  const answers: Record<string, string> = {}
+  questions
+    .filter((q) => q.type === 'yes_no')
+    .forEach((q, i) => {
+      const compliant = q.complianceAnswer ?? 'yes'
+      answers[q.id] = i % 3 !== 0 ? compliant : compliant === 'yes' ? 'no' : 'yes'
+    })
+  return answers
+}
+
+function buildLabourCodeSample(): UnifiedReportData {
+  // A 20-49 person manufacturer — the questions a real respondent would see.
+  const questions = getFilteredQuestions('Manufacturing', '20-49')
+  const answers = sampleYesNoAnswers(questions)
+  const { overallScore, categoryScores } = calculateLabourCodeScore(answers, 'Manufacturing', '20-49')
+
+  return {
+    ...adaptLabourCode({
+      id: 'SAMPLE',
+      assessment_type: ASSESSMENT_TYPES.LABOUR_CODE,
+      overall_score: overallScore,
+      category_scores: categoryScores,
+      responses: { answers },
+      userDetails: DEMO_COMPANY,
+    }),
+    isSample: true,
+  }
+}
+
+function buildStateWiseSample(): UnifiedReportData {
+  // Single-state Maharashtra employer with ~75 staff and no industry-specific
+  // obligations: keep only the questions that profile would be asked.
+  const headcount = EMPLOYEE_RANGES.find((r) => r.value === '50-99')?.midpoint ?? 75
+  const questions = PHASE2_QUESTIONS.filter(
+    (q) =>
+      (!q.states?.length || q.states.includes('maharashtra')) &&
+      !q.industries?.length &&
+      (q.minEmployees ?? 0) <= headcount
+  )
+  const answers = sampleYesNoAnswers(questions)
+  const { overallScore, categoryScores } = calculateComplianceScore(answers, questions)
+
+  return {
+    ...adaptStateWise({
+      id: 'SAMPLE',
+      assessment_type: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
+      overall_score: overallScore,
+      category_scores: categoryScores,
+      responses: { answers },
+      userDetails: DEMO_COMPANY,
+    }),
+    isSample: true,
+  }
+}
+
+const DEMO_RESTAURANT = { ...DEMO_COMPANY, companyName: 'Demo Kitchens Pvt Ltd', industry: 'Restaurant' }
+
+function buildFoodBusinessSample(): UnifiedReportData {
+  // A dine-in restaurant that does not serve alcohol.
+  const questions = ALL_FOOD_BUSINESS_QUESTIONS.filter((q) => q.applicabilityCode !== 'LIQUOR')
+  const answers = sampleYesNoAnswers(questions)
+  const { overallScore, categoryScores } = calculateFoodBusinessScore(questions, answers)
+
+  return {
+    ...adaptFoodBusiness({
+      id: 'SAMPLE',
+      assessment_type: ASSESSMENT_TYPES.FOOD_BUSINESS,
+      overall_score: overallScore,
+      category_scores: categoryScores,
+      responses: { answers },
+      userDetails: DEMO_RESTAURANT,
+    }),
+    isSample: true,
+  }
+}
+
+// ============================================================================
 // REGISTRY
 // ============================================================================
 
@@ -257,6 +356,9 @@ export const SAMPLE_REPORT_BUILDERS: Partial<Record<AssessmentType, () => Unifie
   [ASSESSMENT_TYPES.STATUTORY_HEALTH]: buildStatutoryHealthSample,
   [ASSESSMENT_TYPES.DPDP]: buildDPDPSample,
   [ASSESSMENT_TYPES.POSH]: buildPOSHSample,
+  [ASSESSMENT_TYPES.LABOUR_CODE]: buildLabourCodeSample,
+  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: buildStateWiseSample,
+  [ASSESSMENT_TYPES.FOOD_BUSINESS]: buildFoodBusinessSample,
 }
 
 export function buildSampleReport(type: AssessmentType): UnifiedReportData | null {

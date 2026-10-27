@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { isPaymentLive, isValidAssessmentType } from '@/lib/constants/assessment-types'
+import { isEntitled } from '@/lib/payment/entitlement'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -58,6 +60,12 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
+    // Action items are the paid deliverable: withhold them until the
+    // assessment's entitlement is paid or waived.
+    const type = assessment.assessment_type
+    const detailsLocked =
+      isValidAssessmentType(type) && isPaymentLive(type) && !(await isEntitled(id, type))
+
     // Format response with combined data
     // Check all possible locations for user details (different assessment types store differently)
     const responsesUserDetails = assessment.responses?.userDetails || {}
@@ -69,7 +77,8 @@ export async function GET(
       status: assessment.status,
       overall_score: assessment.overall_score,
       category_scores: assessment.category_scores || assessment.phase_scores,
-      action_items: assessment.action_items,
+      action_items: detailsLocked ? [] : assessment.action_items,
+      details_locked: detailsLocked,
       responses: assessment.responses,
       created_at: assessment.created_at,
       completed_at: assessment.completed_at,

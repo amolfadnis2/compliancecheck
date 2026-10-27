@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
 import { createClient } from '@supabase/supabase-js'
 import { ASSESSMENT_PRICES, isValidAssessmentType, type AssessmentType } from '@/lib/constants/assessment-types'
+import { assessmentTableFor } from '@/lib/payment/assessment-table'
 
 let _razorpay: Razorpay | null = null
 function getRazorpay() {
@@ -37,6 +38,17 @@ export async function POST(request: Request) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
+
+    // Only charge for an assessment that actually exists in its own table —
+    // never for a local_/temp_ fallback id or a made-up one.
+    const { data: assessmentRow } = await supabase
+      .from(assessmentTableFor(assessmentType))
+      .select('id')
+      .eq('id', assessmentId)
+      .maybeSingle()
+    if (!assessmentRow) {
+      return NextResponse.json({ error: 'Assessment not found' }, { status: 404 })
+    }
 
     // Guard: don't overwrite an existing paid/waived entitlement
     const { data: existing } = await supabase
