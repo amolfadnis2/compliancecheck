@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/privacy',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Privacy Policy | ComplianceCheck',
     description: 'Privacy Policy for ComplianceCheck. Learn how we collect, use, and protect your data in compliance with DPDP Act 2023.',
     type: 'website',

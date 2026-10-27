@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
@@ -7,11 +8,12 @@ import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'Auto Dealer Compliance Assessment | Dealer License, GST, Labour, Environment | ComplianceCheck',
-  description: 'Complete compliance assessment for automobile dealers in India. Dealer license, GST, labour laws, environmental norms, consumer protection, and service center compliance. Free summary; full report ₹2,999.',
+  description: 'Compliance check for 2W and 4W dealers in India: trade certificate, GST, labour, environment and workshop rules. Free summary; full report ₹2,999.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/auto-dealer-compliance',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Auto Dealer Compliance Assessment | ComplianceCheck',
     description: 'Dealer license, GST, labour, environmental norms, and 8 compliance areas for automobile dealers. Gap analysis with action plan.',
     type: 'website',
@@ -31,7 +33,7 @@ export default function AutoDealerCompliancePage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessment/auto-dealer" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/auto-dealer" className={styles.navCta} style={{ background: accentColor }}>Start — Free Summary</Link>
           </div>
         </div>
       </nav>
@@ -60,7 +62,7 @@ export default function AutoDealerCompliancePage() {
                 ))}
               </ul>
               <Link href="/assessment/auto-dealer" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
-                Start Free Assessment →
+                Start — Free Summary →
               </Link>
             </div>
             <div className={styles.heroVisual}>
@@ -260,7 +262,7 @@ export default function AutoDealerCompliancePage() {
         <div className={styles.container}>
           <h2>Is Your Dealership Fully Compliant?</h2>
           <p>Avoid RTO actions, GST notices, and labour inspections. Get a complete compliance check today.</p>
-          <Link href="/assessment/auto-dealer" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/auto-dealer" className={styles.btnWhite}>Start — Free Summary →</Link>
         </div>
       </section>
 
@@ -275,7 +277,7 @@ export default function AutoDealerCompliancePage() {
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Service</Link>
             </div>
-            <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
+            <div className={styles.footerCopy}>© {new Date().getFullYear()} ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
       </footer>

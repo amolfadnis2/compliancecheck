@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessments/landing/statutory-health-check',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Statutory Health Check | ComplianceCheck',
     description: 'Quick 10-minute compliance assessment for Indian SMEs. Check PF, ESI, PT, Gratuity & Bonus status instantly.',
     type: 'website',
@@ -39,7 +41,7 @@ export default function StatutoryHealthCheckPage() {
               className={styles.navCta}
               style={{ background: accentColor }}
             >
-              Start Free Assessment
+              Start — Free Summary
             </Link>
           </div>
         </div>
@@ -88,7 +90,7 @@ export default function StatutoryHealthCheckPage() {
                 className={styles.btnPrimary}
                 style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}
               >
-                Start Free Assessment →
+                Start — Free Summary →
               </Link>
             </div>
             <div className={styles.heroVisual}>
@@ -230,7 +232,7 @@ export default function StatutoryHealthCheckPage() {
         <div className={styles.container}>
           <h2>Ready to Check Your Compliance Status?</h2>
           <p>Takes only 10 minutes. Your score and top gaps are free; pay only to unlock the full report.</p>
-          <Link href="/assessment/statutory-health" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/statutory-health" className={styles.btnWhite}>Start — Free Summary →</Link>
         </div>
       </section>
 
@@ -246,7 +248,7 @@ export default function StatutoryHealthCheckPage() {
               <Link href="/privacy">Privacy Policy</Link>
               <Link href="/terms">Terms of Service</Link>
             </div>
-            <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
+            <div className={styles.footerCopy}>© {new Date().getFullYear()} ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
       </footer>

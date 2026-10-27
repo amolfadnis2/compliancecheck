@@ -373,7 +373,7 @@ export default function HowItWorksPage() {
 
                     {/* PDF Title */}
                     <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 mb-6">
-                      <h1 className="text-2xl font-bold text-blue-800 mb-2">Labour Code Readiness Assessment</h1>
+                      <p className="text-2xl font-bold text-blue-800 mb-2">Labour Code Readiness Assessment</p>
                       <p className="text-gray-600">Prepared for TechStart Solutions Pvt Ltd</p>
                     </div>
 
@@ -432,7 +432,7 @@ export default function HowItWorksPage() {
                           <p className="font-medium text-gray-900">Update Leave Policy for New Labour Codes</p>
                           <p className="text-sm text-gray-600 mt-1">
                             Code on Wages 2019 mandates annual leave of one day for every 20 days worked. 
-                            Your current policy needs revision before November 2025.
+                            Your current policy needs revision to meet the new Code.
                           </p>
                           <p className="text-xs text-blue-600 mt-2">
                             Reference: labour.gov.in/code-on-wages
@@ -567,7 +567,7 @@ export default function HowItWorksPage() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
-                      ⏰ Nov 2025 Deadline
+                      ⏰ In force since Nov 2025
                     </span>
                     <span className="text-lg font-bold text-gray-900">{fullPriceLabel(ASSESSMENT_TYPES.LABOUR_CODE)}</span>
                   </div>
@@ -575,8 +575,8 @@ export default function HowItWorksPage() {
                     Labour Code Readiness Assessment
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">
-                    Prepare for India&apos;s 4 new Labour Codes effective November 2025. Get implementation 
-                    cost estimates and a prioritized action plan before the deadline.
+                    India&apos;s 4 new Labour Codes have applied since 21 November 2025. Get implementation 
+                    cost estimates and a prioritized action plan to close your gaps.
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">Code on Wages</span>
@@ -756,16 +756,16 @@ export default function HowItWorksPage() {
             Ready to Check Your Compliance?
           </h2>
           <p className="text-blue-100 text-lg mb-8">
-            Start your assessment now and get your detailed report in under 10 minutes.
+            Start your assessment now and see your free compliance summary in under 10 minutes.
           </p>
           <Link href="/assessment/statutory-health">
             <Button size="lg" className="bg-white text-blue-800 hover:bg-gray-100 text-lg px-8 py-6">
-              Start Free Assessment
+              Start — Free Summary
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
           <p className="text-blue-200 text-sm mt-4">
-            Statutory Health Check is free • No credit card required
+            Free summary • No credit card to start • Full report {fullPriceLabel(ASSESSMENT_TYPES.STATUTORY_HEALTH)}
           </p>
         </div>
       </section>
@@ -782,7 +782,7 @@ export default function HowItWorksPage() {
             <Link href="/terms" className="hover:text-gray-900">Terms of Service</Link>
             <Link href="mailto:contact@compliancecheck.co.in" className="hover:text-gray-900">Contact</Link>
           </div>
-          <p className="text-sm text-gray-400">© 2025 ComplianceCheck</p>
+          <p className="text-sm text-gray-400">© {new Date().getFullYear()} ComplianceCheck</p>
         </div>
       </footer>
     </div>

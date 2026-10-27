@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import { CalculatorGuide } from '@/components/site/CalculatorGuide'
 
 export const metadata: Metadata = {
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/calculator/pf-esi-pt',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'PF, ESI & PT Calculator | ComplianceCheck',
     description: 'Check EPF and ESI applicability and monthly PF, ESI and Professional Tax per employee. Free, no signup.',
     type: 'website',

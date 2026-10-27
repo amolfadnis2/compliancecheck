@@ -4,7 +4,7 @@ import { getAllPosts } from '@/lib/blog/posts'
 import { ContentShell } from '@/components/site/ContentShell'
 import { JsonLd } from '@/lib/seo/JsonLd'
 import { breadcrumbSchema } from '@/lib/seo/schema'
-import { absoluteUrl } from '@/lib/seo/site'
+import { absoluteUrl, DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   title: 'Compliance Guides for Indian Businesses | ComplianceCheck',
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     'Plain-English guides on Indian compliance — Labour Codes 2025, the DPDP Act 2023, POSH, PF/ESI, GST and state-wise requirements. Written for founders and HR teams.',
   alternates: { canonical: absoluteUrl('/blog') },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Compliance Guides for Indian Businesses | ComplianceCheck',
     description:
       'Plain-English guides on Indian compliance for founders and HR teams.',

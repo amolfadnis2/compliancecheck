@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import { CalculatorGuide } from '@/components/site/CalculatorGuide'
 
 export const metadata: Metadata = {
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/calculator/gratuity',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Gratuity Calculator | ComplianceCheck',
     description: 'Free gratuity calculator for India. Calculate entitlement under the Payment of Gratuity Act 1972.',
     type: 'website',

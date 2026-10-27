@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: true },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessment/posh',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'POSH Act 2013 Compliance | ComplianceCheck',
     description: 'Prevention of Sexual Harassment compliance assessment. ICC audit, policy review, and compliance roadmap.',
     type: 'website',

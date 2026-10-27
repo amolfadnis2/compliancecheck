@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: true },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessment/statutory-health',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Statutory Health Check | ComplianceCheck',
     description: 'Quick 10-minute compliance assessment for Indian SMEs. Check PF, ESI, PT, Gratuity & Bonus status instantly.',
     type: 'website',

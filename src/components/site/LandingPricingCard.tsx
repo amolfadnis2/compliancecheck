@@ -65,7 +65,7 @@ export function LandingPricingCard({
           justifyContent: 'center',
         }}
       >
-        Start Free Assessment →
+        Start — Free Summary →
       </Link>
       {samplePath && (
         <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.875rem' }}>

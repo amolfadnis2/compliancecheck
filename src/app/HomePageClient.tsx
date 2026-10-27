@@ -38,7 +38,8 @@ const assessments: {
   id: string;
   title: string;
   description: string;
-  questions: number;
+  /** Shown as "{questions} questions"; ranges match the landing page. */
+  questions: string;
   /** Derived from ASSESSMENT_PRICES — what /api/payment/create-order charges. */
   fullPrice: string;
   isLive: boolean;
@@ -52,20 +53,20 @@ const assessments: {
     id: 'statutory-health-check',
     title: 'Statutory Health Check',
     description: 'Quick 10-minute assessment for PF, ESI, Professional Tax, Gratuity & Bonus compliance.',
-    questions: 12,
+    questions: '12',
     fullPrice: fullPriceLabel(ASSESSMENT_TYPES.STATUTORY_HEALTH),
     isLive: isPaymentLive(ASSESSMENT_TYPES.STATUTORY_HEALTH),
     href: '/assessments/landing/statutory-health-check',
     icon: Heart,
     gradient: 'from-blue-500 to-blue-600',
     hoverBorder: 'hover:border-blue-500',
-    badge: { text: 'LIVE', color: 'bg-blue-600' }
+    badge: null
   },
   {
     id: 'labour-code-readiness',
     title: 'Labour Code Readiness',
-    description: 'Assessment for all 4 new Labour Codes (Nov 2025). Gap analysis & action items.',
-    questions: 30,
+    description: 'Assessment for all 4 new Labour Codes (in force since Nov 2025). Gap analysis & action items.',
+    questions: '30',
     fullPrice: fullPriceLabel(ASSESSMENT_TYPES.LABOUR_CODE),
     isLive: isPaymentLive(ASSESSMENT_TYPES.LABOUR_CODE),
     href: '/assessments/landing/labour-code-readiness',
@@ -78,7 +79,7 @@ const assessments: {
     id: 'dpdp-gap-assessment',
     title: 'DPDP Gap Assessment',
     description: 'Data protection compliance for DPDP Act 2023 (effective May 2027). Maturity scoring.',
-    questions: 45,
+    questions: '45',
     fullPrice: fullPriceLabel(ASSESSMENT_TYPES.DPDP),
     isLive: isPaymentLive(ASSESSMENT_TYPES.DPDP),
     href: '/assessments/landing/dpdp-gap-assessment',
@@ -91,7 +92,7 @@ const assessments: {
     id: 'which-laws-apply',
     title: 'Which Laws Apply to My Business?',
     description: "Find out exactly what's required in your state — Professional Tax slabs, Labour Welfare Fund rates, S&E deadlines, and more.",
-    questions: 10,
+    questions: '20–59',
     fullPrice: fullPriceLabel(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE),
     isLive: isPaymentLive(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE),
     href: '/assessments/landing/state-wise-compliance',
@@ -104,7 +105,7 @@ const assessments: {
     id: 'food-business-compliance',
     title: 'Restaurant & Food Business',
     description: 'FSSAI, Fire NOC, Liquor Licence, GST, and Labour compliance for food businesses.',
-    questions: 26,
+    questions: '25–67',
     fullPrice: fullPriceLabel(ASSESSMENT_TYPES.FOOD_BUSINESS),
     isLive: isPaymentLive(ASSESSMENT_TYPES.FOOD_BUSINESS),
     href: '/assessments/landing/restaurant-food-business',
@@ -117,7 +118,7 @@ const assessments: {
     id: 'posh-compliance',
     title: 'POSH Act 2013 Compliance',
     description: 'Workplace safety assessment for Prevention of Sexual Harassment compliance and ICC requirements.',
-    questions: 40,
+    questions: '40–50',
     fullPrice: fullPriceLabel(ASSESSMENT_TYPES.POSH),
     isLive: isPaymentLive(ASSESSMENT_TYPES.POSH),
     href: '/assessments/landing/posh-act-compliance',
@@ -130,7 +131,7 @@ const assessments: {
     id: 'auto-dealer-compliance',
     title: 'Auto Dealership Compliance',
     description: '2-Wheeler & 4-Wheeler Dealers — Labour, CMVR, EHS, IRDAI MISP, ELV, GST 2.0, DPDP. 6-phase, up to 100 questions.',
-    questions: 100,
+    questions: 'Up to 100',
     fullPrice: fullPriceLabel(ASSESSMENT_TYPES.AUTO_DEALER),
     isLive: isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER),
     href: '/assessments/landing/auto-dealer-compliance',

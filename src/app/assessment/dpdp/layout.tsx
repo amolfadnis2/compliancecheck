@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: true },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessment/dpdp',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'DPDP Gap Assessment | ComplianceCheck',
     description: "India's first data protection law. Assess your readiness with our 45-question gap analysis.",
     type: 'website',

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
@@ -7,11 +8,12 @@ import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'State-Wise Compliance Check | Professional Tax, LWF, S&E Act | ComplianceCheck',
-  description: 'Find out exactly what compliance requirements apply in your state. Professional Tax, Labour Welfare Fund, Shops & Establishments Act, and more. Free summary; full report ₹499.',
+  description: 'Find out which compliance rules apply in your state: Professional Tax, Labour Welfare Fund, Shops & Establishments and more. Free summary; full report ₹499.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/state-wise-compliance',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'State-Wise Compliance Check | ComplianceCheck',
     description: 'State-specific compliance requirements for Indian businesses. 36 states & UTs, 20+ compliance areas.',
     type: 'website',
@@ -192,7 +194,7 @@ export default function StateWiseCompliancePage() {
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/blog">Guides</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
-            <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
+            <div className={styles.footerCopy}>© {new Date().getFullYear()} ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
       </footer>

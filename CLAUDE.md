@@ -297,6 +297,7 @@ Historical list (confirmed gone):
 - `src/app/api/assessment/[id]/pdf/route.tsx`
 - `src/lib/analytics/useAssessmentAnalytics.ts` (zero importers — deleted 2026-06-12)
 - `src/components/results/statutory-health-summary.tsx` (replaced by the shared `src/components/results/assessment-summary.tsx` + `UnifiedSummaryData` — deleted)
+- `src/app/assessment/Landing/page.tsx` + its CSS module (unreachable: `next.config` permanently redirects `/assessment/Landing` to the statutory-health landing page; still carried "₹999 post-beta" copy — deleted 2026-10-27)
 - `src/app/api/assessment/auto-dealer/pay/route.ts` (zero callers; superseded by `/api/payment/create-order` — deleted 2026-10-27)
 
 ---

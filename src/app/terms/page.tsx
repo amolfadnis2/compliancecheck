@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/terms',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Terms of Service | ComplianceCheck',
     description: 'Terms of Service for ComplianceCheck compliance assessment platform. Read our usage terms, disclaimers, and policies.',
     type: 'website',

@@ -53,9 +53,9 @@ export const ASSESSMENT_META: AssessmentMeta[] = [
       'Readiness assessment for India\'s 4 new Labour Codes (Wages, Social Security, OSH, Industrial Relations), with implementation cost estimates.',
     faqs: [
       {
-        question: 'When do the new Labour Codes take effect in India?',
+        question: 'When did the new Labour Codes take effect in India?',
         answer:
-          'The 4 Labour Codes consolidate 29 existing labour laws and are expected to take effect from November 2025. Every employer should assess readiness across wages, working hours, leave, and social security.',
+          'The 4 Labour Codes consolidate 29 earlier labour laws and have applied since 21 November 2025. Every employer should check readiness across wages, working hours, leave, and social security.',
       },
       {
         question: 'What are the 4 new Labour Codes?',

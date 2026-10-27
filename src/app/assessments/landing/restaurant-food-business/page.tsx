@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
@@ -7,11 +8,12 @@ import { LandingPricingCard } from '@/components/site/LandingPricingCard'
 
 export const metadata: Metadata = {
   title: 'Restaurant & Food Business Compliance | FSSAI, Fire NOC, Liquor License | ComplianceCheck',
-  description: 'Complete compliance assessment for restaurants, cloud kitchens, and food businesses. FSSAI, Fire NOC, Liquor License, GST, and Labour compliance. Free summary; full report ₹999.',
+  description: 'Compliance check for restaurants, cloud kitchens and food businesses: FSSAI, Fire NOC, liquor licence, GST and labour. Free summary; full report ₹999.',
   alternates: {
     canonical: 'https://compliancecheck.co.in/assessments/landing/restaurant-food-business',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Restaurant & Food Business Compliance | ComplianceCheck',
     description: 'FSSAI, Fire NOC, Liquor License, and 8 compliance areas for food businesses. Assessment with gap analysis.',
     type: 'website',
@@ -31,7 +33,7 @@ export default function RestaurantFoodBusinessPage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessment/food-business" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/food-business" className={styles.navCta} style={{ background: accentColor }}>Start — Free Summary</Link>
           </div>
         </div>
       </nav>
@@ -53,7 +55,7 @@ export default function RestaurantFoodBusinessPage() {
                 ))}
               </ul>
               <Link href="/assessment/food-business" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
-                Start Free Assessment →
+                Start — Free Summary →
               </Link>
             </div>
             <div className={styles.heroVisual}>
@@ -196,7 +198,7 @@ export default function RestaurantFoodBusinessPage() {
         <div className={styles.container}>
           <h2>Is Your Food Business Fully Compliant?</h2>
           <p>Avoid raids and penalties. Get a complete compliance check today.</p>
-          <Link href="/assessment/food-business" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/food-business" className={styles.btnWhite}>Start — Free Summary →</Link>
         </div>
       </section>
 
@@ -204,7 +206,7 @@ export default function RestaurantFoodBusinessPage() {
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/blog">Guides</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
-            <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
+            <div className={styles.footerCopy}>© {new Date().getFullYear()} ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
       </footer>

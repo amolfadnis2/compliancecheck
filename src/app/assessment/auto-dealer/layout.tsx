@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: true },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessment/auto-dealer',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'Auto Dealer Compliance Assessment | ComplianceCheck',
     description: 'Dealer license, GST, labour, environmental norms, and 8 compliance areas for automobile dealers. Gap analysis with action plan.',
     type: 'website',

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import { CalculatorGuide } from '@/components/site/CalculatorGuide'
 
 export const metadata: Metadata = {
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/calculator/ctc',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'CTC Calculator | ComplianceCheck',
     description: 'Free CTC to take-home salary calculator for India. Instant breakdown of PF, ESI, professional tax, and net pay.',
     type: 'website',

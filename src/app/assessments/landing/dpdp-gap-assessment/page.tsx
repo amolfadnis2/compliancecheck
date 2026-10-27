@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OPEN_GRAPH } from '@/lib/seo/site'
 import Link from 'next/link'
 import styles from '../assessment-landing.module.css'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
     canonical: 'https://compliancecheck.co.in/assessments/landing/dpdp-gap-assessment',
   },
   openGraph: {
+    ...DEFAULT_OPEN_GRAPH,
     title: 'DPDP Gap Assessment | ComplianceCheck',
     description: "India's first data protection law. Assess your readiness with our 45-question gap analysis.",
     type: 'website',
@@ -31,7 +33,7 @@ export default function DPDPGapAssessmentPage() {
         <div className={styles.container}>
           <div className={styles.navContent}>
             <Link href="/" className={styles.logo}><div className={styles.logoIcon}>✓</div>ComplianceCheck</Link>
-            <Link href="/assessment/dpdp" className={styles.navCta} style={{ background: accentColor }}>Start Free Assessment</Link>
+            <Link href="/assessment/dpdp" className={styles.navCta} style={{ background: accentColor }}>Start — Free Summary</Link>
           </div>
         </div>
       </nav>
@@ -53,7 +55,7 @@ export default function DPDPGapAssessmentPage() {
                 ))}
               </ul>
               <Link href="/assessment/dpdp" className={styles.btnPrimary} style={{ background: accentColor, boxShadow: `0 4px 14px ${accentColor}50` }}>
-                Start Free Assessment →
+                Start — Free Summary →
               </Link>
               <div className={styles.alertBanner} style={{ background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
                 <div className={styles.alertIcon} style={{ background: 'rgba(220, 38, 38, 0.1)' }}>⚠️</div>
@@ -203,7 +205,7 @@ export default function DPDPGapAssessmentPage() {
         <div className={styles.container}>
           <h2>Is Your Business DPDP Ready?</h2>
           <p>Don&apos;t risk ₹250 Crore penalties. Assess your data protection compliance today.</p>
-          <Link href="/assessment/dpdp" className={styles.btnWhite}>Start Free Assessment →</Link>
+          <Link href="/assessment/dpdp" className={styles.btnWhite}>Start — Free Summary →</Link>
         </div>
       </section>
 
@@ -211,7 +213,7 @@ export default function DPDPGapAssessmentPage() {
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerLinks}><Link href="/">Home</Link><Link href="/">All Assessments</Link><Link href="/blog">Guides</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
-            <div className={styles.footerCopy}>© 2025 ComplianceCheck. All rights reserved.</div>
+            <div className={styles.footerCopy}>© {new Date().getFullYear()} ComplianceCheck. All rights reserved.</div>
           </div>
         </div>
       </footer>

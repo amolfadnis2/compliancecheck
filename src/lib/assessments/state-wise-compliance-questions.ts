@@ -1414,8 +1414,6 @@ export const ASSESSMENT_METADATA = {
   id: 'state_wise_compliance',
   name: 'State-Wise Comprehensive Compliance Check',
   description: 'Complete compliance assessment covering central labour laws, state-specific requirements, tax compliance, and industry-specific regulations.',
-  price: 1499,
-  priceFormatted: 'Rs.1,499',
   estimatedTime: '20-30 minutes',
   phase1Questions: PHASE1_QUESTIONS.length,
   phase2QuestionsTotal: PHASE2_QUESTIONS.length,
