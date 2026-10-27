@@ -59,7 +59,7 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto px-6">
           <header className="mb-12">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Terms of Service</h1>
-            <p className="text-gray-600 dark:text-gray-400">Last updated: January 2025</p>
+            <p className="text-gray-600 dark:text-gray-400">Last updated: October 2026</p>
           </header>
 
           <article className="prose prose-gray dark:prose-invert max-w-none">
@@ -107,16 +107,9 @@ export default function TermsPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">5. Beta Programme</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Some assessments are currently offered free of charge as part of an early-access programme. We reserve the right to modify, limit, or discontinue early-access availability at any time. Early-access features may contain bugs or errors, and we appreciate your feedback to improve the Service.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. Pricing and Payments</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">5. Pricing and Payments</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Paid assessments are available on a pay-as-you-go basis. Prices are clearly displayed before purchase. All payments are processed securely through Razorpay.
+                Every assessment includes a free compliance summary. The full report is a one-time, pay-as-you-go purchase per assessment, with no subscription. Prices are clearly displayed before purchase. All payments are processed securely through Razorpay.
               </p>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Prices are subject to change. We will notify registered users of any pricing changes before they take effect.
@@ -129,7 +122,7 @@ export default function TermsPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">7. Intellectual Property</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. Intellectual Property</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 The Service, including all content, features, and functionality, is owned by ComplianceCheck and is protected by copyright, trademark, and other intellectual property laws.
               </p>
@@ -139,7 +132,7 @@ export default function TermsPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">8. Prohibited Uses</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">7. Prohibited Uses</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">You agree not to:</p>
               <ul className="list-disc pl-6 text-gray-600 dark:text-gray-400 space-y-2">
                 <li>Use the Service for any unlawful purpose</li>
@@ -152,35 +145,35 @@ export default function TermsPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">9. Limitation of Liability</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">8. Limitation of Liability</h2>
               <p className="text-gray-600 dark:text-gray-400">
                 To the maximum extent permitted by law, ComplianceCheck shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill, arising from your use of the Service.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">10. Indemnification</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">9. Indemnification</h2>
               <p className="text-gray-600 dark:text-gray-400">
                 You agree to indemnify and hold harmless ComplianceCheck from any claims, damages, losses, or expenses arising from your use of the Service or violation of these Terms.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">11. Governing Law</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">10. Governing Law</h2>
               <p className="text-gray-600 dark:text-gray-400">
                 These Terms shall be governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts in Pune, Maharashtra.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">12. Changes to Terms</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">11. Changes to Terms</h2>
               <p className="text-gray-600 dark:text-gray-400">
                 We reserve the right to modify these Terms at any time. Material changes will be notified via email or through the Service. Your continued use of the Service after changes constitutes acceptance of the modified Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">13. Contact</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">12. Contact</h2>
               <p className="text-gray-600 dark:text-gray-400">
                 For questions about these Terms, contact us at:<br />
                 Email: <a href="mailto:contact@compliancecheck.co.in" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">contact@compliancecheck.co.in</a>
