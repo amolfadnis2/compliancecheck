@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { GoogleAdsTag } from "@/components/providers/google-ads-tag";
 import { JsonLd } from "@/lib/seo/JsonLd";
 import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
 import { DEFAULT_OPEN_GRAPH } from "@/lib/seo/site";
@@ -56,6 +57,7 @@ export default function RootLayout({
             {children}
           </PostHogProvider>
         </ThemeProvider>
+        <GoogleAdsTag />
       </body>
     </html>
   );

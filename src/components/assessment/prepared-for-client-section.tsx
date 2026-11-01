@@ -22,6 +22,7 @@ import { PREPARER_DESIGNATIONS } from '@/lib/constants/india'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
 import { PARTNER_ATTESTATION_TEXT } from '@/lib/partner/types'
 import {
+  getPartnerState,
   setPartnerAttested,
   setPartnerEnabled,
   updatePartnerDetails,
@@ -44,6 +45,19 @@ export function PreparedForClientSection({
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const prefillTracked = useRef(false)
+
+  // Arriving from the /for-professionals page (`?partner=1`): tick the box
+  // for them so they don't have to find it. Read once on mount; window is
+  // used instead of useSearchParams so host pages need no Suspense boundary.
+  useEffect(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('partner') === '1' && !getPartnerState().enabled) {
+        setPartnerEnabled(true)
+      }
+    } catch {
+      /* ignore malformed URLs */
+    }
+  }, [])
 
   useEffect(() => {
     if (enabled && prefilled && !prefillTracked.current) {

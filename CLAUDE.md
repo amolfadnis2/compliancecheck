@@ -49,6 +49,8 @@ RAZORPAY_KEY_SECRET=
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 RAZORPAY_WEBHOOK_SECRET=        # /api/payment/webhook — backstop when the buyer closes the tab before /verify
 REPORT_SHARE_SECRET=            # signs the 30-day report links sent on WhatsApp / in the report email
+NEXT_PUBLIC_GOOGLE_ADS_ID=       # optional, AW-XXXXXXXXXX — loads the Google tag (off when unset)
+NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL=  # optional — Google Ads purchase conversion label, fired on Razorpay success
 ```
 
 ---
@@ -418,6 +420,7 @@ Plan: `docs/superpowers/plans/2026-11-01-partner-white-label.md`. Migration: `20
 - **Delivery:** summary + paid views show `<PartnerBrandBar>`; `/api/email/send-report` uses `partnerEmailHtml` with `"<Firm> via ComplianceCheck"` as sender name and reply-to the partner; WhatsApp text names the firm.
 - **Analytics:** `analytics.registerPartnerContext` (super properties `submission_mode`, `is_partner`, `preparer_designation`, `preparer_id`), `analytics.setPartnerGroup` (PostHog group `preparer`), events `partner_*` / `branded_report_*`; server revenue events carry the same fields via `partnerEventProps`. Never send the client's company name or contacts to PostHog.
 - **Admin:** `/admin/partners`.
+- **Acquisition:** `/for-professionals` is the landing page for ads/outreach. Its buttons open assessments with `?partner=1`, which `<PreparedForClientSection>` reads to pre-tick partner mode. Paid purchases are reported to Google Ads via `trackGoogleAdsPurchase` (`@/lib/analytics/google-ads`) from `<PaymentGate>`, because Google Ads cannot import PostHog conversions.
 - Phase 2 (client fills in via a partner link, verified partner profile, partner dashboard) is planned, not built.
 
 ---
