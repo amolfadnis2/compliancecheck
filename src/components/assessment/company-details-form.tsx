@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/select'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/india'
 import { ArrowRight } from 'lucide-react'
+import type { AssessmentType } from '@/lib/constants/assessment-types'
+import { PreparedForClientSection } from '@/components/assessment/prepared-for-client-section'
+import { usePartnerMode, validatePartnerStep } from '@/lib/partner/partner-store'
 
 export const companyDetailsSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -35,6 +38,8 @@ interface CompanyDetailsFormProps {
   isLoading?: boolean
   onValuesChange?: (values: Partial<CompanyDetails>) => void
   submitLabel?: string
+  /** Paid assessments pass their type to offer partner mode (CA/CS/lawyer for a client). */
+  partnerAssessmentType?: AssessmentType
 }
 
 export function CompanyDetailsForm({
@@ -43,7 +48,18 @@ export function CompanyDetailsForm({
   isLoading,
   onValuesChange,
   submitLabel = 'Continue to Assessment',
+  partnerAssessmentType,
 }: CompanyDetailsFormProps) {
+  const isPartner = usePartnerMode() && !!partnerAssessmentType
+  const [partnerError, setPartnerError] = useState<string | null>(null)
+  const submit = (details: CompanyDetails) => {
+    const err = partnerAssessmentType
+      ? validatePartnerStep({ name: details.fullName, email: details.email, phone: details.phone })
+      : null
+    setPartnerError(err)
+    if (!err) onSubmit(details)
+  }
+
   const {
     register,
     handleSubmit,
@@ -64,17 +80,18 @@ export function CompanyDetailsForm({
   }, [watch, onValuesChange])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(submit)} className="space-y-4">
+      {partnerAssessmentType && <PreparedForClientSection assessmentType={partnerAssessmentType} />}
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="fullName">Full Name *</Label>
+          <Label htmlFor="fullName">{isPartner ? 'Your Name *' : 'Full Name *'}</Label>
           <Input id="fullName" {...register('fullName')} placeholder="John Doe" />
           {errors.fullName && (
             <p className="text-sm text-red-600">{errors.fullName.message}</p>
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email *</Label>
+          <Label htmlFor="email">{isPartner ? 'Your Email * (report is sent here)' : 'Email *'}</Label>
           <Input id="email" type="email" {...register('email')} placeholder="john@company.com" />
           {errors.email && (
             <p className="text-sm text-red-600">{errors.email.message}</p>
@@ -84,7 +101,7 @@ export function CompanyDetailsForm({
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number *</Label>
+          <Label htmlFor="phone">{isPartner ? 'Your Phone Number *' : 'Phone Number *'}</Label>
           <div className="flex">
             <span className="inline-flex items-center px-3 text-gray-600 bg-gray-50 border border-r-0 rounded-l-md text-sm">
               +91
@@ -102,7 +119,7 @@ export function CompanyDetailsForm({
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="companyName">Company Name *</Label>
+          <Label htmlFor="companyName">{isPartner ? 'Client Company Name *' : 'Company Name *'}</Label>
           <Input id="companyName" {...register('companyName')} placeholder="Acme Pvt Ltd" />
           {errors.companyName && (
             <p className="text-sm text-red-600">{errors.companyName.message}</p>
@@ -112,7 +129,7 @@ export function CompanyDetailsForm({
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>State *</Label>
+          <Label>{isPartner ? 'Client State *' : 'State *'}</Label>
           <Select
             onValueChange={(v) => setValue('state', v, { shouldValidate: true })}
             defaultValue={defaultValues?.state}
@@ -131,7 +148,7 @@ export function CompanyDetailsForm({
           )}
         </div>
         <div className="space-y-2">
-          <Label>Employee Count *</Label>
+          <Label>{isPartner ? 'Client Employee Count *' : 'Employee Count *'}</Label>
           <Select
             onValueChange={(v) => setValue('employeeCount', v, { shouldValidate: true })}
             defaultValue={defaultValues?.employeeCount}
@@ -152,7 +169,7 @@ export function CompanyDetailsForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Industry *</Label>
+        <Label>{isPartner ? 'Client Industry *' : 'Industry *'}</Label>
         <Select
           onValueChange={(v) => setValue('industry', v, { shouldValidate: true })}
           defaultValue={defaultValues?.industry}
@@ -170,6 +187,8 @@ export function CompanyDetailsForm({
           <p className="text-sm text-red-600">{errors.industry.message}</p>
         )}
       </div>
+
+      {partnerError && <p className="text-sm text-red-600">{partnerError}</p>}
 
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? 'Please wait...' : (

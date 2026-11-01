@@ -19,6 +19,8 @@ import { ApplicabilityForm } from '@/components/auto-dealer/ApplicabilityForm'
 import { APPLICABILITY_QUESTIONS } from '@/lib/assessments/auto-dealer/applicability-questions'
 import { analytics } from '@/lib/analytics/tracking'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
+import { PreparedForClientSection } from '@/components/assessment/prepared-for-client-section'
+import { onPartnerSubmitted, partnerContactOf, partnerSubmitFields, usePartnerMode, validatePartnerStep } from '@/lib/partner/partner-store'
 
 import type { Responses, LabourRegime } from '@/types/auto-dealer'
 
@@ -54,6 +56,7 @@ export default function AutoDealerLandingPage() {
   const [labourRegime, setLabourRegime] = useState<LabourRegime>('new')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const isPartner = usePartnerMode()
 
   const { register, handleSubmit, formState: { errors } } = useForm<DetailsForm>({
     resolver: zodResolver(detailsSchema),
@@ -84,16 +87,28 @@ export default function AutoDealerLandingPage() {
   // --------------------------------------------------------------------------
 
   const onDetailsSubmit = async (data: DetailsForm) => {
+    const partnerError = validatePartnerStep(partnerContactOf(data))
+    if (partnerError) {
+      setError(partnerError)
+      return
+    }
     setIsSubmitting(true)
     setError(null)
     try {
       const res = await fetch('/api/assessment/auto-dealer/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName: data.fullName, email: data.email, phone: data.phone, companyName: data.companyName }),
+        body: JSON.stringify({
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          companyName: data.companyName,
+          ...partnerSubmitFields(partnerContactOf(data)),
+        }),
       })
       const json = await res.json()
       if (!json.assessmentId) throw new Error('Failed to start assessment')
+      onPartnerSubmitted(ASSESSMENT_TYPES.AUTO_DEALER, json.preparerId ?? undefined, partnerContactOf(data))
       setAssessmentId(json.assessmentId)
       // Persist to localStorage as transient fallback
       localStorage.setItem('auto_dealer_assessment_id', json.assessmentId)
@@ -290,13 +305,14 @@ export default function AutoDealerLandingPage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit(onDetailsSubmit)} className="space-y-4">
+                  <PreparedForClientSection assessmentType={ASSESSMENT_TYPES.AUTO_DEALER} />
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
+                    <Label htmlFor="fullName">{isPartner ? 'Your Name *' : 'Full Name *'}</Label>
                     <Input id="fullName" {...register('fullName')} placeholder="Rajesh Kumar" aria-describedby={errors.fullName ? 'fullName-err' : undefined} />
                     {errors.fullName && <p id="fullName-err" className="text-sm text-red-500">{errors.fullName.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="email">{isPartner ? 'Your Email *' : 'Email *'}</Label>
                     <Input id="email" type="email" {...register('email')} placeholder="rajesh@dealership.com" aria-describedby={errors.email ? 'email-err' : 'email-hint'} />
                     {errors.email
                       ? <p id="email-err" className="text-sm text-red-500">{errors.email.message}</p>
@@ -304,7 +320,7 @@ export default function AutoDealerLandingPage() {
                     }
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Mobile Number *</Label>
+                    <Label htmlFor="phone">{isPartner ? 'Your Mobile Number *' : 'Mobile Number *'}</Label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+91</span>
                       <Input id="phone" {...register('phone')} placeholder="9876543210" className="rounded-l-none" aria-describedby={errors.phone ? 'phone-err' : undefined} />
@@ -312,7 +328,7 @@ export default function AutoDealerLandingPage() {
                     {errors.phone && <p id="phone-err" className="text-sm text-red-500">{errors.phone.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="companyName">Dealership Name *</Label>
+                    <Label htmlFor="companyName">{isPartner ? 'Client Dealership Name *' : 'Dealership Name *'}</Label>
                     <Input id="companyName" {...register('companyName')} placeholder="Krishna Motors Pvt Ltd" aria-describedby={errors.companyName ? 'company-err' : undefined} />
                     {errors.companyName && <p id="company-err" className="text-sm text-red-500">{errors.companyName.message}</p>}
                   </div>

@@ -4,6 +4,7 @@ import { getEntitlement, getEntitlementContact } from '@/lib/payment/entitlement
 import { getReportOwner } from '@/lib/report/paid-report'
 import { reportShareUrl, signReportToken, REPORT_SHARE_TTL_MS } from '@/lib/report/share-token'
 import { normalizeIndianMobile } from '@/lib/identity/phone'
+import { getAssessmentPartner } from '@/lib/partner/server'
 
 /**
  * POST /api/report/share-link  { assessmentId, assessmentType, email }
@@ -31,9 +32,13 @@ export async function POST(request: NextRequest) {
 
     const contact = await getEntitlementContact(assessmentId, assessmentType)
     const token = signReportToken({ id: assessmentId, type: assessmentType })
+    // Partner mode: the owner is the CA/CS/lawyer, who sends it to their client —
+    // word the message from their firm and don't prefill their own number.
+    const { preparedBy } = await getAssessmentPartner(assessmentType, assessmentId)
     return NextResponse.json({
       url: reportShareUrl(token, request.nextUrl.origin),
-      phone: normalizeIndianMobile(contact?.phone) ?? normalizeIndianMobile(owner.phone),
+      firmName: preparedBy?.firmName ?? null,
+      phone: preparedBy ? null : normalizeIndianMobile(contact?.phone) ?? normalizeIndianMobile(owner.phone),
       expiresAt: new Date(Date.now() + REPORT_SHARE_TTL_MS).toISOString(),
     })
   } catch (err) {

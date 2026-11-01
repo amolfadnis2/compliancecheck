@@ -119,3 +119,16 @@ export const PT_EXEMPT_STATES = [
 export function isPTApplicable(state: string): boolean {
   return !PT_EXEMPT_STATES.includes(state as typeof PT_EXEMPT_STATES[number]);
 }
+
+// Professional designations a partner (report preparer) can pick in partner
+// mode. Values are stored in report_preparers.designation (CHECK-constrained).
+export const PREPARER_DESIGNATIONS = [
+  { value: 'CA', label: 'Chartered Accountant (CA)' },
+  { value: 'CS', label: 'Company Secretary (CS)' },
+  { value: 'CMA', label: 'Cost & Management Accountant (CMA)' },
+  { value: 'Advocate', label: 'Advocate / Lawyer' },
+  { value: 'Consultant', label: 'Compliance / HR Consultant' },
+  { value: 'Other', label: 'Other professional' },
+] as const;
+
+export type PreparerDesignation = typeof PREPARER_DESIGNATIONS[number]['value'];

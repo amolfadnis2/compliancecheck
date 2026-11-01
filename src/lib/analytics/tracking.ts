@@ -31,6 +31,13 @@ import {
   OrganizationCreatedProps,
   UserInvitedProps,
   FeedbackSubmittedProps,
+  PartnerModeToggledProps,
+  PartnerDetailsPrefilledProps,
+  PartnerLogoUploadedProps,
+  PartnerDetailsSubmittedProps,
+  BrandedReportGeneratedProps,
+  BrandedReportEmailedProps,
+  PartnerSubmissionMode,
   UserTier,
   OrganizationSize,
 } from './events';
@@ -224,6 +231,65 @@ export const trackFeedbackSubmitted = (props: FeedbackSubmittedProps) => {
 };
 
 // =============================================================================
+// PARTNER MODE TRACKING
+// =============================================================================
+
+/**
+ * Super properties for partner mode: once registered they ride on every later
+ * event (paywall, checkout, payment, download, share) so any funnel can be
+ * broken down by partner. Cleared when the partner box is unticked.
+ */
+export interface PartnerContext {
+  submission_mode: PartnerSubmissionMode;
+  preparer_designation?: string;
+  /** report_preparers.id — known once the first submit returns it. */
+  preparer_id?: string;
+}
+
+export const registerPartnerContext = (ctx: PartnerContext | null) => {
+  if (!isPostHogReady()) return;
+  if (ctx && ctx.submission_mode !== 'self') {
+    posthog.register({ ...ctx, is_partner: true });
+  } else {
+    posthog.unregister('submission_mode');
+    posthog.unregister('preparer_designation');
+    posthog.unregister('preparer_id');
+    posthog.unregister('is_partner');
+  }
+};
+
+/** Group analytics (paid PostHog add-on): one group per partner firm. */
+export const setPartnerGroup = (preparerKey: string, props: { firm_name: string; designation: string; city?: string }) => {
+  if (isPostHogReady()) {
+    posthog.group('preparer', preparerKey, props);
+  }
+};
+
+export const trackPartnerModeToggled = (props: PartnerModeToggledProps) => {
+  safeCapture(ANALYTICS_EVENTS.PARTNER_MODE_TOGGLED, props);
+};
+
+export const trackPartnerDetailsPrefilled = (props: PartnerDetailsPrefilledProps) => {
+  safeCapture(ANALYTICS_EVENTS.PARTNER_DETAILS_PREFILLED, props);
+};
+
+export const trackPartnerLogoUploaded = (props: PartnerLogoUploadedProps) => {
+  safeCapture(ANALYTICS_EVENTS.PARTNER_LOGO_UPLOADED, props);
+};
+
+export const trackPartnerDetailsSubmitted = (props: PartnerDetailsSubmittedProps) => {
+  safeCapture(ANALYTICS_EVENTS.PARTNER_DETAILS_SUBMITTED, props);
+};
+
+export const trackBrandedReportGenerated = (props: BrandedReportGeneratedProps) => {
+  safeCapture(ANALYTICS_EVENTS.BRANDED_REPORT_GENERATED, props);
+};
+
+export const trackBrandedReportEmailed = (props: BrandedReportEmailedProps) => {
+  safeCapture(ANALYTICS_EVENTS.BRANDED_REPORT_EMAILED, props);
+};
+
+// =============================================================================
 // UNIFIED ANALYTICS OBJECT (for cleaner imports)
 // =============================================================================
 
@@ -275,6 +341,16 @@ export const analytics = {
   
   // Feedback
   feedbackSubmitted: trackFeedbackSubmitted,
+
+  // Partner mode
+  registerPartnerContext,
+  setPartnerGroup,
+  partnerModeToggled: trackPartnerModeToggled,
+  partnerDetailsPrefilled: trackPartnerDetailsPrefilled,
+  partnerLogoUploaded: trackPartnerLogoUploaded,
+  partnerDetailsSubmitted: trackPartnerDetailsSubmitted,
+  brandedReportGenerated: trackBrandedReportGenerated,
+  brandedReportEmailed: trackBrandedReportEmailed,
   
   // Generic tracking
   trackEvent,

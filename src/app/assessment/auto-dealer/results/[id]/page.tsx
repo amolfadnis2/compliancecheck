@@ -8,6 +8,8 @@ import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-type
 import { AssessmentSummary } from '@/components/results/assessment-summary'
 import { WhatsAppShareButton } from '@/components/results/whatsapp-share-button'
 import { toAutoDealerSummary } from '@/lib/payment/auto-dealer-summary'
+import { PartnerBrandBar } from '@/components/results/partner-brand-bar'
+import type { PreparedBy } from '@/lib/partner/types'
 import { withPeerAverages } from '@/lib/payment/summary-data'
 import { usePeerAverages } from '@/lib/benchmarks/use-peer-averages'
 import {
@@ -411,6 +413,8 @@ interface ResultsData {
   paymentStatus: string
   priceTier: 'basic' | 'standard' | 'premium'
   totalQuestions: number
+  /** Partner-mode branding (CA/CS/lawyer who prepared it for a client). */
+  preparedBy?: PreparedBy | null
 }
 
 export default function ResultsPage() {
@@ -663,13 +667,16 @@ export default function ResultsPage() {
     // checkout). The OTP email gate above stays — auto-dealer-specific (sec 14).
     if (isPaymentLive(ASSESSMENT_TYPES.AUTO_DEALER)) {
       const summary = withPeerAverages(
-        toAutoDealerSummary({
-          overallScore: overallScore.score,
-          phaseScores,
-          gapAnalysis,
-          applicabilityChecks,
-          companyName: data.companyName,
-        }),
+        {
+          ...toAutoDealerSummary({
+            overallScore: overallScore.score,
+            phaseScores,
+            gapAnalysis,
+            applicabilityChecks,
+            companyName: data.companyName,
+          }),
+          preparedBy: data.preparedBy ?? undefined,
+        },
         peerAverages
       )
       return (
@@ -730,6 +737,7 @@ export default function ResultsPage() {
       <AssessmentHeader title="Auto Dealership Compliance Assessment" subtitle="Full Compliance Report" />
 
       <main className="container mx-auto px-4 py-8 space-y-8 max-w-4xl">
+        <PartnerBrandBar preparedBy={data.preparedBy} clientName={data.companyName ?? undefined} />
         <div className="flex items-center justify-between">
           <Link href="/" className="inline-flex items-center text-blue-700 hover:text-blue-800">
             <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />Back

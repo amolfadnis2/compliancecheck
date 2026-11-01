@@ -9,11 +9,13 @@ import {
   Shield,
   Home,
   Table2,
+  Briefcase,
 } from 'lucide-react'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/assessments', label: 'Assessments', icon: Table2 },
+  { href: '/admin/partners', label: 'Partners', icon: Briefcase },
 ]
 
 export default function AdminSidebar({ userEmail }: { userEmail: string }) {

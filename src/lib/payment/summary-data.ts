@@ -13,6 +13,7 @@
  */
 
 import { getAssessmentDisplayName, type AssessmentType } from '@/lib/constants/assessment-types'
+import type { PreparedBy } from '@/lib/partner/types'
 
 export interface SummaryCategoryScore {
   key: string
@@ -57,6 +58,8 @@ export interface UnifiedSummaryData {
   legalReferences: string[]
   peers?: SummaryPeerInfo
   companyName: string
+  /** Partner mode: the firm that prepared this for their client (branding only). */
+  preparedBy?: PreparedBy
 }
 
 /**

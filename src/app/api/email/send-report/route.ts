@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { isPaymentLive, isValidAssessmentType } from '@/lib/constants/assessment-types'
 import { getEntitlement } from '@/lib/payment/entitlement'
+import { getAssessmentPartner } from '@/lib/partner/server'
+import { partnerEmailHtml, partnerFromAddress } from '@/lib/partner/email'
 
 // Lazy initialization - only create client when needed
 let resend: Resend | null = null
@@ -561,13 +563,26 @@ export async function POST(request: NextRequest) {
     const dateStr = new Date().toISOString().split('T')[0]
     const filename = generatedFilename || `${filenamePrefix}-${dateStr}.pdf`
 
+    // Partner mode: a CA / CS / lawyer / consultant prepared this for a client —
+    // send it under their name (reply-to them) so they can forward it as-is.
+    const partner = isUuid && isValidAssessmentType(resolvedAssessmentType)
+      ? await getAssessmentPartner(resolvedAssessmentType, assessmentId)
+      : null
+    const preparedBy = partner?.preparedBy ?? null
+    const defaultFrom = process.env.EMAIL_FROM || 'ComplianceCheck <noreply@compliancecheck.co.in>'
+
     // Send email with PDF attachment
     const { data, error } = await getResendClient().emails.send({
-      from: process.env.EMAIL_FROM || 'ComplianceCheck <noreply@compliancecheck.co.in>',
+      from: preparedBy ? partnerFromAddress(defaultFrom, preparedBy.firmName) : defaultFrom,
+      ...(preparedBy ? { replyTo: preparedBy.email } : {}),
       to: email,
-      subject: `Your ${reportLabel} Report - ${resolvedCompanyName || 'Assessment Complete'}`,
+      subject: preparedBy
+        ? `${reportLabel} Report - ${resolvedCompanyName || 'Your Company'} | ${preparedBy.firmName}`
+        : `Your ${reportLabel} Report - ${resolvedCompanyName || 'Assessment Complete'}`,
       html: withShareLink(
-        generateEmailHtml(resolvedAssessmentType, reportLabel, resolvedCompanyName, resolvedScore, status, statusColour),
+        preparedBy
+          ? partnerEmailHtml({ preparedBy, reportLabel, companyName: resolvedCompanyName, score: resolvedScore, status, statusColour })
+          : generateEmailHtml(resolvedAssessmentType, reportLabel, resolvedCompanyName, resolvedScore, status, statusColour),
         shareUrl
       ),
       attachments: [

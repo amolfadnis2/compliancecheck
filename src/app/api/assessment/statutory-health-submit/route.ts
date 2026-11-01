@@ -7,6 +7,7 @@ import {
 } from '@/lib/assessments/statutory-health-questions'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { resolvePartnerSubmission } from '@/lib/partner/persist-preparer'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -132,6 +133,9 @@ export async function POST(request: NextRequest) {
 
     if (!companyError) companyId = newCompany.id
 
+    // Partner mode (CA/CS/lawyer filling in for a client): branding snapshot
+    const partner = await resolvePartnerSubmission(supabase, body)
+
     // Step 3: create assessment record with computed scores
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')
@@ -140,6 +144,7 @@ export async function POST(request: NextRequest) {
         company_id: companyId,
         payment_id: null,
         assessment_type: ASSESSMENT_TYPES.STATUTORY_HEALTH,
+        ...partner.columns,
         status: 'completed',
         responses: {
           userDetails,
@@ -187,6 +192,7 @@ export async function POST(request: NextRequest) {
       storageType: 'database',
       userId: finalUserId,
       companyId,
+      preparerId: partner.preparerId,
       overallScore,
       categoryScores,
       actionItems,

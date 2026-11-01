@@ -5,6 +5,7 @@ import { captureServerEvent } from '@/lib/analytics/server'
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
 import { normalizeIndianMobile } from '@/lib/identity/phone'
+import { getAssessmentPartner, partnerEventProps } from '@/lib/partner/server'
 
 export async function POST(request: Request) {
   try {
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
       amount_inr: Math.round((entitlement.amount_paise ?? 0) / 100),
       payment_method: 'razorpay',
       source: 'server',
+      ...partnerEventProps(await getAssessmentPartner(assessmentType as AssessmentType, assessmentId, supabase)),
     })
 
     return NextResponse.json({ success: true, assessmentId })

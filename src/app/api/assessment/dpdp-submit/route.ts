@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { resolvePartnerSubmission } from '@/lib/partner/persist-preparer'
 import {
   calculateDPDPScore,
   generateDPDPActionItems,
@@ -80,6 +81,7 @@ export async function POST(req: NextRequest) {
 
     // Try to save to database
     let assessmentId = `local_${Date.now()}`
+    let partner: Awaited<ReturnType<typeof resolvePartnerSubmission>> = await resolvePartnerSubmission(null, body)
 
     try {
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -87,6 +89,16 @@ export async function POST(req: NextRequest) {
       }
 
       const supabase = getSupabase()
+
+      // Partner mode: DPDP collects no client contact info, so the partner's
+      // own name/email (asked in the partner block) become the row's contact —
+      // the report is delivered to, and owned by, the partner.
+      partner = await resolvePartnerSubmission(supabase, body)
+      if (partner.preparedBy) {
+        organizationProfile.fullName = organizationProfile.fullName || partner.preparedBy.preparerName
+        organizationProfile.email = organizationProfile.email || partner.preparedBy.email
+        organizationProfile.phone = organizationProfile.phone || partner.preparedBy.phone
+      }
 
       // Contact info is optional now — only upsert a users row when an email
       // is actually present, so this never fires an upsert with an empty
@@ -117,6 +129,7 @@ export async function POST(req: NextRequest) {
         .from('assessments')
         .insert({
           user_id: userId,
+          ...partner.columns,
           user_details: {
             fullName: organizationProfile.fullName,
             email: organizationProfile.email,
@@ -153,6 +166,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       assessmentId,
+      preparerId: partner.preparerId,
       overallScore: scoreResults.overallScore,
       categoryScores: scoreResults.phaseScores,
       maturityLevel: scoreResults.maturityLevel,

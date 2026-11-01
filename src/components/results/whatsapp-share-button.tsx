@@ -36,6 +36,7 @@ export function WhatsAppShareButton({
   const [emailInput, setEmailInput] = useState(email ?? '')
   const [phone, setPhone] = useState(defaultPhone ?? '')
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [firmName, setFirmName] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -60,6 +61,7 @@ export function WhatsAppShareButton({
         return
       }
       setShareUrl(data.url)
+      if (data.firmName) setFirmName(String(data.firmName))
       if (!phone && data.phone) setPhone(String(data.phone).replace(/^91/, ''))
     } catch {
       setError('Could not create a link. Please try again.')
@@ -74,10 +76,13 @@ export function WhatsAppShareButton({
   }
 
   const phoneValid = !phone.trim() || !!normalizeIndianMobile(phone)
-  const message =
-    `My ${getAssessmentDisplayName(assessmentType)} report from ComplianceCheck ` +
-    `(score, gaps and a step-by-step action plan with legal references):\n${shareUrl ?? ''}\n\n` +
-    'The link opens the PDF and works for 30 days.'
+  const message = firmName
+    ? `Your ${getAssessmentDisplayName(assessmentType)} report from ${firmName} ` +
+      `(score, gaps and a step-by-step action plan with legal references):\n${shareUrl ?? ''}\n\n` +
+      'The link opens the PDF and works for 30 days.'
+    : `My ${getAssessmentDisplayName(assessmentType)} report from ComplianceCheck ` +
+      `(score, gaps and a step-by-step action plan with legal references):\n${shareUrl ?? ''}\n\n` +
+      'The link opens the PDF and works for 30 days.'
 
   if (!open) {
     return (

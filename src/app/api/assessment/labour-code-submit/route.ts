@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { resolvePartnerSubmission } from '@/lib/partner/persist-preparer'
 import {
   calculateLabourCodeScore,
   generateLabourCodeActionItems,
@@ -121,8 +122,12 @@ export async function POST(request: NextRequest) {
         console.log('Created company:', companyId)
       }
 
+      // Partner mode (CA/CS/lawyer filling in for a client): branding snapshot
+      const partner = await resolvePartnerSubmission(supabase, body)
+
       // Step 3: Create the assessment record
       const assessmentData = {
+        ...partner.columns,
         user_id: finalUserId,
         company_id: companyId,
         payment_id: null,
@@ -172,6 +177,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         assessmentId: assessment.id,
+        preparerId: partner.preparerId,
         userId: finalUserId,
         companyId: companyId,
         overallScore,

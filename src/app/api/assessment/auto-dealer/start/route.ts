@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { resolvePartnerSubmission } from '@/lib/partner/persist-preparer'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _supabase: any = null
@@ -36,10 +37,14 @@ export async function POST(request: NextRequest) {
 
     const assessmentId = crypto.randomUUID()
 
+    // Partner mode (CA/CS/lawyer filling in for a client): branding snapshot
+    const partner = await resolvePartnerSubmission(getSupabase(), body)
+
     const { error: insertError } = await getSupabase()
       .from('auto_dealer_assessments')
       .insert({
         id: assessmentId,
+        ...partner.columns,
         user_email: email.toLowerCase().trim(),
         email_verified: false,
         full_name: fullName.trim(),
@@ -57,7 +62,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ assessmentId: fallbackId, savedToDb: false })
     }
 
-    return NextResponse.json({ assessmentId, savedToDb: true })
+    return NextResponse.json({ assessmentId, savedToDb: true, preparerId: partner.preparerId })
   } catch (err) {
     console.error('Assessment start error:', err)
     // Return fallback so the client is never blocked

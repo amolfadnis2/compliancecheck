@@ -5,6 +5,7 @@ import { assessmentTableFor } from '@/lib/payment/assessment-table'
 import { captureServerEvent } from '@/lib/analytics/server'
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 import { normalizeIndianMobile } from '@/lib/identity/phone'
+import { getAssessmentPartner, partnerEntitlementColumns, partnerEventProps } from '@/lib/partner/server'
 
 export async function POST(request: Request) {
   try {
@@ -77,10 +78,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, assessmentId, alreadyPaid: true })
     }
 
+    const partner = await getAssessmentPartner(assessmentType as AssessmentType, assessmentId, supabase)
     const { error: entitlementError } = await supabase
       .from('assessment_entitlements')
       .upsert(
         {
+          ...partnerEntitlementColumns(partner),
           assessment_id: assessmentId,
           assessment_type: assessmentType,
           amount_paise: 0,
@@ -119,6 +122,7 @@ export async function POST(request: Request) {
       amount_inr: Math.round(ASSESSMENT_PRICES[assessmentType as AssessmentType].amountPaise / 100),
       payment_method: 'waiver',
       source: 'server',
+      ...partnerEventProps(partner),
     })
 
     return NextResponse.json({ success: true, assessmentId })

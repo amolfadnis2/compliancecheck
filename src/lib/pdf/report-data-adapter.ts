@@ -16,6 +16,8 @@ import type {
   ReportConfig,
 } from './unified-report-generator'
 import type { ComplianceRule } from '@/types/compliance'
+import { withPreparedBy } from '@/lib/partner/report-branding'
+import { parsePreparedBy, type PreparedBy } from '@/lib/partner/types'
 
 import { DPDP_COMPLIANCE_RULES, DPDP_CATEGORY_LABELS } from './dpdp-compliance-rules'
 import { FOOD_COMPLIANCE_RULES, FOOD_CATEGORY_LABELS } from './food-business-compliance-rules'
@@ -61,6 +63,8 @@ export interface AssessmentData {
   responses?: AnyRecord
   userDetails?: AnyRecord
   user_details?: AnyRecord
+  /** Partner-mode branding snapshot (assessments.prepared_by). */
+  prepared_by?: unknown
 }
 
 // ============================================================================
@@ -312,7 +316,7 @@ function buildReportFromAnswers(
     }
   })
 
-  return {
+  const report: UnifiedReportData = {
     assessmentId: data.id || 'N/A',
     overallScore,
     riskLevel: getRiskLevel(overallScore),
@@ -323,6 +327,7 @@ function buildReportFromAnswers(
     userDetails: extractUserDetails(data),
     config: spec.config,
   }
+  return withPreparedBy(report, parsePreparedBy(data.prepared_by))
 }
 
 function getAnswers(data: AssessmentData): AnyRecord {
@@ -438,9 +443,10 @@ export interface POSHUserInput {
 export function adaptPOSHResult(
   result: POSHResultInput,
   user: POSHUserInput,
-  assessmentId?: string
+  assessmentId?: string,
+  preparedBy?: PreparedBy | null
 ): UnifiedReportData {
-  return {
+  return withPreparedBy({
     assessmentId: assessmentId || 'N/A',
     overallScore: result.overallScore,
     riskLevel: result.riskLevel,
@@ -468,7 +474,7 @@ export function adaptPOSHResult(
       industry: user.industry,
     },
     config: POSH_CONFIG,
-  }
+  }, preparedBy)
 }
 
 /**
@@ -506,5 +512,5 @@ export function adaptPOSHRow(row: AnyRecord): UnifiedReportData {
     industry: POSH_INDUSTRY_LABELS[applicability.POSH_APP_008] || applicability.POSH_APP_008 || 'Not specified',
   }
 
-  return adaptPOSHResult(resultInput, userInput, row.id)
+  return adaptPOSHResult(resultInput, userInput, row.id, parsePreparedBy(row.prepared_by))
 }

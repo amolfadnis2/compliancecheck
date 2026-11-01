@@ -80,6 +80,8 @@ export async function GET(
       action_items: detailsLocked ? [] : assessment.action_items,
       details_locked: detailsLocked,
       responses: assessment.responses,
+      // Partner-mode branding snapshot (null for normal assessments)
+      prepared_by: assessment.prepared_by ?? null,
       created_at: assessment.created_at,
       completed_at: assessment.completed_at,
       // Combine user and company details (check multiple field names across all assessment types)

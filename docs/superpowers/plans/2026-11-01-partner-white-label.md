@@ -22,6 +22,13 @@ It's the right model for launch: it needs the least code, carries no pricing ris
 
 ## Phase 1 — Partner fills in for the client (MVP)
 
+> **Status: built (2026-11-01).** Changes from the original plan, made while building:
+> - **Client contact details are not collected at all.** In partner mode the Step 0 name / email / phone fields become the partner's own (relabelled), and company / state / size / industry are the client's. This reuses the existing ownership check, checkout and delivery unchanged (the partner owns, pays for and receives the report) and keeps client personal data out of the system. DPDP, which has no contact fields, asks the partner's name / email / phone inside the partner block plus a "Client company name" field.
+> - **Submit-route confirmation emails are not re-branded.** They go to the partner (our customer), so they stay ComplianceCheck emails. The report email from `/api/email/send-report` is branded.
+> - **Admin:** a dedicated `/admin/partners` page reads the tables directly instead of adding a block to `/api/admin/stats`.
+> - **Not applied yet:** the migration (`20261101000000_partner_mode.sql`) must be run on Supabase before partner mode can save anything. Until then normal assessments are unaffected, but partner submissions fail to save and fall back to the "couldn't save" path.
+> - **PostHog dashboard** is still to be created once events flow.
+
 ### 1. Database (new migration `supabase/migrations/20261101000000_partner_mode.sql`)
 - New table **`report_preparers`**, written only by the service role (no anon policies; same reasoning as `assessment_entitlements`):
   `id uuid pk, email citext not null, firm_name, preparer_name, designation` (CHECK in `CA|CS|CMA|Advocate|Consultant|Other`)`, phone, contact_email, website, city, logo_path, brand_color, slug unique (Phase 2), verified_at (Phase 2), attested_at, created_at, updated_at`.
