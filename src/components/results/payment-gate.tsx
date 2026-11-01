@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { analytics } from '@/lib/analytics/tracking'
+import { trackGoogleAdsPurchase } from '@/lib/analytics/google-ads'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
 import { getSampleReportPath } from '@/lib/pdf/sample-report-paths'
 import { normalizeIndianMobile } from '@/lib/identity/phone'
@@ -181,6 +182,7 @@ export function PaymentGate({
             })
             if (verifyRes.ok) {
               analytics.paymentSucceeded({ ...funnel, payment_method: 'razorpay', source: 'client' })
+              trackGoogleAdsPurchase({ valueInr: priceINR, transactionId: response.razorpay_payment_id })
               onPaid()
             } else {
               const err = await verifyRes.json()
