@@ -26,7 +26,7 @@ It's the right model for launch: it needs the least code, carries no pricing ris
 > - **Client contact details are not collected at all.** In partner mode the Step 0 name / email / phone fields become the partner's own (relabelled), and company / state / size / industry are the client's. This reuses the existing ownership check, checkout and delivery unchanged (the partner owns, pays for and receives the report) and keeps client personal data out of the system. DPDP, which has no contact fields, asks the partner's name / email / phone inside the partner block plus a "Client company name" field.
 > - **Submit-route confirmation emails are not re-branded.** They go to the partner (our customer), so they stay ComplianceCheck emails. The report email from `/api/email/send-report` is branded.
 > - **Admin:** a dedicated `/admin/partners` page reads the tables directly instead of adding a block to `/api/admin/stats`.
-> - **Not applied yet:** the migration (`20261101000000_partner_mode.sql`) must be run on Supabase before partner mode can save anything. Until then normal assessments are unaffected, but partner submissions fail to save and fall back to the "couldn't save" path.
+> - **Migration applied (2026-11-01)** to the live Supabase project, as was a backlog of three earlier repo migrations that had never been run there: `20261027000000` (entitlements lock-down), `20261027000001` (State-wise / Food Business assessment types) and `20261028000000` (entitlements `phone`).
 > - **PostHog dashboard** is still to be created once events flow.
 
 ### 1. Database (new migration `supabase/migrations/20261101000000_partner_mode.sql`)
