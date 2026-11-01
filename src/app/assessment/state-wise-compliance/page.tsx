@@ -31,6 +31,8 @@ import {
 import { useAssessmentTracking } from '@/lib/analytics';
 import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, getLocalStorageKey } from '@/lib/constants/assessment-types';
 import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress';
+import { PreparedForClientSection } from '@/components/assessment/prepared-for-client-section';
+import { onPartnerSubmitted, partnerContactOf, partnerSubmitFields, usePartnerMode, validatePartnerStep } from '@/lib/partner/partner-store';
 
 type AssessmentPhase = 'user_details' | 'phase1' | 'applicability_results' | 'phase2' | 'submitting';
 
@@ -52,6 +54,7 @@ function formatStateNames(reason: string): string {
 export default function StateWiseComplianceAssessment() {
   const router = useRouter();
   const [currentPhase, setCurrentPhase] = useState<AssessmentPhase>('user_details');
+  const isPartner = usePartnerMode();
   const [userDetails, setUserDetails] = useState<UserDetails>({
     fullName: '',
     email: '',
@@ -120,6 +123,11 @@ export default function StateWiseComplianceAssessment() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(userDetails.email)) {
       setError('Please enter a valid email address');
+      return;
+    }
+    const partnerError = validatePartnerStep(partnerContactOf({ ...userDetails }));
+    if (partnerError) {
+      setError(partnerError);
       return;
     }
     setError(null);
@@ -201,10 +209,11 @@ export default function StateWiseComplianceAssessment() {
       const response = await fetch('/api/assessment/state-wise-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submissionData),
+        body: JSON.stringify({ ...submissionData, ...partnerSubmitFields(partnerContactOf({ ...userDetails })) }),
       });
       
       const result = await response.json();
+      if (result.success) onPartnerSubmitted(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE, result.preparerId ?? undefined, partnerContactOf({ ...userDetails }));
       
       if (result.success) {
         // Store complete data in localStorage for the results page
@@ -272,9 +281,10 @@ export default function StateWiseComplianceAssessment() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <PreparedForClientSection assessmentType={ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE} />
         <div className="grid gap-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name *</Label>
+            <Label htmlFor="fullName">{isPartner ? 'Your Name *' : 'Full Name *'}</Label>
             <Input 
               id="fullName" 
               placeholder="Your full name" 
@@ -283,7 +293,7 @@ export default function StateWiseComplianceAssessment() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address *</Label>
+            <Label htmlFor="email">{isPartner ? 'Your Email Address *' : 'Email Address *'}</Label>
             <Input 
               id="email" 
               type="email" 
@@ -294,7 +304,7 @@ export default function StateWiseComplianceAssessment() {
             <p className="text-xs text-gray-500">We will send your report to this email</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+            <Label htmlFor="phoneNumber">{isPartner ? 'Your Phone Number (Optional)' : 'Phone Number (Optional)'}</Label>
             <div className="flex">
               <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-600 text-sm">
                 +91
@@ -310,7 +320,7 @@ export default function StateWiseComplianceAssessment() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="companyName">Company Name *</Label>
+            <Label htmlFor="companyName">{isPartner ? 'Client Company Name *' : 'Company Name *'}</Label>
             <Input 
               id="companyName" 
               placeholder="Your company name" 

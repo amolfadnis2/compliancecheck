@@ -144,6 +144,10 @@ export interface PaymentFunnelProps {
   assessment_type: AssessmentType;
   assessment_id: string;
   amount_inr: number;
+  /** Partner mode (server-side revenue events; browser events get these as super properties). */
+  submission_mode?: 'self' | 'partner_on_behalf' | 'client_via_partner_link';
+  preparer_id?: string;
+  preparer_designation?: string;
 }
 
 export type PaywallViewedProps = PaymentFunnelProps;
@@ -240,6 +244,44 @@ export interface SuggestionSubmittedProps {
 
 
 // =============================================================================
+// PARTNER MODE EVENTS (CA / CS / lawyer / consultant white-label reports)
+// Only the firm is ever sent — never the client's company name or contacts.
+// =============================================================================
+
+export type PartnerSubmissionMode = 'self' | 'partner_on_behalf' | 'client_via_partner_link';
+
+export interface PartnerModeToggledProps {
+  on: boolean;
+  assessment_type: AssessmentType;
+}
+
+export interface PartnerDetailsPrefilledProps {
+  assessment_type: AssessmentType;
+}
+
+export interface PartnerLogoUploadedProps {
+  size_kb: number;
+  file_type: string;
+}
+
+export interface PartnerDetailsSubmittedProps {
+  assessment_type: AssessmentType;
+  designation: string;
+  has_logo: boolean;
+  has_brand_color: boolean;
+  has_website: boolean;
+}
+
+export interface BrandedReportGeneratedProps {
+  assessment_type: AssessmentType;
+  channel: 'client' | 'server';
+}
+
+export interface BrandedReportEmailedProps {
+  assessment_type: AssessmentType;
+}
+
+// =============================================================================
 // EVENT NAMES (for consistent naming across codebase)
 // =============================================================================
 
@@ -282,6 +324,14 @@ export const ANALYTICS_EVENTS = {
 
   // Calculators
   CALCULATOR_COMPLETED: 'calculator_completed',
+
+  // Partner mode
+  PARTNER_MODE_TOGGLED: 'partner_mode_toggled',
+  PARTNER_DETAILS_PREFILLED: 'partner_details_prefilled',
+  PARTNER_LOGO_UPLOADED: 'partner_logo_uploaded',
+  PARTNER_DETAILS_SUBMITTED: 'partner_details_submitted',
+  BRANDED_REPORT_GENERATED: 'branded_report_generated',
+  BRANDED_REPORT_EMAILED: 'branded_report_emailed',
 } as const;
 
 export type AnalyticsEventName = typeof ANALYTICS_EVENTS[keyof typeof ANALYTICS_EVENTS];

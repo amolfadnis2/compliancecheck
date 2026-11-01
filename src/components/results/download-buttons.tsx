@@ -348,13 +348,15 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
       const assessmentType = data.assessment_type || ASSESSMENT_TYPES.STATUTORY_HEALTH
 
       // Lazy-load jsPDF + adapters only when the user clicks Download
-      const [{ generateUnifiedReportBlob }, { buildReportData }] = await Promise.all([
+      const [{ generateUnifiedReportBlob }, { buildReportData }, { withReportLogo }] = await Promise.all([
         import('@/lib/pdf/unified-report-generator'),
         import('@/lib/pdf/report-registry'),
+        import('@/lib/partner/logo'),
       ])
 
-      // Transform assessment data via the type-specific adapter (registry)
-      const reportData = buildReportData(assessmentType, data)
+      // Transform assessment data via the type-specific adapter (registry);
+      // partner-branded reports also need their logo fetched first.
+      const reportData = await withReportLogo(buildReportData(assessmentType, data))
 
       // Generate consistent PDF using unified generator
       const blob = generateUnifiedReportBlob(reportData)
@@ -461,13 +463,14 @@ export function DownloadButtons({ assessmentId, assessmentType: propAssessmentTy
         data.userDetails?.companyName || data.responses?.userDetails?.companyName || 'Your Company'
 
       // Lazy-load jsPDF + adapters only when the user clicks Email
-      const [{ generateUnifiedReportBlob: genBlob }, { buildReportData }] = await Promise.all([
+      const [{ generateUnifiedReportBlob: genBlob }, { buildReportData }, { withReportLogo }] = await Promise.all([
         import('@/lib/pdf/unified-report-generator'),
         import('@/lib/pdf/report-registry'),
+        import('@/lib/partner/logo'),
       ])
 
       // Transform assessment data via the type-specific adapter (registry)
-      const reportData = buildReportData(assessmentType, data)
+      const reportData = await withReportLogo(buildReportData(assessmentType, data))
 
       // Generate consistent PDF using unified generator
       const blob = genBlob(reportData)

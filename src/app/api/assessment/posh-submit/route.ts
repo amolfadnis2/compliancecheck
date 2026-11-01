@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { resolvePartnerSubmission } from '@/lib/partner/persist-preparer'
 
 /**
  * POSH Assessment Submission API
@@ -61,10 +62,14 @@ export async function POST(request: NextRequest) {
 
     // Generate assessment ID
     const assessmentId = crypto.randomUUID()
+
+    // Partner mode (CA/CS/lawyer filling in for a client): branding snapshot
+    const partner = await resolvePartnerSubmission(getSupabase(), body)
     
     // Prepare data for insertion
     const assessmentData = {
       id: assessmentId,
+      ...partner.columns,
       assessment_type: assessmentType || 'posh',
       
       // Company details
@@ -131,6 +136,7 @@ export async function POST(request: NextRequest) {
       success: true,
       assessmentId: data?.id || assessmentId,
       savedToDb: true,
+      preparerId: partner.preparerId,
     })
 
   } catch (error) {

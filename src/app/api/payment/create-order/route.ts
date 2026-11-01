@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { ASSESSMENT_PRICES, isValidAssessmentType, type AssessmentType } from '@/lib/constants/assessment-types'
 import { assessmentTableFor } from '@/lib/payment/assessment-table'
 import { normalizeIndianMobile } from '@/lib/identity/phone'
+import { getAssessmentPartner, partnerEntitlementColumns } from '@/lib/partner/server'
 
 let _razorpay: Razorpay | null = null
 function getRazorpay() {
@@ -74,8 +75,10 @@ export async function POST(request: Request) {
       notes: { assessmentId, assessmentType, email },
     })
 
+    const partner = await getAssessmentPartner(assessmentType, assessmentId, supabase)
     await supabase.from('assessment_entitlements').upsert(
       {
+        ...partnerEntitlementColumns(partner),
         assessment_id: assessmentId,
         assessment_type: assessmentType,
         amount_paise: amountPaise,

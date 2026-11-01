@@ -31,7 +31,7 @@ function priceINRFor(type: string): number {
  */
 export function buildSummaryData(type: AssessmentType, data: AssessmentData): UnifiedSummaryData {
   const report = buildReportData(type, data)
-  return toSummary(
+  const summary = toSummary(
     {
       overallScore: report.overallScore,
       categoryScores: report.categoryScores,
@@ -41,6 +41,11 @@ export function buildSummaryData(type: AssessmentType, data: AssessmentData): Un
     },
     { assessmentType: type, priceINR: priceINRFor(type) }
   )
+  if (!report.preparedBy) return summary
+  // Branding only — the logo data URL is a PDF concern and never sent here.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { logoDataUrl: _logo, ...preparedBy } = report.preparedBy
+  return { ...summary, preparedBy }
 }
 
 export { toSummary, priceINRFor }

@@ -28,6 +28,8 @@ import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment
 import { AssessmentHeader } from '@/components/assessment/assessment-header';
 import { useAssessmentTracking, type OrganizationSize } from '@/lib/analytics';
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Building2, Loader2, Info, Save } from 'lucide-react';
+import { PreparedForClientSection } from '@/components/assessment/prepared-for-client-section';
+import { onPartnerSubmitted, partnerContactOf, partnerSubmitFields, usePartnerMode, validatePartnerStep } from '@/lib/partner/partner-store';
 
 interface UserDetails {
   companyName: string;
@@ -65,6 +67,7 @@ export default function LabourCodeAssessmentPage() {
   });
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isPartner = usePartnerMode();
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -195,6 +198,11 @@ export default function LabourCodeAssessmentPage() {
   };
 
   const validateUserDetails = (): boolean => {
+    const partnerError = validatePartnerStep(partnerContactOf({ ...userDetails }));
+    if (partnerError) {
+      toast.error(partnerError);
+      return false;
+    }
     if (!userDetails.companyName.trim()) {
       toast.error('Please enter your company name');
       return false;
@@ -342,6 +350,7 @@ export default function LabourCodeAssessmentPage() {
           responses,
           assessmentType: ASSESSMENT_TYPES.LABOUR_CODE,
           filteredQuestionCount: filteredQuestions.length,
+          ...partnerSubmitFields(partnerContactOf({ ...userDetails })),
         }),
       });
 
@@ -350,6 +359,7 @@ export default function LabourCodeAssessmentPage() {
       }
 
       const data = await response.json();
+      onPartnerSubmitted(ASSESSMENT_TYPES.LABOUR_CODE, data.preparerId ?? undefined, partnerContactOf({ ...userDetails }));
       
       // Save to localStorage as fallback (especially for temp_ IDs)
       const assessmentData = {
@@ -458,9 +468,10 @@ export default function LabourCodeAssessmentPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <PreparedForClientSection assessmentType={ASSESSMENT_TYPES.LABOUR_CODE} />
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name *</Label>
+                  <Label htmlFor="companyName">{isPartner ? 'Client Company Name *' : 'Company Name *'}</Label>
                   <Input
                     id="companyName"
                     placeholder="Enter your company name"
@@ -471,7 +482,7 @@ export default function LabourCodeAssessmentPage() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="industry">Industry *</Label>
+                    <Label htmlFor="industry">{isPartner ? 'Client Industry *' : 'Industry *'}</Label>
                     <Select
                       value={userDetails.industry}
                       onValueChange={(value) => handleUserDetailsChange('industry', value)}
@@ -490,7 +501,7 @@ export default function LabourCodeAssessmentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="employeeCount">Employee Count *</Label>
+                    <Label htmlFor="employeeCount">{isPartner ? 'Client Employee Count *' : 'Employee Count *'}</Label>
                     <Select
                       value={userDetails.employeeCount}
                       onValueChange={(value) => handleUserDetailsChange('employeeCount', value)}
@@ -510,7 +521,7 @@ export default function LabourCodeAssessmentPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="state">Registered State *</Label>
+                  <Label htmlFor="state">{isPartner ? 'Client Registered State *' : 'Registered State *'}</Label>
                   <Select
                     value={userDetails.state}
                     onValueChange={(value) => handleUserDetailsChange('state', value)}
@@ -540,7 +551,7 @@ export default function LabourCodeAssessmentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="contactEmail">Email Address *</Label>
+                    <Label htmlFor="contactEmail">{isPartner ? 'Your Email Address * (report is sent here)' : 'Email Address *'}</Label>
                     <Input
                       id="contactEmail"
                       type="email"
@@ -552,7 +563,7 @@ export default function LabourCodeAssessmentPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">{isPartner ? 'Your Phone Number' : 'Phone Number'}</Label>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 text-gray-600 bg-gray-100 border border-r-0 rounded-l-md">
                       +91

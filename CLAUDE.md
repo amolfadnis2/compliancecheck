@@ -232,6 +232,8 @@ Use `INDIAN_STATES`, `EMPLOYEE_COUNT_OPTIONS`, `INDUSTRY_OPTIONS` from `@/lib/co
 
 **Exception — DPDP and Gratuity Calculator:** these two flows intentionally do **not** collect `fullName`/`email`/`phone`/`companyName` before showing value, per the 2026-07 growth-plan fix (`docs/Fixes as on 9 July.md`, fix #1 and #4). DPDP's Step 0 still collects `state`/`employeeCount`/`industry`/`revenue` and the 4 data-processing yes/no questions — these genuinely personalise which assessment questions are shown, so they stay — but contact info is deferred to a later gate. **Which gate depends on payment state:** DPDP's payment went live at ₹2,499 in the same 2026-07 batch (`docs/superpowers/plans/2026-07-09-dpdp-payment-live.md`), so for DB-backed rows the results page's `isPaymentLive('dpdp')` branch now intercepts *before* the free flow — email is captured by `<PaymentGate>`'s own email field at checkout, not by `<GatedResults>`/`<EmailGate>`. The `local_`/`temp_` fallback path (DB write failures) now shows a "couldn't save — try again" page for every paid type instead of the OTP gate, so `<GatedResults>`/`<EmailGate>` only run for an assessment whose `live` flag is off. One known consequence: a user who completes DPDP but never pays now leaves no email at all (no free-teaser lead capture) — this was not an explicit decision in either plan and is flagged as an open question, not a resolved one. The Gratuity Calculator drops the gate entirely: calculator inputs and results show immediately, matching the homepage's "No signup required. Free forever." promise for calculators. Do not extend this exception to any other assessment type without an explicit decision — every other assessment (`statutory_health`, `labour_code`, `state_wise_compliance`, `food_business`, `posh`, `auto_dealer`) still follows the full 7-field Step 0 above.
 
+**Partner mode (all 7 paid assessments, §19):** Step 0 also renders `<PreparedForClientSection>` above the 7 fields. When ticked, the name / email / phone fields are relabelled as the *partner's own* (the report is owned by and delivered to them) and company / state / size / industry as the client's. Field order is unchanged.
+
 ### Yes/No Buttons
 ```typescript
 // Yes (selected)
@@ -268,6 +270,8 @@ Always `h-3`. Always `aria-label`. Always `[&>div]:bg-green-600`. Both applicabi
 - `<WhatsAppShareButton>` from `@/components/results/whatsapp-share-button` on every paid report view (built into `<DownloadWithFeedback>`)
 
 ### PDF Generation
+Partner mode: `UnifiedReportData.preparedBy` (and `AutoDealerReportData.preparedBy`) switches the cover, footer, closing box and disclaimer to the partner's branding via `src/lib/pdf/partner-branding.ts`; absent, the PDF is unchanged. Adapters attach it with `withPreparedBy` from the row's `prepared_by`; call `withReportLogo` (`@/lib/partner/logo`) before generating so the logo is embedded.
+
 All assessments use `generateUnifiedReportBlob` from `src/lib/pdf/unified-report-generator.ts` via the `report-data-adapter.ts` adapters (Auto Dealer excepted, §14: `src/lib/pdf/auto-dealer-report.ts`). Never create a new standalone PDF generator. Every report has: action plan (0-30 / 31-90 / 90+ days), a portal link per action, peer-average column, legal references appendix.
 - Every scorable question needs a rule with `governmentRef`, `actionIfNonCompliant` and `officialLink` (a single URL, or the office to approach as text) — `tests/unit/report-adapters.test.ts` enforces this.
 - Server-side PDF for any type: `generatePaidReportPdf` in `src/lib/report/paid-report.ts` (ownership + entitlement checked) — used by the email and share routes.
@@ -402,5 +406,21 @@ src/
 
 ---
 
-*Last updated: 2026-10-27 by Claude Code (consistent paid reports, summary page, email + WhatsApp delivery)*  
+## 19. Partner Mode (CA / CS / lawyer / consultant white-label reports)
+
+Plan: `docs/superpowers/plans/2026-11-01-partner-white-label.md`. Migration: `20261101000000_partner_mode.sql`.
+
+- **Scope:** the 7 paid assessments only. Free calculators are untouched.
+- **Pricing:** none of its own — the partner pays the normal `ASSESSMENT_PRICES` price at `<PaymentGate>` (Razorpay `name` stays "ComplianceCheck": we are the merchant of record) and bills their client themselves.
+- **Client side:** `<PreparedForClientSection>` + `@/lib/partner/partner-store` (`validatePartnerStep`, `partnerSubmitFields`, `onPartnerSubmitted`). Each Step 0 validates before leaving and spreads `partnerSubmitFields(...)` into its submit body.
+- **Server side:** every submit route calls `resolvePartnerSubmission(supabase, body)` and spreads `partner.columns` into its insert. For a self-submission `columns` is `{}`, so normal assessments never depend on the migration. An invalid `preparedBy` silently means "self" — never a failed assessment.
+- **Data:** `report_preparers` (service-role only, keyed by email, latest details) + `submission_mode` / `preparer_id` / `prepared_by` (snapshot) on `assessments`, `posh_assessments`, `auto_dealer_assessments`, and `submission_mode` / `preparer_id` on `assessment_entitlements`. Logos live in the public `report-logos` bucket, uploaded only via `POST /api/partner/logo`; `isAllowedLogoUrl` restricts fetches to that bucket.
+- **Delivery:** summary + paid views show `<PartnerBrandBar>`; `/api/email/send-report` uses `partnerEmailHtml` with `"<Firm> via ComplianceCheck"` as sender name and reply-to the partner; WhatsApp text names the firm.
+- **Analytics:** `analytics.registerPartnerContext` (super properties `submission_mode`, `is_partner`, `preparer_designation`, `preparer_id`), `analytics.setPartnerGroup` (PostHog group `preparer`), events `partner_*` / `branded_report_*`; server revenue events carry the same fields via `partnerEventProps`. Never send the client's company name or contacts to PostHog.
+- **Admin:** `/admin/partners`.
+- Phase 2 (client fills in via a partner link, verified partner profile, partner dashboard) is planned, not built.
+
+---
+
+*Last updated: 2026-11-01 by Claude Code (partner mode / white-label reports, §19)*  
 *This file supersedes any conflicting instructions in other docs.*

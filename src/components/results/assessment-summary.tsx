@@ -9,6 +9,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { PaymentGate } from '@/components/results/payment-gate'
+import { PartnerBrandBar } from '@/components/results/partner-brand-bar'
 import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -63,6 +64,7 @@ export function AssessmentSummary({
     legalReferences,
     peers,
     companyName,
+    preparedBy,
   } = summary
 
   const scoreColor =
@@ -93,6 +95,7 @@ export function AssessmentSummary({
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <PartnerBrandBar preparedBy={preparedBy} clientName={companyName} />
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -101,7 +104,9 @@ export function AssessmentSummary({
             Back to Home
           </Link>
           <Badge className="bg-green-100 text-green-700 mb-2">{displayName}</Badge>
-          <h1 className="text-2xl font-bold text-gray-900">Your Compliance Summary</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {preparedBy ? 'Compliance Summary' : 'Your Compliance Summary'}
+          </h1>
           {companyName && (
             <div className="flex items-center gap-2 text-gray-600 mt-1">
               <Building className="w-4 h-4" />
@@ -310,7 +315,7 @@ export function AssessmentSummary({
             assessmentId={assessmentId}
             assessmentType={assessmentType}
             priceINR={priceINR}
-            defaultEmail={defaultEmail}
+            defaultEmail={defaultEmail ?? preparedBy?.email}
             defaultPhone={defaultPhone}
             onPaid={handleUnlocked}
           />
@@ -319,6 +324,11 @@ export function AssessmentSummary({
         <p className="text-xs text-gray-400 text-center mt-4">
           Secure payment powered by Razorpay · 256-bit encryption
         </p>
+        {preparedBy && (
+          <p className="text-xs text-gray-500 text-center mt-2">
+            The payment and its GST invoice are from ComplianceCheck. Bill your client for your services separately.
+          </p>
+        )}
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { resolvePartnerSubmission } from '@/lib/partner/persist-preparer'
 
 // assessments.user_id is NOT NULL; used when the user upsert fails.
 const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000'
@@ -139,12 +140,16 @@ export async function POST(request: Request) {
       .select('id')
       .single()
 
+    // Partner mode (CA/CS/lawyer filling in for a client): branding snapshot
+    const partner = await resolvePartnerSubmission(supabase, rawBody)
+
     // Insert assessment — store all details in responses JSONB
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessments')
       .insert({
         user_id: user?.id ?? ANONYMOUS_USER_ID,
         assessment_type: ASSESSMENT_TYPES.FOOD_BUSINESS,
+        ...partner.columns,
         status: 'completed',
         responses: {
           userDetails,
@@ -177,7 +182,7 @@ export async function POST(request: Request) {
       assessment.id
     )
 
-    return NextResponse.json({ success: true, assessmentId: assessment.id, source: 'database' })
+    return NextResponse.json({ success: true, assessmentId: assessment.id, source: 'database', preparerId: partner.preparerId })
   } catch {
     const fallbackId = `local_${Date.now()}`
     return NextResponse.json({ success: true, assessmentId: fallbackId, source: 'fallback' })

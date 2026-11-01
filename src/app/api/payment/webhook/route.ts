@@ -4,6 +4,7 @@ import { isValidWebhookSignature } from '@/lib/payment/razorpay-signature'
 import { captureServerEvent } from '@/lib/analytics/server'
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
+import { getAssessmentPartner, partnerEventProps } from '@/lib/partner/server'
 
 /**
  * Razorpay webhook — the backstop for /api/payment/verify.
@@ -88,6 +89,9 @@ export async function POST(request: Request) {
       assessment_type: entitlement.assessment_type as AssessmentType,
       assessment_id: entitlement.assessment_id,
       amount_inr: Math.round((entitlement.amount_paise ?? 0) / 100),
+      ...partnerEventProps(
+        await getAssessmentPartner(entitlement.assessment_type as AssessmentType, entitlement.assessment_id, supabase)
+      ),
     }
     const distinctId = entitlement.email || payment?.email || entitlement.assessment_id
 

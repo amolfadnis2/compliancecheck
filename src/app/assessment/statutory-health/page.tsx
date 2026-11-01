@@ -16,6 +16,7 @@ import {
 import { ASSESSMENT_TYPES, getAssessmentPricePaise, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { useAssessmentTracking } from '@/lib/analytics'
 import { toast } from 'sonner'
+import { onPartnerSubmitted, partnerContactOf, partnerSubmitFields } from '@/lib/partner/partner-store'
 
 type AssessmentResponse = Record<string, string>
 
@@ -202,7 +203,7 @@ export default function StatutoryHealthAssessmentPage() {
       const response = await fetch('/api/assessment/statutory-health-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userDetails, responses }),
+        body: JSON.stringify({ userDetails, responses, ...partnerSubmitFields(partnerContactOf(userDetails)) }),
       })
 
       const data = await response.json()
@@ -210,6 +211,7 @@ export default function StatutoryHealthAssessmentPage() {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to save assessment')
       }
+      onPartnerSubmitted(ASSESSMENT_TYPES.STATUTORY_HEALTH, data.preparerId ?? undefined, partnerContactOf(userDetails))
 
       // Fallback: DB unavailable — persist computed scores to localStorage so
       // LocalStorageResultsPage can render them from the temp_ ID.
@@ -335,6 +337,7 @@ export default function StatutoryHealthAssessmentPage() {
                 onSubmit={onUserDetailsSubmit}
                 defaultValues={savedDetails}
                 isLoading={isSubmitting}
+                partnerAssessmentType={ASSESSMENT_TYPES.STATUTORY_HEALTH}
               />
             </CardContent>
           </Card>

@@ -10,6 +10,8 @@ import {
 import { ASSESSMENT_TYPES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { getEntitlement } from '@/lib/payment/entitlement'
 import { getPeerAverages } from '@/lib/benchmarks/peer-averages'
+import { parsePreparedBy } from '@/lib/partner/types'
+import { loadLogoDataUrl } from '@/lib/partner/logo'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _supabase: any = null
@@ -118,6 +120,8 @@ export async function GET(
         paymentStatus: autoDealerPaid ? 'paid' : a.payment_status,
         priceTier: tier,
         totalQuestions,
+        // Partner-mode branding for the summary / results header (null if none)
+        preparedBy: parsePreparedBy(a.prepared_by),
       })
     }
 
@@ -128,7 +132,8 @@ export async function GET(
     }
 
     const peers = await getPeerAverages(ASSESSMENT_TYPES.AUTO_DEALER, { excludeId: assessmentId })
-    const pdfData = generateAutoDealerPdfForRow(a, peers?.categories)
+    const preparedBy = parsePreparedBy(a.prepared_by)
+    const pdfData = generateAutoDealerPdfForRow(a, peers?.categories, await loadLogoDataUrl(preparedBy?.logoUrl))
 
     // Mark PDF generated
     await supabase

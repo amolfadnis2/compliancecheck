@@ -57,6 +57,16 @@ import { POSH_CONFIG } from '@/lib/pdf/report-configs'
 import { shouldRequireEmailVerification } from '@/lib/feature-flags'
 import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, isPaymentLive } from '@/lib/constants/assessment-types'
 import { analytics } from '@/lib/analytics/tracking'
+import { PreparedForClientSection } from '@/components/assessment/prepared-for-client-section'
+import { PartnerBrandBar } from '@/components/results/partner-brand-bar'
+import {
+  getPreparedBy,
+  onPartnerSubmitted,
+  partnerSubmitFields,
+  usePartnerMode,
+  validatePartnerStep,
+} from '@/lib/partner/partner-store'
+import { withReportLogo } from '@/lib/partner/logo'
 import {
   POSH_EMPLOYEE_COUNT_LABELS,
   POSH_STATE_LABELS,
@@ -229,6 +239,14 @@ export default function POSHAssessmentPage() {
   const categoryScoresRef = useRef<Record<string, { earned: number; max: number }>>({})
   const isCompletingRef = useRef(false)
   
+  // Partner mode (CA/CS/lawyer filling this in for a client)
+  const isPartner = usePartnerMode()
+  const partnerContact = () => ({
+    name: companyDetails?.fullName,
+    email: companyDetails?.email,
+    phone: companyDetails?.phone,
+  })
+
   // Form
   const { register, handleSubmit, formState: { errors } } = useForm<CompanyDetailsForm>({
     resolver: zodResolver(companyDetailsSchema),
@@ -340,6 +358,12 @@ export default function POSHAssessmentPage() {
   
   // Handle company details submission
   const onCompanyDetailsSubmit = (data: CompanyDetailsForm) => {
+    const partnerError = validatePartnerStep({ name: data.fullName, email: data.email, phone: data.phone })
+    if (partnerError) {
+      setError(partnerError)
+      return
+    }
+    setError(null)
     setCompanyDetails(data)
     setPhase('applicability')
     setPhaseStartTime(Date.now())
@@ -504,6 +528,7 @@ export default function POSHAssessmentPage() {
             complianceResponses: {},
             results: lccResults,
             assessmentType: ASSESSMENT_TYPES.POSH,
+            ...partnerSubmitFields(partnerContact()),
           }),
         })
       } catch (err) {
@@ -815,6 +840,7 @@ export default function POSHAssessmentPage() {
           complianceResponses,
           results: assessmentResults,
           assessmentType: ASSESSMENT_TYPES.POSH,
+          ...partnerSubmitFields(partnerContact()),
         }),
       })
       
@@ -822,6 +848,7 @@ export default function POSHAssessmentPage() {
       
       if (data.success && data.assessmentId) {
         setPoshAssessmentId(data.assessmentId)
+        onPartnerSubmitted(ASSESSMENT_TYPES.POSH, data.preparerId ?? undefined, partnerContact())
         // Store in localStorage for results page
         localStorage.setItem(
           `posh_assessment_${data.assessmentId}`,
@@ -911,7 +938,9 @@ export default function POSHAssessmentPage() {
         industry: POSH_INDUSTRY_LABELS[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
-      const blob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
+      const blob = generateUnifiedReportBlob(
+        await withReportLogo(adaptPOSHResult(poshResult, userDetails, poshAssessmentId ?? undefined, getPreparedBy(partnerContact())))
+      )
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -960,7 +989,9 @@ export default function POSHAssessmentPage() {
         industry: POSH_INDUSTRY_LABELS[applicabilityResponses['POSH_APP_008']] || applicabilityResponses['POSH_APP_008'] || 'Not specified',
       }
 
-      const pdfBlob = generateUnifiedReportBlob(adaptPOSHResult(poshResult, userDetails))
+      const pdfBlob = generateUnifiedReportBlob(
+        await withReportLogo(adaptPOSHResult(poshResult, userDetails, poshAssessmentId ?? undefined, getPreparedBy(partnerContact())))
+      )
       
       // Convert blob to base64
       const reader = new FileReader()
@@ -1030,9 +1061,11 @@ export default function POSHAssessmentPage() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onCompanyDetailsSubmit)} className="space-y-4">
+          <PreparedForClientSection assessmentType={ASSESSMENT_TYPES.POSH} />
+
           {/* Full Name */}
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name *</Label>
+            <Label htmlFor="fullName">{isPartner ? 'Your Name *' : 'Full Name *'}</Label>
             <Input 
               id="fullName" 
               {...register('fullName')} 
@@ -1046,7 +1079,7 @@ export default function POSHAssessmentPage() {
 
           {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{isPartner ? 'Your Email * (report is sent here)' : 'Email *'}</Label>
             <Input 
               id="email" 
               type="email" 
@@ -1061,7 +1094,7 @@ export default function POSHAssessmentPage() {
 
           {/* Phone */}
           <div className="space-y-2">
-            <Label htmlFor="phone">Mobile Number *</Label>
+            <Label htmlFor="phone">{isPartner ? 'Your Mobile Number *' : 'Mobile Number *'}</Label>
             <div className="flex">
               <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                 +91
@@ -1081,7 +1114,7 @@ export default function POSHAssessmentPage() {
 
           {/* Company Name */}
           <div className="space-y-2">
-            <Label htmlFor="companyName">Company Name *</Label>
+            <Label htmlFor="companyName">{isPartner ? 'Client Company Name *' : 'Company Name *'}</Label>
             <Input 
               id="companyName" 
               {...register('companyName')} 
@@ -1411,7 +1444,8 @@ export default function POSHAssessmentPage() {
       const categoryName = (id: string) =>
         results.categoryScores.find((c) => c.category === id)?.categoryName ?? id
       const summary = withPeerAverages(
-        toSummary(
+        {
+          ...toSummary(
           {
             overallScore: results.overallScore,
             categoryScores: results.categoryScores.map((c) => ({
@@ -1427,7 +1461,9 @@ export default function POSHAssessmentPage() {
             assessmentType: ASSESSMENT_TYPES.POSH,
             priceINR: Math.round(ASSESSMENT_PRICES[ASSESSMENT_TYPES.POSH].amountPaise / 100),
           }
-        ),
+          ),
+          preparedBy: getPreparedBy(partnerContact()) ?? undefined,
+        },
         peerAverages
       )
       return (
@@ -1555,6 +1591,7 @@ export default function POSHAssessmentPage() {
 
     return (
       <div className="max-w-2xl mx-auto space-y-6">
+        <PartnerBrandBar preparedBy={getPreparedBy(partnerContact())} clientName={companyDetails?.companyName} />
         {/* Score Card — always visible */}
         <Card>
           <CardHeader className="text-center pb-2">

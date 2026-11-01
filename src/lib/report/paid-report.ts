@@ -18,6 +18,8 @@ import { generateAssessmentPdf } from '@/lib/pdf/server-report'
 import { generatePoshAssessmentPdf } from '@/lib/pdf/server-posh-report'
 import { generateAutoDealerPdfForRow, computeAutoDealerResults, type AutoDealerRow } from '@/lib/pdf/auto-dealer-report'
 import { getPeerAverages } from '@/lib/benchmarks/peer-averages'
+import { parsePreparedBy } from '@/lib/partner/types'
+import { loadLogoDataUrl } from '@/lib/partner/logo'
 
 export interface PaidReportPdf {
   bytes: Uint8Array
@@ -93,7 +95,8 @@ export async function generatePaidReportPdf(
       return { error: 'payment_required' }
     }
     const peers = await getPeerAverages(ASSESSMENT_TYPES.AUTO_DEALER, { excludeId: id })
-    const bytes = generateAutoDealerPdfForRow(r, peers?.categories)
+    const preparedBy = parsePreparedBy(r.prepared_by)
+    const bytes = generateAutoDealerPdfForRow(r, peers?.categories, await loadLogoDataUrl(preparedBy?.logoUrl))
     return {
       bytes,
       filename: `Auto-Dealer-Compliance-${new Date().toISOString().split('T')[0]}.pdf`,

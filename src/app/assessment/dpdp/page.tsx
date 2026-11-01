@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -31,6 +32,8 @@ import {
 } from '@/lib/assessments/dpdp-questions'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/india'
 import { ASSESSMENT_TYPES, getLocalStorageKey } from '@/lib/constants/assessment-types'
+import { PreparedForClientSection } from '@/components/assessment/prepared-for-client-section'
+import { onPartnerSubmitted, partnerSubmitFields, usePartnerMode, validatePartnerStep } from '@/lib/partner/partner-store'
 
 // Form validation schema for organization profile
 const organizationProfileSchema = z.object({
@@ -41,7 +44,9 @@ const organizationProfileSchema = z.object({
   processesChildrenData: z.enum(['yes', 'no']),
   processesHealthData: z.enum(['yes', 'no']),
   processesSensitiveData: z.enum(['yes', 'no']),
-  crossBorderTransfers: z.enum(['yes', 'no'])
+  crossBorderTransfers: z.enum(['yes', 'no']),
+  // Partner mode only: the client's company name for the report cover.
+  companyName: z.string().trim().max(200).optional()
 })
 
 type OrganizationProfile = z.infer<typeof organizationProfileSchema>
@@ -68,6 +73,8 @@ export default function DPDPAssessmentPage() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [relevantQuestions, setRelevantQuestions] = useState<DPDPQuestion[]>([])
 
+  const isPartner = usePartnerMode()
+  const [partnerError, setPartnerError] = useState<string | null>(null)
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<OrganizationProfile>({
     resolver: zodResolver(organizationProfileSchema),
   })
@@ -159,6 +166,13 @@ export default function DPDPAssessmentPage() {
 
   // Handle organization profile submission
   const onProfileSubmit = (data: OrganizationProfile) => {
+    // Partner mode: DPDP asks no contact details, so the partner block carries
+    // its own name/email, and the client's company name is asked here.
+    const partnerError = validatePartnerStep()
+      ?? (isPartner && !data.companyName?.trim() ? "Please enter your client's company name" : null)
+    setPartnerError(partnerError)
+    if (partnerError) return
+    if (!isPartner) data = { ...data, companyName: undefined }
     setOrganizationProfile(data)
     setStep(1)
     const processesChildren = data.processesChildrenData === 'yes'
@@ -227,12 +241,14 @@ export default function DPDPAssessmentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           organizationProfile,
-          responses
+          responses,
+          ...partnerSubmitFields(),
         })
       })
 
       if (response.ok) {
         const data = await response.json()
+        onPartnerSubmitted(ASSESSMENT_TYPES.DPDP, data.preparerId ?? undefined)
         localStorage.removeItem(STORAGE_KEY)
         localStorage.setItem(getLocalStorageKey(data.assessmentId), JSON.stringify({
           id: data.assessmentId,
@@ -327,6 +343,13 @@ export default function DPDPAssessmentPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onProfileSubmit)} className="space-y-6">
+                <PreparedForClientSection assessmentType={ASSESSMENT_TYPES.DPDP} includeContact />
+                {isPartner && (
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName">Client company name *</Label>
+                    <Input id="companyName" placeholder="Acme Pvt Ltd" {...register('companyName')} />
+                  </div>
+                )}
                 {/* Row 1: State + Employee Count */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -559,6 +582,8 @@ export default function DPDPAssessmentPage() {
                     </div>
                   </div>
                 )}
+
+                {partnerError && <p className="text-sm text-red-600">{partnerError}</p>}
 
                 {/* Submit Button */}
                 <Button type="submit" className="w-full" size="lg">

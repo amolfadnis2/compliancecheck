@@ -19,6 +19,8 @@ import { withPeerAverages, type UnifiedSummaryData } from '@/lib/payment/summary
 import { getPeerAverages } from '@/lib/benchmarks/peer-averages'
 import { getEntitlement } from '@/lib/payment/entitlement'
 import { ASSESSMENT_META } from '@/lib/seo/assessment-meta'
+import { PartnerBrandBar } from '@/components/results/partner-brand-bar'
+import { parsePreparedBy } from '@/lib/partner/types'
 
 // Type definitions
 interface ActionItem {
@@ -163,9 +165,15 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
       if (status === 'none') {
         return <AssessmentSummary assessmentId={id} summary={await buildSummary(effectiveType, assessment, id)} />
       }
+      const preparedBy = parsePreparedBy((assessment as { prepared_by?: unknown }).prepared_by)
       return (
         <>
           <PaidReportViewTracker assessmentType={effectiveType} assessmentId={id} entitlement={status} />
+          {preparedBy && (
+            <div className="bg-gray-50 pt-8 px-4">
+              <PartnerBrandBar preparedBy={preparedBy} clientName={clientCompanyName(assessment)} />
+            </div>
+          )}
           {fullView}
         </>
       )
@@ -210,6 +218,12 @@ function ownerContact(assessment: AssessmentData): { ownerEmail?: string; ownerP
   }
 }
 
+// Client company name for the partner header (stored differently per type).
+function clientCompanyName(assessment: AssessmentData): string | undefined {
+  const ud = { ...(assessment.user_details ?? {}), ...(assessment.responses?.userDetails ?? {}) } as Record<string, string | undefined>
+  return ud.companyName ?? assessment.company_details?.company_name
+}
+
 // Build the teaser for a given assessment. Every type flows through the shared
 // summary registry, which reuses the PDF adapters so the teaser numbers match
 // the paid report, then gets peer benchmarks overlaid.
@@ -221,6 +235,7 @@ async function buildSummary(assessmentType: AssessmentType, assessment: Assessme
     category_scores: assessment.category_scores,
     responses: assessment.responses,
     user_details: assessment.user_details,
+    prepared_by: (assessment as { prepared_by?: unknown }).prepared_by,
   })
   const industry = (assessment.responses as { userDetails?: { industry?: string } } | undefined)?.userDetails?.industry
   const peers = await getPeerAverages(assessmentType, { excludeId: id, industry })

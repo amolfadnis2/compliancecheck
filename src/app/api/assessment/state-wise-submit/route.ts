@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { resolvePartnerSubmission } from '@/lib/partner/persist-preparer';
 import { ASSESSMENT_TYPES } from '@/lib/constants/assessment-types';
 
 // assessments.user_id is NOT NULL; used when the user upsert fails.
@@ -62,8 +63,12 @@ export async function POST(request: NextRequest) {
     // Only real `assessments` columns — company/state/industry/email live in
     // responses (unknown columns made every insert fail). `answers` mirrors
     // phase2 so the shared report adapters find the compliance answers.
+    // Partner mode (CA/CS/lawyer filling in for a client): branding snapshot
+    const partner = await resolvePartnerSubmission(supabase, body);
+
     const assessmentData = {
       user_id: userId ?? ANONYMOUS_USER_ID,
+      ...partner.columns,
       assessment_type: ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE,
       status: 'completed',
       responses: { 
@@ -97,7 +102,7 @@ export async function POST(request: NextRequest) {
     sendReportEmail(userDetails, scoreResult, applicabilitySummary, assessment.id).catch(err => console.error('Email send error:', err));
     
     return NextResponse.json({
-      success: true, assessmentId: assessment.id, overallScore: scoreResult?.overallScore ?? 0,
+      success: true, assessmentId: assessment.id, preparerId: partner.preparerId, overallScore: scoreResult?.overallScore ?? 0,
       categoryScores: scoreResult?.categoryScores || {}, status: scoreResult?.status || 'Unknown', applicableCount: applicabilitySummary?.applicableCount ?? 0,
     });
     

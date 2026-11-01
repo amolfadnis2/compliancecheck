@@ -26,6 +26,8 @@ import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, getLocalStorageKey } from '@/lib/constants/assessment-types'
 import { useAssessmentProgress } from '@/lib/hooks/useAssessmentProgress'
 import { useAssessmentTracking, analytics } from '@/lib/analytics'
+import { PreparedForClientSection } from '@/components/assessment/prepared-for-client-section'
+import { onPartnerSubmitted, partnerContactOf, partnerSubmitFields, usePartnerMode, validatePartnerStep } from '@/lib/partner/partner-store'
 import { INDIAN_STATES, EMPLOYEE_COUNT_OPTIONS } from '@/lib/constants/india'
 
 // Import questions and applicability
@@ -91,6 +93,8 @@ export default function FoodBusinessAssessmentPage() {
   
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const isPartner = usePartnerMode()
+  const [partnerError, setPartnerError] = useState<string | null>(null)
   
   // Form
   const { register, handleSubmit, control, formState: { errors } } = useForm<UserDetails>({
@@ -199,6 +203,9 @@ export default function FoodBusinessAssessmentPage() {
   
   // Step 0: User Details Submit
   const onUserDetailsSubmit = (data: UserDetails) => {
+    const err = validatePartnerStep(partnerContactOf(data))
+    setPartnerError(err)
+    if (err) return
     setUserDetails(data)
 
     // Pre-populate state and employee count so applicability skips those questions
@@ -306,10 +313,12 @@ export default function FoodBusinessAssessmentPage() {
           body: JSON.stringify({
             ...localPayload,
             score: calculatedResults.overallScore,
+            ...partnerSubmitFields(partnerContactOf(userDetails)),
           }),
         })
         const apiData = await apiResponse.json()
         assessmentId = apiData.assessmentId ?? `local_${Date.now()}`
+        onPartnerSubmitted(ASSESSMENT_TYPES.FOOD_BUSINESS, apiData.preparerId ?? undefined, partnerContactOf(userDetails))
       } catch {
         assessmentId = `local_${Date.now()}`
       }
@@ -345,6 +354,7 @@ export default function FoodBusinessAssessmentPage() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onUserDetailsSubmit)} className="space-y-4">
+          <PreparedForClientSection assessmentType={ASSESSMENT_TYPES.FOOD_BUSINESS} />
           <div className="space-y-2">
             <Label htmlFor="fullName">Your Full Name *</Label>
             <Input id="fullName" {...register('fullName')} placeholder="John Doe" />
@@ -352,13 +362,13 @@ export default function FoodBusinessAssessmentPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{isPartner ? "Your Email * (report is sent here)" : "Email *"}</Label>
             <Input id="email" type="email" {...register('email')} placeholder="john@restaurant.com" />
             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Mobile Number *</Label>
+            <Label htmlFor="phone">{isPartner ? "Your Mobile Number *" : "Mobile Number *"}</Label>
             <div className="flex">
               <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                 +91
@@ -369,14 +379,14 @@ export default function FoodBusinessAssessmentPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="companyName">Restaurant / Business Name *</Label>
+            <Label htmlFor="companyName">{isPartner ? "Client Restaurant / Business Name *" : "Restaurant / Business Name *"}</Label>
             <Input id="companyName" {...register('companyName')} placeholder="The Food Hub" />
             {errors.companyName && <p className="text-sm text-red-500">{errors.companyName.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="state">Registered State *</Label>
+              <Label htmlFor="state">{isPartner ? "Client Registered State *" : "Registered State *"}</Label>
               <Controller
                 name="state"
                 control={control}
@@ -397,7 +407,7 @@ export default function FoodBusinessAssessmentPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employeeCount">Employee Count *</Label>
+              <Label htmlFor="employeeCount">{isPartner ? "Client Employee Count *" : "Employee Count *"}</Label>
               <Controller
                 name="employeeCount"
                 control={control}
@@ -433,6 +443,7 @@ export default function FoodBusinessAssessmentPage() {
             </div>
           </div>
 
+          {partnerError && <p className="text-sm text-red-600">{partnerError}</p>}
           <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 h-12 text-lg">
             Start Assessment (up to {TOTAL_POSSIBLE_QUESTIONS} questions)
           </Button>
