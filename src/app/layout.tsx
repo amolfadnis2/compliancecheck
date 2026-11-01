@@ -4,6 +4,7 @@ import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { GoogleAdsTag } from "@/components/providers/google-ads-tag";
+import { CookieBanner } from "@/components/site/cookie-banner";
 import { JsonLd } from "@/lib/seo/JsonLd";
 import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
 import { DEFAULT_OPEN_GRAPH } from "@/lib/seo/site";
@@ -55,6 +56,7 @@ export default function RootLayout({
         <ThemeProvider>
           <PostHogProvider>
             {children}
+            <CookieBanner />
           </PostHogProvider>
         </ThemeProvider>
         <GoogleAdsTag />

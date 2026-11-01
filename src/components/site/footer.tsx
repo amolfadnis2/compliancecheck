@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { CONTACT_EMAIL } from '@/lib/seo/site'
+import { CookieSettingsButton } from '@/components/site/cookie-banner'
 
 // Shared site footer. Anchor links point at the homepage explicitly
 // (`/#assessments` not `#assessments`) so they resolve correctly when this
@@ -99,6 +100,9 @@ export function Footer() {
                 <Link href="/contact" className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
                   Contact Us
                 </Link>
+              </li>
+              <li>
+                <CookieSettingsButton className="text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded" />
               </li>
             </ul>
           </div>
