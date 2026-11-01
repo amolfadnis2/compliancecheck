@@ -28,9 +28,15 @@ export const mdxComponents = {
     <ol className="my-4 ml-6 list-decimal space-y-2 text-gray-700 dark:text-gray-300" {...props} />
   ),
   li: (props: ComponentPropsWithoutRef<'li'>) => <li className="leading-7" {...props} />,
-  a: ({ href = '#', ...props }: ComponentPropsWithoutRef<'a'>) => (
-    <Link href={href} className="font-medium text-primary underline underline-offset-2 hover:text-primary-dark" {...props} />
-  ),
+  a: ({ href = '#', ...props }: ComponentPropsWithoutRef<'a'>) => {
+    const className = 'font-medium text-primary underline underline-offset-2 hover:text-primary-dark'
+    // Files (sample PDFs, API-served reports) are not pages: next/link would try
+    // a client-side route change and never open them, so use a plain anchor.
+    if (/\.pdf$/i.test(href) || href.startsWith('/api/')) {
+      return <a href={href} target="_blank" rel="noopener" className={className} {...props} />
+    }
+    return <Link href={href} className={className} {...props} />
+  },
   strong: (props: ComponentPropsWithoutRef<'strong'>) => (
     <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props} />
   ),
