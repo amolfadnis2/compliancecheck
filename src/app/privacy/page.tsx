@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Footer } from '@/components/site/footer'
+import { CookieSettingsButton } from '@/components/site/cookie-banner'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy - ComplianceCheck',
@@ -62,7 +63,7 @@ export default function PrivacyPage() {
               DPDP Act 2023 Compliant
             </div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Privacy Policy</h1>
-            <p className="text-gray-600 dark:text-gray-400">Last updated: January 2025</p>
+            <p className="text-gray-600 dark:text-gray-400">Last updated: November 2026</p>
           </header>
 
           <article className="prose prose-gray dark:prose-invert max-w-none">
@@ -137,21 +138,52 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">7. Third-Party Services</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">We may use third-party services for:</p>
               <ul className="list-disc pl-6 text-gray-600 dark:text-gray-400 space-y-2">
-                <li>Authentication (Supabase)</li>
-                <li>Analytics (PostHog)</li>
+                <li>Database and authentication (Supabase)</li>
+                <li>Product analytics (PostHog)</li>
                 <li>Email delivery (Resend)</li>
-                <li>Payment processing (Razorpay - coming soon)</li>
+                <li>Payment processing (Razorpay)</li>
+                <li>Advertising measurement (Google Ads), only if you accept cookies</li>
               </ul>
               <p className="text-gray-600 dark:text-gray-400 mt-4">
                 These providers have their own privacy policies governing the use of your information.
               </p>
             </section>
 
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">8. Cookies</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                We use essential cookies for authentication and session management. Analytics cookies are used with your consent to understand how you use our platform. You can manage cookie preferences through your browser settings.
+            <section id="cookies" className="mb-8 scroll-mt-24">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">8. Cookies and Similar Technologies</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                When you first visit, we ask whether you accept analytics and advertising cookies. You can accept or reject; the site works the same either way.
               </p>
+
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">8.1 Essential (always on)</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                These are needed for the site to work and are not used for analytics or advertising: your login session (Supabase), payment checkout (Razorpay), saving your assessment progress and partner firm details in your browser, and remembering your cookie choice.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">8.2 Analytics (PostHog)</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <strong>If you accept:</strong> PostHog sets cookies and browser storage so we can recognise a returning visitor, see which pages and steps of an assessment are used, and record anonymised sessions to fix usability problems.
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <strong>If you reject, or until you choose:</strong> PostHog sets no cookies and uses no browser storage, and sessions are not recorded. We still count page visits and assessment steps using a short-lived, privacy-preserving hash calculated on PostHog&apos;s servers, which cannot be used to follow you across days or websites.
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                We never send your client&apos;s company name or contact details (partner mode) to analytics.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">8.3 Advertising measurement (Google Ads)</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <strong>Only if you accept:</strong> we load the Google tag, which sets cookies to record that you arrived from one of our Google ads and, if you buy a report, the purchase amount and a payment reference. This tells us which ads lead to purchases. We do not send Google your name, email, phone number or assessment answers. Google processes this data under its own privacy policy (policies.google.com/privacy).
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                If you reject, the Google tag is not loaded at all.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">8.4 Changing your choice</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                You can change or withdraw your consent at any time, as easily as you gave it. Use the &quot;Cookie settings&quot; link in the site footer, or the button below. Withdrawing consent stops new analytics and advertising cookies; to remove cookies already set, clear them in your browser settings.
+              </p>
+              <CookieSettingsButton className="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" />
             </section>
 
             <section className="mb-8">

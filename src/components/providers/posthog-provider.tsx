@@ -7,6 +7,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { identifyUser, resetUser } from '@/lib/analytics/tracking'
 import { pfBeforeSend } from '@/lib/analytics/pf-url-sanitizer'
+import { applyConsentToPostHog, getConsent, useConsent } from '@/lib/consent'
 
 // Initialize PostHog only on client side
 if (typeof window !== 'undefined') {
@@ -21,7 +22,13 @@ if (typeof window !== 'undefined') {
     disable_surveys: true,
     // Strip PF calculator state (exact salary/balance) from URLs on every event.
     before_send: pfBeforeSend,
+    // Cookie consent (@/lib/consent): until the visitor accepts, capture
+    // without cookies or storage. Requires "Cookieless server hash mode" to be
+    // enabled in the PostHog project settings, or these events are dropped.
+    opt_out_capturing_by_default: true,
+    cookieless_mode: 'on_reject',
   })
+  applyConsentToPostHog(getConsent())
 }
 
 // Re-enable recording + surveys on first idle period or user interaction.
@@ -35,7 +42,8 @@ function DeferredFeatures() {
       if (done) return
       done = true
       cleanup()
-      posthog.set_config({ disable_session_recording: false, disable_surveys: false })
+      // Session recording only with cookie consent; surveys either way.
+      posthog.set_config({ disable_session_recording: getConsent() !== 'granted', disable_surveys: false })
     }
     const idleId =
       'requestIdleCallback' in window
@@ -105,12 +113,24 @@ function AuthIdentifier() {
   return null
 }
 
+// Start session recording when the visitor accepts cookies mid-visit.
+function ConsentRecording() {
+  const consent = useConsent()
+  useEffect(() => {
+    if (consent === 'granted') {
+      posthog.set_config({ disable_session_recording: false })
+    }
+  }, [consent])
+  return null
+}
+
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   return (
     <PHProvider client={posthog}>
       <PostHogPageView />
       <AuthIdentifier />
       <DeferredFeatures />
+      <ConsentRecording />
       {children}
     </PHProvider>
   )
