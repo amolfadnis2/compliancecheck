@@ -172,6 +172,12 @@ export interface PromoRedeemedProps extends PaymentFunnelProps {
   error?: string;
 }
 
+export interface NewsletterSignupRequestedProps {
+  /** Where the opt-in was given: home page form, checkout checkbox, or email-gate checkbox. */
+  source: 'home' | 'checkout' | 'email_gate';
+  succeeded: boolean;
+}
+
 export interface PaidReportViewedProps {
   assessment_type: AssessmentType;
   assessment_id: string;
@@ -332,6 +338,9 @@ export const ANALYTICS_EVENTS = {
   PARTNER_DETAILS_SUBMITTED: 'partner_details_submitted',
   BRANDED_REPORT_GENERATED: 'branded_report_generated',
   BRANDED_REPORT_EMAILED: 'branded_report_emailed',
+
+  // Newsletter
+  NEWSLETTER_SIGNUP_REQUESTED: 'newsletter_signup_requested',
 } as const;
 
 export type AnalyticsEventName = typeof ANALYTICS_EVENTS[keyof typeof ANALYTICS_EVENTS];

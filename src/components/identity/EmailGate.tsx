@@ -12,6 +12,7 @@ import { sendOtp, verifyOtp } from '@/lib/identity/verify-otp'
 import { appendSource } from '@/lib/identity/update-profile'
 import { updateProfile } from '@/lib/identity/update-profile'
 import { logEvent } from '@/lib/identity/log-event'
+import { requestNewsletterSignup } from '@/lib/newsletter/client'
 import posthog from 'posthog-js'
 import { analytics } from '@/lib/analytics/tracking'
 import type { User } from '@/lib/identity/types'
@@ -126,9 +127,12 @@ export function EmailGate({
       // Record source, consents, and event
       await Promise.all([
         appendSource(source),
-        updateProfile({}),
+        updateProfile(marketingConsent ? { marketing_consent_at: new Date().toISOString() } : {}),
         logEvent('email_verified', { source, marketing_consent: marketingConsent, deadline_consent: deadlineConsent }),
       ])
+
+      // Newsletter opt-in: the server sends a confirmation link (double opt-in).
+      if (marketingConsent) void requestNewsletterSignup(email.trim(), 'email_gate')
 
       setStep('verified')
       setTimeout(() => onVerified(verifiedUser), 1500)
