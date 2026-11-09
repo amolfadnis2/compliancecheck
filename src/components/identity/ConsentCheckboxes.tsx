@@ -2,6 +2,7 @@
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { NEWSLETTER_CONSENT_TEXT } from '@/lib/newsletter/consent'
 
 interface ConsentCheckboxesProps {
   showMarketing: boolean
@@ -45,11 +46,9 @@ export function ConsentCheckboxes({
             id="consent-marketing"
             checked={marketingChecked}
             onCheckedChange={(v) => onMarketingChange(v === true)}
-            aria-label="Send me product updates"
           />
           <Label htmlFor="consent-marketing" className="text-sm font-normal leading-snug cursor-pointer">
-            Send me product updates
-            <span className="block text-xs text-muted-foreground">Occasional — new features and compliance news</span>
+            {NEWSLETTER_CONSENT_TEXT}
           </Label>
         </div>
       )}

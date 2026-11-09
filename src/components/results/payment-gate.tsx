@@ -5,11 +5,15 @@ import { CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { analytics } from '@/lib/analytics/tracking'
 import { trackGoogleAdsPurchase } from '@/lib/analytics/google-ads'
 import type { AssessmentType } from '@/lib/constants/assessment-types'
 import { getSampleReportPath } from '@/lib/pdf/sample-report-paths'
 import { normalizeIndianMobile } from '@/lib/identity/phone'
+import { NEWSLETTER_CONSENT_TEXT } from '@/lib/newsletter/consent'
+import { requestNewsletterSignup } from '@/lib/newsletter/client'
 
 // Minimal type for the client-side Razorpay Checkout widget
 interface RazorpayOptions {
@@ -83,6 +87,7 @@ export function PaymentGate({
   // Optional: where the detailed report is sent on WhatsApp.
   const [phone, setPhone] = useState(defaultPhone ?? '')
   const [promoCode, setPromoCode] = useState('')
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false)
   const [showPromo, setShowPromo] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -119,6 +124,9 @@ export function PaymentGate({
       setError('Please enter a valid 10-digit Indian mobile number, or leave it blank')
       return false
     }
+    // Opt-in is independent of the payment outcome; the server emails a
+    // confirmation link (double opt-in) and ignores repeats.
+    if (newsletterOptIn) void requestNewsletterSignup(email.trim(), 'checkout')
     return true
   }
 
@@ -301,6 +309,17 @@ export function PaymentGate({
             <p className="text-xs text-gray-500">
               Your detailed report is emailed to you. Add a WhatsApp number to send it there in one tap.
             </p>
+            <div className="flex items-start gap-2.5 pt-1">
+              <Checkbox
+                id="newsletter-opt-in"
+                checked={newsletterOptIn}
+                onCheckedChange={(v) => setNewsletterOptIn(v === true)}
+                disabled={loading}
+              />
+              <Label htmlFor="newsletter-opt-in" className="text-xs font-normal leading-snug text-gray-600 cursor-pointer">
+                {NEWSLETTER_CONSENT_TEXT}
+              </Label>
+            </div>
           </div>
         )}
 
