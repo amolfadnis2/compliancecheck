@@ -651,7 +651,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     questionId: 'DPDP_02',
     category: 'Digital Personal Data Protection',
     requirement: 'Privacy Notice in Simple, Clear Language',
-    governmentRef: 'DPDP Act 2023 - Section 5 | DPDP Rules 2025 - Rule 4',
+    governmentRef: 'DPDP Act 2023 - Section 5',
     officialLink: 'https://www.meity.gov.in/data-protection-framework',
     deadline: 'Full compliance by May 13, 2027',
     penalty: 'Up to Rs.50 Crore for inadequate notice',
