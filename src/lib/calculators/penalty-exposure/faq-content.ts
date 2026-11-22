@@ -12,7 +12,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'What is the DPDP Act and why are its penalties so large?',
     answer:
-      'The Digital Personal Data Protection Act 2023 came into force partially on November 13, 2025 (Data Protection Board constituted). Full enforcement — including the penalty schedule — is expected by May 13, 2027. Penalties are tiered up to ₹250 crore per violation for data security failures, which brings DPDP exposure to the top of most calculators. The large number is the statutory ceiling, not the expected fine for a first violation. Our typical risk figures apply a gap rate of 0.84 (only 16% of Indian businesses claim readiness per PwC 2024) and scale with your estimated data volume (proxied by turnover).',
+      'The DPDP Rules were notified on November 13, 2025 and the Data Protection Board was constituted. The substantive duties for businesses — notice, consent, security safeguards, breach intimation and retention — apply from May 13, 2027. Penalties are tiered up to ₹250 crore per violation for data security failures, which brings DPDP exposure to the top of most calculators. The large number is the statutory ceiling, not the expected fine for a first violation. Our typical risk figures apply a gap rate of 0.84 (only 16% of Indian businesses claim readiness per PwC 2024) and scale with your estimated data volume (proxied by turnover).',
   },
   {
     question: 'Do the new Labour Codes apply to my business in 2026?',
@@ -42,6 +42,6 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'When will DPDP penalties actually be enforced?',
     answer:
-      'The Data Protection Board of India (DPB) was constituted on November 13, 2025 and began operations. Full enforcement — including the penalty schedule under the Schedule to the DPDP Act — is expected when the remaining rules are notified. The government has indicated a May 2027 target for full rule notification. Businesses that process personal data of Indian residents should be compliant well before that date; grace periods are typically short once rules are notified.',
+      'The DPDP Rules were notified on November 13, 2025, when the Data Protection Board of India was also constituted. They apply in phases: Consent Manager registration opened on November 13, 2026 (this only concerns companies that want to act as Consent Managers, not ordinary businesses), and the substantive duties for every business that handles personal data — notice, consent, security safeguards, breach intimation and retention — apply from May 13, 2027. Penalties under the Schedule to the DPDP Act attach to those duties, so businesses should be ready before May 13, 2027.',
   },
 ]

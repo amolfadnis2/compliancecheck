@@ -61,7 +61,7 @@ export default function DPDPGapAssessmentPage() {
                 <div className={styles.alertIcon} style={{ background: 'rgba(220, 38, 38, 0.1)' }}>⚠️</div>
                 <div className={styles.alertContent}>
                   <h4 style={{ color: '#DC2626' }}>Penalties up to ₹250 Crore</h4>
-                  <p>Non-compliance can result in penalties ranging from ₹50 Crore to ₹250 Crore. Compliance deadline is expected by May 2027.</p>
+                  <p>Non-compliance can result in penalties ranging from ₹50 Crore to ₹250 Crore. Core obligations for businesses apply from 13 May 2027.</p>
                 </div>
               </div>
             </div>

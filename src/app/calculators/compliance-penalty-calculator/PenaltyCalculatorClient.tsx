@@ -288,7 +288,7 @@ const LAW_EXPLAINERS = [
     icon: '🔒',
     title: 'DPDP Act 2023',
     description:
-      'The Digital Personal Data Protection Act 2023 imposes penalties up to ₹250 crore for security failures. The Data Protection Board is operational since November 2025; full enforcement expected May 2027.',
+      'The Digital Personal Data Protection Act 2023 imposes penalties up to ₹250 crore for security failures. The DPDP Rules were notified and the Data Protection Board constituted in November 2025; substantive duties for businesses apply from 13 May 2027.',
     maxPenalty: '₹250 crore per violation',
   },
   {

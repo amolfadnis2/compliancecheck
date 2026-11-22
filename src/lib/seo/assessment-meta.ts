@@ -79,7 +79,7 @@ export const ASSESSMENT_META: AssessmentMeta[] = [
       {
         question: 'When does the DPDP Act come into force?',
         answer:
-          'The DPDP Act\'s rules and obligations are being phased in, with enforcement expected around 2027. Organisations should assess their readiness now given the scale of the changes required.',
+          'The DPDP Rules were notified on 13 November 2025 and apply in phases. Consent Manager registration opened on 13 November 2026, but only for companies that want to act as Consent Managers. The core duties for businesses (notice, consent, security safeguards, breach intimation and retention) apply from 13 May 2027.',
       },
     ],
   },

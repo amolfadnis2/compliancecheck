@@ -97,8 +97,9 @@ export const DPDP_CONFIG: ReportConfig = {
     'CERT-In Directions (April 2022)',
   ],
   deadlines: [
-    { item: 'DPDP Act Full Compliance', date: '13 May 2027' },
-    { item: 'Consent Manager Registration', date: 'Before processing personal data' },
+    { item: 'DPDP Rules notified; Data Protection Board constituted', date: '13 Nov 2025' },
+    { item: 'Consent Manager registration (only for would-be Consent Managers)', date: 'Open since 13 Nov 2026' },
+    { item: 'DPDP Act Full Compliance (all businesses)', date: '13 May 2027' },
     { item: 'Data Breach Notification to Board', date: 'Within 72 hours of discovery' },
     { item: 'Data Breach Notification to Principal', date: 'Without undue delay' },
     { item: 'Response to Data Erasure Request', date: 'Without unreasonable delay' },
