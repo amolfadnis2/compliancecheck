@@ -1,6 +1,8 @@
 // Labour Code Compliance Rules for PDF Generation
 // Location: src/lib/assessments/labour-code-rules.ts
-// Maps all 30 Labour Code assessment questions to detailed compliance metadata
+// Maps all 30 Labour Code assessment questions to detailed compliance metadata.
+// Each key MUST equal the question id it describes (see labour-code-questions.ts);
+// tests/unit/report-adapters.test.ts checks the pairing.
 
 import { ComplianceRule } from '@/types/compliance';
 
@@ -22,7 +24,6 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
   // ============================================================================
   // CODE ON WAGES (7 Questions)
   // ============================================================================
-
   wages_1: {
     questionId: 'wages_1',
     requirement: 'Pay minimum wages as per Central/State notification',
@@ -45,6 +46,45 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
 
   wages_2: {
     questionId: 'wages_2',
+    requirement: 'Disburse wages within 7 days of wage period end',
+    governmentRef: 'Code on Wages 2019, Section 17',
+    officialLink: 'https://shramsuvidha.gov.in',
+    deadline: '7th of following month (for monthly wage period)',
+    penalty: 'Rs. 50,000 fine; interest payable to employee for delayed wages',
+    actionIfNonCompliant: [
+      'Review current payroll processing timeline',
+      'Identify bottlenecks causing delay (attendance closure, approvals, bank processing)',
+      'Set hard deadline: attendance closure by 2nd, processing by 4th, transfer by 6th',
+      'Switch to NEFT/IMPS for same-day wage credit',
+      'Automate attendance-to-payroll integration where possible',
+      'Document and communicate revised timeline to all stakeholders',
+      'Maintain proof of payment dates (bank statements, UTR numbers)'
+    ],
+    actionIfCompliant: 'Maintain bank transfer records. Issue salary slips within 2 days of wage payment.',
+    applicabilityNote: 'Applies to all employees; penalty increased from previous law'
+  },
+
+  wages_3: {
+    questionId: 'wages_3',
+    requirement: 'Settle full and final dues within 2 working days of separation',
+    governmentRef: 'Code on Wages 2019, Section 17(2)',
+    officialLink: 'https://labour.gov.in/sites/default/files/THE%20CODE%20ON%20WAGES%2C%202019.pdf',
+    deadline: '2 working days from date of termination/resignation',
+    penalty: 'Compensation payable to employee for delay; fine up to Rs. 50,000',
+    actionIfNonCompliant: [
+      'Revise separation policy to enable 2-day settlement',
+      'Pre-compute leave encashment, gratuity, bonus during notice period',
+      'Streamline no-dues clearance process',
+      'Establish emergency settlement fund for immediate payouts',
+      'Train HR team on accelerated F&F processing',
+      'Automate calculation of all final dues'
+    ],
+    actionIfCompliant: 'F&F process within timeline. Document settlement dates. Keep acknowledgment receipts from separated employees.',
+    applicabilityNote: 'Applies to all employees on removal, dismissal, retrenchment or resignation'
+  },
+
+  wages_4: {
+    questionId: 'wages_4',
     requirement: 'Basic wages must constitute at least 50% of total remuneration',
     governmentRef: 'Code on Wages 2019, Section 2(y) - Definition of Wages',
     officialLink: 'https://labour.gov.in/code-wages-2019',
@@ -65,8 +105,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: 'Applies to ALL employees - major impact on PF/Gratuity costs'
   },
 
-  wages_3: {
-    questionId: 'wages_3',
+  wages_5: {
+    questionId: 'wages_5',
     requirement: 'Pay overtime at 2x normal wage rate',
     governmentRef: 'Code on Wages 2019, Section 14',
     officialLink: 'https://labour.gov.in/code-wages-2019',
@@ -87,28 +127,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: 'Overtime limited to 125 hours per quarter under new codes'
   },
 
-  wages_4: {
-    questionId: 'wages_4',
-    requirement: 'Disburse wages within 7 days of wage period end',
-    governmentRef: 'Code on Wages 2019, Section 17',
-    officialLink: 'https://shramsuvidha.gov.in',
-    deadline: '7th of following month (for monthly wage period)',
-    penalty: 'Rs. 50,000 fine; interest payable to employee for delayed wages',
-    actionIfNonCompliant: [
-      'Review current payroll processing timeline',
-      'Identify bottlenecks causing delay (attendance closure, approvals, bank processing)',
-      'Set hard deadline: attendance closure by 2nd, processing by 4th, transfer by 6th',
-      'Switch to NEFT/IMPS for same-day wage credit',
-      'Automate attendance-to-payroll integration where possible',
-      'Document and communicate revised timeline to all stakeholders',
-      'Maintain proof of payment dates (bank statements, UTR numbers)'
-    ],
-    actionIfCompliant: 'Maintain bank transfer records. Issue salary slips within 2 days of wage payment.',
-    applicabilityNote: 'Applies to all employees; penalty increased from previous law'
-  },
-
-  wages_5: {
-    questionId: 'wages_5',
+  wages_6: {
+    questionId: 'wages_6',
     requirement: 'Ensure equal remuneration for equal work regardless of gender',
     governmentRef: 'Code on Wages 2019, Section 3',
     officialLink: 'https://labour.gov.in/equal-remuneration',
@@ -128,8 +148,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: 'Applies from first employee - statutory right'
   },
 
-  wages_6: {
-    questionId: 'wages_6',
+  wages_7: {
+    questionId: 'wages_7',
     requirement: 'Pay annual bonus of 8.33% to 20% of wages',
     governmentRef: 'Code on Wages 2019, Section 26-32',
     officialLink: 'https://labour.gov.in/bonus',
@@ -149,31 +169,9 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: 'Applies to establishments with 20+ employees'
   },
 
-  wages_7: {
-    questionId: 'wages_7',
-    requirement: 'Limit wage deductions to legally permitted categories',
-    governmentRef: 'Code on Wages 2019, Section 18',
-    officialLink: 'https://labour.gov.in/code-wages-2019',
-    deadline: 'Continuous compliance',
-    penalty: 'Rs. 50,000 fine; recovery of illegal deductions with interest',
-    actionIfNonCompliant: [
-      'Review all current deduction categories in payroll',
-      'Compare against permitted list: PF, ESI, tax, court orders, advances, housing/amenities',
-      'Remove any unauthorized deductions immediately',
-      'Refund illegally deducted amounts with interest',
-      'Obtain written authorization for voluntary deductions',
-      'Ensure total deductions do not exceed 50% of wages',
-      'Update deduction policy and payroll configuration',
-      'Train payroll team on permitted vs prohibited deductions'
-    ],
-    actionIfCompliant: 'Maintain deduction register. Get written consent for voluntary deductions. Review annually.',
-    applicabilityNote: 'Total deductions cannot exceed 50% of wages in any period'
-  },
-
   // ============================================================================
   // CODE ON SOCIAL SECURITY (8 Questions)
   // ============================================================================
-
   ss_1: {
     questionId: 'ss_1',
     requirement: 'Register with EPFO and remit contributions by 15th of following month',
@@ -198,6 +196,25 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
 
   ss_2: {
     questionId: 'ss_2',
+    requirement: 'Remit EPF contributions by the 15th of the following month',
+    governmentRef: 'Code on Social Security 2020, Section 16; EPF Scheme Para 38',
+    officialLink: 'https://unifiedportal-emp.epfindia.gov.in',
+    deadline: '15th of month following wage month',
+    penalty: '1% damage per month + 12% p.a. interest; prosecution for persistent default',
+    actionIfNonCompliant: [
+      'Generate ECR (Electronic Challan cum Return) on EPFO portal',
+      'Total contribution: 24% (12% employee + 12% employer)',
+      'Breakup: EPF 3.67%, EPS 8.33%, Admin 0.5%, EDLI 0.5%',
+      'Pay through EPFO-approved banks before 15th',
+      'Verify TRRN (Transaction Reference Number) after payment',
+      'Download ECR receipt for records'
+    ],
+    actionIfCompliant: 'EPF contributions timely. Maintain 6-year record retention. Reconcile annual account statements.',
+    applicabilityNote: 'Mandatory for 20+ employees'
+  },
+
+  ss_3: {
+    questionId: 'ss_3',
     requirement: 'Register with ESIC and remit contributions by 15th of following month',
     governmentRef: 'Code on Social Security 2020, Section 28; ESI Act 1948',
     officialLink: 'https://esic.gov.in',
@@ -218,8 +235,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: '10+ employees; No threshold for hazardous establishments'
   },
 
-  ss_3: {
-    questionId: 'ss_3',
+  ss_4: {
+    questionId: 'ss_4',
     requirement: 'Maintain gratuity provision/insurance for eligible employees',
     governmentRef: 'Code on Social Security 2020, Section 53; Payment of Gratuity Act 1972',
     officialLink: 'https://labour.gov.in/gratuity',
@@ -240,8 +257,27 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: '10+ employees; Fixed-term workers eligible after 1 year (not 5)'
   },
 
-  ss_4: {
-    questionId: 'ss_4',
+  ss_5: {
+    questionId: 'ss_5',
+    requirement: 'Pay pro-rata gratuity to fixed-term employees after 1 year',
+    governmentRef: 'Code on Social Security 2020, Section 53(2)(b)',
+    officialLink: 'https://labour.gov.in/sites/default/files/SS_Code_Gazette.pdf',
+    deadline: 'Upon completion of 1 year service by fixed-term employee',
+    penalty: 'Non-payment treated as gratuity denial; penalties under Gratuity Act',
+    actionIfNonCompliant: [
+      'Fixed-term employees are eligible after 1 year (vs 5 years for regular)',
+      'Calculate pro-rata gratuity: 15 days wages per year of service',
+      'Wages = last drawn basic + DA, plus any excess of excluded allowances over 50% of total pay',
+      'Include in final settlement for fixed-term contract completion',
+      'Update HR policies and employment contracts',
+      'Budget for enhanced gratuity liability'
+    ],
+    actionIfCompliant: 'Fixed-term gratuity policy updated. Include in employment contracts. Track tenure for eligibility.',
+    applicabilityNote: 'Fixed-term employees in establishments covered by gratuity (10+ employees)'
+  },
+
+  ss_6: {
+    questionId: 'ss_6',
     requirement: 'Provide maternity benefits as per statutory entitlements',
     governmentRef: 'Code on Social Security 2020, Section 60-67; Maternity Benefit Act 1961',
     officialLink: 'https://labour.gov.in/maternity-benefit',
@@ -262,29 +298,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: '10+ employees; ESI-covered employees get benefits via ESIC'
   },
 
-  ss_5: {
-    questionId: 'ss_5',
-    requirement: 'Provide creche facility for establishments with 50+ employees',
-    governmentRef: 'Code on Social Security 2020, Section 67',
-    officialLink: 'https://labour.gov.in/code-social-security-2020',
-    deadline: 'Within 6 months of reaching 50 employees',
-    penalty: 'Rs. 50,000 - Rs. 2,00,000 fine',
-    actionIfNonCompliant: [
-      'Assess number of children requiring creche (age 0-6 years)',
-      'Option 1: Establish on-site creche within 500 meters',
-      'Option 2: Tie-up with approved creche facility nearby',
-      'Option 3: Provide creche allowance (state-specific rules)',
-      'Ensure facility meets prescribed standards (space, staff, safety)',
-      'Allow 4 visits per day to creche during work hours',
-      'Display creche location and timings at workplace',
-      'Maintain attendance register for children'
-    ],
-    actionIfCompliant: 'Conduct annual inspection of creche facility. Get feedback from employee parents. Ensure staff training.',
-    applicabilityNote: '50+ employees where women are employed'
-  },
-
-  ss_6: {
-    questionId: 'ss_6',
+  ss_7: {
+    questionId: 'ss_7',
     requirement: 'Register gig/platform workers on social security portal',
     governmentRef: 'Code on Social Security 2020, Section 114',
     officialLink: 'https://labour.gov.in/code-social-security-2020',
@@ -305,54 +320,30 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: 'Applies to aggregators/platform companies engaging gig workers'
   },
 
-  ss_7: {
-    questionId: 'ss_7',
-    requirement: 'Ensure fixed-term employees receive equal benefits',
-    governmentRef: 'Code on Social Security 2020, Section 2(26)',
-    officialLink: 'https://labour.gov.in/code-social-security-2020',
-    deadline: 'Continuous compliance',
-    penalty: 'Rs. 50,000 fine; employee compensation claims',
-    actionIfNonCompliant: [
-      'Identify all employees on fixed-term contracts',
-      'Compare benefits with permanent employees in same role',
-      'Ensure equal wages for equal work',
-      'Provide pro-rata bonus, leave, and other benefits',
-      'Include in EPF/ESI if meeting wage thresholds',
-      'Gratuity eligibility after 1 year (not 5 years)',
-      'Issue clear fixed-term contract specifying term and benefits',
-      'Do not use fixed-term contracts to avoid permanent employment obligations',
-      'No termination without notice as per contract'
-    ],
-    actionIfCompliant: 'Audit fixed-term contracts annually. Document legitimate business reasons for fixed-term engagement.',
-    applicabilityNote: 'Fixed-term workers cannot be treated less favorably than permanent workers'
-  },
-
   ss_8: {
     questionId: 'ss_8',
-    requirement: 'Comply with inter-state migrant worker provisions',
-    governmentRef: 'Code on Social Security 2020, Section 68-74',
+    requirement: 'Provide creche facility for establishments with 50+ employees',
+    governmentRef: 'Code on Social Security 2020, Section 67',
     officialLink: 'https://labour.gov.in/code-social-security-2020',
-    deadline: 'Continuous compliance for establishments engaging migrants',
+    deadline: 'Within 6 months of reaching 50 employees',
     penalty: 'Rs. 50,000 - Rs. 2,00,000 fine',
     actionIfNonCompliant: [
-      'Identify inter-state migrant workers (from other state for Rs. 18,000/month or less)',
-      'Register migrant workers on Shram Suvidha Portal',
-      'Provide displacement allowance (one-time)',
-      'Ensure journey allowance for annual home visit',
-      'Provide suitable accommodation or allowance',
-      'Deduct and remit employee share of benefits',
-      'Maintain register of inter-state migrant workers',
-      'Display information about entitlements in workers language',
-      'Facilitate banking and ration card portability'
+      'Assess number of children requiring creche (age 0-6 years)',
+      'Option 1: Establish on-site creche within 500 meters',
+      'Option 2: Tie-up with approved creche facility nearby',
+      'Option 3: Provide creche allowance (state-specific rules)',
+      'Ensure facility meets prescribed standards (space, staff, safety)',
+      'Allow 4 visits per day to creche during work hours',
+      'Display creche location and timings at workplace',
+      'Maintain attendance register for children'
     ],
-    actionIfCompliant: 'Maintain updated register. Provide annual home journey facilitation. Ensure wage portability.',
-    applicabilityNote: 'Applies to workers earning up to Rs. 18,000/month from different state'
+    actionIfCompliant: 'Conduct annual inspection of creche facility. Get feedback from employee parents. Ensure staff training.',
+    applicabilityNote: '50+ employees where women are employed'
   },
 
   // ============================================================================
   // OSH CODE (8 Questions)
   // ============================================================================
-
   osh_1: {
     questionId: 'osh_1',
     requirement: 'Register establishment on Shram Suvidha Portal',
@@ -464,6 +455,25 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
 
   osh_6: {
     questionId: 'osh_6',
+    requirement: 'Deploy contract labour only in non-core activities',
+    governmentRef: 'OSH Code 2020, Section 57',
+    officialLink: 'https://labour.gov.in/sites/default/files/OSHCODE2020.pdf',
+    deadline: 'Continuous compliance',
+    penalty: 'Contract workers may claim permanent employment; back-wages liability',
+    actionIfNonCompliant: [
+      'Contract labour is prohibited in core activities of the establishment',
+      'Permissible: sanitation, security, canteen, housekeeping',
+      'Exception: sudden volume spikes, intermittent work',
+      'Audit current contract worker deployment',
+      'Reclassify core activity workers as regular employees or outsource function',
+      'Document justification for any non-standard contract deployment'
+    ],
+    actionIfCompliant: 'Contract deployment in permitted areas. Review annually. Document work nature for all contract workers.',
+    applicabilityNote: 'Applies wherever contract labour is engaged'
+  },
+
+  osh_7: {
+    questionId: 'osh_7',
     requirement: 'Provide canteen facility for 100+ workers',
     governmentRef: 'OSH Code 2020, Second Schedule',
     officialLink: 'https://labour.gov.in/osh-code-2020',
@@ -484,54 +494,31 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: '100+ workers; may vary by state rules'
   },
 
-  osh_7: {
-    questionId: 'osh_7',
-    requirement: 'Appoint welfare officer for 250+ workers (hazardous industries)',
-    governmentRef: 'OSH Code 2020, Section 24',
-    officialLink: 'https://labour.gov.in/osh-code-2020',
-    deadline: 'Within 3 months of reaching threshold',
-    penalty: 'Rs. 2,00,000 fine; additional Rs. 3,000/day for continuing violation',
-    actionIfNonCompliant: [
-      'Check if industry is classified as hazardous',
-      'Hazardous threshold: 250+ workers',
-      'Non-hazardous threshold: 500+ workers',
-      'Hire qualified welfare officer (degree in social work/labour welfare)',
-      'Duties: worker welfare, grievance handling, housing, health, recreation',
-      'Welfare officer must be full-time appointment',
-      'Provide adequate office space and resources',
-      'Define reporting structure (preferably to HR head)',
-      'Submit appointment details to labour department'
-    ],
-    actionIfCompliant: 'Review welfare officer workload. Ensure training on new codes. Document welfare initiatives.',
-    applicabilityNote: '250+ for hazardous; 500+ for general industries'
-  },
-
   osh_8: {
     questionId: 'osh_8',
-    requirement: 'Constitute Safety Committee for 500+ workers',
-    governmentRef: 'OSH Code 2020, Section 22',
-    officialLink: 'https://labour.gov.in/osh-code-2020',
-    deadline: 'Within 3 months of reaching 500 workers',
-    penalty: 'Rs. 2,00,000 fine; criminal liability for safety incidents',
+    requirement: 'Comply with inter-state migrant worker provisions',
+    governmentRef: 'Code on Social Security 2020, Section 68-74',
+    officialLink: 'https://labour.gov.in/code-social-security-2020',
+    deadline: 'Continuous compliance for establishments engaging migrants',
+    penalty: 'Rs. 50,000 - Rs. 2,00,000 fine',
     actionIfNonCompliant: [
-      'Form Safety Committee with equal employer-worker representation',
-      'Minimum composition as per state rules (typically 10-20 members)',
-      'Include: management reps, supervisor reps, worker reps, safety officer',
-      'Committee functions: safety audits, accident investigation, policy review',
-      'Meet at least quarterly (monthly recommended)',
-      'Maintain minutes of all meetings',
-      'Implement committee recommendations',
-      'Display Safety Committee notice board',
-      'Report to labour department on committee activities'
+      'Identify inter-state migrant workers (from other state for Rs. 18,000/month or less)',
+      'Register migrant workers on Shram Suvidha Portal',
+      'Provide displacement allowance (one-time)',
+      'Ensure journey allowance for annual home visit',
+      'Provide suitable accommodation or allowance',
+      'Deduct and remit employee share of benefits',
+      'Maintain register of inter-state migrant workers',
+      'Display information about entitlements in workers language',
+      'Facilitate banking and ration card portability'
     ],
-    actionIfCompliant: 'Quarterly meetings minimum. Implement recommendations within 30 days. Annual safety audit.',
-    applicabilityNote: '500+ workers; lower thresholds for mines and hazardous processes'
+    actionIfCompliant: 'Maintain updated register. Provide annual home journey facilitation. Ensure wage portability.',
+    applicabilityNote: 'Applies to workers earning up to Rs. 18,000/month from different state'
   },
 
   // ============================================================================
   // INDUSTRIAL RELATIONS CODE (7 Questions)
   // ============================================================================
-
   ir_1: {
     questionId: 'ir_1',
     requirement: 'Constitute Grievance Redressal Committee (GRC) for 20+ workers',
@@ -601,6 +588,25 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
 
   ir_4: {
     questionId: 'ir_4',
+    requirement: 'Treat concerted casual leave by 50%+ workers as a strike in policy',
+    governmentRef: 'Industrial Relations Code 2020, Section 2(zk)',
+    officialLink: 'https://labour.gov.in/sites/default/files/IR_Code_Gazette.pdf',
+    deadline: 'Immediate awareness and policy update',
+    penalty: 'Employer can take disciplinary action for illegal strike',
+    actionIfNonCompliant: [
+      'Under the IR Code, 50%+ workers taking concerted casual leave on a day counts as a strike',
+      'Update leave policy to address concerted leave',
+      'Train supervisors to identify and report mass leave patterns',
+      'Implement leave approval workflow',
+      'Document attendance patterns for evidence',
+      'Have contingency plan for sudden mass absences'
+    ],
+    actionIfCompliant: 'Policy updated. Attendance monitoring in place. HR trained on new definition.',
+    applicabilityNote: 'Applies to all industrial establishments'
+  },
+
+  ir_5: {
+    questionId: 'ir_5',
     requirement: 'Serve 14-day strike notice and inform government',
     governmentRef: 'Industrial Relations Code 2020, Section 62',
     officialLink: 'https://labour.gov.in/industrial-relations-code-2020',
@@ -621,53 +627,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     applicabilityNote: 'Now applies to ALL establishments, not just public utilities'
   },
 
-  ir_5: {
-    questionId: 'ir_5',
-    requirement: 'Obtain government permission before retrenchment (300+ workers)',
-    governmentRef: 'Industrial Relations Code 2020, Section 77',
-    officialLink: 'https://labour.gov.in/industrial-relations-code-2020',
-    deadline: '60-90 days before proposed retrenchment',
-    penalty: 'Retrenchment without permission void; reinstatement with back wages',
-    actionIfNonCompliant: [
-      'For 300+ workers, prior government permission mandatory',
-      'Apply to appropriate government (state or central)',
-      'Notice period: 60 days minimum',
-      'Include: reasons, number of workers, selection criteria',
-      'Follow LIFO (Last In First Out) principle within category',
-      'Pay retrenchment compensation: 15 days wages per year of service',
-      'Contribute 15 days wages to Reskilling Fund within 45 days',
-      'Give preference in re-employment for 1 year',
-      'For less than 300 workers: 1-month notice + compensation sufficient'
-    ],
-    actionIfCompliant: 'Maintain updated worker seniority list. Document legitimate business reasons. Explore alternatives before retrenchment.',
-    applicabilityNote: 'Threshold raised from 100 to 300 workers'
-  },
-
   ir_6: {
     questionId: 'ir_6',
-    requirement: 'Recognize trade unions meeting membership thresholds',
-    governmentRef: 'Industrial Relations Code 2020, Section 14',
-    officialLink: 'https://labour.gov.in/industrial-relations-code-2020',
-    deadline: 'Within 30 days of application for recognition',
-    penalty: 'Unfair labour practice: Rs. 2,00,000 fine; 6 months imprisonment',
-    actionIfNonCompliant: [
-      'Understand recognition thresholds:',
-      'Sole negotiating union: 51%+ workers as members',
-      'Negotiating council: 20%+ membership (when no 51% union exists)',
-      'Minimum members for registration: 7 workers',
-      'Recognition valid for 3 years (extendable to 5)',
-      'Verify membership claims through check-off/verification',
-      'Recognize union within 30 days if threshold met',
-      'Negotiate in good faith with recognized union',
-      'Do not interfere with union activities',
-      'Allow union meetings during non-working hours'
-    ],
-    actionIfCompliant: 'Maintain cordial union relations. Regular management-union meetings. Document all agreements.',
-    applicabilityNote: 'Recognition is mandatory if membership threshold is met'
-  },
-
-  ir_7: {
-    questionId: 'ir_7',
     requirement: 'Ensure equal treatment for fixed-term employees',
     governmentRef: 'Industrial Relations Code 2020, Section 2(p)',
     officialLink: 'https://labour.gov.in/industrial-relations-code-2020',
@@ -686,6 +647,25 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     ],
     actionIfCompliant: 'Annual audit of fixed-term employment. Ensure benefit parity. Maintain proper documentation.',
     applicabilityNote: 'Fixed-term employees entitled to all statutory benefits proportionately'
+  },
+
+  ir_7: {
+    questionId: 'ir_7',
+    requirement: 'Follow LIFO (Last-In-First-Out) for retrenchment',
+    governmentRef: 'Industrial Relations Code 2020, Section 70',
+    officialLink: 'https://labour.gov.in/sites/default/files/IR_Code_Gazette.pdf',
+    deadline: 'Before any retrenchment exercise',
+    penalty: 'Retrenchment can be challenged; reinstatement with back wages',
+    actionIfNonCompliant: [
+      'Last-In-First-Out (LIFO) principle mandatory within worker categories',
+      'Retrench junior workers first in each category',
+      'Compensation: 15 days wages per year of service',
+      'Contribute 15 days wages to Reskilling Fund within 45 days',
+      '60 days notice for closure to workers and government',
+      '300+ workers: Prior government permission required for retrenchment/closure'
+    ],
+    actionIfCompliant: 'LIFO documented in policy. Retrenchment procedure formalized. HR trained.',
+    applicabilityNote: 'Applies to any retrenchment of workers'
   }
 };
 
@@ -730,29 +710,29 @@ export function getRulesByThreshold(employeeCount: number): ComplianceRule[] {
     wages_3: 1,
     wages_4: 1,
     wages_5: 1,
-    wages_6: 20,
-    wages_7: 1,
+    wages_6: 1,
+    wages_7: 20,
     ss_1: 20,
-    ss_2: 10,
+    ss_2: 20,
     ss_3: 10,
     ss_4: 10,
-    ss_5: 50,
-    ss_6: 1,
+    ss_5: 1,
+    ss_6: 10,
     ss_7: 1,
-    ss_8: 1,
+    ss_8: 50,
     osh_1: 10,
     osh_2: 1,
     osh_3: 1,
     osh_4: 1,
     osh_5: 50,
-    osh_6: 100,
-    osh_7: 250,
-    osh_8: 500,
+    osh_6: 1,
+    osh_7: 100,
+    osh_8: 1,
     ir_1: 20,
     ir_2: 300,
     ir_3: 100,
     ir_4: 1,
-    ir_5: 300,
+    ir_5: 1,
     ir_6: 1,
     ir_7: 1
   };

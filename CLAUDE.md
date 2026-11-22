@@ -313,6 +313,7 @@ Historical list (confirmed gone):
 - `src/components/results/statutory-health-summary.tsx` (replaced by the shared `src/components/results/assessment-summary.tsx` + `UnifiedSummaryData` — deleted)
 - `src/app/assessment/Landing/page.tsx` + its CSS module (unreachable: `next.config` permanently redirects `/assessment/Landing` to the statutory-health landing page; still carried "₹999 post-beta" copy — deleted 2026-10-27)
 - `src/app/api/assessment/auto-dealer/pay/route.ts` (zero callers; superseded by `/api/payment/create-order` — deleted 2026-10-27)
+- `src/lib/pdf/labour-code-compliance-rules.ts` (zero importers; the live Labour Code rules are `src/lib/assessments/labour-code-rules.ts`, whose keys had drifted from the question ids — the 6 missing rules were ported from this file before it was deleted 2026-11-22)
 
 ---
 
