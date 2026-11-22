@@ -98,6 +98,8 @@ export interface ReportConfig {
   deadlines: { item: string; date: string }[];
   deadlineWarning?: { text: string };
   filenamePrefix: string;
+  /** "Content last reviewed" date (display text), from ASSESSMENT_LAST_REVIEWED. */
+  lastReviewed?: string;
 }
 
 export interface UnifiedReportData {
@@ -377,6 +379,12 @@ function generateCoverPage(doc: jsPDF, data: UnifiedReportData): number {
   doc.setFontSize(FONTS.body);
   doc.setTextColor(...COLORS.text);
   doc.text(`Assessment Date: ${formatDate(new Date())}`, MARGIN_LEFT, currentY);
+  if (data.config.lastReviewed) {
+    doc.setFontSize(FONTS.small);
+    doc.setTextColor(...COLORS.textLight);
+    doc.text(`Content last reviewed: ${cleanText(data.config.lastReviewed)}`, MARGIN_LEFT, currentY + 6);
+    doc.setTextColor(...COLORS.text);
+  }
 
   // Overall score
   currentY += 20;
@@ -1043,6 +1051,9 @@ function generateNextStepsPage(doc: jsPDF, data: UnifiedReportData, pageNum: num
   doc.setTextColor(...COLORS.textLight);
   doc.text(`Report Generated: ${formatDate(new Date())}`, MARGIN_LEFT, currentY);
   doc.text(`Assessment ID: ${cleanText(data.assessmentId)}`, MARGIN_LEFT, currentY + 4);
+  if (data.config.lastReviewed) {
+    doc.text(`Content last reviewed: ${cleanText(data.config.lastReviewed)}`, MARGIN_LEFT, currentY + 8);
+  }
 
   // Footer
   addPageFooter(doc);

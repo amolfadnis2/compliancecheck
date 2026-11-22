@@ -78,3 +78,31 @@ describe('Kerala Shops and Commercial Establishments renewal', () => {
     expect(getStateCompliance('Kerala').shopsEstablishment.note).toMatch(/renew their registration for 2026-27/)
   })
 })
+
+describe('content freshness ("Content last reviewed")', () => {
+  it('every assessment type has a review date, formatted without locale drift', async () => {
+    const { ASSESSMENT_TYPES, ASSESSMENT_LAST_REVIEWED, formatReviewDate, getLastReviewedLabel } =
+      await import('@/lib/constants/assessment-types')
+    for (const type of Object.values(ASSESSMENT_TYPES)) {
+      expect(ASSESSMENT_LAST_REVIEWED[type], type).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    }
+    expect(formatReviewDate('2026-11-22')).toBe('22 November 2026')
+    expect(getLastReviewedLabel(ASSESSMENT_TYPES.DPDP)).toBe('22 November 2026')
+  })
+
+  it('every unified PDF config carries the review date', async () => {
+    const configs = await import('@/lib/pdf/report-configs')
+    for (const [name, cfg] of Object.entries(configs)) {
+      expect((cfg as { lastReviewed?: string }).lastReviewed, name).toBe('22 November 2026')
+    }
+  })
+
+  it('the paid PDF prints it', async () => {
+    const { buildSampleReport } = await import('@/lib/pdf/sample-report-fixtures')
+    const { generateUnifiedReportBytes } = await import('@/lib/pdf/unified-report-generator')
+    const { ASSESSMENT_TYPES } = await import('@/lib/constants/assessment-types')
+    const data = buildSampleReport(ASSESSMENT_TYPES.LABOUR_CODE)!
+    const bytes = await generateUnifiedReportBytes(data)
+    expect(Buffer.from(bytes).toString('latin1')).toContain('Content last reviewed: 22 November 2026')
+  })
+})

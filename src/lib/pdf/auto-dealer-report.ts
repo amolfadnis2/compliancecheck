@@ -27,6 +27,7 @@ import type {
 } from '@/types/auto-dealer'
 import { PHASE_METADATA, PRICE_TIERS } from '@/types/auto-dealer'
 import { cleanText } from './pdf-primitives'
+import { ASSESSMENT_TYPES, getLastReviewedLabel } from '@/lib/constants/assessment-types'
 import { drawPartnerCoverHeader, drawPreparedByBox, partnerFooterText } from './partner-branding'
 import {
   hexToRgb,
@@ -322,6 +323,9 @@ export function generateAutoDealerPdf(data: AutoDealerReportData): Uint8Array {
   doc.setTextColor(...C.text)
   doc.text(`Assessment Date: ${ascii(data.generatedAt)}`, ML, 185)
   doc.text(`Assessment ID: ${data.assessmentId.slice(0, 8)}`, ML, 192)
+  doc.setFontSize(8)
+  doc.setTextColor(...C.muted)
+  doc.text(`Content last reviewed: ${getLastReviewedLabel(ASSESSMENT_TYPES.AUTO_DEALER)}`, ML, 198)
 
   // Overall score hero
   const sc = data.overallScore

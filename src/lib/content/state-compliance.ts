@@ -18,6 +18,8 @@ export interface StateCompliance {
   labourWelfareFund: { applicable: boolean; note: string }
   shopsEstablishment: { note: string }
   highlights: string[]
+  /** ISO date the hand-verified details were last reviewed (sitemap lastModified). */
+  lastReviewed?: string
 }
 
 /** URL-safe slug for a state name. */
@@ -32,6 +34,7 @@ export function stateSlug(state: string): string {
 /** Hand-verified specifics for priority states. */
 const STATE_DETAILS: Record<string, Partial<StateCompliance>> = {
   Maharashtra: {
+    lastReviewed: '2026-11-22',
     labourWelfareFund: {
       applicable: true,
       note: 'Maharashtra Labour Welfare Fund contributions are deducted twice a year (June and December).',
@@ -46,6 +49,7 @@ const STATE_DETAILS: Record<string, Partial<StateCompliance>> = {
     ],
   },
   Kerala: {
+    lastReviewed: '2026-11-22',
     shopsEstablishment: {
       note: 'Register under the Kerala Shops and Commercial Establishments Act. The Kerala Labour Department (6 Nov 2026) has asked establishments to renew their registration for 2026-27.',
     },

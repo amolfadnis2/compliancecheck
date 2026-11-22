@@ -5,12 +5,14 @@
  */
 
 import type { ReportConfig } from './unified-report-generator'
+import { ASSESSMENT_TYPES, getLastReviewedLabel } from '@/lib/constants/assessment-types'
 
 // ============================================================================
 // STATUTORY HEALTH CHECK
 // ============================================================================
 
 export const STATUTORY_HEALTH_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.STATUTORY_HEALTH),
   assessmentTitle: 'Statutory Health Check',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'EPF, ESI, Professional Tax, Gratuity & Bonus Compliance',
@@ -46,6 +48,7 @@ export const STATUTORY_HEALTH_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const LABOUR_CODE_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.LABOUR_CODE),
   assessmentTitle: 'Labour Code Readiness',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'India\'s Four New Labour Codes (2019-2020)',
@@ -78,6 +81,7 @@ export const LABOUR_CODE_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const DPDP_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.DPDP),
   assessmentTitle: 'DPDP Act Compliance',
   assessmentSubtitle: 'Gap Assessment Report',
   legislationDescription: 'Digital Personal Data Protection Act, 2023',
@@ -115,6 +119,7 @@ export const DPDP_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const STATE_WISE_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE),
   assessmentTitle: 'State-Wise Compliance',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'Central & State Labour Law Compliance',
@@ -154,6 +159,7 @@ export const STATE_WISE_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const POSH_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.POSH),
   assessmentTitle: 'POSH Act 2013 Compliance',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'Sexual Harassment of Women at Workplace Act, 2013',
@@ -185,6 +191,7 @@ export const POSH_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const FOOD_BUSINESS_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.FOOD_BUSINESS),
   assessmentTitle: 'Food Business Compliance',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'FSSAI, GST, Fire Safety & Labour Law Compliance',
