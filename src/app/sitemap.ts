@@ -4,6 +4,7 @@ import { getAllPosts } from '@/lib/blog/posts'
 import { getAllStateSlugs } from '@/lib/content/state-compliance'
 import { SITE_URL } from '@/lib/seo/site'
 import { PAYROLL_RULES_LAST_REVIEWED } from '@/lib/calculators/payroll-statutory-calculator'
+import { GRATUITY_RULES_LAST_REVIEWED } from '@/lib/calculators/gratuity-calculator'
 import { loadEpfParams } from '@/lib/calculators/epf/params.server'
 
 /**
@@ -29,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`, changeFrequency: 'weekly', priority: 0.9 },
     // Calculators - high-traffic free tools
     { url: `${SITE_URL}/calculator/ctc`, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${SITE_URL}/calculator/gratuity`, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${SITE_URL}/calculator/gratuity`, lastModified: GRATUITY_RULES_LAST_REVIEWED, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculator/pf`, lastModified: epf.verifiedAt, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculator/pf-esi-pt`, lastModified: PAYROLL_RULES_LAST_REVIEWED, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator`, changeFrequency: 'monthly', priority: 0.9 },
