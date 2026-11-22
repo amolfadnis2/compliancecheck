@@ -29,7 +29,7 @@ export const STATUTORY_HEALTH_CONFIG: ReportConfig = {
     'Payment of Gratuity Act, 1972',
     'Payment of Bonus Act, 1965',
     'State Professional Tax Acts',
-    'Code on Social Security, 2020 (when notified)',
+    'Code on Social Security, 2020',
   ],
   deadlines: [
     { item: 'EPF/ESI Monthly Deposit', date: '15th of following month' },
@@ -135,12 +135,14 @@ export const STATE_WISE_CONFIG: ReportConfig = {
     'State Shops and Establishments Acts',
     'Contract Labour (Regulation and Abolition) Act, 1970',
     'State-specific Labour Welfare Fund Acts',
+    'State wage rules under the Code on Wages, 2019 (e.g. Maharashtra Wage Rules, 2026)',
   ],
   deadlines: [
     { item: 'EPF/ESI Monthly Deposit', date: '15th of following month' },
     { item: 'Professional Tax (Monthly)', date: 'State-specific (typically 21st)' },
     { item: 'Shops & Establishments Registration', date: 'Within 30 days of commencement' },
     { item: 'Labour Welfare Fund', date: 'Half-yearly (June 30 / December 31)' },
+    { item: 'Maharashtra minimum wage VDA revision', date: 'Twice a year (before 1 April and 1 October)' },
     { item: 'Contract Labour License Renewal', date: 'Before expiry' },
     { item: 'Annual Returns Filing', date: 'January 31 / February 1 (varies by state)' },
   ],

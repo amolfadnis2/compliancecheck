@@ -176,7 +176,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
       'Include forfeiture conditions as per Section 4(6) of the Act',
       'Have legal team review updated contract templates',
     ],
-    actionIfCompliant: 'Contract gratuity clauses in place. Update when Labour Codes are notified for 1-year eligibility change.',
+    actionIfCompliant: 'Contract gratuity clauses in place. Confirm fixed-term contracts reflect gratuity after 1 year under the Code on Social Security (in force since 21 November 2025).',
   },
 
   // ==========================================================================
@@ -289,7 +289,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     requirement: 'Attendance and Wage Records',
     governmentRef: 'State S&E Acts - Record maintenance provisions',
     officialLink: 'https://shramsuvidha.gov.in',
-    deadline: 'Daily maintenance; retention for 3-5 years',
+    deadline: 'Daily maintenance; retention as your state prescribes (Maharashtra: 5 years from the last entry)',
     penalty: 'Rs.500 to Rs.10,000 for non-maintenance; evidence issues in labour disputes',
     actionIfNonCompliant: [
       'Implement attendance tracking system (biometric/digital preferred)',
@@ -297,9 +297,103 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
       'Record daily attendance with in-time and out-time',
       'Document overtime hours separately',
       'Maintain wage register with deductions (PF, ESI, PT)',
-      'Keep records for minimum 3 years (5 years recommended)',
+      'Keep records for the period your state prescribes (Maharashtra: 5 years from the last entry under the Maharashtra Wage Rules, 2026)',
     ],
     actionIfCompliant: 'Records maintained properly. Digitize for easy retrieval during inspections. Backup regularly.',
+  },
+
+  // ==========================================================================
+  // MAHARASHTRA WAGE RULES, 2026 (5 questions, Maharashtra only)
+  // Notified 5 Nov 2026 under the Code on Wages, 2019; in force from
+  // publication. Rule numbers are deliberately not cited until verified.
+  // ==========================================================================
+
+  MH_WAGE_01: {
+    questionId: 'MH_WAGE_01',
+    category: 'Maharashtra Wage Rules',
+    requirement: 'Maharashtra Minimum Wage by Skill Category (incl. VDA)',
+    governmentRef: 'Maharashtra Wage Rules, 2026 | Code on Wages, 2019',
+    officialLink: 'Maharashtra Labour Department (Office of the Commissioner of Labour)',
+    deadline: 'In force from 5 November 2026; VDA revised before 1 April and 1 October each year',
+    penalty: 'Penalties as prescribed under the Code on Wages, 2019',
+    actionIfNonCompliant: [
+      'Note: the Maharashtra Wage Rules, 2026 replace the Maharashtra Minimum Wages Rules, 1963 and the Maharashtra Payment of Wages Rules, 1963',
+      'Classify every worker as highly skilled, skilled, semi-skilled or unskilled',
+      'Compare each worker\'s pay with the notified daily minimum wage plus the current VDA for their category',
+      'Convert correctly: hourly rate = daily rate / 8; monthly rate = daily rate x 26',
+      'Pay any shortfall and update payroll rates',
+      'Set reminders to apply each VDA revision (published before 1 April and 1 October)',
+    ],
+    actionIfCompliant: 'Minimum wages met. Re-check rates after every VDA revision (before 1 April and 1 October).',
+  },
+
+  MH_WAGE_02: {
+    questionId: 'MH_WAGE_02',
+    category: 'Maharashtra Wage Rules',
+    requirement: 'Working Hours, Weekly Rest and Overtime',
+    governmentRef: 'Maharashtra Wage Rules, 2026 | Code on Wages, 2019',
+    officialLink: 'Maharashtra Labour Department (Office of the Commissioner of Labour)',
+    deadline: 'In force from 5 November 2026 - continuous compliance',
+    penalty: 'Penalties as prescribed under the Code on Wages, 2019',
+    actionIfNonCompliant: [
+      'Fix the normal working day at 8 hours for daily-wage employees and cap the week at 48 hours',
+      'Give every employee a weekly rest day',
+      'When an employee works on the rest day, grant compensatory leave',
+      'Pay overtime at least at 2x the normal rate',
+      'Record hours, rest days, compensatory leave and overtime in the attendance and overtime registers',
+    ],
+    actionIfCompliant: 'Hours, rest days and overtime in order. Review the overtime register monthly.',
+  },
+
+  MH_WAGE_03: {
+    questionId: 'MH_WAGE_03',
+    category: 'Maharashtra Wage Rules',
+    requirement: 'Wage Slips On or Before Payday',
+    governmentRef: 'Maharashtra Wage Rules, 2026 | Code on Wages, 2019',
+    officialLink: 'Maharashtra Labour Department (Office of the Commissioner of Labour)',
+    deadline: 'Every wage period - on or before payday',
+    penalty: 'Penalties as prescribed under the Code on Wages, 2019',
+    actionIfNonCompliant: [
+      'Generate a wage slip for every employee each wage period',
+      'Issue it on or before the day wages are paid (paper or electronic)',
+      'Keep a copy or delivery record for inspection',
+    ],
+    actionIfCompliant: 'Wage slips issued on time. Keep delivery records with the wage register.',
+  },
+
+  MH_WAGE_04: {
+    questionId: 'MH_WAGE_04',
+    category: 'Maharashtra Wage Rules',
+    requirement: 'Deductions Capped at 50% of Wages, With Show-Cause Notice',
+    governmentRef: 'Maharashtra Wage Rules, 2026 | Code on Wages, 2019',
+    officialLink: 'Maharashtra Labour Department (Office of the Commissioner of Labour)',
+    deadline: 'Every wage period - continuous compliance',
+    penalty: 'Penalties as prescribed under the Code on Wages, 2019',
+    actionIfNonCompliant: [
+      'Cap total deductions in any wage period at 50% of wages',
+      'Recover any excess in later wage periods instead of the same period',
+      'Before any deduction as a penalty or for loss, issue a written or electronic show-cause notice',
+      'Give the employee a chance to reply, and record the reply and the decision',
+      'Configure payroll to block deductions above the 50% cap',
+    ],
+    actionIfCompliant: 'Deductions within limits. Keep show-cause notices and replies on file.',
+  },
+
+  MH_WAGE_05: {
+    questionId: 'MH_WAGE_05',
+    category: 'Maharashtra Wage Rules',
+    requirement: 'Registers Kept 5 Years From Last Entry',
+    governmentRef: 'Maharashtra Wage Rules, 2026 | Code on Wages, 2019',
+    officialLink: 'Maharashtra Labour Department (Office of the Commissioner of Labour)',
+    deadline: 'Ongoing - retain each register for 5 years from its last entry',
+    penalty: 'Penalties as prescribed under the Code on Wages, 2019',
+    actionIfNonCompliant: [
+      'Maintain employee, wage, overtime and attendance registers',
+      'Physical or electronic registers are both allowed',
+      'Retain each register for 5 years from the date of its last entry',
+      'Back up electronic registers and restrict edits after payroll closes',
+    ],
+    actionIfCompliant: 'Registers complete. Check the 5-year retention before archiving or deleting any record.',
   },
 
   // ==========================================================================
@@ -585,11 +679,12 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     requirement: 'Wage Structure Compliance (50% Basic + DA)',
     governmentRef: 'Code on Wages 2019 - Section 2(y) definition of wages',
     officialLink: 'https://labour.gov.in/sites/default/files/THE%20CODE%20ON%20WAGES%2C%202019%20No.%2029%20of%202019.pdf',
-    deadline: 'From date Labour Codes are notified (pending central notification (date TBD))',
+    deadline: 'Now - the Labour Codes have applied since 21 November 2025',
     penalty: 'Non-compliant wage structure affects PF, Gratuity, Bonus calculations; risk of back claims',
     actionIfNonCompliant: [
       'Audit current salary structure for all employees',
       'Under new definition: Basic + DA must be minimum 50% of total remuneration',
+      'If excluded components exceed 50% of total pay, the excess is added back to wages for gratuity, PF and other statutory benefits',
       'Allowances excluded from wages: HRA, conveyance, overtime, gratuity, bonus, commissions',
       'Restructure CTC to ensure compliance (may increase statutory contributions)',
       'Model financial impact: higher PF/Gratuity cost vs non-compliance risk',
@@ -604,7 +699,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     requirement: 'Grievance Redressal Committee (20+ employees)',
     governmentRef: 'Industrial Relations Code 2020 - Section 4 | IR Code Rules',
     officialLink: 'https://labour.gov.in/sites/default/files/IR_Code_Gazette.pdf',
-    deadline: 'Within 60 days of Labour Codes notification',
+    deadline: 'Now - the Labour Codes have applied since 21 November 2025',
     penalty: 'Fine up to Rs.50,000 for non-constitution; adverse impact in industrial disputes',
     actionIfNonCompliant: [
       'Constitute Grievance Redressal Committee with equal representation',
@@ -615,7 +710,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
       'Appeal mechanism to appropriate authority if unresolved',
       'Maintain records of all grievances and resolutions',
     ],
-    actionIfCompliant: 'GRC in place. Review procedures for alignment with new IR Code requirements when notified.',
+    actionIfCompliant: 'GRC in place. Review procedures for alignment with the IR Code requirements.',
   },
 
   LC_03: {
@@ -624,7 +719,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     requirement: 'Updated Employment Contracts',
     governmentRef: 'All Four Labour Codes - Definitions of Wages, Worker, Employee',
     officialLink: 'https://labour.gov.in',
-    deadline: 'Before Labour Codes effective date (pending central notification (date TBD))',
+    deadline: 'Now - the Labour Codes have applied since 21 November 2025',
     penalty: 'Contractual disputes; non-compliance with new definitions',
     actionIfNonCompliant: [
       'Review employment contract templates for new definitions',
@@ -635,7 +730,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
       'Retrenchment: new thresholds (300 workers for prior approval)',
       'Engage legal counsel for comprehensive contract review',
     ],
-    actionIfCompliant: 'Contracts updated. Maintain version control and issue fresh contracts before effective date.',
+    actionIfCompliant: 'Contracts updated. Maintain version control and reissue contracts whenever wage terms change.',
   },
 
   LC_04: {
@@ -644,7 +739,7 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     requirement: 'Unified Register Maintenance',
     governmentRef: 'All Four Labour Codes - Simplified compliance provisions',
     officialLink: 'https://shramsuvidha.gov.in',
-    deadline: 'From date Labour Codes are notified',
+    deadline: 'Now - the Labour Codes have applied since 21 November 2025',
     penalty: 'Fine for non-maintenance of registers; inspection findings',
     actionIfNonCompliant: [
       'Labour Codes replace 29 labour laws with 4 unified codes',

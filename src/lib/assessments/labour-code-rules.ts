@@ -38,7 +38,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
       'Calculate arrears from date of notification',
       'Pay differential immediately with documented acknowledgement',
       'Update payroll system with new wage rates',
-      'Set calendar reminder for bi-annual rate revisions'
+      'Set calendar reminder for bi-annual rate revisions',
+      'Maharashtra: from 5 Nov 2026 the Maharashtra Wage Rules, 2026 replace the Maharashtra Minimum Wages Rules, 1963 and Payment of Wages Rules, 1963. Minimum wage is set per day for highly skilled, skilled, semi-skilled and unskilled workers (hourly = daily / 8; monthly = daily x 26), and VDA is revised before 1 April and 1 October'
     ],
     actionIfCompliant: 'Monitor government gazettes for minimum wage revisions (typically every 6 months). Maintain wage register as per Form I.',
     applicabilityNote: 'Applies to ALL establishments from 1 employee'
@@ -60,7 +61,7 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
       'Document and communicate revised timeline to all stakeholders',
       'Maintain proof of payment dates (bank statements, UTR numbers)'
     ],
-    actionIfCompliant: 'Maintain bank transfer records. Issue salary slips within 2 days of wage payment.',
+    actionIfCompliant: 'Maintain bank transfer records. Issue wage slips on or before payday (mandatory in Maharashtra under the Maharashtra Wage Rules, 2026).',
     applicabilityNote: 'Applies to all employees; penalty increased from previous law'
   },
 
@@ -98,6 +99,7 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
       'Issue revised appointment letters with new salary structure',
       'Recalculate PF contributions at new basic wage',
       'Recalculate gratuity liability (15 days per year at new basic)',
+      'If excluded components still exceed 50% of total pay, add the excess back to wages for gratuity, PF and other statutory benefits',
       'Update payroll software with revised structure',
       'Communicate changes to employees with comparison statement'
     ],
@@ -121,7 +123,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
       'Update overtime policy to reflect 2x rate',
       'Configure payroll system to auto-calculate at 2x',
       'Train supervisors on overtime approval and calculation',
-      'Implement overtime tracking system (manual register or digital)'
+      'Implement overtime tracking system (manual register or digital)',
+      'Maharashtra: work on the weekly rest day also earns compensatory leave (Maharashtra Wage Rules, 2026)'
     ],
     actionIfCompliant: 'Maintain overtime register (Form IV). Ensure overtime does not exceed 125 hours per quarter.',
     applicabilityNote: 'Overtime limited to 125 hours per quarter under new codes'
@@ -303,7 +306,7 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
     requirement: 'Register gig/platform workers on social security portal',
     governmentRef: 'Code on Social Security 2020, Section 114',
     officialLink: 'https://labour.gov.in/code-social-security-2020',
-    deadline: 'Upon notification of rules (expected 2025)',
+    deadline: 'The Code on Social Security has applied since 21 November 2025; follow the scheme notifications for contribution dates',
     penalty: 'Rs. 1,00,000 - Rs. 5,00,000 fine for non-registration',
     actionIfNonCompliant: [
       'Identify all gig workers and platform workers engaged',
@@ -382,7 +385,8 @@ export const LABOUR_CODE_RULES: Record<string, ComplianceRule> = {
       'Implement time tracking system',
       'Train supervisors on hour limits',
       'Schedule work to avoid regular overtime',
-      'Consider shift rotations for extended operations'
+      'Consider shift rotations for extended operations',
+      'Maharashtra: 8-hour normal working day for daily-wage employees, 48 hours a week, mandatory weekly rest (Maharashtra Wage Rules, 2026)'
     ],
     actionIfCompliant: 'Review attendance monthly. Maintain overtime register. Pre-approve all overtime.',
     applicabilityNote: 'Applies to all workers; special provisions for hazardous work'
