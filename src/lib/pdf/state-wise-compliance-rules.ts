@@ -302,6 +302,24 @@ export const STATE_WISE_COMPLIANCE_RULES: Record<string, StateWiseComplianceRule
     actionIfCompliant: 'Records maintained properly. Digitize for easy retrieval during inspections. Backup regularly.',
   },
 
+  SE_04: {
+    questionId: 'SE_04',
+    category: 'Shops & Establishments',
+    requirement: 'Kerala S&E Registration Renewal for 2026-27',
+    governmentRef: 'Kerala Shops and Commercial Establishments Act | Kerala Labour Department notice, 6 Nov 2026',
+    officialLink: 'Kerala Labour Department (Office of the Labour Commissioner)',
+    deadline: 'Renew for 2026-27 as directed by the Kerala Labour Department (notice dated 6 November 2026)',
+    penalty: 'Penalties as prescribed under the Kerala Shops and Commercial Establishments Act',
+    actionIfNonCompliant: [
+      'Check the validity of your current Kerala Shops and Commercial Establishments registration',
+      'Apply for renewal for 2026-27 through the Kerala Labour Department',
+      'Update employee count and establishment details in the renewal',
+      'Display the renewed registration certificate at the premises',
+      'Repeat for each Kerala establishment you operate',
+    ],
+    actionIfCompliant: 'Registration renewed for 2026-27. Note the next renewal date in your compliance calendar.',
+  },
+
   // ==========================================================================
   // MAHARASHTRA WAGE RULES, 2026 (5 questions, Maharashtra only)
   // Notified 5 Nov 2026 under the Code on Wages, 2019; in force from

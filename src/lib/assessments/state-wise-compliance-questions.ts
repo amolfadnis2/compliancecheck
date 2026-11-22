@@ -525,6 +525,19 @@ export const PHASE2_QUESTIONS: Question[] = [
     applicabilityCodes: ['SHOPS_ESTABLISHMENTS'],
     helpText: 'Keep records for the period your state prescribes. In Maharashtra, registers must be kept for 5 years from the last entry.',
   },
+  {
+    id: 'SE_04',
+    text: 'Have you renewed your Kerala Shops and Commercial Establishments registration for 2026-27?',
+    type: 'yes_no',
+    category: 'Shops & Establishments',
+    required: true,
+    weight: 7,
+    complianceAnswer: 'yes',
+    phase: 2,
+    applicabilityCodes: ['SHOPS_ESTABLISHMENTS'],
+    states: ['kerala'],
+    helpText: 'The Kerala Labour Department (6 Nov 2026) has asked Shops and Commercial Establishments to renew their registration for 2026-27.',
+  },
   // MAHARASHTRA WAGE RULES, 2026 (5 questions) — Maharashtra establishments only.
   // Notified 5 Nov 2026 under the Code on Wages, 2019; replace the Maharashtra
   // Minimum Wages Rules, 1963 and the Maharashtra Payment of Wages Rules, 1963.

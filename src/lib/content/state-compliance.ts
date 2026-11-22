@@ -45,6 +45,11 @@ const STATE_DETAILS: Record<string, Partial<StateCompliance>> = {
       'Maharashtra Wage Rules, 2026 (in force 5 Nov 2026, under the Code on Wages) replace the 1963 Minimum Wages and Payment of Wages Rules: daily minimum wages by skill category, wage slips on or before payday, and registers kept 5 years from the last entry.',
     ],
   },
+  Kerala: {
+    shopsEstablishment: {
+      note: 'Register under the Kerala Shops and Commercial Establishments Act. The Kerala Labour Department (6 Nov 2026) has asked establishments to renew their registration for 2026-27.',
+    },
+  },
   Karnataka: {
     labourWelfareFund: {
       applicable: true,

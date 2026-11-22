@@ -63,3 +63,18 @@ describe('DPDP phased timeline', () => {
     expect(text).toMatch(/Consent Manager registration opened on November 13, 2026/)
   })
 })
+
+describe('Kerala Shops and Commercial Establishments renewal', () => {
+  it('asks Kerala establishments about the 2026-27 renewal, and nobody else', () => {
+    const responses = (state: string) => ({ APP_02: state, APP_03: 'same_as_registered', APP_04: 'retail', APP_06: '10-19' })
+    const se = [{ code: 'SHOPS_ESTABLISHMENTS', name: '', category: 'state_specific' as const, applies: true, reason: '', priority: 'high' as const }]
+    expect(getFilteredPhase2Questions(se, responses('kerala')).map((q) => q.id)).toContain('SE_04')
+    expect(getFilteredPhase2Questions(se, responses('maharashtra')).map((q) => q.id)).not.toContain('SE_04')
+    expect(STATE_WISE_COMPLIANCE_RULES.SE_04.requirement).toMatch(/2026-27/)
+  })
+
+  it('the Kerala state guide mentions the renewal', async () => {
+    const { getStateCompliance } = await import('@/lib/content/state-compliance')
+    expect(getStateCompliance('Kerala').shopsEstablishment.note).toMatch(/renew their registration for 2026-27/)
+  })
+})
