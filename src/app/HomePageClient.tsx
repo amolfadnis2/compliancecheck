@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Footer } from '@/components/site/footer';
+import { NewsletterSignup } from '@/components/newsletter/newsletter-signup';
 import { HOME_FAQS } from '@/lib/content/home-faq';
 import { ASSESSMENT_TYPES, ASSESSMENT_PRICES, isPaymentLive, type AssessmentType } from '@/lib/constants/assessment-types';
 import {
@@ -228,6 +229,9 @@ export default function LandingPage() {
             Real customer quotes (with permission) can be added back as a separate
             section once they exist; never ship placeholder quotes. */}
         <MethodologySection />
+
+        {/* Weekly newsletter sign-up (double opt-in) */}
+        <NewsletterSignup />
       </main>
 
       {/* Footer */}

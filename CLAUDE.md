@@ -51,6 +51,9 @@ RAZORPAY_WEBHOOK_SECRET=        # /api/payment/webhook — backstop when the buy
 REPORT_SHARE_SECRET=            # signs the 30-day report links sent on WhatsApp / in the report email
 NEXT_PUBLIC_GOOGLE_ADS_ID=       # optional, AW-XXXXXXXXXX — loads the Google tag (off when unset)
 NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL=  # optional — Google Ads purchase conversion label, fired on Razorpay success
+NEWSLETTER_SECRET=               # signs newsletter confirm/unsubscribe/approve links; also the bearer token for /api/newsletter/draft
+NEWSLETTER_APPROVER_EMAIL=       # who receives each weekly draft for approval
+NEWSLETTER_FROM=                 # optional — sender, default "ComplianceCheck <noreply@compliancecheck.co.in>"
 ```
 
 ---
@@ -424,6 +427,19 @@ Plan: `docs/superpowers/plans/2026-11-01-partner-white-label.md`. Migration: `20
 - **Admin:** `/admin/partners`.
 - **Acquisition:** `/for-professionals` is the landing page for ads/outreach. Its buttons open assessments with `?partner=1`, which `<PreparedForClientSection>` reads to pre-tick partner mode. Paid purchases are reported to Google Ads via `trackGoogleAdsPurchase` (`@/lib/analytics/google-ads`) from `<PaymentGate>`, because Google Ads cannot import PostHog conversions.
 - Phase 2 (client fills in via a partner link, verified partner profile, partner dashboard) is planned, not built.
+
+---
+
+## 20. Weekly Newsletter
+
+Migration: `20261109000000_newsletter.sql`. Code: `src/lib/newsletter/`, `src/app/api/newsletter/`, `src/app/newsletter/`, `netlify/functions/newsletter-weekly.mts`.
+
+- **Opt-in only.** Only people who tick the newsletter checkbox (`<PaymentGate>`, `<EmailGate>` via `ConsentCheckboxes`) or use the home-page `<NewsletterSignup>` are added. Registered users were **not** backfilled — do not import existing emails from `profiles`, `assessments` or `assessment_entitlements` into the list.
+- **Double opt-in.** `/api/newsletter/subscribe` stores a `pending` row with the exact `NEWSLETTER_CONSENT_TEXT` shown on screen and emails a confirmation link; the row becomes `active` only via the button on `/newsletter/confirm`. Email links always open a page with a button (never a GET that changes state) so mail scanners cannot confirm/unsubscribe/send.
+- **Tables** `newsletter_subscribers` and `newsletter_issues` are service-role only (RLS on, no policies) — a deliberate exception to §8, like `assessment_entitlements`.
+- **Weekly flow.** Monday ~08:50 IST the scheduled function calls `/api/newsletter/draft`, which builds the issue from blog posts dated in the last 7 days (IST) plus `WHATS_NEW` launches, saves it as a draft and emails `NEWSLETTER_APPROVER_EMAIL` a preview. Nothing reaches subscribers until the approver clicks **Approve and send** on `/newsletter/approve`. No new content → no draft, no email.
+- **Announcing launches.** Add one entry to `src/lib/newsletter/whats-new.ts` when a calculator / assessment / feature ships. Blog posts are picked up automatically — don't list them there.
+- **Sending** is our own Resend batch send (100 per request, idempotency-keyed, resumable), with a per-recipient unsubscribe link plus RFC 8058 `List-Unsubscribe` / `List-Unsubscribe-Post` one-click headers.
 
 ---
 

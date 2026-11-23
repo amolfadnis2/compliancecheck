@@ -5,6 +5,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    // The newsletter draft route reads blog MDX at request time (getAllPosts);
+    // make sure the files ship with the serverless function.
+    outputFileTracingIncludes: {
+      '/api/newsletter/draft': ['./content/blog/**/*'],
+    },
+  },
   webpack: (config) => {
     config.resolve.alias['@'] = path.resolve(__dirname, 'src');
     return config;

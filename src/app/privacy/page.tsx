@@ -101,6 +101,7 @@ export default function PrivacyPage() {
                 <li>Provide and maintain our compliance assessment services</li>
                 <li>Generate personalised compliance reports</li>
                 <li>Send assessment results and related communications</li>
+                <li>Send our weekly newsletter, only if you opt in and confirm by email. Every issue has a one-click unsubscribe link.</li>
                 <li>Improve our platform and user experience</li>
                 <li>Respond to your enquiries and support requests</li>
                 <li>Comply with legal obligations</li>

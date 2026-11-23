@@ -23,6 +23,7 @@ import {
   PaymentSucceededProps,
   PaymentFailedProps,
   PromoRedeemedProps,
+  NewsletterSignupRequestedProps,
   PaidReportViewedProps,
   SubscriptionUpgradedProps,
   SubscriptionCancelledProps,
@@ -183,6 +184,10 @@ export const trackPaymentFailed = (props: PaymentFailedProps) => {
 
 export const trackPromoRedeemed = (props: PromoRedeemedProps) => {
   safeCapture(ANALYTICS_EVENTS.PROMO_REDEEMED, props);
+};
+
+export const trackNewsletterSignupRequested = (props: NewsletterSignupRequestedProps) => {
+  safeCapture(ANALYTICS_EVENTS.NEWSLETTER_SIGNUP_REQUESTED, props);
 };
 
 export const trackPaidReportViewed = (props: PaidReportViewedProps) => {
@@ -352,6 +357,9 @@ export const analytics = {
   brandedReportGenerated: trackBrandedReportGenerated,
   brandedReportEmailed: trackBrandedReportEmailed,
   
+  // Newsletter
+  newsletterSignupRequested: trackNewsletterSignupRequested,
+
   // Generic tracking
   trackEvent,
 };
