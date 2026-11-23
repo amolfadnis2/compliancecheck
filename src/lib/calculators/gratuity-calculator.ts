@@ -4,12 +4,19 @@
  * Key Changes Under New Labour Codes:
  * 1. Fixed-term employees: Gratuity after 1 year (not 5 years)
  * 2. Formula: (15 × Last Drawn Wages × Years of Service) ÷ 26
+ *    Wages = Basic + DA (+ retaining allowance), plus any excess of excluded
+ *    allowances over 50% of total pay (Code on Wages definition; see
+ *    wage-definition.ts).
  * 3. Maximum ceiling: Rs.20 lakh
  * 4. Applicability: 10+ employees on any day in preceding 12 months
  * 5. Payment deadline: Within 30 days of becoming due
  */
 
 import { RUPEE } from '@/lib/constants/india'
+import { statutoryWages } from '@/lib/calculators/wage-definition'
+
+/** When the gratuity formula and wage definition were last checked against the law. */
+export const GRATUITY_RULES_LAST_REVIEWED = '2026-11-22'
 
 // Employment types with different eligibility rules
 export const EMPLOYMENT_TYPES = [
@@ -45,7 +52,8 @@ export const GRATUITY_CONSTANTS = {
 // Input interface for calculator (date-based)
 export interface GratuityInput {
   employmentType: 'regular' | 'fixed_term' | 'journalist'
-  lastDrawnBasicDA: number       // Basic + DA (monthly)
+  lastDrawnBasicDA: number       // Basic + DA (+ retaining allowance), monthly
+  monthlyTotalRemuneration?: number // Total monthly pay incl. allowances (optional; enables the 50% add-back)
   dateOfJoining: Date            // When employee started
   lastWorkingDate: Date          // When employee is leaving/left
 }
@@ -58,6 +66,12 @@ export interface GratuityResult {
   cappedAmount: number           // After applying 20L ceiling
   formula: string
   breakdown: {
+    /** Basic + DA as entered */
+    basicDA: number
+    /** Excluded allowances above 50% of total pay, added back to wages */
+    addBack: number
+    /** Last drawn wages used in the formula (basicDA + addBack) */
+    wages: number
     dailyWage: number
     totalDays: number
     grossAmount: number
@@ -140,6 +154,7 @@ export function calculateGratuity(input: GratuityInput): GratuityResult {
   const {
     employmentType,
     lastDrawnBasicDA,
+    monthlyTotalRemuneration,
     dateOfJoining,
     lastWorkingDate,
   } = input
@@ -174,8 +189,11 @@ export function calculateGratuity(input: GratuityInput): GratuityResult {
     ? service.years + 1 
     : service.years
 
+  // Wages for gratuity, with the 50% add-back when total pay is known
+  const { wages, addBack } = statutoryWages(lastDrawnBasicDA, monthlyTotalRemuneration)
+
   // Formula: (15 × Last Drawn Wages × Years of Service) ÷ 26
-  const dailyWage = lastDrawnBasicDA / GRATUITY_CONSTANTS.DAYS_PER_MONTH
+  const dailyWage = wages / GRATUITY_CONSTANTS.DAYS_PER_MONTH
   const totalDays = GRATUITY_CONSTANTS.MULTIPLIER * roundedYears
   const grossAmount = dailyWage * totalDays
   
@@ -184,7 +202,7 @@ export function calculateGratuity(input: GratuityInput): GratuityResult {
   const isCapped = grossAmount > GRATUITY_CONSTANTS.MAX_CEILING
 
   // Generate formula string
-  const formula = `(15 × ${RUPEE}${lastDrawnBasicDA.toLocaleString('en-IN')} × ${roundedYears} years) ÷ 26`
+  const formula = `(15 × ${RUPEE}${Math.round(wages).toLocaleString('en-IN')} × ${roundedYears} years) ÷ 26`
 
   // Calculate payment due date
   const paymentDueDate = calculatePaymentDueDate(lastWorkingDate)
@@ -202,6 +220,9 @@ export function calculateGratuity(input: GratuityInput): GratuityResult {
     cappedAmount: Math.round(cappedAmount),
     formula,
     breakdown: {
+      basicDA: lastDrawnBasicDA,
+      addBack: Math.round(addBack * 100) / 100,
+      wages: Math.round(wages * 100) / 100,
       dailyWage: Math.round(dailyWage * 100) / 100,
       totalDays,
       grossAmount: Math.round(grossAmount),

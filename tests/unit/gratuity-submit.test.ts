@@ -106,4 +106,21 @@ describe('POST /api/calculator/gratuity-submit — anonymous by default', () => 
     expect(res.status).toBe(200)
     expect(mock.state.usersInsertCalls).toBe(1)
   })
+
+  it('stores the optional total monthly pay and the 50% add-back breakdown', async () => {
+    const res = await post({
+      inputs: { ...BASE_INPUTS, basicDA: 30000, totalMonthlyPay: 100000 },
+      result: {
+        ...BASE_RESULT,
+        breakdown: { ...BASE_RESULT.breakdown, basicDA: 30000, addBack: 20000, wages: 50000 },
+      },
+    })
+    expect(res.status).toBe(200)
+    const responses = mock.state.insertedAssessment?.responses as {
+      inputs: Record<string, unknown>
+      result: { breakdown: Record<string, unknown> }
+    }
+    expect(responses.inputs.totalMonthlyPay).toBe(100000)
+    expect(responses.result.breakdown).toMatchObject({ addBack: 20000, wages: 50000 })
+  })
 })

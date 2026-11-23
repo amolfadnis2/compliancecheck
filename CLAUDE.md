@@ -194,7 +194,7 @@ After adding any new table that will receive anonymous writes, verify the policy
 
 | What | Import From |
 |------|-------------|
-| `ASSESSMENT_TYPES`, `ASSESSMENT_PRICING`, `getAssessmentDisplayName` | `@/lib/constants/assessment-types` |
+| `ASSESSMENT_TYPES`, `ASSESSMENT_PRICING`, `getAssessmentDisplayName`, `ASSESSMENT_LAST_REVIEWED` | `@/lib/constants/assessment-types` |
 | `INDIAN_STATES`, `EMPLOYEE_COUNT_OPTIONS`, `INDUSTRY_OPTIONS`, `RUPEE` | `@/lib/constants/india` |
 | `ANALYTICS_EVENTS` | `@/lib/analytics/events` |
 
@@ -275,7 +275,8 @@ Always `h-3`. Always `aria-label`. Always `[&>div]:bg-green-600`. Both applicabi
 Partner mode: `UnifiedReportData.preparedBy` (and `AutoDealerReportData.preparedBy`) switches the cover, footer, closing box and disclaimer to the partner's branding via `src/lib/pdf/partner-branding.ts`; absent, the PDF is unchanged. Adapters attach it with `withPreparedBy` from the row's `prepared_by`; call `withReportLogo` (`@/lib/partner/logo`) before generating so the logo is embedded.
 
 All assessments use `generateUnifiedReportBlob` from `src/lib/pdf/unified-report-generator.ts` via the `report-data-adapter.ts` adapters (Auto Dealer excepted, §14: `src/lib/pdf/auto-dealer-report.ts`). Never create a new standalone PDF generator. Every report has: action plan (0-30 / 31-90 / 90+ days), a portal link per action, peer-average column, legal references appendix.
-- Every scorable question needs a rule with `governmentRef`, `actionIfNonCompliant` and `officialLink` (a single URL, or the office to approach as text) — `tests/unit/report-adapters.test.ts` enforces this.
+- Every scorable question needs a rule with `governmentRef`, `actionIfNonCompliant` and `officialLink` (a single URL, or the office to approach as text) — `tests/unit/report-adapters.test.ts` enforces this, and that each rule's key equals its `questionId`.
+- "Content last reviewed" (summary + PDF + sitemap `lastModified`) comes from `ASSESSMENT_LAST_REVIEWED`. Bump a type's date whenever you re-check its questions/rules against the law.
 - Server-side PDF for any type: `generatePaidReportPdf` in `src/lib/report/paid-report.ts` (ownership + entitlement checked) — used by the email and share routes.
 
 ### Payments (all 7 assessments are paid and live since 2026-10-27)
@@ -313,6 +314,7 @@ Historical list (confirmed gone):
 - `src/components/results/statutory-health-summary.tsx` (replaced by the shared `src/components/results/assessment-summary.tsx` + `UnifiedSummaryData` — deleted)
 - `src/app/assessment/Landing/page.tsx` + its CSS module (unreachable: `next.config` permanently redirects `/assessment/Landing` to the statutory-health landing page; still carried "₹999 post-beta" copy — deleted 2026-10-27)
 - `src/app/api/assessment/auto-dealer/pay/route.ts` (zero callers; superseded by `/api/payment/create-order` — deleted 2026-10-27)
+- `src/lib/pdf/labour-code-compliance-rules.ts` (zero importers; the live Labour Code rules are `src/lib/assessments/labour-code-rules.ts`, whose keys had drifted from the question ids — the 6 missing rules were ported from this file before it was deleted 2026-11-22)
 
 ---
 
@@ -425,5 +427,5 @@ Plan: `docs/superpowers/plans/2026-11-01-partner-white-label.md`. Migration: `20
 
 ---
 
-*Last updated: 2026-11-01 by Claude Code (partner mode / white-label reports, §19)*  
+*Last updated: 2026-11-22 by Claude Code (regulatory update Oct–Nov 2026: Maharashtra Wage Rules, DPDP phases, 50% wage add-back, content-review dates)*  
 *This file supersedes any conflicting instructions in other docs.*

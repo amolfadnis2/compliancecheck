@@ -49,7 +49,7 @@ function buildLlmsTxt(): string {
     `- [CTC to In-Hand Salary Calculator](${SITE_URL}/calculator/ctc): Break down cost-to-company into take-home pay with PF, ESI, Professional Tax and income tax deductions.`,
   )
   lines.push(
-    `- [Gratuity Calculator](${SITE_URL}/calculator/gratuity): Estimate gratuity payout under the Payment of Gratuity Act and the new Labour Code formula.`,
+    `- [Gratuity Calculator](${SITE_URL}/calculator/gratuity): Estimate gratuity payout under the Payment of Gratuity Act and the new Labour Code formula, including the 50% wage add-back when allowances exceed half of total pay.`,
     `- [PF Calculator with Salary Hikes](${SITE_URL}/calculator/pf): For employees. Forecast your EPF corpus by retirement with yearly salary hikes, the ₹25,000 wage ceiling, EPS pension, EDLI cover, taxable interest and your real return. Free, no login.`,
   )
   lines.push(

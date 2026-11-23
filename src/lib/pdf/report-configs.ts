@@ -5,12 +5,14 @@
  */
 
 import type { ReportConfig } from './unified-report-generator'
+import { ASSESSMENT_TYPES, getLastReviewedLabel } from '@/lib/constants/assessment-types'
 
 // ============================================================================
 // STATUTORY HEALTH CHECK
 // ============================================================================
 
 export const STATUTORY_HEALTH_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.STATUTORY_HEALTH),
   assessmentTitle: 'Statutory Health Check',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'EPF, ESI, Professional Tax, Gratuity & Bonus Compliance',
@@ -29,7 +31,7 @@ export const STATUTORY_HEALTH_CONFIG: ReportConfig = {
     'Payment of Gratuity Act, 1972',
     'Payment of Bonus Act, 1965',
     'State Professional Tax Acts',
-    'Code on Social Security, 2020 (when notified)',
+    'Code on Social Security, 2020',
   ],
   deadlines: [
     { item: 'EPF/ESI Monthly Deposit', date: '15th of following month' },
@@ -46,6 +48,7 @@ export const STATUTORY_HEALTH_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const LABOUR_CODE_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.LABOUR_CODE),
   assessmentTitle: 'Labour Code Readiness',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'India\'s Four New Labour Codes (2019-2020)',
@@ -78,6 +81,7 @@ export const LABOUR_CODE_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const DPDP_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.DPDP),
   assessmentTitle: 'DPDP Act Compliance',
   assessmentSubtitle: 'Gap Assessment Report',
   legislationDescription: 'Digital Personal Data Protection Act, 2023',
@@ -97,8 +101,9 @@ export const DPDP_CONFIG: ReportConfig = {
     'CERT-In Directions (April 2022)',
   ],
   deadlines: [
-    { item: 'DPDP Act Full Compliance', date: '13 May 2027' },
-    { item: 'Consent Manager Registration', date: 'Before processing personal data' },
+    { item: 'DPDP Rules notified; Data Protection Board constituted', date: '13 Nov 2025' },
+    { item: 'Consent Manager registration (only for would-be Consent Managers)', date: 'Open since 13 Nov 2026' },
+    { item: 'DPDP Act Full Compliance (all businesses)', date: '13 May 2027' },
     { item: 'Data Breach Notification to Board', date: 'Within 72 hours of discovery' },
     { item: 'Data Breach Notification to Principal', date: 'Without undue delay' },
     { item: 'Response to Data Erasure Request', date: 'Without unreasonable delay' },
@@ -114,6 +119,7 @@ export const DPDP_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const STATE_WISE_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE),
   assessmentTitle: 'State-Wise Compliance',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'Central & State Labour Law Compliance',
@@ -135,12 +141,14 @@ export const STATE_WISE_CONFIG: ReportConfig = {
     'State Shops and Establishments Acts',
     'Contract Labour (Regulation and Abolition) Act, 1970',
     'State-specific Labour Welfare Fund Acts',
+    'State wage rules under the Code on Wages, 2019 (e.g. Maharashtra Wage Rules, 2026)',
   ],
   deadlines: [
     { item: 'EPF/ESI Monthly Deposit', date: '15th of following month' },
     { item: 'Professional Tax (Monthly)', date: 'State-specific (typically 21st)' },
     { item: 'Shops & Establishments Registration', date: 'Within 30 days of commencement' },
     { item: 'Labour Welfare Fund', date: 'Half-yearly (June 30 / December 31)' },
+    { item: 'Maharashtra minimum wage VDA revision', date: 'Twice a year (before 1 April and 1 October)' },
     { item: 'Contract Labour License Renewal', date: 'Before expiry' },
     { item: 'Annual Returns Filing', date: 'January 31 / February 1 (varies by state)' },
   ],
@@ -151,6 +159,7 @@ export const STATE_WISE_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const POSH_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.POSH),
   assessmentTitle: 'POSH Act 2013 Compliance',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'Sexual Harassment of Women at Workplace Act, 2013',
@@ -182,6 +191,7 @@ export const POSH_CONFIG: ReportConfig = {
 // ============================================================================
 
 export const FOOD_BUSINESS_CONFIG: ReportConfig = {
+  lastReviewed: getLastReviewedLabel(ASSESSMENT_TYPES.FOOD_BUSINESS),
   assessmentTitle: 'Food Business Compliance',
   assessmentSubtitle: 'Assessment Report',
   legislationDescription: 'FSSAI, GST, Fire Safety & Labour Law Compliance',

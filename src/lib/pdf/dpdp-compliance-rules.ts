@@ -631,7 +631,7 @@ export const DPDP_COMPLIANCE_RULES: Record<string, DPDPComplianceRule> = {
     questionId: 'gov_2',
     category: 'Governance & Retention',
     requirement: 'Data Retention Policy',
-    governmentRef: 'DPDP Act 2023 - Section 8(5) | DPDP Rules 2025 - Rule 4',
+    governmentRef: 'DPDP Act 2023 - Section 8(5)',
     officialLink: 'https://www.meity.gov.in/data-protection-framework',
     deadline: '13 May 2027',
     penalty: 'Up to Rs. 50 Cr for retaining data beyond necessary period',
