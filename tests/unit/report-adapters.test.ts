@@ -51,6 +51,31 @@ describe('compliance rule coverage', () => {
     }
   })
 
+  it.each(banks)('%s: every rule is keyed by its own questionId', (_type, _questions, rules) => {
+    const mismatched = Object.entries(rules)
+      .filter(([key, rule]) => rule.questionId !== key)
+      .map(([key]) => key)
+    expect(mismatched).toEqual([])
+  })
+
+  // The Labour Code rules once drifted one slot from their questions, so a
+  // "pay wages within 7 days" gap printed the 50%-basic action plan. Pin the
+  // pairing by meaning, not just by id.
+  it('labour_code: rules describe the question they are keyed to', () => {
+    const orphans = Object.keys(LABOUR_CODE_RULES).filter(
+      (id) => !LABOUR_CODE_QUESTIONS.some((q) => q.id === id)
+    )
+    expect(orphans).toEqual([])
+    expect(LABOUR_CODE_RULES.wages_2.requirement).toMatch(/7 days/)
+    expect(LABOUR_CODE_RULES.wages_3.requirement).toMatch(/full and final/i)
+    expect(LABOUR_CODE_RULES.wages_4.requirement).toMatch(/50%/)
+    expect(LABOUR_CODE_RULES.wages_5.requirement).toMatch(/overtime/i)
+    expect(LABOUR_CODE_RULES.ss_3.requirement).toMatch(/ESIC/)
+    expect(LABOUR_CODE_RULES.ss_6.requirement).toMatch(/maternity/i)
+    expect(LABOUR_CODE_RULES.osh_8.requirement).toMatch(/migrant/i)
+    expect(LABOUR_CODE_RULES.ir_7.requirement).toMatch(/LIFO/)
+  })
+
   it('auto-dealer: every compliance area has somewhere to act', () => {
     for (const [area, link] of Object.entries(AREA_OFFICIAL_LINKS)) {
       expect(link.trim(), area).not.toBe('')

@@ -87,6 +87,7 @@ function gratuityGuide(): CalculatorGuideContent {
     howItWorks: [
       `Gratuity = (${MULTIPLIER} × last drawn monthly Basic + DA × years of service) ÷ ${DAYS_PER_MONTH}.`,
       `${MULTIPLIER} is the number of days' wages paid per completed year of service, and ${DAYS_PER_MONTH} is the number of working days in a month used by the Act.`,
+      'Wages means Basic + DA (plus any retaining allowance). If the other allowances are more than 50% of total pay, the excess is added back to wages before applying the formula.',
       // TODO-VERIFY: the Payment of Gratuity Act wording is "in excess of six
       // months"; the calculator code rounds up at months >= 6.
       'This calculator counts a final part-year of 6 months or more as a full year of service.',
@@ -116,6 +117,10 @@ function gratuityGuide(): CalculatorGuideContent {
       {
         question: 'What is the gratuity formula in India?',
         answer: `Gratuity = (${MULTIPLIER} × last drawn monthly Basic + DA × years of service) ÷ ${DAYS_PER_MONTH}, subject to a maximum of ${lakh(MAX_CEILING)}.`,
+      },
+      {
+        question: 'Do allowances count as wages for gratuity?',
+        answer: 'Normally no: wages are Basic + DA (plus any retaining allowance). But if HRA, special allowance and the other excluded components together exceed 50% of your total pay, the excess is added back to wages, which raises your gratuity. Enter your total monthly pay in the calculator to apply this.',
       },
       {
         question: 'How many years of service do I need to get gratuity?',

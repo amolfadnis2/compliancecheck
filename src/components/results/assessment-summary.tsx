@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { PaymentGate } from '@/components/results/payment-gate'
 import { PartnerBrandBar } from '@/components/results/partner-brand-bar'
 import type { UnifiedSummaryData } from '@/lib/payment/summary-data'
+import { getLastReviewedLabel } from '@/lib/constants/assessment-types'
 
 const PRIORITY_STYLES: Record<string, string> = {
   critical: 'bg-red-200 text-red-900',
@@ -283,6 +284,10 @@ export function AssessmentSummary({
             </CardContent>
           </Card>
         )}
+
+        <p className="mb-6 text-xs text-gray-500" data-testid="content-last-reviewed">
+          Content last reviewed: {getLastReviewedLabel(assessmentType)}
+        </p>
 
         {/* 6. Pay for the detailed report */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">

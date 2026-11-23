@@ -1,9 +1,11 @@
 import { MetadataRoute } from 'next'
 import { ASSESSMENT_META, describeAssessment } from '@/lib/seo/assessment-meta'
 import { getAllPosts } from '@/lib/blog/posts'
-import { getAllStateSlugs } from '@/lib/content/state-compliance'
+import { getAllStateSlugs, getStateBySlug, getStateCompliance } from '@/lib/content/state-compliance'
+import { ASSESSMENT_LAST_REVIEWED } from '@/lib/constants/assessment-types'
 import { SITE_URL } from '@/lib/seo/site'
 import { PAYROLL_RULES_LAST_REVIEWED } from '@/lib/calculators/payroll-statutory-calculator'
+import { GRATUITY_RULES_LAST_REVIEWED } from '@/lib/calculators/gratuity-calculator'
 import { loadEpfParams } from '@/lib/calculators/epf/params.server'
 
 /**
@@ -29,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`, changeFrequency: 'weekly', priority: 0.9 },
     // Calculators - high-traffic free tools
     { url: `${SITE_URL}/calculator/ctc`, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${SITE_URL}/calculator/gratuity`, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${SITE_URL}/calculator/gratuity`, lastModified: GRATUITY_RULES_LAST_REVIEWED, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculator/pf`, lastModified: epf.verifiedAt, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculator/pf-esi-pt`, lastModified: PAYROLL_RULES_LAST_REVIEWED, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${SITE_URL}/calculators/compliance-penalty-calculator`, changeFrequency: 'monthly', priority: 0.9 },
@@ -46,7 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // pages are noindex (they duplicate the landing pages) so they are omitted.
   const assessmentPages: MetadataRoute.Sitemap = ASSESSMENT_META.map((meta) => {
     const d = describeAssessment(meta)
-    return { url: `${SITE_URL}${d.landingPath}`, changeFrequency: 'monthly' as const, priority: 0.85 }
+    return {
+      url: `${SITE_URL}${d.landingPath}`,
+      lastModified: ASSESSMENT_LAST_REVIEWED[meta.type],
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
+    }
   })
 
   // Blog posts.
@@ -58,11 +65,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   // Programmatic state guides (index + one page per state).
-  const stateGuidePages: MetadataRoute.Sitemap = getAllStateSlugs().map((slug) => ({
-    url: `${SITE_URL}/guides/${slug}`,
-    changeFrequency: 'monthly',
-    priority: 0.6,
-  }))
+  const stateGuidePages: MetadataRoute.Sitemap = getAllStateSlugs().map((slug) => {
+    const state = getStateBySlug(slug)
+    const lastReviewed = state ? getStateCompliance(state).lastReviewed : undefined
+    return {
+      url: `${SITE_URL}/guides/${slug}`,
+      ...(lastReviewed ? { lastModified: lastReviewed } : {}),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }
+  })
 
   return [
     ...staticPages,

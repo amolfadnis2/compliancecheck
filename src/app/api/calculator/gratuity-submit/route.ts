@@ -15,6 +15,7 @@ const userDetailsSchema = z.object({
 const calculatorInputsSchema = z.object({
   employmentType: z.enum(['regular', 'fixed_term', 'journalist']),
   basicDA: z.number().positive(),
+  totalMonthlyPay: z.number().positive().optional(), // enables the 50% wage add-back
   dateOfJoining: z.string(), // ISO date string
   lastWorkingDate: z.string(), // ISO date string
 })
@@ -26,6 +27,9 @@ const resultSchema = z.object({
   cappedAmount: z.number(),
   formula: z.string(),
   breakdown: z.object({
+    basicDA: z.number().optional(),
+    addBack: z.number().optional(),
+    wages: z.number().optional(),
     dailyWage: z.number(),
     totalDays: z.number(),
     grossAmount: z.number(),

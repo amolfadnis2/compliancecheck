@@ -11,10 +11,13 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Calculator, Loader2, CheckCircle, AlertTriangle, Info, Calendar } from 'lucide-react'
 import { AssessmentHeader } from '@/components/assessment/assessment-header'
 import { RUPEE } from '@/lib/constants/india'
+import { trackEvent } from '@/lib/analytics/tracking'
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 import {
   EMPLOYMENT_TYPES,
   GRATUITY_CONSTANTS,
   GRATUITY_COMPLIANCE_INFO,
+  GRATUITY_RULES_LAST_REVIEWED,
   calculateGratuity,
   formatCurrency,
   type GratuityInput,
@@ -37,6 +40,7 @@ export default function GratuityCalculatorPage() {
   // Calculator input states
   const [employmentType, setEmploymentType] = useState<'regular' | 'fixed_term' | 'journalist' | null>(null)
   const [basicDA, setBasicDA] = useState<string>('')
+  const [totalPay, setTotalPay] = useState<string>('')
   const [dateOfJoining, setDateOfJoining] = useState<string>('')
   const [lastWorkingDate, setLastWorkingDate] = useState<string>('')
 
@@ -76,6 +80,7 @@ export default function GratuityCalculatorPage() {
   const saveToDatabase = async (calcResult: GratuityResult, inputs: {
     employmentType: string
     basicDA: number
+    totalMonthlyPay?: number
     dateOfJoining: string
     lastWorkingDate: string
   }) => {
@@ -106,6 +111,7 @@ export default function GratuityCalculatorPage() {
     const input: GratuityInput = {
       employmentType,
       lastDrawnBasicDA: parseFloat(basicDA) || 0,
+      monthlyTotalRemuneration: parseFloat(totalPay) || undefined,
       dateOfJoining: new Date(dateOfJoining),
       lastWorkingDate: new Date(lastWorkingDate),
     }
@@ -114,10 +120,20 @@ export default function GratuityCalculatorPage() {
     setResult(calculationResult)
     setStep(2)
 
+    trackEvent(ANALYTICS_EVENTS.CALCULATOR_COMPLETED, {
+      calculator_type: 'gratuity',
+      employment_type: employmentType,
+      is_eligible: calculationResult.isEligible,
+      total_pay_provided: Boolean(parseFloat(totalPay)),
+      wage_add_back_applied: calculationResult.breakdown.addBack > 0,
+      is_capped: calculationResult.isCapped,
+    })
+
     // Auto-save to database
     await saveToDatabase(calculationResult, {
       employmentType,
       basicDA: parseFloat(basicDA),
+      ...(parseFloat(totalPay) > 0 ? { totalMonthlyPay: parseFloat(totalPay) } : {}),
       dateOfJoining,
       lastWorkingDate,
     })
@@ -170,6 +186,7 @@ export default function GratuityCalculatorPage() {
                 setStep(1)
                 setEmploymentType(null)
                 setBasicDA('')
+                setTotalPay('')
                 setDateOfJoining('')
                 setLastWorkingDate('')
                 setResult(null)
@@ -192,6 +209,7 @@ export default function GratuityCalculatorPage() {
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">New Labour Code Update (2025)</p>
                     <p>Fixed-term employees are now eligible for gratuity after just 1 year of service (previously 5 years). The calculation formula remains the same.</p>
+                    <p className="mt-2">Wages for gratuity are Basic + DA. If other allowances are more than 50% of total pay, the excess is added back to wages. Enter your total monthly pay below to apply this.</p>
                   </div>
                 </div>
               </CardContent>
@@ -277,7 +295,7 @@ export default function GratuityCalculatorPage() {
                     Last drawn Basic Salary + Dearness Allowance (monthly)
                   </Label>
                   <p className="text-sm text-gray-500">
-                    Enter only Basic + DA. Do not include HRA, bonuses, or other allowances.
+                    Enter only Basic + DA (plus any retaining allowance). Do not include HRA, bonuses, or other allowances here.
                   </p>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 text-gray-600 bg-gray-100 border border-r-0 rounded-l-md">
@@ -293,6 +311,35 @@ export default function GratuityCalculatorPage() {
                       min="0"
                     />
                   </div>
+                </div>
+
+                {/* Total monthly pay (optional) — enables the 50% wage add-back */}
+                <div className="space-y-3">
+                  <Label htmlFor="totalPay" className="text-base font-medium">
+                    Total monthly pay (optional)
+                  </Label>
+                  <p className="text-sm text-gray-500">
+                    Your full monthly salary including HRA and all other allowances (before deductions, excluding the employer&apos;s PF share). If allowances exceed 50% of this, the excess counts as wages for gratuity.
+                  </p>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 text-gray-600 bg-gray-100 border border-r-0 rounded-l-md">
+                      {RUPEE}
+                    </span>
+                    <Input
+                      id="totalPay"
+                      type="number"
+                      value={totalPay}
+                      onChange={(e) => setTotalPay(e.target.value)}
+                      placeholder="e.g., 100000"
+                      className="rounded-l-none"
+                      min="0"
+                    />
+                  </div>
+                  {parseFloat(totalPay) > 0 && parseFloat(basicDA) > 0 && parseFloat(totalPay) < parseFloat(basicDA) && (
+                    <p className="text-sm text-amber-700">
+                      Total pay is less than Basic + DA, so it will be ignored.
+                    </p>
+                  )}
                 </div>
 
                 {/* Calculate Button */}
@@ -383,6 +430,14 @@ export default function GratuityCalculatorPage() {
                 {/* Calculation Breakdown */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-gray-900">Calculation Breakdown</h3>
+
+                  {result.breakdown.addBack > 0 && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900" data-testid="gratuity-add-back">
+                      Allowances exceed 50% of your total pay, so {formatCurrency(result.breakdown.addBack)} is added back to
+                      Basic + DA of {formatCurrency(result.breakdown.basicDA)}. Wages used for gratuity:{' '}
+                      <strong>{formatCurrency(result.breakdown.wages)}</strong> a month.
+                    </div>
+                  )}
                   
                   <div className="bg-gray-100 p-4 rounded-lg">
                     <div className="text-sm font-mono text-gray-800 text-center">
@@ -394,7 +449,7 @@ export default function GratuityCalculatorPage() {
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <div className="text-gray-500">Daily Wage</div>
                       <div className="font-semibold">{formatCurrency(result.breakdown.dailyWage)}</div>
-                      <div className="text-xs text-gray-400">Basic+DA / 26 days</div>
+                      <div className="text-xs text-gray-400">Wages / 26 days</div>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <div className="text-gray-500">Total Days</div>
@@ -505,6 +560,7 @@ export default function GratuityCalculatorPage() {
               This calculator provides an estimate based on the Payment of Gratuity Act, 1972 
               and new Labour Codes. Actual gratuity may vary based on company policies and 
               specific circumstances. Consult a qualified professional for accurate advice.
+              {' '}Rules last reviewed {GRATUITY_RULES_LAST_REVIEWED}.
             </p>
           </div>
         )}

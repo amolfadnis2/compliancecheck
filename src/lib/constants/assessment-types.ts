@@ -60,6 +60,37 @@ export const ASSESSMENT_PRICES: Record<AssessmentType, AssessmentPriceConfig> = 
   [ASSESSMENT_TYPES.AUTO_DEALER]:           { amountPaise: 299900, live: true },
 };
 
+/**
+ * When each assessment's questions, rules, citations and action plans were
+ * last reviewed against the law (ISO date). Shown as "Content last reviewed"
+ * on the free summary and the paid PDF, and used as the landing page's
+ * sitemap lastModified. Bump the date for every type you re-check.
+ */
+export const ASSESSMENT_LAST_REVIEWED: Record<AssessmentType, string> = {
+  [ASSESSMENT_TYPES.STATUTORY_HEALTH]:      '2026-11-22',
+  [ASSESSMENT_TYPES.LABOUR_CODE]:           '2026-11-22',
+  [ASSESSMENT_TYPES.DPDP]:                  '2026-11-22',
+  [ASSESSMENT_TYPES.STATE_WISE_COMPLIANCE]: '2026-11-22',
+  [ASSESSMENT_TYPES.FOOD_BUSINESS]:         '2026-11-22',
+  [ASSESSMENT_TYPES.POSH]:                  '2026-11-22',
+  [ASSESSMENT_TYPES.AUTO_DEALER]:           '2026-11-22',
+};
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/** "2026-11-22" -> "22 November 2026" (locale- and timezone-independent). */
+export function formatReviewDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${MONTH_NAMES[m - 1]} ${y}`;
+}
+
+export function getLastReviewedLabel(type: AssessmentType): string {
+  return formatReviewDate(ASSESSMENT_LAST_REVIEWED[type]);
+}
+
 export function getAssessmentPricePaise(type: AssessmentType): number {
   return ASSESSMENT_PRICES[type].amountPaise;
 }
